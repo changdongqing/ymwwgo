@@ -33,23 +33,24 @@ const insightsLoading = ref(false);
 
 const metricItems = computed(() => [
   {
-    // 语义色一律走 design token（§2.1）；#3b82f6 是 §3.2 已退役的旧主色
-    color: 'hsl(var(--primary))',
+    // 汇总数字是「墨」不是「填充」：§2.1 规定语义色当墨必须取文字档，
+    // 原先写死的 #22d3ee/#a78bfa/#34d399 是 --metric-* 的暗色档值，浅色下对白底只有 1.81/2.72/1.92。
+    color: 'var(--gowind-primary-text)',
     label: $t('page.aiInsights.todayLoginCount'),
     value: props.overview?.todayLoginCount ?? 0,
   },
   {
-    color: '#22d3ee',
+    color: 'var(--metric-cyan)',
     label: $t('page.aiInsights.todayOperationCount'),
     value: props.overview?.todayOperationCount ?? 0,
   },
   {
-    color: '#a78bfa',
+    color: 'var(--metric-violet)',
     label: $t('page.aiInsights.userCount'),
     value: props.overview?.userCount ?? 0,
   },
   {
-    color: '#34d399',
+    color: 'var(--gowind-success-text)',
     label: $t('page.aiInsights.roleCount'),
     value: props.overview?.roleCount ?? 0,
   },
@@ -186,7 +187,7 @@ async function handleScan() {
             <span
               class="text-lg font-semibold tabular-nums"
               :style="{
-                color: failRate > 20 ? 'hsl(var(--destructive))' : 'hsl(var(--success))',
+                color: failRate > 20 ? 'var(--gowind-danger-text)' : 'var(--gowind-success-text)',
               }"
             >
               {{ failRate }}%
