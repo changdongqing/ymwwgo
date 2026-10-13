@@ -108,7 +108,7 @@ Create/Update 两处**仍然是 `SetNillable<字段>(…)`，只是实参要过�
 - **词条文件布局三端不同**，且 vben 是**共用一个大 `page.json`**：两种语言都要加，只加 `zh-CN` 会在英文界面露出 key。react 用扁平 camelCase 键（`typeName` / `typeNamePlaceholder` / `requiredTypeName` 一族）。
 - **表单校验另写一处**：element 的 `formRules:99` 与 `defaults:88` 是分开的两个对象，只加 `ElFormItem` 会得到一个能留空的必填字段。
 
-改完跑你那一端的门禁（三端表见根 [AGENTS.md](../AGENTS.md)）：react `npm run typecheck`；vue-element `npx vue-tsc --noEmit`；vue-vben `pnpm run check:type`。
+改完跑你那一端的门禁（三端表见根 [AGENTS.md](../AGENTS.md)）：react `npm run typecheck`；vue-element `npx vue-tsc --noEmit`；vue-vben `pnpm run typecheck`。
 
 ---
 

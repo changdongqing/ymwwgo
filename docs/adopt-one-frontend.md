@@ -28,7 +28,7 @@
 |---|---|---|---|---|
 | react | 96 / 5.7 万（`react/src` 的 ts+tsx+css） | ProTable + DrawerForm + TanStack Query | `npm run typecheck` | 15888 |
 | vue-element | 102 / 7.1 万（`vue-element/src` 的 ts+vue+样式） | ProPage 配置驱动 + vxe-table + ElForm | `npx vue-tsc --noEmit` | 15777 |
-| vue-vben | 89 / 9.6 万（单包：framework 壳 3.8 万 + src 业务 5.5 万 + build-config 0.4 万） | VxeGrid + useVbenDrawer，Vben 5.x（已单包化） | `pnpm run check:type` | 15666 |
+| vue-vben | 89 / 9.6 万（单包：framework 壳 3.8 万 + src 业务 5.5 万 + build-config 0.4 万） | VxeGrid + useVbenDrawer，Vben 5.x（已单包化） | `pnpm run typecheck` | 15666 |
 
 复测（在 `frontend/admin/` 下）：
 `find react/src -type f \( -name '*.ts' -o -name '*.tsx' \) | wc -l` 一类命令即可；vben 的规模要按

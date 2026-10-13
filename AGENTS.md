@@ -26,7 +26,7 @@ docs/                       文档体系（总入口 docs/README.md：教程层 
 |---|---|---|
 | react | `npm run typecheck` | 15888 |
 | vue-element | `npx vue-tsc --noEmit`（或 `npm run type-check`） | 15777 |
-| vue-vben | `pnpm run check:type` | 15666 |
+| vue-vben | `pnpm run typecheck` | 15666 |
 
 2026-09-07 起三端 typecheck 全部 0 错误。**门禁出现任何新报错，一律当作自己引入的 bug 修复**，不存在"可忽略的既有错误"。改完代码先跑门禁再声称完成。
 
