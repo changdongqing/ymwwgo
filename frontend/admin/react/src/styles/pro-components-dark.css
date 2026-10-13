@@ -129,7 +129,7 @@
   padding: 48px 16px !important;
 }
 [data-theme='dark'] .ant-empty-normal {
-  color: var(--ant-color-primary) !important;
+  color: var(--gowind-primary-text) !important;
   margin: 0 auto !important;
 }
 [data-theme='dark'] .ant-empty-image {

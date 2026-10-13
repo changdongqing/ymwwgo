@@ -149,3 +149,16 @@ html[data-theme='light'] .ant-menu-item-selected .ant-menu-title-content .antico
 html[data-theme='light'] .ant-switch[aria-checked='false'] .ant-switch-inner > span {
   color: var(--gowind-solid-ink) !important;
 }
+
+/* ---------- 认证页里的裸 <a>（登录页「忘记密码」、AuthLayout 页脚链接） ----------
+   这两处原先写成 Tailwind 工具类 `text-[color:var(--gowind-primary-text)]`，编译后确实进了
+   CSSOM、也确实命中元素，但**不会生效**：工具类在 `@layer utilities` 里，而层叠第一步比的是
+   layer 顺序，「不属于任何 layer 的规则」永远优先于「任何 @layer 里的规则」（与权重无关）；
+   antd 的 `:where(hash) a { color: var(--ant-color-link) }` 正是不属于 layer 的那一条 → 必输。
+   同一条 antd 规则权重是 0（:where），换成非 layer 的普通类规则就能赢——实测已验证。
+   现状实测（两态都要杀掉 color 过渡再读——后台标签页没有绘制帧，getComputedStyle 会停在
+   切换前的旧值上）：浅色 #006BE6 on 白 4.95、暗色 #4483CD on #111827 4.54，都贴着 4.5 的线；
+   换 §2.1 文字档后 浅色 5.72 / 暗色 5.88。 */
+.gowind-auth-link {
+  color: var(--gowind-primary-text) !important;
+}

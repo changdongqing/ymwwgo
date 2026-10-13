@@ -165,7 +165,7 @@ const Workspace = () => {
                 <span
                   style={{
                     fontSize: 20,
-                    color: 'var(--ant-color-primary)',
+                    color: 'var(--gowind-primary-text)',
                     display: 'inline-flex',
                   }}
                 >

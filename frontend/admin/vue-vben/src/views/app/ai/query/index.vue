@@ -378,7 +378,8 @@ function sampleText(key: string): string {
 }
 
 .markdown-body :deep(a) {
-  color: hsl(var(--primary));
+  /* 正文里的链接墨取 §2.1 文字档：hsl(var(--primary)) 在暗色卡片上实测 2.90~3.59，够不到正文的 4.5 */
+  color: var(--gowind-primary-text);
   text-decoration: none;
 }
 

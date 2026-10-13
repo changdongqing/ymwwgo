@@ -607,7 +607,8 @@ function handleNewConversation() {
   text-overflow: ellipsis;
   font-size: 11px;
   font-weight: 400;
-  color: hsl(var(--primary));
+  /* 软底标签的墨取 §2.1 文字档：填充级主色按 #111827 卡片面算只有 3.59，11px 字要 4.5 */
+  color: var(--gowind-primary-text);
   white-space: nowrap;
   background: hsl(var(--primary) / 10%);
   border: 1px solid hsl(var(--primary) / 20%);
@@ -743,12 +744,12 @@ function handleNewConversation() {
 }
 
 .row-op:hover {
-  color: hsl(var(--primary));
+  color: var(--gowind-primary-text);
   background: hsl(var(--accent-hover));
 }
 
 .row-op--danger:hover {
-  color: hsl(var(--destructive));
+  color: var(--gowind-danger-text);
   background: hsl(var(--destructive) / 12%);
 }
 
@@ -787,7 +788,7 @@ function handleNewConversation() {
   width: 56px;
   height: 56px;
   margin-bottom: 8px;
-  color: hsl(var(--primary));
+  color: var(--gowind-primary-text);
   background: hsl(var(--primary) / 10%);
   border-radius: 50%;
 }
@@ -834,7 +835,7 @@ function handleNewConversation() {
 }
 
 .msg--ai .msg__avatar {
-  color: hsl(var(--primary));
+  color: var(--gowind-primary-text);
   background: hsl(var(--primary) / 10%);
 }
 
@@ -1113,7 +1114,7 @@ function handleNewConversation() {
 }
 
 .markdown-body :deep(a) {
-  color: hsl(var(--primary));
+  color: var(--gowind-primary-text);
   text-decoration: none;
 }
 

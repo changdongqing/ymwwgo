@@ -185,6 +185,7 @@ function refresh() {
   --fb-navy-deep: #2f2e41; // 更深藏青物件
   --fb-skin: #a0616a; // 肤色，两态同值
   --fb-skin-light: #ffb6b6;
+  --fb-coral: #ff6b6b; // 警示件（401 三角），两态同值——与 react Fallback.css 同步
   --fb-glow: color-mix(in srgb, var(--fb-primary) 14%, transparent);
 }
 

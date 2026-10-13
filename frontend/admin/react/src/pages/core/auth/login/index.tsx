@@ -171,7 +171,9 @@ const Login: React.FC = () => {
           className="h-full w-full object-cover"
         />
       ) : (
-        <span className="text-slate-400 text-xs">
+        // 占位文案走 §2.1 的实底暗墨而非次要文字档：外层盒子两态都是浅底
+        // （暗色 bg-white / 浅色 bg-black/[0.03]），实测次要档在浅底上只有 2.6:1。
+        <span className="text-[color:var(--gowind-solid-ink)] text-xs">
           {captchaLoading ? '...' : t('captchaRefresh')}
         </span>
       )}
@@ -194,7 +196,7 @@ const Login: React.FC = () => {
             <h2 className="text-[34px] font-extrabold tracking-[-0.5px] mb-2.5 text-[color:var(--ant-color-text)]">
               {tenantBranding.name}
             </h2>
-            <p className="text-[15px] leading-relaxed text-[color:var(--ant-color-text-tertiary)]">
+            <p className="text-[15px] leading-relaxed text-[color:var(--gowind-secondary-text)]">
               {t('welcomeBack')}
             </p>
           </>
@@ -203,7 +205,7 @@ const Login: React.FC = () => {
             <h2 className="text-[34px] font-extrabold tracking-[-0.5px] mb-2.5 text-[color:var(--ant-color-text)]">
               {t('welcomeBack')}
             </h2>
-            <p className="text-[15px] leading-relaxed text-[color:var(--ant-color-text-tertiary)]">
+            <p className="text-[15px] leading-relaxed text-[color:var(--gowind-secondary-text)]">
               {t('loginDescription')}
             </p>
           </>
@@ -331,7 +333,7 @@ const Login: React.FC = () => {
         </span>
         <a
           href="/auth/forgot-password"
-          className="text-[color:var(--ant-color-primary)] hover:opacity-80"
+          className="gowind-auth-link hover:opacity-80"
           style={{ fontSize: 13 }}
         >
           {t('forgotPassword')}

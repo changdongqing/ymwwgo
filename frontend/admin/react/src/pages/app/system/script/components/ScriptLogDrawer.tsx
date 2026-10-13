@@ -114,7 +114,7 @@ const ScriptLogDrawer: React.FC<ScriptLogDrawerProps> = ({ open, onClose }) => {
       render: (_, record) =>
         record.error ? (
           <Tooltip title={<pre style={{ margin: 0, whiteSpace: 'pre-wrap', maxHeight: 300, overflow: 'auto' }}>{record.error}</pre>}>
-            <span style={{ color: 'var(--ant-color-error)' }}>{record.error}</span>
+            <span style={{ color: 'var(--gowind-danger-text)' }}>{record.error}</span>
           </Tooltip>
         ) : (
           '-'

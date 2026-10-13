@@ -75,6 +75,7 @@ onMounted(async () => {
 }
 
 .error-detail {
-  color: hsl(var(--destructive));
+  /* 错误详情是正文小字，填充级 danger 对白底只有 3.27，取 §2.1 文字档（5.72/4.77） */
+  color: var(--gowind-danger-text);
 }
 </style>

@@ -276,7 +276,7 @@ const sessionItems = computed(
 
   &__icon {
     flex-shrink: 0;
-    color: hsl(var(--primary));
+    color: var(--gowind-primary-text);
   }
 }
 

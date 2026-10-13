@@ -497,11 +497,13 @@ async function handleEnableChanged(row: any, checked: boolean) {
   border-color: color-mix(in srgb, hsl(var(--success)) 80%, white) !important;
 }
 
+/* 链接型按钮的墨取 §2.1 文字档：hsl(var(--success)) 是填充级 #57D188，对白底只有 1.92:1，
+   当链接文字用等于看不见。hover 从文字档再往白走 10%，浅色 4.74、暗色只会更亮，两态都不掉出 4.5。 */
 :deep(.green-link-btn) {
-  color: hsl(var(--success)) !important;
+  color: var(--gowind-success-text) !important;
 }
 
 :deep(.green-link-btn:hover) {
-  color: color-mix(in srgb, hsl(var(--success)) 80%, white) !important;
+  color: color-mix(in srgb, var(--gowind-success-text) 90%, white) !important;
 }
 </style>

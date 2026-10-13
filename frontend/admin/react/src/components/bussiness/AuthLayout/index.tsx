@@ -103,7 +103,7 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ title, description, children, f
         <h2 className="relative z-10 text-center text-[26px] font-bold tracking-wide text-[color:var(--ant-color-text)]">
           {t('systemTitle')}
         </h2>
-        <p className="relative z-10 text-center text-[15px] leading-relaxed text-slate-400">
+        <p className="relative z-10 text-center text-[15px] leading-relaxed text-[color:var(--gowind-secondary-text)]">
           {t('systemDescription')}
         </p>
       </div>
@@ -117,7 +117,7 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ title, description, children, f
           </h1>
 
           {/* 页面描述 */}
-          <p className="text-[15px] leading-relaxed mb-11 text-slate-400">
+          <p className="text-[15px] leading-relaxed mb-11 text-[color:var(--gowind-secondary-text)]">
             {description}
           </p>
 
@@ -132,7 +132,7 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ title, description, children, f
               </span>
               <a
                 href={footerLink.href}
-                className="text-[color:var(--ant-color-primary)] hover:text-[color:var(--ant-color-primary-hover)]"
+                className="gowind-auth-link hover:opacity-80"
               >
                 {footerLink.linkText}
               </a>
