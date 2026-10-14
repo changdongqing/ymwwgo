@@ -83,6 +83,8 @@ vben 任务页"启动全部任务"= `#FAFAFA` on `#57D188` **1.85:1**；react �
 > `--background-deep: 216 20.11% 95.47%` = `#F1F3F6`；浅色 `--foreground` 本日起为 `215 28% 17%` = `#1F2937`，原先的 shadcn 出厂 `#323639` 属漏迁）、**react 半 ✓**——react 端只有
 > `core/preferences/config/darkTheme.ts` 一套 token 覆盖，**浅色模式的画布/边框仍走 antd `defaultAlgorithm`
 > 的默认派生值**，与本表不严格相等（要严格对齐需新增一套 light tokens，未做，属新工作）；
+> 例外是认证页：`layouts/UserLayout/UserLayout.style.less` 的 `.light-mode` 大底本日起直写本表 canvas `#F1F3F6`
+> （实测点主题按钮后 `backgroundColor = rgb(241,243,246)`，原先是 antd 默认底 `#f5f7fa`）——那是整页大底，不归 antd 派生链管。
 > 但**文字档三端已接上同一组值**：react 在 `src/styles/semantic-text.css`（主 `#1F2937` / 常规 `#374151` 两档 2026-10-14 补，加原有次要档）、ele 走 `_element-plus.scss` 的 `--el-text-color-{primary,regular,secondary}`、vben 走 `--foreground`（主）/ `--muted-foreground`（次要）——**vben 结构上没有"常规"档的 token**，正文要么取主档要么取次要档，本轮未新增第四层。
 
 | Token | 值 | ≈HEX | 说明 |
@@ -412,5 +414,17 @@ delivery/rule 两页的 `listAction` 自 catch 一并剥掉；`locales/{en-US,zh
 
 门禁：react `npm run typecheck` EXIT=0 / `error TS` 计数 0；ele `npx vue-tsc --noEmit` 基线 EXIT=0 / 0，往本轮改过的 `src/pages/core/error/fallback.vue` 注入一行类型错误 ⇒ 报 **恰好 1 条**且指向 `fallback.vue(52,7)` TS2322、RC=2，撤行后按 sha256 前 16 位 `2f368ead02b90449` 回证逐字节相等；vben `pnpm run typecheck` 基线 EXIT=0 / 0，往 `authentication.vue` 注入同样一行 ⇒ **2 条**（TS2322 + TS6133，同位 `(35,7)`）、RC=2，还原 sha `956225b4e0209747` 逐字节相等。**ele 的 SCSS 改动不在任何 TS 程序里**（门禁结构上看不见），其真值只由上面两态的 CSS 变量读数担保。
 
-**未动、需点头**：三端错误页插画的模板靛蓝 `#6c63ff`（react/ele `error/icons/warning.svg`、vben `fallback/icons/icon-500.vue` + `warning.svg`）与 vben 兜底图标其余 156 枚 / 12 个不同 hex（插画形状而非主题 chrome）——要改就得三端一起改；react 品牌圆 `.circle-2` 的紫 `rgba(147, 51, 234, .1)`；react 浅色画布 `#f5f7fa` vs §2.2 的 `#F1F3F6`；ele 暗色 vxe 固定列与 35 处 `fixed: 'right'` 的同构漏字（react `10637946` 先例）——本机量不到，按构造改的风险大于收益，暂未动。
+2026-10-14 第六笔（落上一笔挂着的三项，并更正其中一项的取证前提）：**先更正**——上一笔那句"三端错误页插画的模板靛蓝 `#6c63ff`（react/ele `error/icons/warning.svg`、vben `icon-500.vue` + `warning.svg`）"里，三枚 `warning.svg` 全仓代码 **0 引用**（`grep -rn "warning.svg"` 排除 node_modules 后唯一命中就是本文档本节），react `layouts/UserLayout/components/Background.tsx`（95 行）与它 `:6` 引入的 `background.less`（194 行，内含 `#f5f7fa`:23、紫 `rgba(147,51,234,.1)`:75/123）**0 importer** ⇒ vite 结构上不会把那张样式表注进产物，那些硬编码从来没被画出来过。所以"活的模板靛蓝"只有 vben `icon-500.vue` 一处，本轮改掉；死文件删不删由用户点名，未动。
+
+三项落地的实测：**① react 认证页浅色画布** `#f5f7fa`→§2.2 的 `#F1F3F6`：不靠手写 class，真点主题按钮（`.user-toolbar-btn-dark`）⇒ `html[data-theme=light]`、React 自己给 wrapper 加 `.light-mode`，实测 `backgroundColor` `rgb(11,15,25)`→**`rgb(241,243,246)`**；因果臂往同文档注入 `.user-layout-wrapper.light-mode{background:#f5f7fa !important}` ⇒ 读数变 `rgb(245,247,250)`，撤除后回 `rgb(241,243,246)`（对照能红 + 复原现证）。**② react 品牌圆 `.circle-2`** 的紫→`color-mix(in srgb, var(--brand-primary) 10%, transparent)`，与同文件 `.circle-1`（15%）同一写法：暗态实测计算值 `radial-gradient(circle, color(srgb 0 0.42 0.9 / 0.1) 0%, rgba(0,0,0,0) 70%)`，即 `#006BE6` 的 10%，且 rect 200×200、`opacity:1`、祖先 `.user-brand-section` 749×900——真绘制，不是只有计算值。**③ vben 暗色次要文字**：`design-tokens/dark.css` 默认块（`.dark, .dark[data-theme='custom'], .dark[data-theme='default']`）的 `--muted-foreground` 由 `240 5% 64.9%`（`#A1A1AA`）改 §2.3 定稿三元组，活文档实测解析 **`rgb(139,148,158)` = `#8B949E`**，与 react `SECONDARY_TEXT_DARK`、ele `--el-text-color-secondary` 暗态同值。口径边界：`240 5% 64.9%` 这个字面量在本文件出现 5 处，其余 4 处坐在 12 个内置配色预设块里（选择器权重 0-2-0，顶过本块），不属"默认暗色"这条口径、未动；同族的一处过时注释（`framework/styles/antd/index.css` 里"暗色侧不动：`#A1A1A8` 实测无违规"）已按现值改写。
+
+接线对照与比值互证：往 iframe `html.dark` 注入 `--muted-foreground: 211.6 8.92% 22% !important` 后，同一批节点里"Copyright © 2026"计算色变 `#33383D`、比值 **1.62**（能红），撤除后回 6.23 ⇒ 现证这批文字真在消费该 token，而不是"定义了个值没人读"。独立实现（node，非浏览器内那段）复算 `#8B949E`：L0 `#0b0f19` **6.23**（与浏览器内实测逐位相等）、L1 `#111827` **5.77**、§2.3 钉的浮层 `#1c2128` **5.26**——后两档与文档数字完全对上，量具与规范互证；旧值 `#A1A1AA` 同底面 7.47 / 6.92 / 6.31，两档都达标，换过来是为了三端同值而非救不合格。另：本次在 vben 登录页实测到的浮层底是 `#1C2333`（不是 §2.3 写的 `#1C2128`），`#8B949E` 在其上 **5.10** 仍达标——**只记这个差异，不动权威取值**，底面归属待查。
+
+一条仪器层面的教训：**顶层标签页视口 `innerWidth/innerHeight = 0×0`**（内嵌浏览器面板收起态，`document.body` 宽 0），于是 react 顶层页 `.user-brand-section` 是 `display:none`、`.circle-2` rect 0×0，而上一节在 vben 顶层页扫的对比只剩 5 个可见节点——分母是被退化视口削掉的，读数却一副正常。本轮 react/vben 两侧所有几何与"真绘制"读数全部重取于同源 iframe（`contentWindow.innerWidth=1440` 现读）；同一张 vben 暗色登录页在 1440×900 下扫出 **9 节点 / 5 组 fg-bg / 失败 0**，`#8B949E` 落在 4 个节点上（品牌列两行进入可见集，顶层页里它们是 0×0）。选判据时先问"这一臂测不测得到它"，别等读数看着正常才想起分母。
+
+披露：`icon-500.vue` 属**框架分发面，本 app 端到端未实测**——全仓 `status="500"` 出现 0 处，`src/views/_core/fallback/` 只挂 403/404 两个视图，该图标由 `fallback.vue:94` 的 switch 分支经 `defineAsyncComponent` 动态引入，无路由可达。实测到的是机制而非产物：暗态活文档里注入 `<rect fill="var(--brand-grad-mid)">` 读回 `rgb(13,116,242)`（`:root` 的 `--brand-grad-mid: #0d74f2`，两态同值、dark.css 未覆写），文件内 10 处 `var()` / 残留 `#6c63ff` **0**。
+
+门禁：三端各自目录全量跑，完整输出里 `error TS` 计数 **0** 且 `error|fail|cannot|ERR_` 零命中——react `npm run typecheck`（`tsc -p tsconfig.app.json --noEmit`）、ele `npx vue-tsc --noEmit`（本轮 ele 无文件改动）、vben `pnpm run typecheck`（`vue-tsc --noEmit --skipLibCheck`）。注意这三条这次是经 `| tail` 捕获的，管道末端退出码不属于 tsc，所以判据取"输出里 0 条诊断"而非 EXIT 码。
+
+**未动、需点头**：ele 暗色 vxe 固定列与 35 处 `fixed: 'right'` 的同构漏字（react `10637946` 先例）——本机在跑的 :7788 二进制取不到 captcha、登录后页面进不去，按构造改的风险大于收益；vben `icon-500.vue` 其余物件色（`#2f2e41` 15 枚 / `#3f3d56` 8 枚 / `#f2f2f2` 4 枚 / `#a8a8a8` 1 枚，插画形状而非主题 chrome）保留；三枚无引用的 `warning.svg` 与 react 无引用的 `UserLayout/components/{Background.tsx,background.less}` 属死文件，删除由用户点名。
 
