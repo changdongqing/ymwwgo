@@ -85,10 +85,10 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ title, description, children, f
       </div>
 
       {/* 左侧品牌展示区 */}
-      <div className="hidden lg:flex flex-1 flex-col items-center justify-center relative overflow-hidden min-w-0 bg-linear-to-br light:from-[#e8ecf1] light:via-[#d5e0ed] light:to-[#e8ecf1] dark:from-[#0a0a0a] dark:via-[#121218] dark:to-[#0a0a0a]">
-        {/* 背景装饰：径向光晕，缓慢呼吸。亮色用浅白光晕，暗色用主色蓝光。 */}
+      <div className="hidden lg:flex flex-1 flex-col items-center justify-center relative overflow-hidden min-w-0 bg-linear-to-br from-[var(--auth-panel-from)] via-[var(--auth-panel-via)] to-[var(--auth-panel-to)]">
+        {/* 背景装饰：径向光晕，缓慢呼吸。亮色用浅白光晕，暗色用主色蓝光（--auth-panel-glow 分主题取值）。 */}
         <div
-          className="absolute inset-0 pointer-events-none animate-breathe bg-[radial-gradient(circle_at_center,rgba(0,107,230,0.18),transparent_60%)] light:bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.15),transparent_60%)]"
+          className="absolute inset-0 pointer-events-none animate-breathe bg-[radial-gradient(circle_at_center,var(--auth-panel-glow),transparent_60%)]"
           aria-hidden="true"
         />
         {/* 3D 插图背后模糊渐变光晕：让插图融入背景，增强层次感 */}

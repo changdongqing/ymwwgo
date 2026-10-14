@@ -45,10 +45,28 @@
   // 正文 400（设计语言规范 2.5：正文 400 / 标题 600）
   --el-font-weight-primary: 400;
   // 亮色文字加深，不用浅灰，避免发虚
+  // ⚠ 这三行是死声明：theme-chalk 的 base.css 由 unplugin 在本文件之后追加，等价选择器
+  //   反超（2026-10-14 浅色登录页实测 paints #303133 / #606266）。生效档在
+  //   vendors/_element-plus.scss 的 :root 块里，带 !important。
   --el-text-color-primary: #1F2937;
   --el-text-color-regular: #374151;
   --el-text-color-secondary: #6B7280; // 辅助文字（创建时间、发送人等）加深，避免浅色页面过淡发飘
   --el-font-weight-bold: 600;
+}
+
+// ============================================
+// 品牌标识插画令牌（docs/brand/README.md 色板 · 与 react / vben 三端同名）
+// 登录页插画 icons/slogan.vue 的 15 处色值统一从这里取，组件内不留裸 hex（§4）。
+// 必须与上面的 EP 覆盖块**平级**：写进它里面会被 Sass 嵌套编译成 `:root :root`，
+// 语法照过、规则却永不匹配（实测 getComputedStyle 读回空串、SVG 全部落回初始值黑）。
+// --brand-primary 不写死 #006be6：实测本端 --el-color-primary 两态都是 rgb(0,107,230)，
+// 取 token 后品牌主色随主题走、值不变。
+// ============================================
+:root {
+  --brand-grad-light: #70b3ff;
+  --brand-grad-mid: #0d74f2;
+  --brand-grad-deep: #005ac2;
+  --brand-primary: var(--el-color-primary);
 }
 
 // 针对 Element Plus 全局布局强制开启抗锯齿

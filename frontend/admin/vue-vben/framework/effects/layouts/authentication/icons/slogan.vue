@@ -20,13 +20,13 @@
         x2="0"
         y2="474"
       >
-        <stop offset="0" stop-color="#70b3ff" />
-        <stop offset="0.5" stop-color="#0d74f2" />
-        <stop offset="1" stop-color="#005ac2" />
+        <stop offset="0" stop-color="var(--brand-grad-light)" />
+        <stop offset="0.5" stop-color="var(--brand-grad-mid)" />
+        <stop offset="1" stop-color="var(--brand-grad-deep)" />
       </linearGradient>
       <radialGradient id="gw-slogan-glow" cx="0.5" cy="0.5" r="0.5">
-        <stop offset="0" stop-color="#0d74f2" stop-opacity="0.13" />
-        <stop offset="1" stop-color="#0d74f2" stop-opacity="0" />
+        <stop offset="0" stop-color="var(--brand-grad-mid)" stop-opacity="0.13" />
+        <stop offset="1" stop-color="var(--brand-grad-mid)" stop-opacity="0" />
       </radialGradient>
     </defs>
     <circle class="gw-glow" cx="280" cy="268" r="252" fill="url(#gw-slogan-glow)" />
@@ -36,7 +36,7 @@
       cy="268"
       r="246"
       fill="none"
-      stroke="#0d74f2"
+      stroke="var(--brand-grad-mid)"
       stroke-opacity="0.07"
       stroke-width="1.5"
       stroke-dasharray="2 16"
@@ -48,23 +48,23 @@
       cy="268"
       r="212"
       fill="none"
-      stroke="#0d74f2"
+      stroke="var(--brand-grad-mid)"
       stroke-opacity="0.14"
       stroke-width="1.5"
       stroke-dasharray="3 13"
       stroke-linecap="round"
     />
     <g class="gw-orbit">
-      <circle cx="280" cy="113" r="4.5" fill="#3b82f6" opacity="0.55" />
-      <circle cx="280" cy="423" r="3" fill="#70b3ff" opacity="0.45" />
+      <circle cx="280" cy="113" r="4.5" fill="var(--brand-primary)" opacity="0.55" />
+      <circle cx="280" cy="423" r="3" fill="var(--brand-grad-light)" opacity="0.45" />
     </g>
     <g class="gw-orbit2">
-      <circle cx="435" cy="268" r="3.5" fill="#0d74f2" opacity="0.4" />
+      <circle cx="435" cy="268" r="3.5" fill="var(--brand-grad-mid)" opacity="0.4" />
     </g>
     <g
       class="gw-streak"
       fill="none"
-      stroke="#0d74f2"
+      stroke="var(--brand-grad-mid)"
       stroke-opacity="0.12"
       stroke-width="10"
       stroke-linecap="round"
@@ -74,7 +74,7 @@
     <g
       class="gw-streak gw-s2"
       fill="none"
-      stroke="#0d74f2"
+      stroke="var(--brand-grad-mid)"
       stroke-opacity="0.1"
       stroke-width="10"
       stroke-linecap="round"
@@ -84,7 +84,7 @@
     <g
       class="gw-streak gw-s3"
       fill="none"
-      stroke="#0d74f2"
+      stroke="var(--brand-grad-mid)"
       stroke-opacity="0.12"
       stroke-width="10"
       stroke-linecap="round"
@@ -94,7 +94,7 @@
     <g
       class="gw-streak gw-s4"
       fill="none"
-      stroke="#0d74f2"
+      stroke="var(--brand-grad-mid)"
       stroke-opacity="0.09"
       stroke-width="10"
       stroke-linecap="round"
@@ -124,7 +124,7 @@
     <g
       transform="translate(185,464) scale(0.30)"
       fill="none"
-      stroke="#0d74f2"
+      stroke="var(--brand-grad-mid)"
       stroke-opacity="0.5"
       stroke-width="20"
       stroke-linecap="round"

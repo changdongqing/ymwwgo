@@ -8,7 +8,10 @@
 
   /* 主体区域背景色 */
   --background-deep: 216 20.11% 95.47%;
-  --foreground: 210 6% 21%;
+  /* 文字-主 = 设计语言规范 §2.2 的 #1F2937（gray-800）。原值 210 6% 21% = #323639
+     是 shadcn 出厂 zinc 中性色，暗色侧已按 §2.3 对齐（dark.css:11 = #F8FAFC），
+     浅色侧一直漏迁。其余内置主题预设各带一套中性色，不在此口径内。 */
+  --foreground: 215 28% 17%;
 
   /* Background color for <Card /> */
   --card: 0 0% 100%;
@@ -101,7 +104,21 @@
   /* header */
   --header: 0 0% 100%;
 
-  accent-color: var(--primary);
+  /* 品牌标识插画令牌（docs/brand/README.md 色板 · 与 react / vue-element 三端同名）。
+     渐变三档是品牌资产、不随主题反色，故两态同值；--brand-primary 跟主题主色，
+     插画里那颗轨道光点原先写的 #3B82F6 是规范 2.1 沿革中已退役的旧主色。 */
+  --brand-grad-light: #70b3ff;
+  --brand-grad-mid: #0d74f2;
+  --brand-grad-deep: #005ac2;
+  --brand-primary: hsl(var(--primary));
+
+  /* 2026-10-14 实测订正：原先这条写的是 accent-color: var(--primary)，而 --primary
+     存的是不带 hsl() 的三元组（本文件 :31 的静态值，运行时 update-css-variables.ts 经
+     convertToHslCssVar 注入的同形），当颜色用非法 → 整条声明 IACVT。登录页实测
+     getComputedStyle(html).accentColor === 'auto'（阳性对照：同一元素赋
+     'hsl(212 100% 45%)' 得 rgb(0, 107, 230)、赋 '212 100% 45%' 复现 auto），
+     即原生 checkbox/radio/滑杆的强调色从未跟过品牌主色，一直退给系统主题色。 */
+  accent-color: var(--brand-primary);
   color-scheme: light;
 }
 

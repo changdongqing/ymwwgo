@@ -156,7 +156,7 @@ const formComponents = {
     left: 20%;
     width: 250px;
     height: 250px;
-    background: radial-gradient(circle, rgba(0, 107, 230, 0.08) 0%, transparent 70%);
+    background: radial-gradient(circle, color-mix(in srgb, var(--el-color-primary) 8%, transparent) 0%, transparent 70%);
     border-radius: 50%;
     filter: blur(60px);
   }
@@ -168,7 +168,7 @@ const formComponents = {
     right: 15%;
     width: 180px;
     height: 180px;
-    background: radial-gradient(circle, rgba(0, 107, 230, 0.06) 0%, transparent 70%);
+    background: radial-gradient(circle, color-mix(in srgb, var(--el-color-primary) 6%, transparent) 0%, transparent 70%);
     border-radius: 50%;
     filter: blur(50px);
   }
@@ -188,13 +188,13 @@ const formComponents = {
     .slogan-icon {
       width: 360px;
       height: 360px;
-      filter: drop-shadow(0 8px 32px rgba(0, 107, 230, 0.3));
+      filter: drop-shadow(0 8px 32px color-mix(in srgb, var(--el-color-primary) 30%, transparent));
 
       /* 外层不再整体浮动：vben 遗留的 5s 上下 20px 跳动与 SVG 内部
          24s~70s 慢速旋转体系不搭；生命感由 SVG 内光晕呼吸承担。 */
 
       html:not(.dark) & {
-        filter: drop-shadow(0 8px 32px rgba(0, 107, 230, 0.2));
+        filter: drop-shadow(0 8px 32px color-mix(in srgb, var(--el-color-primary) 20%, transparent));
       }
     }
   }
@@ -204,22 +204,22 @@ const formComponents = {
       font-size: 26px;
       font-weight: 700;
       letter-spacing: 0.5px;
-      color: #f8fafc;
+      color: var(--el-text-color-primary);
       margin: 0 0 14px 0;
-
-      html:not(.dark) & {
-        color: #1a1d28;
-      }
     }
 
+    // 两态都写死过灰阶（暗 #9ca3af / 浅 #6b7280），浅色那支实测 4.22 < 4.5。
+    // 暗色回到次要档（#8B949E，实测 5.90）；浅色这块面板的底是
+    // radial #E8F0FF→#F5F7FF，比 §2.2 验证次要档 #676E7C 的四处浅底都亮，
+    // 实测只有 4.48——所以浅色取常规档 #606266（实测 5.34），不动面板色相。
     .brand-desc {
       font-size: 15px;
       line-height: 1.6;
-      color: #9ca3af;
+      color: var(--el-text-color-secondary);
       margin: 0;
 
       html:not(.dark) & {
-        color: #6b7280;
+        color: var(--el-text-color-regular);
       }
     }
   }
@@ -262,12 +262,8 @@ const formComponents = {
 .form-title {
         font-size: 22px;
         font-weight: 600;
-        color: #e5eaf3;
+        color: var(--el-text-color-primary);
         margin: 0 0 8px 0;
-
-        html:not(.dark) & {
-          color: #1a1d28;
-        }
 
         .wave {
           display: inline-block;
@@ -276,14 +272,11 @@ const formComponents = {
         }
       }
 
+    // 次要档统一吃 token：原两态写死 #6b7a8d / #6b7280，暗色实测 4.05 < 4.5
     .form-subtitle {
       font-size: 13px;
-      color: #6b7a8d;
+      color: var(--el-text-color-secondary);
       margin: 0;
-
-      html:not(.dark) & {
-        color: #6b7280;
-      }
     }
   }
 
@@ -293,7 +286,7 @@ const formComponents = {
     border-radius: 24px;
     background-color: #111827;
     border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 12px 40px -8px rgba(0, 107, 230, 0.18);
+    box-shadow: 0 12px 40px -8px color-mix(in srgb, var(--el-color-primary) 18%, transparent);
 
     html:not(.dark) & {
       background-color: #ffffff;
@@ -301,37 +294,6 @@ const formComponents = {
     }
   }
 
-    .form-section-title {
-      font-size: 15px;
-      font-weight: 600;
-      color: #e5eaf3;
-      text-align: center;
-      margin: 24px 0 20px 0;
-
-      html:not(.dark) & {
-        color: #1a1d28;
-      }
-    }
-
-    .form-footer {
-      margin-top: 24px;
-      padding-top: 16px;
-      border-top: 1px solid rgba(0, 0, 0, 0.08);
-      text-align: center;
-
-      html:not(.dark) & {
-        border-top: 1px solid rgba(0, 0, 0, 0.08);
-      }
-
-      > .el-text {
-        display: block;
-        color: #6b7a8d;
-
-        html:not(.dark) & {
-          color: #6b7280;
-        }
-      }
-    }
   }
 }
 
@@ -397,18 +359,18 @@ const formComponents = {
     }
 
     &.is-focus {
-      border-color: #006be6 !important;
+      border-color: var(--el-color-primary) !important;
       box-shadow:
-        0 0 0 1px #006be6 inset,
-        0 0 12px rgba(0, 107, 230, 0.15) !important;
+        0 0 0 1px var(--el-color-primary) inset,
+        0 0 12px color-mix(in srgb, var(--el-color-primary) 15%, transparent) !important;
     }
 
     .el-input__inner {
-      color: #f8fafc !important;
+      color: var(--el-text-color-primary) !important;
       font-weight: 400;
 
       &::placeholder {
-        color: #9ca3af !important;
+        color: var(--el-text-color-placeholder) !important;
       }
     }
   }
@@ -416,19 +378,19 @@ const formComponents = {
   // 输入框前缀图标颜色
   :deep(.el-input__prefix) {
     .el-icon {
-      color: #9ca3af !important;
+      color: var(--el-text-color-placeholder) !important;
     }
   }
 
   // 输入框后缀图标颜色
   :deep(.el-input__suffix) {
     .el-icon {
-      color: #9ca3af !important;
+      color: var(--el-text-color-placeholder) !important;
     }
   }
 
   :deep(.el-checkbox__label) {
-    color: #f8fafc !important;
+    color: var(--el-text-color-primary) !important;
     font-weight: 400;
   }
 
@@ -438,15 +400,15 @@ const formComponents = {
   }
 
   :deep(.el-checkbox.is-checked .el-checkbox__inner) {
-    background-color: #006be6 !important;
-    border-color: #006be6 !important;
+    background-color: var(--el-color-primary) !important;
+    border-color: var(--el-color-primary) !important;
   }
 
   :deep(.el-link) {
     color: var(--el-color-primary-light-3) !important;
     font-weight: 500;
     text-decoration: underline;
-    text-decoration-color: rgba(0, 107, 230, 0.3);
+    text-decoration-color: color-mix(in srgb, var(--el-color-primary) 30%, transparent);
     text-underline-offset: 2px;
 
     &:hover {
@@ -477,7 +439,7 @@ html:not(.dark) {
         color: #1a1d28 !important;
 
         &::placeholder {
-          color: #a8abb2 !important;
+          color: var(--el-text-color-placeholder) !important;
         }
       }
     }
@@ -497,7 +459,7 @@ html:not(.dark) {
     }
 
     :deep(.el-checkbox__label) {
-      color: #6b7280 !important;
+      color: var(--el-text-color-regular) !important;
     }
 
     :deep(.el-checkbox__inner) {
@@ -519,13 +481,10 @@ html:not(.dark) {
   right: 0;
   text-align: center;
 
+  // 版权属 §2.2 点名的次要文字：原写 #5a6a80 / #9ca3af，实测暗 3.22、浅 2.54，两态都不达标
   :deep(.el-text) {
-    color: #5a6a80;
+    color: var(--el-text-color-secondary);
     font-weight: 300;
-
-    html:not(.dark) & {
-      color: #9ca3af;
-    }
   }
 }
 </style>

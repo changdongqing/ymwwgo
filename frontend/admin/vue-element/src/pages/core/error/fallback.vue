@@ -213,6 +213,10 @@ function refresh() {
   width: 100%;
   height: 100%;
 
+  // 整页底色取页面画布档（§2.2/§2.3）。改前 html/body/#app/本容器一路
+  // rgba(0,0,0,0)，暗色下的底色由 color-scheme 的浏览器默认画布决定，不归设计语言管
+  background: var(--el-bg-color-page);
+
   // 主色柔光晕：垫在插画后方，暗色下更明显
   &::before {
     content: "";

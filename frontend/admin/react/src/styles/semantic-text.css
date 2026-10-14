@@ -29,6 +29,20 @@
   /* 实底语义色上的前景 = §2.1 的暗色 L0：白字在 #FF3860 上只有 3.51:1，暗墨有 5.46:1 */
   --gowind-solid-ink: #0b0f19;
 
+  /* 「主文字」档（§2.1 表「文字-主」#1F2937 / §2.3 暗色「文字」主 #F8FAFC）。
+     react 端此前没有可直接填的主档——antd 的 colorText 只在组件 token 里，
+     非组件样式表（如 UserLayout 的品牌标题）只能各写各的色，实测同一登录页
+     浅/暗两态分别写成了 #1F1F1F（不是本档）与纯白 #FFF（§2.3 明确弃用纯白）。 */
+  --gowind-text-primary: #1f2937;
+
+  /* 「常规文字」档（§2.2 表「文字-常规」#374151 / §2.3 暗色「表单标签」#DCE3ED）。
+     为什么要单独留一档：次要档 #676E7C 是按**白底系容器**校准的（白 5.12 /
+     #F5F5F5 4.70 / #F0F2F5 4.57），坐到有彩度的面板上就掉下来——
+     认证页左侧品牌面板渐变最暗一档 #D5E0ED 实测只有 3.83（2026-10-14，
+     canvas 逐像素仲裁后算得，同底常规档 7.71）。vue-element 端登录页同处
+     也是这么处理的（.brand-desc 浅态走 --el-text-color-regular）。 */
+  --gowind-text-regular: #374151;
+
   /* 「次要文字」档（§2.2，与 react tokens 的 SECONDARY_TEXT_* 同值）：
      antd 默认 colorTextDescription 浅色 rgba(0,0,0,.45) 实测 3.35:1。
      Descriptions 的标签列不吃全局 token（实测 7 处未跟着变），只能在这里补。 */
@@ -49,6 +63,8 @@ html[data-theme='dark'] {
   --gowind-danger-text: color-mix(in srgb, var(--app-color-destructive) 90%, #ffffff);
 
   --gowind-secondary-text: #8b949e;
+  --gowind-text-primary: #f8fafc;
+  --gowind-text-regular: #dce3ed;
 
   /* 暗色侧数字保持亮色：#22d3ee 在 L1 上 9.82:1 */
   --metric-cyan: #22d3ee;

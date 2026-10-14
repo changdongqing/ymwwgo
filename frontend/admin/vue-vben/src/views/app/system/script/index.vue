@@ -268,7 +268,7 @@ async function handleTestRun() {
       </template>
       <template #hookPoint="{ row }">
         <a-tag v-if="row.hookPoint" color="geekblue">{{ row.hookPoint }}</a-tag>
-        <span v-else class="text-neutral-400">{{ $t('page.script.unmounted') }}</span>
+        <span v-else class="text-muted-foreground">{{ $t('page.script.unmounted') }}</span>
       </template>
       <template #isEnabled="{ row }">
         <a-switch
@@ -314,7 +314,7 @@ async function handleTestRun() {
         </a-descriptions-item>
       </a-descriptions>
 
-      <div class="mb-2 text-sm text-neutral-500">
+      <div class="mb-2 text-sm text-muted-foreground">
         {{ $t('page.script.testRunInput') }}
       </div>
       <div

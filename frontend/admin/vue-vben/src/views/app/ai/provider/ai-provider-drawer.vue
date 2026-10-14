@@ -180,7 +180,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
 
 <template>
   <Drawer class="w-[560px]" :title="getTitle">
-    <div v-if="!data.create && currentHint" class="mb-2 text-xs text-gray-400">
+    <div v-if="!data.create && currentHint" class="mb-2 text-xs text-muted-foreground">
       {{ $t('page.aiProvider.apiKeyHintLabel') }}: {{ currentHint }}
     </div>
     <BaseForm />

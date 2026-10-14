@@ -307,6 +307,12 @@ function checkCapsLock(event: KeyboardEvent) {
   &__placeholder {
     color: var(--el-text-color-placeholder);
     font-size: 12px;
+
+    // §2.2 点名的浅底盒子：浅色盒子是 --el-fill-color-light #F5F7FA，占位档 #9CA3AF
+    // 实测只有 2.37:1，取 §2.1 实底暗墨（暗色盒子仍是深底，保持占位档 6.15:1）。
+    html:not(.dark) & {
+      color: var(--gowind-solid-ink);
+    }
   }
 }
 </style>

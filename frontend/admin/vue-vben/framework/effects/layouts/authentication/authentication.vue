@@ -74,9 +74,9 @@ const { authPanelCenter, authPanelLeft, authPanelRight, isDark } =
 
     <!-- 系统介绍 -->
     <div v-if="!authPanelCenter" class="relative hidden w-0 flex-1 lg:block">
-      <div
-        class="bg-background-deep absolute inset-0 h-full w-full dark:bg-[#070709]"
-      >
+      <!-- --background-deep 已随主题切换（亮 §2.2 画布 / 暗 §2.3 L0），再补一条暗色硬编码
+           会把大底从色板拉走 -->
+      <div class="bg-background-deep absolute inset-0 h-full w-full">
         <div class="login-background absolute left-0 top-0 size-full"></div>
         <div class="flex-col-center -enter-x mr-20 h-full">
           <template v-if="sloganImage">
@@ -134,12 +134,14 @@ const { authPanelCenter, authPanelLeft, authPanelRight, isDark } =
 </template>
 
 <style scoped>
+/* #07070915 = 大底色 + 8.2% 不透明度（0x15/255）。改取 --background-deep 的等价
+   透明度写法，色值仍来自色板；两态只差中心 primary 的浓度。 */
 .login-background {
   background: linear-gradient(
     154deg,
-    #07070915 30%,
+    hsl(var(--background-deep) / 8.2%) 30%,
     hsl(var(--primary) / 30%) 48%,
-    #07070915 64%
+    hsl(var(--background-deep) / 8.2%) 64%
   );
   filter: blur(100px);
 }
@@ -148,9 +150,9 @@ const { authPanelCenter, authPanelLeft, authPanelRight, isDark } =
   .login-background {
     background: linear-gradient(
       154deg,
-      #07070915 30%,
+      hsl(var(--background-deep) / 8.2%) 30%,
       hsl(var(--primary) / 20%) 48%,
-      #07070915 64%
+      hsl(var(--background-deep) / 8.2%) 64%
     );
     filter: blur(100px);
   }

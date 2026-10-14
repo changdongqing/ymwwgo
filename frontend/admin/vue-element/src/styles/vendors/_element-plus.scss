@@ -510,6 +510,12 @@ body,
   --gowind-warning-text: color-mix(in srgb, var(--el-color-warning) 50%, #0b0f19);
   --gowind-danger-text: color-mix(in srgb, var(--el-color-danger) 70%, #0b0f19);
 
+  /* 文字-主 / 文字-常规（§2.2 定稿 #1F2937 / #374151）。EP 出厂值是 zinc 中性系
+   * （#303133 / #606266），对比度本身达标（白 13.02 / 7.03，2026-10-14 登录页实测），
+   * 但三端文字层次统一走 gray 冷调——暗色侧 _dark-mode.scss:21-24 已按 §2.3 覆盖，
+   * 浅色侧一直漏这两档。必须带 !important，理由见本文件头注释（注入顺序）。 */
+  --el-text-color-primary: #1f2937 !important;
+  --el-text-color-regular: #374151 !important;
   /* 次要文字档（§2.2 定稿 #676E7C）：EP 默认 #909399 对白底只有 3.08:1，
    * 而上一版取 gray-500 #6B7280 是**按白底**量的——离开白底就掉下来：
    * 白 4.83 / 页面大底 #F5F5F5 4.43 / 卡片灰 #F0F2F5 4.31 / 面板头 #F0F2F5 实测 4.31（2026-09-28 扫测）。
@@ -521,6 +527,15 @@ body,
 
   /* 实底语义色上的前景 = §2.1 规定的暗色 L0（白字在 #FF3860 上只有 3.51:1） */
   --gowind-solid-ink: #0b0f19;
+}
+
+/* 页面画布（§2.2 定稿 #F1F3F6）：本文件 :34 的 Sass map `$bg-color: ("page": #F1F3F6)`
+ * 到不了运行时——base.css 的 :root 把 --el-bg-color-page 写成出厂值 #F2F3F5 并胜出
+ * （2026-10-14 实测读回 #f2f3f5）。必须限定 html:not(.dark)：_dark-mode.scss:71 的暗色档
+ * 不带 !important，若把这条写进上面的 :root，!important 会压过暗色块、把
+ * LayoutMain（:132 用 var(--el-bg-color-page)）整片刷成浅色——实测踩过。 */
+html:not(.dark) {
+  --el-bg-color-page: #f1f3f6 !important;
 }
 
 html.dark {
