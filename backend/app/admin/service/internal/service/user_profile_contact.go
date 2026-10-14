@@ -14,7 +14,7 @@ import (
 	"go-wind-admin/pkg/mailtext"
 	"go-wind-admin/pkg/middleware/auth"
 
-	"go-wind-admin/app/admin/service/internal/data/channel"
+	"github.com/tx7do/go-utils/notify/sms"
 )
 
 // 联系方式种类：绑定验证码按它分渠道（邮箱走 SMTP，手机号走 SMS）。
@@ -85,7 +85,7 @@ func (s *UserProfileService) BindContact(ctx context.Context, req *identityV1.Bi
 		}
 		// 服务入口先做一次与投递侧同判据的格式校验：错误在第一步就回给用户，
 		// 而不是等 SendDirect 把它记成一条 SKIPPED 台账。
-		if _, _, err := channel.NormalizePhoneNumber(contact); err != nil {
+		if _, _, err := sms.NormalizePhoneNumber(contact); err != nil {
 			return nil, authenticationV1.ErrorBadRequest("invalid phone number")
 		}
 		if err := s.sendContactVCode(ctx, contactKindPhone, contact); err != nil {

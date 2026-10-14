@@ -45,6 +45,7 @@ require (
 	github.com/tx7do/go-utils/mailer v0.1.0
 	github.com/tx7do/go-utils/mapper v0.0.3
 	github.com/tx7do/go-utils/netutil v0.1.0
+	github.com/tx7do/go-utils/notify v0.0.1
 	github.com/tx7do/go-utils/password v0.1.0
 	github.com/tx7do/go-utils/sqlutil v0.1.0
 	github.com/tx7do/go-wind v0.0.2

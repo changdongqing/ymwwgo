@@ -7,6 +7,9 @@ package channel
 import (
 	"context"
 	"fmt"
+	"strings"
+
+	"github.com/tx7do/go-utils/notify"
 
 	notificationV1 "go-wind-admin/api/gen/go/notification/service/v1"
 )
@@ -71,6 +74,13 @@ type Sender interface {
 // ErrChannelNotConfigured 没有可用的渠道配置（区别于"渠道报错"）。
 // 服务层据此把台账记为 SKIPPED 而非 FAILED：管理员配错与压根没配是两件事。
 var ErrChannelNotConfigured = fmt.Errorf("no enabled notification channel configured")
+
+// stripNotifySentinel 剥掉库层 ErrNotConfigured 的哨兵文本。
+// 它与本包 ErrChannelNotConfigured 同义（都指"一次都没联系对端"），
+// 转译时保留本包一层就够——两层都念出来，台账 last_error 会结巴。
+func stripNotifySentinel(err error) string {
+	return strings.TrimPrefix(err.Error(), notify.ErrNotConfigured.Error()+": ")
+}
 
 // Prechecker 渠道的"配置可用性"自检，由异步派发在入队之前调用。
 //

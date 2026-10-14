@@ -22,15 +22,16 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
-	"net"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
+	"strings"
 	"sync/atomic"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/require"
+	"github.com/tx7do/go-utils/notify/webhook"
 	"github.com/tx7do/go-utils/trans"
 
 	"go-wind-admin/app/admin/service/internal/data"
@@ -151,13 +152,13 @@ func TestWebhookSenderSqlite_DeliversSignedJson(t *testing.T) {
 	_, parseErr := time.Parse(time.RFC3339, got.DeliveredAt)
 	require.NoError(t, parseErr, "delivered_at 必须是 RFC3339，对端据此判重放")
 
-	ts := rec.Header.Get(headerTimestamp)
+	ts := rec.Header.Get(webhook.HeaderTimestamp)
 	require.NotEmpty(t, ts)
 	mac := hmac.New(sha256.New, []byte(secret))
 	mac.Write([]byte(ts))
 	mac.Write([]byte("."))
 	mac.Write([]byte(e.bodies[0]))
-	require.Equal(t, "sha256="+hex.EncodeToString(mac.Sum(nil)), rec.Header.Get(headerSignature),
+	require.Equal(t, "sha256="+hex.EncodeToString(mac.Sum(nil)), rec.Header.Get(webhook.HeaderSignature),
 		"签名必须覆盖时间戳：只签 body 的话重放是逐字节免费的")
 }
 
@@ -170,8 +171,8 @@ func TestWebhookSenderSqlite_NoSecretHeaderWhenUnconfigured(t *testing.T) {
 
 	_, err := e.sender.Send(e.ctx, webhookReq(srv.URL, id))
 	require.NoError(t, err)
-	require.Empty(t, e.records[0].Header.Get(headerSignature))
-	require.Empty(t, e.records[0].Header.Get(headerTimestamp))
+	require.Empty(t, e.records[0].Header.Get(webhook.HeaderSignature))
+	require.Empty(t, e.records[0].Header.Get(webhook.HeaderTimestamp))
 }
 
 // TestWebhookSenderSqlite_PrivateTargetIsBlockedBeforeDial SSRF 防线：生产默认（不开环境变量）
@@ -190,40 +191,6 @@ func TestWebhookSenderSqlite_PrivateTargetIsBlockedBeforeDial(t *testing.T) {
 		"拨号前就拒绝 = 一次都没联系对端，台账该记 SKIPPED 而不是 FAILED")
 	require.Contains(t, err.Error(), "127.0.0.1")
 	require.Contains(t, err.Error(), EnvAllowPrivateWebhook, "报错要说出放行开关，否则本机联调无从下手")
-}
-
-// TestIsBlockedWebhookTarget 拦网表逐点验证。
-//
-// 172.15 与 100.63 是刻意放的"紧邻边界外"取值：/12 与 /10 写错一位就会把它们一起拦掉，
-// 而漏拦的代价（打内网）与误拦的代价（公网回调发不出去）都只能靠断言发现。
-func TestIsBlockedWebhookTarget(t *testing.T) {
-	cases := []struct {
-		ip         string
-		wantReject bool
-	}{
-		{"127.0.0.1", true},
-		{"10.0.0.5", true},
-		{"172.16.0.1", true},
-		{"192.168.1.1", true},
-		{"100.64.0.1", true},      // CGNAT：Go 的 IsPrivate 认不出来
-		{"169.254.169.254", true}, // 云厂商元数据端点
-		{"0.0.0.0", true},
-		{"::1", true},
-		{"fd00::1", true}, // fc00::/7 下半段
-		{"fe80::1", true},
-		{"8.8.8.8", false},
-		{"172.15.255.255", false},
-		{"100.63.255.255", false},
-		{"169.253.0.1", false},
-	}
-
-	for _, c := range cases {
-		blocked, reason := isBlockedWebhookTarget(net.ParseIP(c.ip))
-		require.Equal(t, c.wantReject, blocked, "%s", c.ip)
-		if blocked {
-			require.NotEmpty(t, reason, "拦下的必须给出原因，它要进台账 last_error")
-		}
-	}
 }
 
 // TestWebhookSenderSqlite_PeerErrorIsFailed 对端 5xx：拨过号了 → FAILED，且带响应片段。
@@ -296,18 +263,47 @@ func TestWebhookSenderSqlite_ConfigIssuesAreSkipped(t *testing.T) {
 	require.Empty(t, e.records, "三条都不该真的发出去")
 }
 
-// TestNormalizeWebhookUrl 只有绝对 http(s) 地址放行。
-func TestNormalizeWebhookUrl(t *testing.T) {
-	for _, bad := range []string{"", "/hooks/1", "//127.0.0.1/x", "ftp://example.com/x", "not a url"} {
-		_, err := normalizeWebhookURL(bad)
-		require.Error(t, err, "%q 不该放行", bad)
-	}
+// TestWebhookSenderSqlite_LegacyDefaultBodyBytes CUSTOM/NONE 且未配模板时的默认出站体：
+// 字段名、顺序与类型都是存量对端已在验的东西——这一条锁的是"加列/抽库不该把它换成
+// 字段等价但不同形的 JSON"（模板渲染的值全是字符串，钉不住类型；这份默认体走的是
+// DefaultPayload 钩子的结构体序列化，recipient_user_id/related_id 必须保持数字）。
+func TestWebhookSenderSqlite_LegacyDefaultBodyBytes(t *testing.T) {
+	// CUSTOM：钉前缀字节序 + 签名覆盖"时间戳.正文"。
+	e := newWebhookSenderEnv(t, true)
+	srv := e.receiver(t, http.StatusOK, "")
+	id := e.createWebhookStyle(t, srv.URL, "s3cr3t-key", "CUSTOM", "", true)
 
-	for _, ok := range []string{"https://example.com/hook", "http://example.com:8080/h?a=1"} {
-		got, err := normalizeWebhookURL(ok)
-		require.NoError(t, err, "%q 应放行", ok)
-		require.Equal(t, ok, got)
-	}
+	_, err := e.sender.Send(e.ctx, webhookReq(srv.URL, id))
+	require.NoError(t, err)
+
+	body := e.bodies[0]
+	require.True(t, strings.HasPrefix(body,
+		`{"event_type":"PASSWORD_RESET_CODE","title":"重置验证码","content":"您的验证码是 123456","recipient_user_id":1024,"related_id":7,"delivered_at":"`),
+		"字段名与顺序都是存量对端已在验的东西：\n%s", body)
+	require.True(t, strings.HasSuffix(body, `"}`))
+	require.NotContains(t, body, "\n")
+
+	mac := hmac.New(sha256.New, []byte("s3cr3t-key"))
+	mac.Write([]byte(e.records[0].Header.Get(webhook.HeaderTimestamp)))
+	mac.Write([]byte("."))
+	mac.Write([]byte(body))
+	require.Equal(t, "sha256="+hex.EncodeToString(mac.Sum(nil)), e.records[0].Header.Get(webhook.HeaderSignature),
+		"签名必须在正文定型之后算：先签再渲染会让对端复算永远对不上")
+
+	// NONE：不签名，但业务字段仍是类型化 JSON（数字就是数字），不签名头。
+	e2 := newWebhookSenderEnv(t, true)
+	srv2 := e2.receiver(t, http.StatusOK, "")
+	id2 := e2.createWebhookStyle(t, srv2.URL, "", "NONE", "", true)
+
+	_, err = e2.sender.Send(e2.ctx, webhookReq(srv2.URL, id2))
+	require.NoError(t, err)
+
+	var parsed map[string]any
+	require.NoError(t, json.Unmarshal([]byte(e2.bodies[0]), &parsed))
+	require.Equal(t, "PASSWORD_RESET_CODE", parsed["event_type"])
+	require.Equal(t, "重置验证码", parsed["title"])
+	require.Equal(t, float64(1024), parsed["recipient_user_id"], "ID 类字段必须是数字：模板渲染会把它变成字符串")
+	require.Empty(t, e2.records[0].Header.Get(webhook.HeaderSignature), "NONE 配了密钥也不签")
 }
 
 // TestWebhookSenderSqlite_AutoPickSkipsDisabled 自选分支取的是"第一个启用的" WEBHOOK 行：
@@ -381,8 +377,8 @@ func TestWebhookSenderSqlite_DingtalkSignsUrlQuery(t *testing.T) {
 	mac.Write([]byte(ts + "\n" + secret))
 	require.Equal(t, base64.StdEncoding.EncodeToString(mac.Sum(nil)), q.Get("sign"))
 
-	require.Empty(t, e.records[0].Header.Get(headerSignature))
-	require.Empty(t, e.records[0].Header.Get(headerTimestamp))
+	require.Empty(t, e.records[0].Header.Get(webhook.HeaderSignature))
+	require.Empty(t, e.records[0].Header.Get(webhook.HeaderTimestamp))
 
 	require.Contains(t, e.bodies[0], `"msgtype":"text"`)
 	require.Contains(t, e.bodies[0], `重置验证码\n您的验证码是 123456`, "标题与正文之间是 JSON 转义后的 \\n")
@@ -418,7 +414,7 @@ func TestWebhookSenderSqlite_FeishuEnvelopeOnTheWire(t *testing.T) {
 	mac := hmac.New(sha256.New, []byte(envelope.Timestamp+"\n"+secret))
 	require.Equal(t, base64.StdEncoding.EncodeToString(mac.Sum(nil)), envelope.Sign)
 
-	require.Empty(t, e.records[0].Header.Get(headerSignature), "飞书不读自定义头")
+	require.Empty(t, e.records[0].Header.Get(webhook.HeaderSignature), "飞书不读自定义头")
 }
 
 // TestWebhookSenderSqlite_PeerRejectsWithin200IsFailed 三家都会在 HTTP 200 里报失败

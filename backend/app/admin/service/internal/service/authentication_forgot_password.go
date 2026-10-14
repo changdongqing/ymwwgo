@@ -16,7 +16,7 @@ import (
 
 	"go-wind-admin/pkg/mailtext"
 
-	"go-wind-admin/app/admin/service/internal/data/channel"
+	"github.com/tx7do/go-utils/notify/sms"
 )
 
 // generateVCode 生成 6 位数字验证码。
@@ -30,7 +30,7 @@ func generateVCode() string {
 // 其余（邮箱/账号名）→ EMAIL 维持既有行为。防枚举口径两边一致：查无此人一律静默 200。
 func resetIdentityTypeOf(identifier string) authenticationV1.UserCredential_IdentityType {
 	if !strings.Contains(identifier, "@") {
-		if _, _, err := channel.NormalizePhoneNumber(identifier); err == nil {
+		if _, _, err := sms.NormalizePhoneNumber(identifier); err == nil {
 			return authenticationV1.UserCredential_PHONE
 		}
 	}

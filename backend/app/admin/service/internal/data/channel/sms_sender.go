@@ -4,31 +4,21 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"net/http"
-	"strings"
-	"time"
 
 	notificationV1 "go-wind-admin/api/gen/go/notification/service/v1"
 	notificationChannelV1 "go-wind-admin/api/gen/go/notification_channel/service/v1"
 
+	"github.com/tx7do/go-utils/notify"
+	"github.com/tx7do/go-utils/notify/sms"
+
 	"go-wind-admin/app/admin/service/internal/data"
-)
-
-// smsTimeout 单次出站请求的总超时（拨号 + 写请求 + 读响应）。
-// 与 webhookTimeout 同形：出站这件事不需要每个渠道各定一个数。
-const smsTimeout = 10 * time.Second
-
-// 短信服务商标识。与 sys_notification_channels.sms_provider 列、proto 的 SmsProvider
-// 成员名逐字相同（repo 的 EnumTypeConverter 按名字字符串配对），这里只做 sender 内部分派。
-const (
-	smsProviderAliyun  = "ALIYUN"
-	smsProviderTencent = "TENCENT"
 )
 
 // SmsSender 短信渠道（阿里云 / 腾讯云）。
 //
-// 与 EmailSender/WebhookSender 共用同一套渠道选择策略（显式 channel_id 优先，
-// 否则取第一个启用的 SMS 行），因此"配了两条短信渠道会走哪条"只有一个答案。
+// 库层负责"怎么发"（服务商协议/签名/答案判读/手机号归一），这里只做两件事——
+// 从 sys_notification_channels 解析出用哪条账号配置，以及守住本平台的业务策略：
+// 只发验证码事件（params["code"]），正文一律出自服务商侧审核过的模板。
 //
 // 短信与邮件/webhook 的本质差异：**系统侧没有自由文本通道**。三家服务商都要求
 // 正文出自审核通过的模板，验证码作为模板占位值传入——所以 Send 只接受 params["code"]，
@@ -36,16 +26,12 @@ const (
 // 出站地址是服务商的固定域名（不是渠道行里配的 URL），SSRF 拦网在这里没有对象。
 type SmsSender struct {
 	channel *data.NotificationChannelRepo
-	client  *http.Client
 }
 
 var _ Prechecker = (*SmsSender)(nil)
 
 func NewSmsSender(channelRepo *data.NotificationChannelRepo) *SmsSender {
-	return &SmsSender{
-		channel: channelRepo,
-		client:  &http.Client{Timeout: smsTimeout},
-	}
+	return &SmsSender{channel: channelRepo}
 }
 
 // Channel 渠道标识。
@@ -62,14 +48,19 @@ func (s *SmsSender) Precheck(ctx context.Context, channelID uint32) error {
 	if err != nil {
 		return err
 	}
-	if err = validateSmsAccount(account); err != nil {
+
+	svc, err := sms.New(nil, smsConfigOf(account))
+	if err != nil {
 		return fmt.Errorf("%w: channel [%d] %v", ErrChannelNotConfigured, account.ID, err)
+	}
+	if err = svc.Precheck(); err != nil {
+		return fmt.Errorf("%w: channel [%d] %v", ErrChannelNotConfigured, account.ID, stripNotifySentinel(err))
 	}
 	return nil
 }
 
 // Send 投递一条验证码短信。返回 error 一律是"投递失败"（含渠道不可用），
-// 由服务层用 ErrChannelNotConfigured 判别 SKIPPED / FAILED。
+// 由服务层用 ErrChannelNotConfigured 判 SKIPPED / FAILED。
 func (s *SmsSender) Send(ctx context.Context, req *SendRequest) (*SendReceipt, error) {
 	if req == nil || req.Target == "" {
 		return nil, errors.New("sms target is empty")
@@ -87,17 +78,43 @@ func (s *SmsSender) Send(ctx context.Context, req *SendRequest) (*SendReceipt, e
 		return nil, err
 	}
 
-	national, e164, err := NormalizePhoneNumber(req.Target)
+	svc, err := sms.New(nil, smsConfigOf(account))
 	if err != nil {
-		return &SendReceipt{ChannelID: account.ID}, fmt.Errorf("%w: %v", ErrChannelNotConfigured, err)
-	}
-
-	if err = sendSmsCode(ctx, s.client, account, national, e164, code); err != nil {
-		// 账号已选出：失败也必须把"是哪条渠道没发出去"带回给台账（见 Sender 的契约）。
 		return &SendReceipt{ChannelID: account.ID}, fmt.Errorf("send sms via channel [%d] failed: %w", account.ID, err)
 	}
 
+	_, sendErr := svc.Send(ctx, &notify.Message{
+		Target: req.Target,
+		Params: map[string]string{"code": code},
+	})
+	if sendErr != nil {
+		// 账号已选出：失败也必须把"是哪条渠道没发出去"带回给台账（见 Sender 的契约）。
+		return &SendReceipt{ChannelID: account.ID}, s.wrapSendFailure(account.ID, sendErr)
+	}
+
 	return &SendReceipt{ChannelID: account.ID}, nil
+}
+
+// wrapSendFailure 库错误 → 台账文案：目标不合法（手机号归一失败）等库层配置类错误
+// 转译成本包哨兵（SKIPPED：一次都没碰对端）；其余按"拨过号被拒"（FAILED）带出渠道 ID。
+func (s *SmsSender) wrapSendFailure(accountID uint32, err error) error {
+	if errors.Is(err, notify.ErrNotConfigured) {
+		return fmt.Errorf("%w: channel [%d] %v", ErrChannelNotConfigured, accountID, stripNotifySentinel(err))
+	}
+	return fmt.Errorf("send sms via channel [%d] failed: %w", accountID, err)
+}
+
+// smsConfigOf 账号行 → 库层配置。字段一一对应：repo 的 SmsAccount 本来就是库层 Config 的镜像。
+func smsConfigOf(account *data.SmsAccount) sms.Config {
+	return sms.Config{
+		Provider:     account.Provider,
+		AccessKeyID:  account.AccessKeyID,
+		AccessSecret: account.AccessSecret,
+		SignName:     account.SignName,
+		TemplateCode: account.TemplateCode,
+		AppID:        account.AppID,
+		Region:       account.Region,
+	}
 }
 
 // pickAccount 解析实际使用的短信账号：显式 ID 优先，并校验类型与启用状态。
@@ -131,94 +148,4 @@ func (s *SmsSender) pickAccount(ctx context.Context, channelID uint32) (*data.Sm
 	}
 
 	return account, nil
-}
-
-// validateSmsAccount 按服务商核对必填配置：两家差在腾讯云多要 app id 与地域。
-// 在 Precheck 拦住缺项，错误文案直接点名缺哪个字段；用切片保序，缺多项时报第一个。
-func validateSmsAccount(account *data.SmsAccount) error {
-	var required []struct{ name, value string }
-	switch account.Provider {
-	case smsProviderAliyun:
-		required = []struct{ name, value string }{
-			{"sms_access_key_id", account.AccessKeyID},
-			{"sms_access_secret", account.AccessSecret},
-			{"sms_sign_name", account.SignName},
-			{"sms_template_code", account.TemplateCode},
-		}
-	case smsProviderTencent:
-		required = []struct{ name, value string }{
-			{"sms_access_key_id", account.AccessKeyID},
-			{"sms_access_secret", account.AccessSecret},
-			{"sms_sign_name", account.SignName},
-			{"sms_template_code", account.TemplateCode},
-			{"sms_app_id", account.AppID},
-			{"sms_region", account.Region},
-		}
-	default:
-		return fmt.Errorf("unknown sms provider %q (expected ALIYUN / TENCENT)", account.Provider)
-	}
-	for _, item := range required {
-		if item.value == "" {
-			return fmt.Errorf("%s is required for provider %s", item.name, account.Provider)
-		}
-	}
-	return nil
-}
-
-// sendSmsCode 按服务商分派一次验证码下发。
-// national（无 +86 前缀）与 e164（带 +）两形都给：阿里云国内短信收裸号，
-// 腾讯云PhoneNumberSet只认 E.164。
-func sendSmsCode(ctx context.Context, client *http.Client, account *data.SmsAccount, national, e164, code string) error {
-	switch account.Provider {
-	case smsProviderAliyun:
-		return sendAliyunSms(ctx, client, account, national, code)
-	case smsProviderTencent:
-		return sendTencentSms(ctx, client, account, e164, code)
-	default:
-		return fmt.Errorf("unknown sms provider %q (expected ALIYUN / TENCENT)", account.Provider)
-	}
-}
-
-// NormalizePhoneNumber 归一手机号为国内裸号与 E.164 两形，供绑定入口与 sender 共用
-// 同一套判据（服务层用它做快反馈，sender 在投递前再跑一遍作最终裁决）。
-//
-// 接受两类输入：E.164（可带 +86）与中国大陆 11 位裸号（1 开头，自动补 +86）。
-// 其他形态一律拒绝——短信目标错了没有"发到别家去"的软失败，宁可让这一次投递
-// 失败在台账里说清楚。分隔符（空格/横线/括号）先剥掉，用户从通讯录粘出来的号常带。
-func NormalizePhoneNumber(raw string) (national, e164 string, err error) {
-	cleaned := make([]byte, 0, len(raw))
-	for i := 0; i < len(raw); i++ {
-		c := raw[i]
-		if c == ' ' || c == '-' || c == '(' || c == ')' {
-			continue
-		}
-		cleaned = append(cleaned, c)
-	}
-	s := string(cleaned)
-	if s == "" {
-		return "", "", fmt.Errorf("phone number %q is empty", raw)
-	}
-
-	// 位数校验对去掉前导 + 的主体做：+ 是格式记号，不是数字。
-	body := strings.TrimPrefix(s, "+")
-	digitCount := 0
-	for i := 0; i < len(body); i++ {
-		if body[i] >= '0' && body[i] <= '9' {
-			digitCount++
-		}
-	}
-	if digitCount != len(body) || digitCount < 5 || digitCount > 20 {
-		return "", "", fmt.Errorf("phone number %q is not a valid MSISDN (5-20 digits, optional +86 prefix)", raw)
-	}
-
-	switch {
-	case strings.HasPrefix(s, "+86"):
-		return s[3:], s, nil
-	case s[0] == '+':
-		return s[1:], s, nil
-	case digitCount == 11 && s[0] == '1':
-		return s, "+86" + s, nil
-	default:
-		return "", "", fmt.Errorf("phone number %q must be E.164 (with country code) or a CN mobile number", raw)
-	}
 }
