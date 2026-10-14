@@ -117,6 +117,34 @@ func (m *NotificationChannel) validate(all bool) error {
 		// no validation rules for Remark
 	}
 
+	if m.SmsProvider != nil {
+		// no validation rules for SmsProvider
+	}
+
+	if m.SmsAccessKeyId != nil {
+		// no validation rules for SmsAccessKeyId
+	}
+
+	if m.HasSmsAccessSecret != nil {
+		// no validation rules for HasSmsAccessSecret
+	}
+
+	if m.SmsSignName != nil {
+		// no validation rules for SmsSignName
+	}
+
+	if m.SmsTemplateCode != nil {
+		// no validation rules for SmsTemplateCode
+	}
+
+	if m.SmsAppId != nil {
+		// no validation rules for SmsAppId
+	}
+
+	if m.SmsRegion != nil {
+		// no validation rules for SmsRegion
+	}
+
 	if m.CreatedBy != nil {
 		// no validation rules for CreatedBy
 	}
@@ -575,6 +603,10 @@ func (m *CreateNotificationChannelRequest) validate(all bool) error {
 		// no validation rules for WebhookSecret
 	}
 
+	if m.SmsAccessSecret != nil {
+		// no validation rules for SmsAccessSecret
+	}
+
 	if len(errors) > 0 {
 		return CreateNotificationChannelRequestMultiError(errors)
 	}
@@ -746,6 +778,10 @@ func (m *UpdateNotificationChannelRequest) validate(all bool) error {
 
 	if m.WebhookSecret != nil {
 		// no validation rules for WebhookSecret
+	}
+
+	if m.SmsAccessSecret != nil {
+		// no validation rules for SmsAccessSecret
 	}
 
 	if len(errors) > 0 {
@@ -1042,3 +1078,107 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = SendTestEmailRequestValidationError{}
+
+// Validate checks the field values on SendTestRequest with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// first error encountered is returned, or nil if there are no violations.
+func (m *SendTestRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on SendTestRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// SendTestRequestMultiError, or nil if none found.
+func (m *SendTestRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *SendTestRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Id
+
+	// no validation rules for Recipient
+
+	if len(errors) > 0 {
+		return SendTestRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// SendTestRequestMultiError is an error wrapping multiple validation errors
+// returned by SendTestRequest.ValidateAll() if the designated constraints
+// aren't met.
+type SendTestRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m SendTestRequestMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m SendTestRequestMultiError) AllErrors() []error { return m }
+
+// SendTestRequestValidationError is the validation error returned by
+// SendTestRequest.Validate if the designated constraints aren't met.
+type SendTestRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e SendTestRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e SendTestRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e SendTestRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e SendTestRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e SendTestRequestValidationError) ErrorName() string { return "SendTestRequestValidationError" }
+
+// Error satisfies the builtin error interface
+func (e SendTestRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sSendTestRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = SendTestRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = SendTestRequestValidationError{}

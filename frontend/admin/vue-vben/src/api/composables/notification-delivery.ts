@@ -101,15 +101,10 @@ export const notificationDeliveryChannelList = computed(() => [
  * 播一次空表，之后在「通知路由规则」页（views/app/notification/rule）维护，改完立刻生效。
  * 所以默认规则里没指向 WEBHOOK 不代表筛不到 WEBHOOK 行：管理员建一行规则它就来了。
  *
- * SMS 至今没有 Sender 实现，任何事件都路由不过去，永远不会有台账行，故不进下拉。
+ * SMS 自 2026-10-15 起有 Sender 实现（渠道页配好短信账号后即可写出台账行），进下拉。
  */
 export const notificationDeliveryChannelFilterList = computed(() =>
-  notificationDeliveryChannelList.value.filter(
-    (item) =>
-      item.value === 'EMAIL' ||
-      item.value === 'INTERNAL' ||
-      item.value === 'WEBHOOK',
-  ),
+  notificationDeliveryChannelList.value,
 );
 
 export const notificationDeliveryStatusList = computed(() => [

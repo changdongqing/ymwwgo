@@ -13,7 +13,7 @@ import {
   fetchListNotificationChannels,
   useCreateNotificationChannel,
   useDeleteNotificationChannel,
-  useSendTestEmail,
+  useSendTest,
   useUpdateNotificationChannel,
 } from '#/api';
 import TableExportButton from '#/components/TableExportButton.vue';
@@ -24,7 +24,7 @@ import type {
 const { mutateAsync: createChannel } = useCreateNotificationChannel();
 const { mutateAsync: updateChannel } = useUpdateNotificationChannel();
 const { mutateAsync: deleteChannel } = useDeleteNotificationChannel();
-const { mutateAsync: sendTest } = useSendTestEmail();
+const { mutateAsync: sendTest } = useSendTest();
 
 const formOptions = {
   collapsed: false,
@@ -92,6 +92,19 @@ const gridOptions: VxeGridProps<NotificationChannel> = {
       slots: { default: 'signStyle' },
     },
     {
+      title: $t('page.notificationChannel.smsProvider'),
+      field: 'smsProvider',
+      width: 110,
+      slots: { default: 'smsProvider' },
+    },
+    {
+      title: $t('page.notificationChannel.smsSignName'),
+      field: 'smsSignName',
+      width: 110,
+      showOverflow: 'tooltip',
+      formatter: ({ row }) => (row.type === 'SMS' ? row.smsSignName || '-' : '-'),
+    },
+    {
       title: $t('page.notificationChannel.hasPassword'),
       field: 'hasPassword',
       width: 100,
@@ -102,6 +115,12 @@ const gridOptions: VxeGridProps<NotificationChannel> = {
       field: 'hasWebhookSecret',
       width: 110,
       slots: { default: 'hasWebhookSecret' },
+    },
+    {
+      title: $t('page.notificationChannel.hasSmsAccessSecret'),
+      field: 'hasSmsAccessSecret',
+      width: 110,
+      slots: { default: 'hasSmsAccessSecret' },
     },
     {
       title: $t('page.notificationChannel.enabled'),
@@ -139,6 +158,7 @@ function typeLabel(type?: string): string {
   const map: Record<string, string> = {
     EMAIL: $t('page.notificationChannel.typeEmail'),
     WEBHOOK: $t('page.notificationChannel.typeWebhook'),
+    SMS: $t('page.notificationChannel.typeSms'),
   };
   return (type && map[type]) || type || '-';
 }
@@ -147,8 +167,19 @@ function typeColor(type?: string): string {
   const map: Record<string, string> = {
     EMAIL: 'blue',
     WEBHOOK: 'purple',
+    SMS: 'cyan',
   };
   return (type && map[type]) || 'default';
+}
+
+// 短信服务商：值与 proto SmsProvider 成员名的同一组字符串（枚举按名字配对）。
+function smsProviderLabel(row: NotificationChannel): string {
+  if (row.type !== 'SMS') return '-';
+  const map: Record<string, string> = {
+    ALIYUN: $t('page.notificationChannel.providerAliyun'),
+    TENCENT: $t('page.notificationChannel.providerTencent'),
+  };
+  return (row.smsProvider && map[row.smsProvider]) || row.smsProvider || '-';
 }
 
 // 出站风格：值与后端 webhook_style.go 里的同一组字符串逐字相同（枚举按名字配对）。
@@ -206,6 +237,13 @@ const form = reactive({
   webhookSignStyle: 'CUSTOM',
   webhookPayloadTemplate: '',
   webhookSecret: '',
+  smsProvider: 'ALIYUN',
+  smsAccessKeyId: '',
+  smsAccessSecret: '',
+  smsSignName: '',
+  smsTemplateCode: '',
+  smsAppId: '',
+  smsRegion: '',
   enabled: true,
   remark: '',
 });
@@ -218,6 +256,8 @@ function openCreate() {
     password: '', smtpFrom: '', smtpTls: 'START_TLS',
     webhookUrl: '', webhookSignStyle: 'CUSTOM', webhookPayloadTemplate: '',
     webhookSecret: '',
+    smsProvider: 'ALIYUN', smsAccessKeyId: '', smsAccessSecret: '', smsSignName: '',
+    smsTemplateCode: '', smsAppId: '', smsRegion: '',
     enabled: true, remark: '',
   });
   editOpen.value = true;
@@ -232,7 +272,7 @@ function openEdit(row: NotificationChannel) {
     smtpHost: row.smtpHost || '',
     smtpPort: row.smtpPort ?? 587,
     smtpUsername: row.smtpUsername || '',
-    // 两处密钥都不回显（读视图只有 hasPassword / hasWebhookSecret 两个布尔）：留空 = 不改
+    // 三处密钥都不回显（读视图只有 hasPassword / hasWebhookSecret / hasSmsAccessSecret 三个布尔）：留空 = 不改
     password: '',
     smtpFrom: row.smtpFrom || '',
     smtpTls: row.smtpTls || 'START_TLS',
@@ -240,6 +280,12 @@ function openEdit(row: NotificationChannel) {
     webhookSignStyle: row.webhookSignStyle || 'CUSTOM',
     webhookPayloadTemplate: row.webhookPayloadTemplate || '',
     webhookSecret: '',
+    smsProvider: row.smsProvider || 'ALIYUN',
+    smsAccessKeyId: row.smsAccessKeyId || '',
+    smsSignName: row.smsSignName || '',
+    smsTemplateCode: row.smsTemplateCode || '',
+    smsAppId: row.smsAppId || '',
+    smsRegion: row.smsRegion || '',
     enabled: !!row.enabled,
     remark: row.remark || '',
   });
@@ -261,6 +307,13 @@ function buildChannelData(): Record<string, any> {
     data.webhookUrl = form.webhookUrl;
     data.webhookSignStyle = form.webhookSignStyle;
     data.webhookPayloadTemplate = form.webhookPayloadTemplate;
+  } else if (form.type === 'SMS') {
+    data.smsProvider = form.smsProvider;
+    data.smsAccessKeyId = form.smsAccessKeyId;
+    data.smsSignName = form.smsSignName;
+    data.smsTemplateCode = form.smsTemplateCode;
+    data.smsAppId = form.smsAppId;
+    data.smsRegion = form.smsRegion;
   } else {
     data.smtpHost = form.smtpHost;
     data.smtpPort = form.smtpPort;
@@ -269,6 +322,20 @@ function buildChannelData(): Record<string, any> {
     data.smtpTls = form.smtpTls;
   }
   return data;
+}
+
+// SMS 各服务商的必填项（创建时校验；编辑留空=不改密钥所以 Secret 只在创建时必填）。
+// 腾讯云多要 smsAppId / smsRegion：必留必填差在后端报错里点名，这里拦创建时的硬缺口。
+function smsMissingField(): string | undefined {
+  if (!form.smsProvider) return 'requiredSmsProvider';
+  if (!form.smsAccessKeyId) return 'requiredSmsAccessKeyId';
+  if (!form.smsSignName) return 'requiredSmsSignName';
+  if (!form.smsTemplateCode) return 'requiredSmsTemplateCode';
+  if (form.smsProvider === 'TENCENT') {
+    if (!form.smsAppId) return 'smsAppIdHint';
+    if (!form.smsRegion) return 'smsRegionHint';
+  }
+  return undefined;
 }
 
 async function handleSave() {
@@ -281,20 +348,32 @@ async function handleSave() {
       message.error($t('page.notificationChannel.requiredWebhookUrl'));
       return;
     }
-    if (form.type !== 'WEBHOOK' && !form.password) {
+    if (form.type === 'EMAIL' && !form.password) {
       message.error($t('page.notificationChannel.requiredPassword'));
       return;
+    }
+    if (form.type === 'SMS') {
+      if (!form.smsAccessSecret) {
+        message.error($t('page.notificationChannel.requiredSmsAccessSecret'));
+        return;
+      }
+      const missing = smsMissingField();
+      if (missing) {
+        message.error($t(`page.notificationChannel.${missing}`));
+        return;
+      }
     }
   }
   editSaving.value = true;
   try {
-    // 两处密钥是**请求级**字段（与 data 平级，不在 data 里）：读 DTO 只有两个布尔，
+    // 三处密钥是**请求级**字段（与 data 平级，不在 data 里）：读 DTO 只有三个布尔，
     // 留空表示不改已存值
     const data = buildChannelData();
     const password = form.password || undefined;
     const webhookSecret = form.webhookSecret || undefined;
+    const smsAccessSecret = form.smsAccessSecret || undefined;
     if (editMode.value === 'create') {
-      await createChannel({ data, password, webhookSecret });
+      await createChannel({ data, password, webhookSecret, smsAccessSecret });
       message.success($t('page.notificationChannel.createSuccess'));
     } else if (editingId.value) {
       await updateChannel({
@@ -302,8 +381,9 @@ async function handleSave() {
         data,
         password,
         webhookSecret,
+        smsAccessSecret,
         updateMask:
-          'name,type,smtpHost,smtpPort,smtpUsername,smtpFrom,smtpTls,webhookUrl,webhookSignStyle,webhookPayloadTemplate,enabled,remark',
+          'name,type,smtpHost,smtpPort,smtpUsername,smtpFrom,smtpTls,webhookUrl,webhookSignStyle,webhookPayloadTemplate,smsProvider,smsAccessKeyId,smsSignName,smsTemplateCode,smsAppId,smsRegion,enabled,remark',
       });
       message.success($t('page.notificationChannel.updateSuccess'));
     }
@@ -360,7 +440,15 @@ function openTestSend(row: NotificationChannel) {
 async function handleTestSend() {
   if (!testTarget.value?.id) return;
   if (!testRecipient.value) {
-    message.error($t('page.notificationChannel.requiredRecipient'));
+    message.error(
+      testTarget.value.type === 'SMS'
+        ? $t('page.notificationChannel.requiredRecipientPhone')
+        : $t('page.notificationChannel.requiredRecipient'),
+    );
+    return;
+  }
+  if (testTarget.value.type === 'SMS' && !/^\+?\d[\d\s-]{4,19}$/.test(testRecipient.value)) {
+    message.error($t('page.notificationChannel.invalidPhone'));
     return;
   }
   testSaving.value = true;
@@ -397,6 +485,10 @@ async function handleTestSend() {
         <a-tag v-if="row.type === 'WEBHOOK'">{{ signStyleLabel(row) }}</a-tag>
         <template v-else>-</template>
       </template>
+      <template #smsProvider="{ row }">
+        <a-tag v-if="row.type === 'SMS'">{{ smsProviderLabel(row) }}</a-tag>
+        <template v-else>-</template>
+      </template>
       <template #hasPassword="{ row }">
         <a-tag v-if="row.hasPassword" color="success">
           {{ $t('page.notificationChannel.passwordSet') }}
@@ -405,6 +497,12 @@ async function handleTestSend() {
       </template>
       <template #hasWebhookSecret="{ row }">
         <a-tag v-if="row.hasWebhookSecret" color="success">
+          {{ $t('page.notificationChannel.passwordSet') }}
+        </a-tag>
+        <a-tag v-else>{{ $t('page.notificationChannel.passwordNotSet') }}</a-tag>
+      </template>
+      <template #hasSmsAccessSecret="{ row }">
+        <a-tag v-if="row.hasSmsAccessSecret" color="success">
           {{ $t('page.notificationChannel.passwordSet') }}
         </a-tag>
         <a-tag v-else>{{ $t('page.notificationChannel.passwordNotSet') }}</a-tag>
@@ -420,10 +518,10 @@ async function handleTestSend() {
         <a-button type="link" size="small" @click.stop="openEdit(row)">
           {{ $t('common.edit') }}
         </a-button>
-        <!-- 测试发送只对 EMAIL 行有意义：它测的就是这一个 SMTP 账号能否握手发信。
+        <!-- 测试发送只对有"收件目标"的渠道有意义：EMAIL 测 SMTP 握手发信、SMS 发一条真验证码。
              WEBHOOK 的"当场试一次"在路由规则页（那里测的是事件 → 渠道 → 台账整条链）。 -->
         <a-button
-          v-if="row.type === 'EMAIL'"
+          v-if="row.type === 'EMAIL' || row.type === 'SMS'"
           type="link"
           size="small"
           @click.stop="openTestSend(row)"
@@ -464,10 +562,13 @@ async function handleTestSend() {
             <a-select-option value="WEBHOOK">
               {{ $t('page.notificationChannel.typeWebhook') }}
             </a-select-option>
+            <a-select-option value="SMS">
+              {{ $t('page.notificationChannel.typeSms') }}
+            </a-select-option>
           </a-select>
         </a-form-item>
-        <!-- 两类渠道各自的配置项分组显示：表单里同时摆两组，管理员要自己猜哪一组生效。
-             编辑态 type 不可改，所以两组不会在同一个会话里来回切。 -->
+        <!-- 三类渠道各自的配置项分组显示：表单里同时摆几组，管理员要自己猜哪一组生效。
+             编辑态 type 不可改，所以几组不会在同一个会话里来回切。 -->
         <template v-if="form.type === 'WEBHOOK'">
           <a-form-item
             :label="$t('page.notificationChannel.webhookUrl')"
@@ -528,6 +629,73 @@ async function handleTestSend() {
             />
           </a-form-item>
         </template>
+        <template v-else-if="form.type === 'SMS'">
+          <a-form-item
+            :label="$t('page.notificationChannel.smsProvider')"
+            :help="$t('page.notificationChannel.smsProviderHint')"
+            required
+          >
+            <a-select v-model:value="form.smsProvider">
+              <a-select-option value="ALIYUN">
+                {{ $t('page.notificationChannel.providerAliyun') }}
+              </a-select-option>
+              <a-select-option value="TENCENT">
+                {{ $t('page.notificationChannel.providerTencent') }}
+              </a-select-option>
+            </a-select>
+          </a-form-item>
+          <a-form-item
+            :label="$t('page.notificationChannel.smsAccessKeyId')"
+            required
+          >
+            <a-input v-model:value="form.smsAccessKeyId" />
+          </a-form-item>
+          <a-form-item
+            :label="$t('page.notificationChannel.smsAccessSecret')"
+            :help="$t('page.notificationChannel.smsAccessSecretHint')"
+            :required="editMode === 'create'"
+          >
+            <a-input-password
+              v-model:value="form.smsAccessSecret"
+              :placeholder="
+                editMode === 'edit'
+                  ? $t('page.notificationChannel.smsAccessSecretKeepHint')
+                  : $t('page.notificationChannel.smsAccessSecretPlaceholder')
+              "
+            />
+          </a-form-item>
+          <a-form-item
+            :label="$t('page.notificationChannel.smsSignName')"
+            :help="$t('page.notificationChannel.smsSignNameHint')"
+            required
+          >
+            <a-input v-model:value="form.smsSignName" />
+          </a-form-item>
+          <a-form-item
+            :label="$t('page.notificationChannel.smsTemplateCode')"
+            :help="$t('page.notificationChannel.smsTemplateCodeHint')"
+            required
+          >
+            <a-input
+              v-model:value="form.smsTemplateCode"
+              :placeholder="$t('page.notificationChannel.smsTemplateCodePlaceholder')"
+            />
+          </a-form-item>
+          <!-- 腾讯云两项必填、阿里云留空：必留必填差在 help 里说清，
+               校验在保存时按服务商拦（见 smsMissingField），这里不摆红星。 -->
+          <a-form-item
+            :label="$t('page.notificationChannel.smsAppId')"
+            :help="$t('page.notificationChannel.smsAppIdHint')"
+          >
+            <a-input v-model:value="form.smsAppId" placeholder="1400000000" />
+          </a-form-item>
+          <a-form-item
+            :label="$t('page.notificationChannel.smsRegion')"
+            :help="$t('page.notificationChannel.smsRegionHint')"
+          >
+            <a-input v-model:value="form.smsRegion" placeholder="ap-guangzhou" />
+          </a-form-item>
+        </template>
         <template v-else>
           <a-form-item :label="$t('page.notificationChannel.smtpHost')">
             <a-input v-model:value="form.smtpHost" placeholder="smtp.example.com" />
@@ -581,7 +749,9 @@ async function handleTestSend() {
     <a-modal
       v-model:open="testOpen"
       :title="
-        $t('page.notificationChannel.testSendTitle', { name: testTarget?.name || '' })
+        testTarget?.type === 'SMS'
+          ? $t('page.notificationChannel.testSendTitleSms', { name: testTarget?.name || '' })
+          : $t('page.notificationChannel.testSendTitle', { name: testTarget?.name || '' })
       "
       :confirm-loading="testSaving"
       @ok="handleTestSend"
@@ -589,7 +759,11 @@ async function handleTestSend() {
       <a-input
         v-model:value="testRecipient"
         class="mt-4"
-        :placeholder="$t('page.notificationChannel.testRecipient')"
+        :placeholder="
+          testTarget?.type === 'SMS'
+            ? $t('page.notificationChannel.testRecipientPhone')
+            : $t('page.notificationChannel.testRecipient')
+        "
       />
     </a-modal>
   </Page>

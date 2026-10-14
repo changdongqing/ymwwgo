@@ -14,6 +14,7 @@ import (
 	notificationV1 "go-wind-admin/api/gen/go/notification/service/v1"
 	notificationChannelV1 "go-wind-admin/api/gen/go/notification_channel/service/v1"
 
+	"go-wind-admin/pkg/mailtext"
 	"go-wind-admin/pkg/middleware/auth"
 
 	"go-wind-admin/app/admin/service/internal/data"
@@ -128,10 +129,22 @@ func (s *NotificationChannelService) DeleteNotificationChannel(ctx context.Conte
 // EmailSender 会做同样的校验并把原因包进 error（渠道没配/没启用/类型不对），
 // 因此这里能直接把原始错误回给配置页——正是这个功能唯一有用的输出。
 func (s *NotificationChannelService) SendTestEmail(ctx context.Context, req *notificationChannelV1.SendTestEmailRequest) (*emptypb.Empty, error) {
-	if req == nil || req.GetId() == 0 {
+	return s.sendTest(ctx, req.GetId(), req.GetRecipient())
+}
+
+// SendTest 按渠道类型分派一条测试消息（EMAIL 走测试邮件，SMS 发一条测试验证码）。
+// 老入口 SendTestEmail 委托到这里；WEBHOOK 不支持在渠道页测试——它的端到端验证
+// 在路由规则页，那里测的是"事件 → 渠道 → 台账"整条链，而渠道页只能证明配置本身。
+func (s *NotificationChannelService) SendTest(ctx context.Context, req *notificationChannelV1.SendTestRequest) (*emptypb.Empty, error) {
+	return s.sendTest(ctx, req.GetId(), req.GetRecipient())
+}
+
+// sendTest 两代测试入口的共同实现：查类型 → 分派 → SendDirect 显式点名渠道。
+func (s *NotificationChannelService) sendTest(ctx context.Context, id uint32, recipient string) (*emptypb.Empty, error) {
+	if id == 0 {
 		return nil, adminV1.ErrorBadRequest("id is required")
 	}
-	if req.GetRecipient() == "" {
+	if recipient == "" {
 		return nil, adminV1.ErrorBadRequest("recipient is required")
 	}
 
@@ -144,21 +157,45 @@ func (s *NotificationChannelService) SendTestEmail(ctx context.Context, req *not
 		return nil, err
 	}
 
-	title, body := renderChannelTestEmail(ctx, s.mailer, req.GetId(), operator.UserId)
-
-	if _, err = s.notifier.SendDirect(ctx, &notificationV1.SendDirectNotificationRequest{
-		EventType:      notificationV1.EventType_CHANNEL_TEST_EMAIL,
-		ChannelId:      trans.Ptr(req.GetId()),
-		Target:         req.GetRecipient(),
-		Title:          title,
-		Content:        body,
-		OperatorUserId: trans.Ptr(operator.UserId),
-	}); err != nil {
-		s.log.Errorf(ctx, "send test email via channel [%d] to [%s] failed: %v", req.GetId(), req.GetRecipient(), err)
-		return nil, adminV1.ErrorBadRequest("%s", "send test email failed: "+err.Error())
+	dto, err := s.repo.Get(ctx, id)
+	if err != nil {
+		return nil, err
 	}
 
-	s.log.Infof(ctx, "test email sent via channel [%d] to [%s] by operator [%d]", req.GetId(), req.GetRecipient(), operator.UserId)
+	sendReq := &notificationV1.SendDirectNotificationRequest{
+		ChannelId:      trans.Ptr(id),
+		Target:         recipient,
+		OperatorUserId: trans.Ptr(operator.UserId),
+	}
+
+	switch dto.GetType() {
+	case notificationChannelV1.NotificationChannel_EMAIL:
+		sendReq.EventType = notificationV1.EventType_CHANNEL_TEST_EMAIL
+		sendReq.Title, sendReq.Content = renderChannelTestEmail(ctx, s.mailer, id, operator.UserId)
+
+	case notificationChannelV1.NotificationChannel_SMS:
+		// 短信没有"发一封空信"的形态：测试就是发一条真验证码。
+		// 渠道未配路由规则（存量库没有 CHANNEL_TEST_SMS 行）也必须能发——
+		// 显式点名 Channel=SMS，测试不依赖路由表。
+		sendReq.EventType = notificationV1.EventType_CHANNEL_TEST_SMS
+		sendReq.Channel = trans.Ptr(notificationV1.Channel_SMS)
+		code := generateVCode()
+		sendReq.Title, sendReq.Content = mailtext.ChannelTestSms(ctx, id, operator.UserId)
+		sendReq.Params = map[string]string{"code": code}
+
+	case notificationChannelV1.NotificationChannel_WEBHOOK:
+		return nil, adminV1.ErrorBadRequest("webhook channels are tested from the notification-rules page")
+
+	default:
+		return nil, adminV1.ErrorBadRequest("unsupported channel type %s", dto.GetType().String())
+	}
+
+	if _, err = s.notifier.SendDirect(ctx, sendReq); err != nil {
+		s.log.Errorf(ctx, "send test via channel [%d] to [%s] failed: %v", id, recipient, err)
+		return nil, adminV1.ErrorBadRequest("%s", "send test message failed: "+err.Error())
+	}
+
+	s.log.Infof(ctx, "test message sent via channel [%d] to [%s] by operator [%d]", id, recipient, operator.UserId)
 	return &emptypb.Empty{}, nil
 }
 

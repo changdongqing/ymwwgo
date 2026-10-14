@@ -383,30 +383,47 @@ func TestNotificationChannelServiceSqlite_SendTestEmailBranches(t *testing.T) {
 	require.Contains(t, err.Error(), "smtp host/port is not configured")
 
 	_, err = svc.SendTestEmail(opCtx, &notificationChannelV1.SendTestEmailRequest{Id: webhook.GetId(), Recipient: "a@b.test"})
-	require.Error(t, err, "WEBHOOK 渠道应被类型守卫拒绝（Type 回填修复后仅 EMAIL 守卫生效）")
-	require.Contains(t, err.Error(), "is not an EMAIL channel")
+	require.Error(t, err, "WEBHOOK 渠道在渠道页没有当场试一次的形态：类型分派直接拒绝（端到端验证在路由规则页）")
+	require.Contains(t, err.Error(), "webhook channels are tested from the notification-rules page")
 
-	// 台账归类：渠道本身用不了（停用/类型不对）＝一条都没尝试发 → SKIPPED；
-	// 拿得到账号、SMTP 报的错 → FAILED。两者混成一个状态，配置页就再也分不出
-	// "该去启用渠道"和"该查 SMTP 服务"。
+	// SendTest（按类型分派的新入口）：SMS 渠道在测试装配里没注册 sender——
+	// 显式点名 + 注册表查无实现 = 代码/装配问题，报错原文必须点出渠道名。
+	sms, err := svc.CreateNotificationChannel(opCtx, &notificationChannelV1.CreateNotificationChannelRequest{
+		Data: &notificationChannelV1.NotificationChannel{
+			Name:    trans.Ptr("sms 渠道"),
+			Type:    notificationChannelV1.NotificationChannel_SMS.Enum(),
+			Enabled: trans.Ptr(true),
+		},
+	})
+	require.NoError(t, err)
+	_, err = svc.SendTest(opCtx, &notificationChannelV1.SendTestRequest{Id: sms.GetId(), Recipient: "13800138000"})
+	require.Error(t, err, "未注册 SMS sender 的装配下测试发送应失败")
+	require.Contains(t, err.Error(), "SMS is not registered")
+
+	// 台账归类：渠道本身用不了（停用）＝一条都没尝试发 → SKIPPED；
+	// 拿得到账号、SMTP 报的错 → FAILED；注册表查无 sender（SMS 未装配）= 代码/装配问题 → FAILED。
+	// WEBHOOK 的类型分派拒绝发生在台账落行之前（入参级守卫），不产生台账。
 	deliveries, err := entClient.Client().NotificationDelivery.Query().All(ctx)
 	require.NoError(t, err)
-	require.Len(t, deliveries, 3, "入参守卫的三次调用不该留台账")
+	require.Len(t, deliveries, 3, "入参守卫与 WEBHOOK 类型分派拒绝的调用不该留台账")
 
 	statusByError := map[string]notificationdelivery.Status{}
+	targetByError := map[string]string{}
 	for _, row := range deliveries {
 		require.NotNil(t, row.Status)
 		require.NotNil(t, row.LastError, "失败原因不写进台账，这行就没有存在意义")
 		require.NotNil(t, row.ChannelID, "显式指定渠道时台账该记下用的是哪一条")
-		require.Equal(t, "a***@b.test", *row.Target)
 		require.Nil(t, row.SentAt, "三条都没发出去，不该有完成时间")
 		statusByError[*row.LastError] = *row.Status
+		targetByError[*row.LastError] = *row.Target
 	}
 
 	require.Equal(t, notificationdelivery.StatusSkipped,
 		statusByError["no enabled notification channel configured: channel ["+itoa(disabled.GetId())+"] is disabled"])
-	require.Equal(t, notificationdelivery.StatusSkipped,
-		statusByError["no enabled notification channel configured: channel ["+itoa(webhook.GetId())+"] is not an EMAIL channel"])
 	require.Equal(t, notificationdelivery.StatusFailed,
 		statusByError["send mail via channel ["+itoa(noHost.GetId())+"] failed: smtp host/port is not configured"])
+	// SMS 测试投递：手机号目标按掩码规则落台账（非邮箱 → 前 4 位星号 + 尾 4 位）。
+	require.Equal(t, notificationdelivery.StatusFailed,
+		statusByError["channel SMS is not registered"])
+	require.Equal(t, "****8000", targetByError["channel SMS is not registered"])
 }

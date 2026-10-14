@@ -13,10 +13,21 @@ import (
 	notificationV1 "go-wind-admin/api/gen/go/notification/service/v1"
 	"go-wind-admin/pkg/mailtext"
 	"go-wind-admin/pkg/middleware/auth"
+
+	"go-wind-admin/app/admin/service/internal/data/channel"
 )
 
-// sendContactVCode 向指定邮箱发送业务验证码（绑定联系方式场景）。
-func (s *UserProfileService) sendContactVCode(ctx context.Context, contact string) error {
+// 联系方式种类：绑定验证码按它分渠道（邮箱走 SMTP，手机号走 SMS）。
+const (
+	contactKindEmail = "email"
+	contactKindPhone = "phone"
+)
+
+// sendContactVCode 向指定联系方式发送业务验证码（绑定场景），按种类分渠道。
+//
+// 手机号一路显式点名 Channel=SMS：存量库没有 PHONE_BIND_CODE 的路由规则行
+// （播种只发生 在空表时），依赖路由等于让手机绑定在老实例上必失败。
+func (s *UserProfileService) sendContactVCode(ctx context.Context, kind, contact string) error {
 	code := generateVCode()
 	if err := s.vcodeCache.Save("bind_contact", contact, code, 10*time.Minute); err != nil {
 		return authenticationV1.ErrorInternalServerError("save verification code failed")
@@ -32,52 +43,85 @@ func (s *UserProfileService) sendContactVCode(ctx context.Context, contact strin
 			}
 		}
 	}
-	title, content := renderContactBindCode(ctx, s.mailer, code)
-	resp, err := s.notifier.SendDirect(ctx, &notificationV1.SendDirectNotificationRequest{
-		EventType: notificationV1.EventType_CONTACT_BIND_CODE,
-		Target:    contact,
-		Title:     title,
-		Content:   content,
-	})
+
+	sendReq := &notificationV1.SendDirectNotificationRequest{
+		Target:  contact,
+		Content: "",
+	}
+	switch kind {
+	case contactKindPhone:
+		sendReq.EventType = notificationV1.EventType_PHONE_BIND_CODE
+		sendReq.Channel = trans.Ptr(notificationV1.Channel_SMS)
+		// 短信正文由服务商审核模板渲染，code 经 params 交给渠道；台账文案只做记录。
+		sendReq.Params = map[string]string{"code": code}
+		sendReq.Title, sendReq.Content = mailtext.PhoneBindCode(ctx, code)
+	default:
+		sendReq.EventType = notificationV1.EventType_CONTACT_BIND_CODE
+		sendReq.Title, sendReq.Content = renderContactBindCode(ctx, s.mailer, code)
+	}
+
+	resp, err := s.notifier.SendDirect(ctx, sendReq)
 	if err != nil {
-		s.log.Errorf(ctx, "bind-contact: send mail to [%s] failed (delivery %d): %s",
-			contact, resp.GetDeliveryId(), err.Error())
+		s.log.Errorf(ctx, "bind-contact: send %s code to [%s] failed (delivery %d): %s",
+			kind, contact, resp.GetDeliveryId(), err.Error())
 		if resp.GetStatus() == notificationV1.DeliveryStatus_SKIPPED {
+			if kind == contactKindPhone {
+				return authenticationV1.ErrorInternalServerError("sms channel is not configured")
+			}
 			return authenticationV1.ErrorInternalServerError("email channel is not configured")
 		}
-		return authenticationV1.ErrorInternalServerError("send verification email failed")
+		return authenticationV1.ErrorInternalServerError("send verification message failed")
 	}
 	return nil
 }
 
 // BindContact 绑定手机号码/邮箱（第一步）：向新联系方式发送验证码。
-// 二期接入短信渠道后可扩展 MOBILE 类型；当前仅支持 EMAIL。
+// 短信渠道接入后 MOBILE 分支已启用：验证码经 SMS 渠道下发（需已配置启用的短信渠道）。
 func (s *UserProfileService) BindContact(ctx context.Context, req *identityV1.BindContactRequest) (*emptypb.Empty, error) {
-	bindEmail := req.GetEmail()
-	if bindEmail == nil || strings.TrimSpace(bindEmail.GetEmail()) == "" {
-		return nil, authenticationV1.ErrorBadRequest("only email binding is supported")
+	if phone := req.GetPhone(); phone != nil {
+		contact := strings.TrimSpace(phone.GetPhone())
+		if contact == "" {
+			return nil, authenticationV1.ErrorBadRequest("phone is required")
+		}
+		// 服务入口先做一次与投递侧同判据的格式校验：错误在第一步就回给用户，
+		// 而不是等 SendDirect 把它记成一条 SKIPPED 台账。
+		if _, _, err := channel.NormalizePhoneNumber(contact); err != nil {
+			return nil, authenticationV1.ErrorBadRequest("invalid phone number")
+		}
+		if err := s.sendContactVCode(ctx, contactKindPhone, contact); err != nil {
+			return nil, err
+		}
+		return &emptypb.Empty{}, nil
 	}
-	contact := strings.TrimSpace(bindEmail.GetEmail())
 
-	if err := s.sendContactVCode(ctx, contact); err != nil {
-		return nil, err
+	if bindEmail := req.GetEmail(); bindEmail != nil {
+		contact := strings.TrimSpace(bindEmail.GetEmail())
+		if contact == "" {
+			return nil, authenticationV1.ErrorBadRequest("email is required")
+		}
+		if err := s.sendContactVCode(ctx, contactKindEmail, contact); err != nil {
+			return nil, err
+		}
+		return &emptypb.Empty{}, nil
 	}
-	return &emptypb.Empty{}, nil
+
+	return nil, authenticationV1.ErrorBadRequest("contact is required")
 }
 
-// VerifyContact 校验验证码并完成联系方式绑定（写入 EMAIL 登录凭证）。
+// VerifyContact 校验验证码并完成联系方式绑定（写入对应类型的登录凭证）。
+// 凭证 identifier=联系方式；credential 为占位哈希——该凭证不用于密码校验。
 func (s *UserProfileService) VerifyContact(ctx context.Context, req *identityV1.VerifyContactRequest) (*emptypb.Empty, error) {
 	operator, err := auth.FromContext(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	verifyEmail := req.GetEmail()
-	if verifyEmail == nil || strings.TrimSpace(verifyEmail.GetEmail()) == "" {
-		return nil, authenticationV1.ErrorBadRequest("only email verification is supported")
+	var kind, contact, code string
+	if verifyPhone := req.GetPhone(); verifyPhone != nil {
+		kind, contact, code = contactKindPhone, strings.TrimSpace(verifyPhone.GetPhone()), strings.TrimSpace(verifyPhone.GetCode())
+	} else if verifyEmail := req.GetEmail(); verifyEmail != nil {
+		kind, contact, code = contactKindEmail, strings.TrimSpace(verifyEmail.GetEmail()), strings.TrimSpace(verifyEmail.GetCode())
 	}
-	contact := strings.TrimSpace(verifyEmail.GetEmail())
-	code := strings.TrimSpace(verifyEmail.GetCode())
 	if contact == "" || code == "" {
 		return nil, authenticationV1.ErrorBadRequest("contact and code are required")
 	}
@@ -86,12 +130,16 @@ func (s *UserProfileService) VerifyContact(ctx context.Context, req *identityV1.
 		return nil, authenticationV1.ErrorBadRequest("invalid or expired verification code")
 	}
 
-	// 写入 EMAIL 登录凭证（identifier=邮箱；credential 为占位哈希——该凭证不用于密码校验）
+	identityType := authenticationV1.UserCredential_EMAIL
+	if kind == contactKindPhone {
+		identityType = authenticationV1.UserCredential_PHONE
+	}
+
 	if err = s.userCredentialRepo.Create(ctx, &authenticationV1.CreateUserCredentialRequest{
 		Data: &authenticationV1.UserCredential{
 			TenantId:       trans.Ptr(operator.GetTenantId()),
 			UserId:         trans.Ptr(operator.GetUserId()),
-			IdentityType:   authenticationV1.UserCredential_EMAIL.Enum(),
+			IdentityType:   identityType.Enum(),
 			Identifier:     trans.Ptr(contact),
 			CredentialType: authenticationV1.UserCredential_PASSWORD_HASH.Enum(),
 			Credential:     trans.Ptr(dummyPasswordHash),
@@ -99,13 +147,13 @@ func (s *UserProfileService) VerifyContact(ctx context.Context, req *identityV1.
 			Status:         authenticationV1.UserCredential_ENABLED.Enum(),
 		},
 	}); err != nil {
-		s.log.Errorf(ctx, "bind contact: create EMAIL credential failed for user [%d]: %s", operator.GetUserId(), err.Error())
+		s.log.Errorf(ctx, "bind contact: create %s credential failed for user [%d]: %s", identityType.String(), operator.GetUserId(), err.Error())
 		return nil, err
 	}
 
-	s.log.Infof(ctx, "user [%d] bound email [%s]", operator.GetUserId(), contact)
+	s.log.Infof(ctx, "user [%d] bound %s [%s]", operator.GetUserId(), kind, contact)
 	return &emptypb.Empty{}, nil
 }
 
-// dummyPasswordHash 合法 bcrypt 占位（EMAIL 凭证不用于密码校验）
+// dummyPasswordHash 合法 bcrypt 占位（EMAIL/PHONE 凭证不用于密码校验）
 const dummyPasswordHash = "$2a$10$1sbpKmhQDpXLHnDnEQ1nLe3oOnYyP2bUJyqHcX2T0Fq1qfyoXOrPm"

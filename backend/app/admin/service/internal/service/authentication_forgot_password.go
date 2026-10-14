@@ -15,6 +15,8 @@ import (
 	notificationV1 "go-wind-admin/api/gen/go/notification/service/v1"
 
 	"go-wind-admin/pkg/mailtext"
+
+	"go-wind-admin/app/admin/service/internal/data/channel"
 )
 
 // generateVCode 生成 6 位数字验证码。
@@ -24,8 +26,20 @@ func generateVCode() string {
 	return fmt.Sprintf("%06d", time.Now().UnixNano()%1000000)
 }
 
-// ForgotPassword 忘记密码：向 identifier（必须为已绑定的邮箱凭证）发送
-// 重置验证码。用户不存在时同样返回成功，防止通过接口枚举有效邮箱。
+// resetIdentityTypeOf 按.identifier 的形态选凭证类型：像手机号（无 @ 且能归一）→ PHONE 走短信，
+// 其余（邮箱/账号名）→ EMAIL 维持既有行为。防枚举口径两边一致：查无此人一律静默 200。
+func resetIdentityTypeOf(identifier string) authenticationV1.UserCredential_IdentityType {
+	if !strings.Contains(identifier, "@") {
+		if _, _, err := channel.NormalizePhoneNumber(identifier); err == nil {
+			return authenticationV1.UserCredential_PHONE
+		}
+	}
+	return authenticationV1.UserCredential_EMAIL
+}
+
+// ForgotPassword 忘记密码：向 identifier（已绑定的邮箱凭证或手机号凭证）发送
+// 重置验证码——邮箱走 SMTP，手机号走 SMS（显式点名，不经路由表）。
+// 用户不存在时同样返回成功，防止通过接口枚举有效账号。
 func (s *AuthenticationService) ForgotPassword(ctx context.Context, req *authenticationV1.ForgotPasswordRequest) (*emptypb.Empty, error) {
 	ctx = viewer.WithSystemContext(ctx)
 	identifier := strings.TrimSpace(req.GetIdentifier())
@@ -33,13 +47,14 @@ func (s *AuthenticationService) ForgotPassword(ctx context.Context, req *authent
 		return nil, authenticationV1.ErrorBadRequest("identifier is required")
 	}
 
+	identityType := resetIdentityTypeOf(identifier)
 	cred, credErr := s.userCredentialRepo.GetByIdentifier(ctx, &authenticationV1.GetUserCredentialByIdentifierRequest{
-		IdentityType: authenticationV1.UserCredential_EMAIL,
+		IdentityType: identityType,
 		Identifier:   identifier,
 	})
 	userId := cred.GetUserId()
 	if credErr != nil || userId == 0 {
-		s.log.Infof(ctx, "forgot-password: no EMAIL credential for [%s] (silent ok)", identifier)
+		s.log.Infof(ctx, "forgot-password: no %s credential for [%s] (silent ok)", identityType.String(), identifier)
 		return &emptypb.Empty{}, nil
 	}
 
@@ -57,23 +72,34 @@ func (s *AuthenticationService) ForgotPassword(ctx context.Context, req *authent
 			ctx = mailtext.WithLocale(ctx, loc)
 		}
 	}
-	title, content := renderPwdResetCode(ctx, s.mailer, code)
-	resp, err := s.notifier.SendDirect(ctx, &notificationV1.SendDirectNotificationRequest{
+
+	sendReq := &notificationV1.SendDirectNotificationRequest{
 		EventType:       notificationV1.EventType_PASSWORD_RESET_CODE,
 		Target:          identifier,
 		RecipientUserId: trans.Ptr(userId),
-		Title:           title,
-		Content:         content,
-	})
+	}
+	if identityType == authenticationV1.UserCredential_PHONE {
+		// 短信正文由服务商审核模板渲染，code 经 params 交给渠道；台账文案只做记录。
+		sendReq.Channel = trans.Ptr(notificationV1.Channel_SMS)
+		sendReq.Params = map[string]string{"code": code}
+		sendReq.Title, sendReq.Content = mailtext.SmsPasswordResetCode(ctx, code)
+	} else {
+		sendReq.Title, sendReq.Content = renderPwdResetCode(ctx, s.mailer, code)
+	}
+
+	resp, err := s.notifier.SendDirect(ctx, sendReq)
 	if err != nil {
-		s.log.Errorf(ctx, "forgot-password: send mail to [%s] failed (delivery %d): %s",
+		s.log.Errorf(ctx, "forgot-password: send code to [%s] failed (delivery %d): %s",
 			identifier, resp.GetDeliveryId(), err.Error())
-		// SKIPPED＝一条都没发出去：没配启用的 EMAIL 渠道。这与"SMTP 报错"是两回事，
+		// SKIPPED＝一条都没发出去：没配启用的对应渠道。这与"渠道报错"是两回事，
 		// 前者要管理员去渠道页配置，分开报才不用翻日志才知道差哪一步。
 		if resp.GetStatus() == notificationV1.DeliveryStatus_SKIPPED {
+			if identityType == authenticationV1.UserCredential_PHONE {
+				return nil, authenticationV1.ErrorInternalServerError("sms channel is not configured")
+			}
 			return nil, authenticationV1.ErrorInternalServerError("email channel is not configured")
 		}
-		return nil, authenticationV1.ErrorInternalServerError("send verification email failed")
+		return nil, authenticationV1.ErrorInternalServerError("send verification message failed")
 	}
 
 	s.log.Infof(ctx, "forgot-password: reset code sent to [%s] for user [%d]", identifier, userId)
@@ -96,7 +122,7 @@ func (s *AuthenticationService) ResetPasswordByCode(ctx context.Context, req *au
 	}
 
 	cred, credErr := s.userCredentialRepo.GetByIdentifier(ctx, &authenticationV1.GetUserCredentialByIdentifierRequest{
-		IdentityType: authenticationV1.UserCredential_EMAIL,
+		IdentityType: resetIdentityTypeOf(identifier),
 		Identifier:   identifier,
 	})
 	if credErr != nil || cred.GetUserId() == 0 {

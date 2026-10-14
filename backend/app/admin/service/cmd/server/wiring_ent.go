@@ -178,12 +178,13 @@ func initApp(ctx *bootstrap.Context) (*kratos.App, func(), error) {
 
 	// ═══════════════════════ 四、服务层(internal/service) ═══════════════════════
 
-	// 通知投递：渠道注册表（EMAIL / WEBHOOK / INTERNAL）→ NotificationService → 各业务 service 只拿 Notifier。
+	// 通知投递：渠道注册表（EMAIL / WEBHOOK / SMS / INTERNAL）→ NotificationService → 各业务 service 只拿 Notifier。
 	// 注册顺序即装配位置：新增一种渠道 = 在这里多 Register 一个 Sender，业务调用方不动。
 	// 路由（事件 → 渠道 + 同步/异步）读 sys_notification_rules，不在这里登记，见 resolveRoute。
 	channelRegistry := channel.NewRegistry()
 	channelRegistry.Register(channel.NewEmailSender(notificationChannelRepo))
 	channelRegistry.Register(channel.NewWebhookSender(notificationChannelRepo))
+	channelRegistry.Register(channel.NewSmsSender(notificationChannelRepo))
 	notificationService := service.NewNotificationService(ctx, notificationDeliveryRepo, notificationRuleRepo, notificationTemplateRepo, channelRegistry)
 	notificationTemplateService := service.NewNotificationTemplateService(ctx, notificationTemplateRepo)
 	// 监控告警：评估器依赖通知出口，装配顺序在 NotificationService 之后

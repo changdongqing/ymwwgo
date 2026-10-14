@@ -28,6 +28,7 @@ const (
 	NotificationChannelService_UpdateNotificationChannel_FullMethodName = "/admin.service.v1.NotificationChannelService/UpdateNotificationChannel"
 	NotificationChannelService_DeleteNotificationChannel_FullMethodName = "/admin.service.v1.NotificationChannelService/DeleteNotificationChannel"
 	NotificationChannelService_SendTestEmail_FullMethodName             = "/admin.service.v1.NotificationChannelService/SendTestEmail"
+	NotificationChannelService_SendTest_FullMethodName                  = "/admin.service.v1.NotificationChannelService/SendTest"
 )
 
 // NotificationChannelServiceClient is the client API for NotificationChannelService service.
@@ -48,6 +49,8 @@ type NotificationChannelServiceClient interface {
 	DeleteNotificationChannel(ctx context.Context, in *v11.DeleteNotificationChannelRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// 发送测试邮件（验证渠道配置）
 	SendTestEmail(ctx context.Context, in *v11.SendTestEmailRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	// 发送测试消息（按渠道类型分派：EMAIL 走邮件，SMS 发测试验证码）
+	SendTest(ctx context.Context, in *v11.SendTestRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
 
 type notificationChannelServiceClient struct {
@@ -118,6 +121,16 @@ func (c *notificationChannelServiceClient) SendTestEmail(ctx context.Context, in
 	return out, nil
 }
 
+func (c *notificationChannelServiceClient) SendTest(ctx context.Context, in *v11.SendTestRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, NotificationChannelService_SendTest_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // NotificationChannelServiceServer is the server API for NotificationChannelService service.
 // All implementations must embed UnimplementedNotificationChannelServiceServer
 // for forward compatibility.
@@ -136,6 +149,8 @@ type NotificationChannelServiceServer interface {
 	DeleteNotificationChannel(context.Context, *v11.DeleteNotificationChannelRequest) (*emptypb.Empty, error)
 	// 发送测试邮件（验证渠道配置）
 	SendTestEmail(context.Context, *v11.SendTestEmailRequest) (*emptypb.Empty, error)
+	// 发送测试消息（按渠道类型分派：EMAIL 走邮件，SMS 发测试验证码）
+	SendTest(context.Context, *v11.SendTestRequest) (*emptypb.Empty, error)
 	mustEmbedUnimplementedNotificationChannelServiceServer()
 }
 
@@ -163,6 +178,9 @@ func (UnimplementedNotificationChannelServiceServer) DeleteNotificationChannel(c
 }
 func (UnimplementedNotificationChannelServiceServer) SendTestEmail(context.Context, *v11.SendTestEmailRequest) (*emptypb.Empty, error) {
 	return nil, status.Error(codes.Unimplemented, "method SendTestEmail not implemented")
+}
+func (UnimplementedNotificationChannelServiceServer) SendTest(context.Context, *v11.SendTestRequest) (*emptypb.Empty, error) {
+	return nil, status.Error(codes.Unimplemented, "method SendTest not implemented")
 }
 func (UnimplementedNotificationChannelServiceServer) mustEmbedUnimplementedNotificationChannelServiceServer() {
 }
@@ -294,6 +312,24 @@ func _NotificationChannelService_SendTestEmail_Handler(srv interface{}, ctx cont
 	return interceptor(ctx, in, info, handler)
 }
 
+func _NotificationChannelService_SendTest_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(v11.SendTestRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(NotificationChannelServiceServer).SendTest(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: NotificationChannelService_SendTest_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(NotificationChannelServiceServer).SendTest(ctx, req.(*v11.SendTestRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // NotificationChannelService_ServiceDesc is the grpc.ServiceDesc for NotificationChannelService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -324,6 +360,10 @@ var NotificationChannelService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SendTestEmail",
 			Handler:    _NotificationChannelService_SendTestEmail_Handler,
+		},
+		{
+			MethodName: "SendTest",
+			Handler:    _NotificationChannelService_SendTest_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

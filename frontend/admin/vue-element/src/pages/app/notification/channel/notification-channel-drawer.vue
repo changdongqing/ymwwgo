@@ -23,11 +23,12 @@
         <ElSelect v-model="drawer.formData.type" :disabled="!isCreate">
           <ElOption :label="t('pages.notification_channel.typeEmail')" value="EMAIL" />
           <ElOption :label="t('pages.notification_channel.typeWebhook')" value="WEBHOOK" />
+          <ElOption :label="t('pages.notification_channel.typeSms')" value="SMS" />
         </ElSelect>
       </ElFormItem>
 
-      <!-- 两类渠道各自的配置项分组显示：表单里同时摆两组，管理员要自己猜哪一组生效。
-           编辑态 type 不可改（改类型等于换一条渠道实现），所以两组不会在同一个会话里来回切。 -->
+      <!-- 三类渠道各自的配置项分组显示：表单里同时摆几组，管理员要自己猜哪一组生效。
+           编辑态 type 不可改（改类型等于换一条渠道实现），所以几组不会在同一个会话里来回切。 -->
       <template v-if="drawer.formData.type === 'WEBHOOK'">
         <ElFormItem :label="t('pages.notification_channel.webhookUrl')" prop="webhookUrl">
           <ElInput
@@ -84,6 +85,60 @@
             "
           />
           <div class="field-tip">{{ t("pages.notification_channel.webhookSecretHint") }}</div>
+        </ElFormItem>
+      </template>
+
+      <template v-else-if="drawer.formData.type === 'SMS'">
+        <ElFormItem :label="t('pages.notification_channel.smsProvider')" prop="smsProvider">
+          <ElSelect v-model="drawer.formData.smsProvider">
+            <ElOption :label="t('pages.notification_channel.providerAliyun')" value="ALIYUN" />
+            <ElOption :label="t('pages.notification_channel.providerTencent')" value="TENCENT" />
+          </ElSelect>
+          <div class="field-tip">{{ t("pages.notification_channel.smsProviderHint") }}</div>
+        </ElFormItem>
+
+        <ElFormItem :label="t('pages.notification_channel.smsAccessKeyId')" prop="smsAccessKeyId">
+          <ElInput v-model="drawer.formData.smsAccessKeyId" clearable />
+        </ElFormItem>
+
+        <ElFormItem :label="t('pages.notification_channel.smsAccessSecret')" prop="smsAccessSecret">
+          <ElInput
+            v-model="drawer.formData.smsAccessSecret"
+            type="password"
+            show-password
+            :placeholder="
+              isCreate
+                ? t('pages.notification_channel.smsAccessSecretPlaceholder')
+                : t('pages.notification_channel.smsAccessSecretKeepHint')
+            "
+          />
+          <div class="field-tip">{{ t("pages.notification_channel.smsAccessSecretHint") }}</div>
+        </ElFormItem>
+
+        <ElFormItem :label="t('pages.notification_channel.smsSignName')" prop="smsSignName">
+          <ElInput v-model="drawer.formData.smsSignName" clearable />
+          <div class="field-tip">{{ t("pages.notification_channel.smsSignNameHint") }}</div>
+        </ElFormItem>
+
+        <ElFormItem :label="t('pages.notification_channel.smsTemplateCode')" prop="smsTemplateCode">
+          <ElInput
+            v-model="drawer.formData.smsTemplateCode"
+            :placeholder="t('pages.notification_channel.smsTemplateCodePlaceholder')"
+            clearable
+          />
+          <div class="field-tip">{{ t("pages.notification_channel.smsTemplateCodeHint") }}</div>
+        </ElFormItem>
+
+        <!-- 腾讯云两项必填、阿里云留空：必留必填差在 field-tip 里说清，
+             不按服务商切 required——选错服务商时让后端报错点名缺哪个字段，比模糊的红星更可排障。 -->
+        <ElFormItem :label="t('pages.notification_channel.smsAppId')" prop="smsAppId">
+          <ElInput v-model="drawer.formData.smsAppId" placeholder="1400000000" clearable />
+          <div class="field-tip">{{ t("pages.notification_channel.smsAppIdHint") }}</div>
+        </ElFormItem>
+
+        <ElFormItem :label="t('pages.notification_channel.smsRegion')" prop="smsRegion">
+          <ElInput v-model="drawer.formData.smsRegion" placeholder="ap-guangzhou" clearable />
+          <div class="field-tip">{{ t("pages.notification_channel.smsRegionHint") }}</div>
         </ElFormItem>
       </template>
 
@@ -218,25 +273,39 @@ const drawer = useDrawerForm({
     webhookSignStyle: "CUSTOM",
     webhookPayloadTemplate: "",
     webhookSecret: "",
+    smsProvider: "ALIYUN",
+    smsAccessKeyId: "",
+    smsAccessSecret: "",
+    smsSignName: "",
+    smsTemplateCode: "",
+    smsAppId: "",
+    smsRegion: "",
     enabled: true,
     remark: "",
   },
-  // password / webhookSecret 是请求级字段，与 data 并列发出去：读视图只有 hasPassword /
-  // hasWebhookSecret 两个布尔，所以它们既不进 data、也不进 updateMask。
+  // password / webhookSecret / smsAccessSecret 是请求级字段，与 data 并列发出去：读视图只有
+  // hasPassword / hasWebhookSecret / hasSmsAccessSecret 三个布尔，所以它们既不进 data、也不进 updateMask。
   createFn: async (values: Record<string, any>) => {
-    const { password, webhookSecret, ...data } = values;
-    return createNotificationChannel(data, password, webhookSecret);
+    const { password, webhookSecret, smsAccessSecret, ...data } = values;
+    return createNotificationChannel(data, password, webhookSecret, smsAccessSecret);
   },
   updateFn: (id: number, values: Record<string, any>) => {
-    const { password, webhookSecret, ...data } = values;
-    return updateNotificationChannel(id, data, password || undefined, webhookSecret || undefined);
+    const { password, webhookSecret, smsAccessSecret, ...data } = values;
+    return updateNotificationChannel(
+      id,
+      data,
+      password || undefined,
+      webhookSecret || undefined,
+      smsAccessSecret || undefined,
+    );
   },
 });
 
 const formRules = computed(() => ({
   name: [{ required: true, message: t("pages.notification_channel.requiredName"), trigger: "blur" }],
   // SMTP 密码不填等于建了个发不出信的渠道，故创建时必填；签名密钥始终可选（不签名是合法
-  // 配置），所以 WEBHOOK 组里只有 webhookUrl 在创建时必填。两类规则各按当前 type 生效。
+  // 配置），所以 WEBHOOK 组里只有 webhookUrl 在创建时必填。SMS 组的四个必填同理：
+  // 缺一项就是一条发不出验证码的渠道。各类规则按当前 type 生效。
   password:
     isCreate.value && drawer.formData.type === "EMAIL"
       ? [{ required: true, message: t("pages.notification_channel.requiredPassword"), trigger: "blur" }]
@@ -250,6 +319,26 @@ const formRules = computed(() => ({
             trigger: "blur",
           },
         ]
+      : [],
+  smsProvider:
+    drawer.formData.type === "SMS"
+      ? [{ required: true, message: t("pages.notification_channel.requiredSmsProvider"), trigger: "change" }]
+      : [],
+  smsAccessKeyId:
+    drawer.formData.type === "SMS"
+      ? [{ required: true, message: t("pages.notification_channel.requiredSmsAccessKeyId"), trigger: "blur" }]
+      : [],
+  smsAccessSecret:
+    isCreate.value && drawer.formData.type === "SMS"
+      ? [{ required: true, message: t("pages.notification_channel.requiredSmsAccessSecret"), trigger: "blur" }]
+      : [],
+  smsSignName:
+    drawer.formData.type === "SMS"
+      ? [{ required: true, message: t("pages.notification_channel.requiredSmsSignName"), trigger: "blur" }]
+      : [],
+  smsTemplateCode:
+    drawer.formData.type === "SMS"
+      ? [{ required: true, message: t("pages.notification_channel.requiredSmsTemplateCode"), trigger: "blur" }]
       : [],
 }));
 
@@ -272,6 +361,12 @@ function open(options: { create: boolean; row?: any }) {
       // 表单里摆成 CUSTOM，管理员才改得动，也不会以为"没选=没签名"。
       webhookSignStyle: row.webhookSignStyle || "CUSTOM",
       webhookPayloadTemplate: row.webhookPayloadTemplate || "",
+      smsProvider: row.smsProvider || "ALIYUN",
+      smsAccessKeyId: row.smsAccessKeyId || "",
+      smsSignName: row.smsSignName || "",
+      smsTemplateCode: row.smsTemplateCode || "",
+      smsAppId: row.smsAppId || "",
+      smsRegion: row.smsRegion || "",
       enabled: !!row.enabled,
       remark: row.remark || "",
     });

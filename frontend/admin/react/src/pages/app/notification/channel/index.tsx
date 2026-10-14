@@ -17,7 +17,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import type {
   notification_channelservicev1_NotificationChannel as NotificationChannel,
-  notification_channelservicev1_SendTestEmailRequest,
+  notification_channelservicev1_SendTestRequest,
   notification_channelservicev1_CreateNotificationChannelRequest,
   notification_channelservicev1_UpdateNotificationChannelRequest,
 } from '@/api/generated/admin/service/v1';
@@ -26,7 +26,7 @@ import { TABLE } from '@/config/constants';
 import {
   fetchListNotificationChannels,
   useDeleteNotificationChannel,
-  useSendTestEmail,
+  useSendTest,
   useUpdateNotificationChannel,
   useCreateNotificationChannel,
 } from '@/api/hooks/notification-channel';
@@ -43,11 +43,24 @@ const CHANNEL_TYPE_LABEL_KEY: Record<
 > = {
   EMAIL: 'typeEmail',
   WEBHOOK: 'typeWebhook',
+  SMS: 'typeSms',
 };
 
 const CHANNEL_TYPE_COLOR: Record<NonNullable<NotificationChannel['type']>, string> = {
   EMAIL: 'blue',
   WEBHOOK: 'purple',
+  SMS: 'cyan',
+};
+
+/**
+ * 短信服务商 → 文案。列值就是 proto SmsProvider 成员名的同一组字符串（枚举按名字配对）。
+ */
+const SMS_PROVIDER_LABEL_KEY: Record<
+  NonNullable<NotificationChannel['smsProvider']>,
+  string
+> = {
+  ALIYUN: 'providerAliyun',
+  TENCENT: 'providerTencent',
 };
 
 /**
@@ -123,7 +136,7 @@ const NotificationChannelManagement = () => {
 
   const createMutation = useCreateNotificationChannel();
   const updateMutation = useUpdateNotificationChannel();
-  const testMutation = useSendTestEmail();
+  const testMutation = useSendTest();
 
   const handleDelete = async (record: NotificationChannel) => {
     if (!record.id) return;
@@ -135,14 +148,15 @@ const NotificationChannelManagement = () => {
   };
 
   const handleSubmit = async (values: Record<string, any>) => {
-    // 两处密钥是请求级字段（不进 data）：读视图只有 hasPassword / hasWebhookSecret 两个布尔
-    const { password, webhookSecret, ...data } = values;
+    // 三个密钥是请求级字段（不进 data）：读视图只有 hasPassword / hasWebhookSecret / hasSmsAccessSecret 布尔
+    const { password, webhookSecret, smsAccessSecret, ...data } = values;
     try {
       if (drawerMode === 'create') {
         const req: notification_channelservicev1_CreateNotificationChannelRequest = {
           data,
           password: password || undefined,
           webhookSecret: webhookSecret || undefined,
+          smsAccessSecret: smsAccessSecret || undefined,
         };
         await createMutation.mutateAsync(req);
         message.success(t('createSuccess'));
@@ -152,8 +166,9 @@ const NotificationChannelManagement = () => {
           data,
           password: password || undefined,
           webhookSecret: webhookSecret || undefined,
+          smsAccessSecret: smsAccessSecret || undefined,
           updateMask:
-            'name,type,smtpHost,smtpPort,smtpUsername,smtpFrom,smtpTls,webhookUrl,webhookSignStyle,webhookPayloadTemplate,enabled,remark',
+            'name,type,smtpHost,smtpPort,smtpUsername,smtpFrom,smtpTls,webhookUrl,webhookSignStyle,webhookPayloadTemplate,smsProvider,smsAccessKeyId,smsSignName,smsTemplateCode,smsAppId,smsRegion,enabled,remark',
         };
         await updateMutation.mutateAsync(req);
         message.success(t('updateSuccess'));
@@ -169,7 +184,7 @@ const NotificationChannelManagement = () => {
 
   const handleTestSend = async (values: { recipient: string }) => {
     if (!testTarget?.id) return false;
-    const req: notification_channelservicev1_SendTestEmailRequest = {
+    const req: notification_channelservicev1_SendTestRequest = {
       id: testTarget.id,
       recipient: values.recipient,
     };
@@ -254,6 +269,23 @@ const NotificationChannelManagement = () => {
       },
     },
     {
+      title: t('smsProvider'),
+      dataIndex: 'smsProvider',
+      width: 110,
+      render: (_, record) => {
+        if (record.type !== 'SMS') return '-';
+        const key = record.smsProvider ? SMS_PROVIDER_LABEL_KEY[record.smsProvider] : undefined;
+        return key ? <Tag>{t(key)}</Tag> : '-';
+      },
+    },
+    {
+      title: t('smsSignName'),
+      dataIndex: 'smsSignName',
+      width: 120,
+      ellipsis: true,
+      render: (_, record) => (record.type === 'SMS' ? record.smsSignName || '-' : '-'),
+    },
+    {
       title: t('hasPassword'),
       dataIndex: 'hasPassword',
       width: 100,
@@ -270,6 +302,17 @@ const NotificationChannelManagement = () => {
       width: 100,
       render: (_, record) =>
         record.hasWebhookSecret ? (
+          <Tag color="green">{t('passwordSet')}</Tag>
+        ) : (
+          <Tag>{t('passwordNotSet')}</Tag>
+        ),
+    },
+    {
+      title: t('hasSmsAccessSecret'),
+      dataIndex: 'hasSmsAccessSecret',
+      width: 100,
+      render: (_, record) =>
+        record.hasSmsAccessSecret ? (
           <Tag color="green">{t('passwordSet')}</Tag>
         ) : (
           <Tag>{t('passwordNotSet')}</Tag>
@@ -309,9 +352,9 @@ const NotificationChannelManagement = () => {
         >
           {t('edit')}
         </Button>,
-        // 测试发送只对 EMAIL 有意义：它测的就是这一个 SMTP 账号能否握手发信。
+        // 测试发送只对有"收件目标"的渠道有意义：EMAIL 测 SMTP 握手发信、SMS 发一条真验证码。
         // WEBHOOK 的"当场试一次"在路由规则页（那里测的是事件 → 渠道 → 台账整条链）。
-        record.type === 'EMAIL' && (
+        (record.type === 'EMAIL' || record.type === 'SMS') && (
           <Button key="test" type="link" size="small" icon={<SendOutlined />} onClick={() => setTestTarget(record)}>
             {t('testSend')}
           </Button>
@@ -365,7 +408,7 @@ const NotificationChannelManagement = () => {
           ]}
           size="middle"
           bordered
-          scroll={{ y: tableScrollY, x: 1780 }}
+          scroll={{ y: tableScrollY, x: 2110 }}
         />
       </div>
 
@@ -379,11 +422,12 @@ const NotificationChannelManagement = () => {
         onFinish={handleSubmit}
         initialValues={
           drawerMode === 'create'
-            ? { type: 'EMAIL', smtpTls: 'START_TLS', smtpPort: 587, webhookSignStyle: 'CUSTOM', enabled: true }
+            ? { type: 'EMAIL', smtpTls: 'START_TLS', smtpPort: 587, webhookSignStyle: 'CUSTOM', smsProvider: 'ALIYUN', enabled: true }
             : {
                 ...selected,
                 password: undefined,
                 webhookSecret: undefined,
+                smsAccessSecret: undefined,
                 // 同列表列：该列为空时按 CUSTOM 摆进表单，否则这一项是空的、改不动
                 webhookSignStyle: selected?.webhookSignStyle ?? 'CUSTOM',
               }
@@ -400,12 +444,13 @@ const NotificationChannelManagement = () => {
           options={[
             { label: t('typeEmail'), value: 'EMAIL' },
             { label: t('typeWebhook'), value: 'WEBHOOK' },
+            { label: t('typeSms'), value: 'SMS' },
           ]}
           disabled={drawerMode === 'edit'}
           rules={[{ required: true }]}
         />
-        {/* 两类渠道各自的配置项分组显示：表单里同时摆两组，管理员要自己猜哪一组生效。
-            编辑态 type 不可改（改类型等于换一条渠道实现），所以两组不会在同一个会话里来回切。 */}
+        {/* 三类渠道各自的配置项分组显示：表单里同时摆几组，管理员要自己猜哪一组生效。
+            编辑态 type 不可改（改类型等于换一条渠道实现），所以几组不会在同一个会话里来回切。 */}
         <ProFormDependency name={['type']}>
           {({ type }) =>
             type === 'WEBHOOK' ? (
@@ -448,6 +493,62 @@ const NotificationChannelManagement = () => {
                   tooltip={t('webhookSecretHint')}
                 />
               </>
+            ) : type === 'SMS' ? (
+              <>
+                <ProFormSelect
+                  name="smsProvider"
+                  label={t('smsProvider')}
+                  tooltip={t('smsProviderHint')}
+                  options={[
+                    { label: t('providerAliyun'), value: 'ALIYUN' },
+                    { label: t('providerTencent'), value: 'TENCENT' },
+                  ]}
+                  rules={[{ required: true, message: t('requiredSmsProvider') }]}
+                />
+                <ProFormText
+                  name="smsAccessKeyId"
+                  label={t('smsAccessKeyId')}
+                  rules={[{ required: true, message: t('requiredSmsAccessKeyId') }]}
+                />
+                <ProFormText.Password
+                  name="smsAccessSecret"
+                  label={t('smsAccessSecret')}
+                  placeholder={
+                    drawerMode === 'edit' ? t('smsAccessSecretKeepHint') : t('smsAccessSecretPlaceholder')
+                  }
+                  tooltip={t('smsAccessSecretHint')}
+                  rules={
+                    drawerMode === 'create' ? [{ required: true, message: t('requiredSmsAccessSecret') }] : []
+                  }
+                />
+                <ProFormText
+                  name="smsSignName"
+                  label={t('smsSignName')}
+                  tooltip={t('smsSignNameHint')}
+                  rules={[{ required: true, message: t('requiredSmsSignName') }]}
+                />
+                <ProFormText
+                  name="smsTemplateCode"
+                  label={t('smsTemplateCode')}
+                  tooltip={t('smsTemplateCodeHint')}
+                  placeholder={t('smsTemplateCodePlaceholder')}
+                  rules={[{ required: true, message: t('requiredSmsTemplateCode') }]}
+                />
+                {/* 腾讯云两项必填、阿里云留空：必留必填差在 tooltip 里说清，
+                    不按服务商切 required——否则选错服务商时表单先于后端把人拦在模糊的 red 星号上。 */}
+                <ProFormText
+                  name="smsAppId"
+                  label={t('smsAppId')}
+                  tooltip={t('smsAppIdHint')}
+                  placeholder="1400000000"
+                />
+                <ProFormText
+                  name="smsRegion"
+                  label={t('smsRegion')}
+                  tooltip={t('smsRegionHint')}
+                  placeholder="ap-guangzhou"
+                />
+              </>
             ) : (
               <>
                 <ProFormText name="smtpHost" label={t('smtpHost')} placeholder="smtp.example.com" />
@@ -486,7 +587,11 @@ const NotificationChannelManagement = () => {
       </ModalForm>
 
       <ModalForm<{ recipient: string }>
-        title={t('testSendTitle', { name: testTarget?.name || '' })}
+        title={
+          testTarget?.type === 'SMS'
+            ? t('testSendTitleSms', { name: testTarget?.name || '' })
+            : t('testSendTitle', { name: testTarget?.name || '' })
+        }
         width={440}
         open={!!testTarget}
         onOpenChange={(open) => {
@@ -498,12 +603,15 @@ const NotificationChannelManagement = () => {
       >
         <ProFormText
           name="recipient"
-          label={t('testRecipient')}
+          label={testTarget?.type === 'SMS' ? t('testRecipientPhone') : t('testRecipient')}
           rules={[
-            { required: true, message: t('requiredRecipient') },
-            { type: 'email', message: t('invalidEmail') },
+            { required: true, message: testTarget?.type === 'SMS' ? t('requiredRecipientPhone') : t('requiredRecipient') },
+            // 校验跟随渠道类型：SMS 收手机号（宽松位数控，E.164 或大陆裸号），EMAIL 收邮箱。
+            testTarget?.type === 'SMS'
+              ? { pattern: /^\+?\d[\d\s-]{4,19}$/, message: t('invalidPhone') }
+              : { type: 'email', message: t('invalidEmail') },
           ]}
-          placeholder="you@example.com"
+          placeholder={testTarget?.type === 'SMS' ? '13800138000' : 'you@example.com'}
         />
       </ModalForm>
     </ContentContainer>

@@ -1657,7 +1657,7 @@ var (
 		{Name: "remark", Type: field.TypeString, Nullable: true, Comment: "备注"},
 		{Name: "status", Type: field.TypeEnum, Comment: "状态", Enums: []string{"OFF", "ON"}, Default: "ON"},
 		{Name: "name", Type: field.TypeString, Comment: "渠道名称"},
-		{Name: "type", Type: field.TypeEnum, Comment: "渠道类型（一期仅实现 EMAIL）", Enums: []string{"EMAIL", "WEBHOOK"}, Default: "EMAIL"},
+		{Name: "type", Type: field.TypeEnum, Comment: "渠道类型（EMAIL / WEBHOOK / SMS）", Enums: []string{"EMAIL", "WEBHOOK", "SMS"}, Default: "EMAIL"},
 		{Name: "smtp_host", Type: field.TypeString, Nullable: true, Comment: "SMTP 服务器地址"},
 		{Name: "smtp_port", Type: field.TypeUint32, Nullable: true, Comment: "SMTP 端口（25/465/587）"},
 		{Name: "smtp_username", Type: field.TypeString, Nullable: true, Comment: "SMTP 用户名"},
@@ -1668,6 +1668,13 @@ var (
 		{Name: "webhook_secret", Type: field.TypeString, Nullable: true, Comment: "Webhook 签名密钥（EncryptIfNeeded 加密存储，仅 WEBHOOK 渠道）"},
 		{Name: "webhook_sign_style", Type: field.TypeEnum, Nullable: true, Comment: "Webhook 出站风格（签名位置/算法与应答判据，仅 WEBHOOK 渠道）", Enums: []string{"CUSTOM", "NONE", "DINGTALK", "FEISHU", "WECOM"}, Default: "CUSTOM"},
 		{Name: "webhook_payload_template", Type: field.TypeString, Nullable: true, Comment: "Webhook 载荷模板（{{占位符}} 渲染；留空则用该风格的内置默认 JSON）"},
+		{Name: "sms_provider", Type: field.TypeEnum, Nullable: true, Comment: "短信服务商（仅 SMS 渠道）", Enums: []string{"ALIYUN", "TENCENT"}, Default: "ALIYUN"},
+		{Name: "sms_access_key_id", Type: field.TypeString, Nullable: true, Comment: "短信访问密钥 ID（仅 SMS 渠道）"},
+		{Name: "sms_access_secret", Type: field.TypeString, Nullable: true, Comment: "短信访问密钥 Secret（EncryptIfNeeded 加密存储，仅 SMS 渠道）"},
+		{Name: "sms_sign_name", Type: field.TypeString, Nullable: true, Comment: "短信签名（服务商侧已备案的签名名，仅 SMS 渠道）"},
+		{Name: "sms_template_code", Type: field.TypeString, Nullable: true, Comment: "短信验证码模板 ID（服务商侧审核通过的模板，仅 SMS 渠道）"},
+		{Name: "sms_app_id", Type: field.TypeString, Nullable: true, Comment: "短信应用 ID（腾讯云 SmsSdkAppId 必填；阿里云留空）"},
+		{Name: "sms_region", Type: field.TypeString, Nullable: true, Comment: "服务地域（腾讯云必填如 ap-guangzhou；阿里云留空）"},
 	}
 	// SysNotificationChannelsTable holds the schema information for the "sys_notification_channels" table.
 	SysNotificationChannelsTable = &schema.Table{
@@ -1692,7 +1699,7 @@ var (
 		{Name: "created_by", Type: field.TypeUint32, Nullable: true, Comment: "创建者ID"},
 		{Name: "updated_by", Type: field.TypeUint32, Nullable: true, Comment: "更新者ID"},
 		{Name: "deleted_by", Type: field.TypeUint32, Nullable: true, Comment: "删除者ID"},
-		{Name: "event_type", Type: field.TypeEnum, Nullable: true, Comment: "业务事件类型", Enums: []string{"PASSWORD_RESET_CODE", "CONTACT_BIND_CODE", "CHANNEL_TEST_EMAIL", "INTERNAL_MESSAGE", "MONITOR_ALERT"}},
+		{Name: "event_type", Type: field.TypeEnum, Nullable: true, Comment: "业务事件类型", Enums: []string{"PASSWORD_RESET_CODE", "CONTACT_BIND_CODE", "CHANNEL_TEST_EMAIL", "INTERNAL_MESSAGE", "MONITOR_ALERT", "CHANNEL_TEST_SMS", "PHONE_BIND_CODE"}},
 		{Name: "channel", Type: field.TypeEnum, Nullable: true, Comment: "投递渠道", Enums: []string{"EMAIL", "SMS", "WEBHOOK", "INTERNAL"}},
 		{Name: "channel_id", Type: field.TypeUint32, Nullable: true, Comment: "实际选中的渠道配置ID"},
 		{Name: "recipient_user_id", Type: field.TypeUint32, Nullable: true, Comment: "收件用户ID（直发模式可为空）"},

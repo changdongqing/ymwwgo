@@ -36,7 +36,7 @@ type NotificationChannel struct {
 	Status *notificationchannel.Status `json:"status,omitempty"`
 	// 渠道名称
 	Name string `json:"name,omitempty"`
-	// 渠道类型（一期仅实现 EMAIL）
+	// 渠道类型（EMAIL / WEBHOOK / SMS）
 	Type notificationchannel.Type `json:"type,omitempty"`
 	// SMTP 服务器地址
 	SMTPHost *string `json:"smtp_host,omitempty"`
@@ -58,7 +58,21 @@ type NotificationChannel struct {
 	WebhookSignStyle *notificationchannel.WebhookSignStyle `json:"webhook_sign_style,omitempty"`
 	// Webhook 载荷模板（{{占位符}} 渲染；留空则用该风格的内置默认 JSON）
 	WebhookPayloadTemplate *string `json:"webhook_payload_template,omitempty"`
-	selectValues           sql.SelectValues
+	// 短信服务商（仅 SMS 渠道）
+	SmsProvider *notificationchannel.SmsProvider `json:"sms_provider,omitempty"`
+	// 短信访问密钥 ID（仅 SMS 渠道）
+	SmsAccessKeyID *string `json:"sms_access_key_id,omitempty"`
+	// 短信访问密钥 Secret（EncryptIfNeeded 加密存储，仅 SMS 渠道）
+	SmsAccessSecret *string `json:"-"`
+	// 短信签名（服务商侧已备案的签名名，仅 SMS 渠道）
+	SmsSignName *string `json:"sms_sign_name,omitempty"`
+	// 短信验证码模板 ID（服务商侧审核通过的模板，仅 SMS 渠道）
+	SmsTemplateCode *string `json:"sms_template_code,omitempty"`
+	// 短信应用 ID（腾讯云 SmsSdkAppId 必填；阿里云留空）
+	SmsAppID *string `json:"sms_app_id,omitempty"`
+	// 服务地域（腾讯云必填如 ap-guangzhou；阿里云留空）
+	SmsRegion    *string `json:"sms_region,omitempty"`
+	selectValues sql.SelectValues
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -68,7 +82,7 @@ func (*NotificationChannel) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case notificationchannel.FieldID, notificationchannel.FieldCreatedBy, notificationchannel.FieldUpdatedBy, notificationchannel.FieldDeletedBy, notificationchannel.FieldSMTPPort:
 			values[i] = new(sql.NullInt64)
-		case notificationchannel.FieldRemark, notificationchannel.FieldStatus, notificationchannel.FieldName, notificationchannel.FieldType, notificationchannel.FieldSMTPHost, notificationchannel.FieldSMTPUsername, notificationchannel.FieldSMTPPassword, notificationchannel.FieldSMTPFrom, notificationchannel.FieldSMTPTLS, notificationchannel.FieldWebhookURL, notificationchannel.FieldWebhookSecret, notificationchannel.FieldWebhookSignStyle, notificationchannel.FieldWebhookPayloadTemplate:
+		case notificationchannel.FieldRemark, notificationchannel.FieldStatus, notificationchannel.FieldName, notificationchannel.FieldType, notificationchannel.FieldSMTPHost, notificationchannel.FieldSMTPUsername, notificationchannel.FieldSMTPPassword, notificationchannel.FieldSMTPFrom, notificationchannel.FieldSMTPTLS, notificationchannel.FieldWebhookURL, notificationchannel.FieldWebhookSecret, notificationchannel.FieldWebhookSignStyle, notificationchannel.FieldWebhookPayloadTemplate, notificationchannel.FieldSmsProvider, notificationchannel.FieldSmsAccessKeyID, notificationchannel.FieldSmsAccessSecret, notificationchannel.FieldSmsSignName, notificationchannel.FieldSmsTemplateCode, notificationchannel.FieldSmsAppID, notificationchannel.FieldSmsRegion:
 			values[i] = new(sql.NullString)
 		case notificationchannel.FieldCreatedAt, notificationchannel.FieldUpdatedAt, notificationchannel.FieldDeletedAt:
 			values[i] = new(sql.NullTime)
@@ -231,6 +245,55 @@ func (_m *NotificationChannel) assignValues(columns []string, values []any) erro
 				_m.WebhookPayloadTemplate = new(string)
 				*_m.WebhookPayloadTemplate = value.String
 			}
+		case notificationchannel.FieldSmsProvider:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field sms_provider", values[i])
+			} else if value.Valid {
+				_m.SmsProvider = new(notificationchannel.SmsProvider)
+				*_m.SmsProvider = notificationchannel.SmsProvider(value.String)
+			}
+		case notificationchannel.FieldSmsAccessKeyID:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field sms_access_key_id", values[i])
+			} else if value.Valid {
+				_m.SmsAccessKeyID = new(string)
+				*_m.SmsAccessKeyID = value.String
+			}
+		case notificationchannel.FieldSmsAccessSecret:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field sms_access_secret", values[i])
+			} else if value.Valid {
+				_m.SmsAccessSecret = new(string)
+				*_m.SmsAccessSecret = value.String
+			}
+		case notificationchannel.FieldSmsSignName:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field sms_sign_name", values[i])
+			} else if value.Valid {
+				_m.SmsSignName = new(string)
+				*_m.SmsSignName = value.String
+			}
+		case notificationchannel.FieldSmsTemplateCode:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field sms_template_code", values[i])
+			} else if value.Valid {
+				_m.SmsTemplateCode = new(string)
+				*_m.SmsTemplateCode = value.String
+			}
+		case notificationchannel.FieldSmsAppID:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field sms_app_id", values[i])
+			} else if value.Valid {
+				_m.SmsAppID = new(string)
+				*_m.SmsAppID = value.String
+			}
+		case notificationchannel.FieldSmsRegion:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field sms_region", values[i])
+			} else if value.Valid {
+				_m.SmsRegion = new(string)
+				*_m.SmsRegion = value.String
+			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
 		}
@@ -354,6 +417,38 @@ func (_m *NotificationChannel) String() string {
 	builder.WriteString(", ")
 	if v := _m.WebhookPayloadTemplate; v != nil {
 		builder.WriteString("webhook_payload_template=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.SmsProvider; v != nil {
+		builder.WriteString("sms_provider=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	if v := _m.SmsAccessKeyID; v != nil {
+		builder.WriteString("sms_access_key_id=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	builder.WriteString("sms_access_secret=<sensitive>")
+	builder.WriteString(", ")
+	if v := _m.SmsSignName; v != nil {
+		builder.WriteString("sms_sign_name=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.SmsTemplateCode; v != nil {
+		builder.WriteString("sms_template_code=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.SmsAppID; v != nil {
+		builder.WriteString("sms_app_id=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.SmsRegion; v != nil {
+		builder.WriteString("sms_region=")
 		builder.WriteString(*v)
 	}
 	builder.WriteByte(')')

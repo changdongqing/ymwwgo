@@ -7173,6 +7173,8 @@ export type notificationservicev1_NotificationDelivery = {
 // 表的初始四行由代码里那份同形常量播种（见 docs/notification_domain_design.md §3.5、§4 P2-C）。
 export type notificationservicev1_EventType =
   | 'CHANNEL_TEST_EMAIL'
+  // 渠道配置测试短信（渠道页"测试发送"）：与 CHANNEL_TEST_EMAIL 同因同果，只差渠道。
+  | 'CHANNEL_TEST_SMS'
   | 'CONTACT_BIND_CODE'
   | 'EVENT_TYPE_UNSPECIFIED'
   // 站内信投递：一条站内信发给一个收件人 = 一行台账，related_id 指向 sys_internal_messages.id。
@@ -7182,7 +7184,10 @@ export type notificationservicev1_EventType =
   // 监控告警：监控扫描任务对规则求值后触发（explicit channel + target，不经路由表）。
   // related_id 指向 sys_monitor_alert_rules.id。
   | 'MONITOR_ALERT'
-  | 'PASSWORD_RESET_CODE';
+  | 'PASSWORD_RESET_CODE'
+  // 手机号绑定验证码短信：由 SMS 渠道显式投递（调用方带 channel=SMS，不经路由表），
+  // 正文来自渠道行配置的审核模板，占位值走 params.code。
+  | 'PHONE_BIND_CODE';
 // 投递状态
 export type notificationservicev1_DeliveryStatus =
   | 'DELIVERY_STATUS_UNSPECIFIED'
@@ -7220,6 +7225,10 @@ export interface NotificationChannelService {
   // 发送测试邮件（验证渠道配置）
   SendTestEmail(
     request: notification_channelservicev1_SendTestEmailRequest,
+  ): Promise<wellKnownEmpty>;
+  // 发送测试消息（按渠道类型分派：EMAIL 走邮件，SMS 发测试验证码）
+  SendTest(
+    request: notification_channelservicev1_SendTestRequest,
   ): Promise<wellKnownEmpty>;
 }
 
@@ -7394,6 +7403,17 @@ export function createNotificationChannelServiceClient(
         method: 'SendTestEmail',
       }) as Promise<wellKnownEmpty>;
     },
+    SendTest(request) {
+      if (request.id === undefined || request.id === null) {
+        throw new Error('missing required field request.id');
+      }
+      const path = `admin/v1/notification-channels/${request.id}/send-test`;
+      const body = JSON.stringify(request);
+      return transport.unary(path, 'POST', body, {
+        service: 'NotificationChannelService',
+        method: 'SendTest',
+      }) as Promise<wellKnownEmpty>;
+    },
   };
 }
 // 查询通知渠道列表 - 回应
@@ -7410,10 +7430,22 @@ export type notification_channelservicev1_NotificationChannel = {
   // 密码不回传：仅创建/更新时写入；hasPassword 标识是否已配置
   hasPassword?: boolean;
   // 密钥不回传：与 password 同一条约定，仅写入时接收
+  hasSmsAccessSecret?: boolean;
+  // 密钥不回传：与 password 同一条约定，仅写入时接收
   hasWebhookSecret?: boolean;
   id?: number;
   name?: string;
   remark?: string;
+  smsAccessKeyId?: string;
+  // 腾讯云必填（SmsSdkAppId，控制台"应用管理"里那串数字）；阿里云留空。
+  smsAppId?: string;
+  smsProvider?: notification_channelservicev1_SmsProvider;
+  // 腾讯云必填（如 ap-guangzhou）；阿里云留空（默认 cn-hangzhou）。
+  smsRegion?: string;
+  smsSignName?: string;
+  // 短信模板必须是服务商侧审核通过的验证码模板：
+  // 阿里云模板正文含 ${code}，腾讯云模板正文含 {1}——同一份占位语义，各家用各家的写法。
+  smsTemplateCode?: string;
   smtpFrom?: string;
   smtpHost?: string;
   smtpPort?: number;
@@ -7433,6 +7465,7 @@ export type notification_channelservicev1_NotificationChannel = {
 // 渠道类型
 export type notification_channelservicev1_NotificationChannel_Type =
   | 'EMAIL'
+  | 'SMS'
   | 'WEBHOOK';
 // SMTP 加密方式
 export type notification_channelservicev1_NotificationChannel_TlsMode =
@@ -7452,6 +7485,11 @@ export type notification_channelservicev1_SignStyle =
   | 'FEISHU'
   | 'NONE'
   | 'WECOM';
+// 短信服务商。成员名必须与 ent 列值逐字相同（EnumTypeConverter 按名字字符串配对）。
+// proto3 首成员为零值：库里的存量行在加列时被 DEFAULT 回填成 'ALIYUN'，语义一致。
+export type notification_channelservicev1_SmsProvider =
+  | 'ALIYUN'
+  | 'TENCENT';
 // 查询通知渠道详情 - 请求
 export type notification_channelservicev1_GetNotificationChannelRequest = {
   id: number | undefined;
@@ -7462,6 +7500,8 @@ export type notification_channelservicev1_CreateNotificationChannelRequest = {
   data: notification_channelservicev1_NotificationChannel | undefined;
   // 明文密码（服务端加密存储，不落日志）
   password?: string;
+  // 明文访问密钥 Secret（服务端加密存储，不落日志；仅 SMS 渠道）
+  smsAccessSecret?: string;
   // 明文签名密钥（服务端加密存储，不落日志；留空 = 不签名）
   webhookSecret?: string;
 };
@@ -7472,6 +7512,8 @@ export type notification_channelservicev1_UpdateNotificationChannelRequest = {
   id: number | undefined;
   // 明文密码；留空表示不修改已存密码
   password?: string;
+  // 明文访问密钥 Secret；留空表示不修改已存密钥（仅 SMS 渠道）
+  smsAccessSecret?: string;
   updateMask: undefined | wellKnownFieldMask;
   // 明文签名密钥；留空表示不修改已存密钥
   // （与 password 同形：想清空只能在 data.webhookUrl 之外另走删除重建，一期不做清空口）
@@ -7486,6 +7528,13 @@ export type notification_channelservicev1_DeleteNotificationChannelRequest = {
 // 发送测试邮件 - 请求
 export type notification_channelservicev1_SendTestEmailRequest = {
   id: number | undefined;
+  recipient: string | undefined;
+};
+
+// 发送测试消息 - 请求（按渠道类型分派：EMAIL 走邮件，SMS 发一条测试验证码；WEBHOOK 不支持）
+export type notification_channelservicev1_SendTestRequest = {
+  id: number | undefined;
+  // 收件目标：EMAIL 为邮箱地址，SMS 为手机号（E.164 或纯号码均可）
   recipient: string | undefined;
 };
 

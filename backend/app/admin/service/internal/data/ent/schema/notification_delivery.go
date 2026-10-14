@@ -48,6 +48,9 @@ func (NotificationDelivery) Fields() []ent.Field {
 				"InternalMessage", "INTERNAL_MESSAGE",
 				// 监控告警：与 proto 的 EventType 枚举逐字同名（EnumTypeConverter 按名字配对）
 				"MonitorAlert", "MONITOR_ALERT",
+				// SMS 渠道两个新事件：渠道测试短信与手机号绑定验证码
+				"ChannelTestSms", "CHANNEL_TEST_SMS",
+				"PhoneBindCode", "PHONE_BIND_CODE",
 			).
 			Optional().
 			Nillable(),

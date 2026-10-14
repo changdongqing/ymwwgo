@@ -4045,6 +4045,29 @@ paths:
                 "200":
                     description: OK
                     content: {}
+    /admin/v1/notification-channels/{id}/send-test:
+        post:
+            tags:
+                - NotificationChannelService
+            description: 发送测试消息（按渠道类型分派：EMAIL 走邮件，SMS 发测试验证码）
+            operationId: NotificationChannelService_SendTest
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint32
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/SendTestRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
     /admin/v1/notification-channels/{id}/send-test-email:
         post:
             tags:
@@ -8644,6 +8667,9 @@ components:
                 webhookSecret:
                     type: string
                     description: Webhook 签名密钥
+                smsAccessSecret:
+                    type: string
+                    description: 短信访问密钥 Secret
             description: 创建通知渠道 - 请求
         CreateNotificationRuleRequest:
             type: object
@@ -11044,6 +11070,7 @@ components:
                     enum:
                         - EMAIL
                         - WEBHOOK
+                        - SMS
                     type: string
                     description: 渠道类型
                     format: enum
@@ -11096,6 +11123,31 @@ components:
                 remark:
                     type: string
                     description: 备注
+                smsProvider:
+                    enum:
+                        - ALIYUN
+                        - TENCENT
+                    type: string
+                    description: 短信服务商（仅 SMS 渠道）
+                    format: enum
+                smsAccessKeyId:
+                    type: string
+                    description: 访问密钥 ID（仅 SMS 渠道）
+                hasSmsAccessSecret:
+                    type: boolean
+                    description: 是否已配置访问密钥 Secret
+                smsSignName:
+                    type: string
+                    description: 短信签名（已在服务商备案的签名名，仅 SMS 渠道）
+                smsTemplateCode:
+                    type: string
+                    description: 验证码模板 ID（服务商侧审核通过的模板，仅 SMS 渠道）
+                smsAppId:
+                    type: string
+                    description: 短信应用 ID（腾讯云 SmsSdkAppId；阿里云留空）
+                smsRegion:
+                    type: string
+                    description: 服务地域（腾讯云如 ap-guangzhou；阿里云留空）
                 createdBy:
                     type: integer
                     format: uint32
@@ -11124,6 +11176,8 @@ components:
                         - CHANNEL_TEST_EMAIL
                         - INTERNAL_MESSAGE
                         - MONITOR_ALERT
+                        - CHANNEL_TEST_SMS
+                        - PHONE_BIND_CODE
                     type: string
                     description: 业务事件类型
                     format: enum
@@ -11239,6 +11293,8 @@ components:
                         - CHANNEL_TEST_EMAIL
                         - INTERNAL_MESSAGE
                         - MONITOR_ALERT
+                        - CHANNEL_TEST_SMS
+                        - PHONE_BIND_CODE
                     type: string
                     description: 业务事件类型（一张表内唯一）
                     format: enum
@@ -12634,6 +12690,17 @@ components:
                     type: string
                     description: 测试收件人邮箱
             description: 发送测试邮件 - 请求
+        SendTestRequest:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    description: 渠道ID
+                    format: uint32
+                recipient:
+                    type: string
+                    description: 测试收件人（邮箱/手机号，按渠道类型）
+            description: 发送测试消息 - 请求（按渠道类型分派：EMAIL 走邮件，SMS 发一条测试验证码；WEBHOOK 不支持）
         ServerMonitorInfo:
             type: object
             properties:
@@ -13415,6 +13482,9 @@ components:
                 webhookSecret:
                     type: string
                     description: Webhook 签名密钥，留空不修改
+                smsAccessSecret:
+                    type: string
+                    description: 短信访问密钥 Secret，留空不修改
             description: 更新通知渠道 - 请求
         UpdateNotificationPreferenceRequest:
             type: object

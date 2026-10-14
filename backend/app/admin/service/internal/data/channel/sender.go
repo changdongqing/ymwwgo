@@ -39,6 +39,12 @@ type SendRequest struct {
 	// WEBHOOK 必须带上：出站 JSON 是对端唯一的判据，而模板渲染排在 P3，
 	// 正文里此刻没有任何东西说明"这是找回密码还是换绑验证码"。
 	EventType notificationV1.EventType
+
+	// Params 渠道原生参数：不走模板渲染、由渠道实现直接消费的键值。
+	// 当前只有 SMS 消费 params["code"]（服务商审核模板的验证码占位值）——
+	// 短信没有自由文本通道，没有 code 的投递在 SMS 渠道是发不出去的。
+	// 异步派发的载荷会原样带上这一组（notification_dispatch.go 的 TaskData.Params）。
+	Params map[string]string
 }
 
 // SendReceipt 渠道回执。

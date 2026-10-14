@@ -27,4 +27,7 @@ type NotificationDispatchTaskData struct {
 	Target     string `json:"target"`
 	Title      string `json:"title"`
 	Content    string `json:"content"`
+	// Params 渠道原生参数（当前只有 SMS 的 code）：台账没有这一列，与正文同理，
+	// 不进载荷异步路径就发不出去。明文验证码留在 Redis 的代价与 target/content 同一条，上文已认。
+	Params map[string]string `json:"params,omitempty"`
 }

@@ -35,6 +35,8 @@ const headerAcceptLanguage = "Accept-Language"
 // mailCopy 四个事件在某一种语言下的文案。正文里的占位符由对应的 Render 函数填充，
 // 顺序固定：验证码 %s；渠道测试邮件 %d（渠道 ID）、%d（操作人用户 ID）；
 // 路由测试投递 %d（规则 ID）、%s（被测事件）。
+// 带 sms 后缀的三对是 SMS 渠道专用的台账文案：短信正文由服务商侧的审核模板出，
+// 这里的 title/content 只落投递台账——但措辞不能冒充"邮件"，否则台账读不出走的哪个渠道。
 type mailCopy struct {
 	passwordResetTitle string
 	passwordResetBody  string
@@ -44,6 +46,13 @@ type mailCopy struct {
 	channelTestBody    string
 	ruleTestTitle      string
 	ruleTestBody       string
+
+	smsPasswordResetTitle string
+	smsPasswordResetBody  string
+	phoneBindTitle        string
+	phoneBindBody         string
+	channelTestSmsTitle   string
+	channelTestSmsBody    string
 }
 
 var tables = map[Locale]mailCopy{
@@ -56,6 +65,13 @@ var tables = map[Locale]mailCopy{
 		channelTestBody:    "这是一封来自 GoWind Admin 的测试邮件。\n如果您收到了它，说明渠道 [%d] 配置可用。\n操作人用户 ID: %d\n",
 		ruleTestTitle:      "GoWind Admin 通知路由测试投递",
 		ruleTestBody:       "这是规则 [%d] 的一次测试投递，不含任何需要您处理的内容。\n被测事件: %s\n如果您收到了它，说明该事件到渠道的整条投递链是通的。\n",
+
+		smsPasswordResetTitle: "GoWind Admin 密码重置验证码（短信）",
+		smsPasswordResetBody:  "已向手机号发送密码重置验证码（服务商模板短信）。\n验证码：%s，10 分钟内有效。若非本人操作请忽略。\n",
+		phoneBindTitle:        "GoWind Admin 手机号绑定验证码（短信）",
+		phoneBindBody:         "已向本手机号发送绑定验证码（服务商模板短信）。\n验证码：%s，10 分钟内有效。若非本人操作请忽略。\n",
+		channelTestSmsTitle:   "GoWind Admin 通知渠道测试短信",
+		channelTestSmsBody:    "这是一条来自 GoWind Admin 的测试短信（验证码）。\n收到即说明渠道 [%d] 配置可用。\n操作人用户 ID: %d\n",
 	},
 	LocaleEnUS: {
 		passwordResetTitle: "GoWind Admin password reset code",
@@ -66,6 +82,13 @@ var tables = map[Locale]mailCopy{
 		channelTestBody:    "This is a test email from GoWind Admin.\nReceiving it means channel [%d] is configured correctly.\nOperator user ID: %d\n",
 		ruleTestTitle:      "GoWind Admin notification routing test delivery",
 		ruleTestBody:       "This is a test delivery for routing rule [%d]; nothing here needs your action.\nEvent under test: %s\nReceiving it means the whole delivery chain for that event reaches this channel.\n",
+
+		smsPasswordResetTitle: "GoWind Admin password reset code (SMS)",
+		smsPasswordResetBody:  "A password reset code has been sent to this phone number (provider template SMS).\nCode: %s. It expires in 10 minutes. Ignore this if you did not request it.\n",
+		phoneBindTitle:        "GoWind Admin phone binding code (SMS)",
+		phoneBindBody:         "A phone binding code has been sent to this number (provider template SMS).\nCode: %s. It expires in 10 minutes. Ignore this if you did not request it.\n",
+		channelTestSmsTitle:   "GoWind Admin notification channel test SMS",
+		channelTestSmsBody:    "This is a test SMS (verification code) from GoWind Admin.\nReceiving it means channel [%d] is configured correctly.\nOperator user ID: %d\n",
 	},
 }
 
@@ -153,4 +176,24 @@ func ChannelTestEmail(ctx context.Context, channelID, operatorID uint32) (title,
 func RuleTestNotification(ctx context.Context, ruleID uint32, eventType string) (title, content string) {
 	t := tableOf(ctx)
 	return t.ruleTestTitle, fmt.Sprintf(t.ruleTestBody, ruleID, eventType)
+}
+
+// SmsPasswordResetCode 找回密码验证码短信（SMS 渠道），对应 EventType_PASSWORD_RESET_CODE。
+// 短信正文由服务商审核模板渲染，这里的文案只落投递台账。
+func SmsPasswordResetCode(ctx context.Context, code string) (title, content string) {
+	t := tableOf(ctx)
+	return t.smsPasswordResetTitle, fmt.Sprintf(t.smsPasswordResetBody, code)
+}
+
+// PhoneBindCode 手机号绑定验证码短信（SMS 渠道），对应 EventType_PHONE_BIND_CODE。
+// 文案同样只落台账；验证码本体经 params.code 交给渠道。
+func PhoneBindCode(ctx context.Context, code string) (title, content string) {
+	t := tableOf(ctx)
+	return t.phoneBindTitle, fmt.Sprintf(t.phoneBindBody, code)
+}
+
+// ChannelTestSms 渠道测试短信（SMS 渠道），对应 EventType_CHANNEL_TEST_SMS。
+func ChannelTestSms(ctx context.Context, channelID, operatorID uint32) (title, content string) {
+	t := tableOf(ctx)
+	return t.channelTestSmsTitle, fmt.Sprintf(t.channelTestSmsBody, channelID, operatorID)
 }

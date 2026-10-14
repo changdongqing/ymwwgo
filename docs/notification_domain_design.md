@@ -7,7 +7,9 @@
 > P2-6 收件箱写侧由服务端钉定收件人归属，均 2026-09-20）；
 > **C 已落地（2026-09-20，见 §4 C）：路由搬进 `sys_notification_rules`（两张 Go 静态表删除）+
 > WEBHOOK 渠道（`webhook_url`/`webhook_secret` 两列 + dial 时按解析 IP 的 SSRF 防线 + HMAC 签名）+
-> 规则管理页三端 + 按规则行的测试投递 RPC**。P3（偏好与模板）与 SMS 出口仍是设计提案；
+> 规则管理页三端 + 按规则行的测试投递 RPC**。P3（偏好与模板）已落地（见 §4 P3 与 1.2.0）；
+> **SMS 出口已落地（2026-10-15，见 §4 SMS）：阿里云/腾讯云短信渠道 + 手机号绑定与找回密码的短信路径 +
+> 按渠道类型分派的测试发送 RPC**；
 > 撤销消息缺对象级授权一处**已知未修**记在 §7「收件箱不钉归属」一节末尾。
 > C 自己留下的那一格（显式 target 的投递不落 `channel_id`）已由 **欠账 1 修掉（2026-09-21，见 §4 欠账 1）**：
 > 失败路径与异步重试中途都照样把"实际用的哪条渠道配置"写进台账。
@@ -245,7 +247,7 @@ app/admin/service/internal/service/notification_rule_service.go  规则 CRUD + T
 app/admin/service/internal/data/channel/webhook_sender.go        WEBHOOK 出口：dial 时按解析后 IP 拦内网（§4 C）
 app/admin/service/internal/service/notification_service.go       resolveRoute 改读表，两张 Go 静态表删除
 pkg/constants/default_data.go                                    播种规则全集 + 菜单 72/73 + 平台管理员 MenuIds 补齐
---- P2 剩余项中仍未建的只有 SMS：有枚举、无 Sender，路由到它必记 FAILED ---
+--- P2 剩余项中仍未建的只有 SMS：有枚举、无 Sender，路由到它必记 FAILED（**2026-10-15 起有实现，见 §4 SMS**） ---
 ```
 
 两处刻意偏离首稿：
@@ -1199,6 +1201,52 @@ react 先行页面已落（/notification/templates，预览弹窗结果就地展
 
 **事务性邮件已接入模板覆写（2026-10-03）**：找回密码/换绑验证码/渠道测试/规则测试通知四类出站按约定 code（pwd_reset_code / contact_bind_code / channel_test_email / rule_test_notification）查模板渲染，缺失/停用/渲染失败静默回落 mailtext 内置文案——事务性邮件是认证关键路径，模板配置问题绝不阻断发送（与 SendDirect 显式 template_code 的报错语义分级不同：隐式覆写回落、显式点名报错）。实现 transactional_mail.go，TransactionMailer 注入 AuthenticationService/UserProfileService/NotificationChannelService。
 
+### SMS（短信渠道 + 手机验证码链路，已完成 2026-10-15）
+
+把预留至今的 `Channel_SMS` 落成真实现。`§6 决策点 2` 当年预判的代价如约兑现：按渠道加列，不迁 URL 落点。
+
+**数据与契约**：
+- `sys_notification_channels` 加七列：`sms_provider`（枚举 ALIYUN/TENCENT，按名字与 proto 逐字配对）、
+  `sms_access_key_id`、`sms_access_secret`（Sensitive，EncryptIfNeeded 加密，与 SMTP 密码同一约定：
+  DTO 只回 `hasSmsAccessSecret` 布尔，留空不修改）、`sms_sign_name`、`sms_template_code`、
+  `sms_app_id`（腾讯云 SmsSdkAppId 必填，阿里云留空）、`sms_region`（腾讯云必填，阿里云留空）。
+- `EventType` 新增 `CHANNEL_TEST_SMS = 6`、`PHONE_BIND_CODE = 7`（台账 `event_type` 枚举同步加值）；
+  `SendDirectNotificationRequest` 加 `params`（map）——渠道原生参数通道，当前只有 SMS 消费 `params["code"]`。
+  异步载荷 `NotificationDispatchTaskData` 同步加 `params`：验证码和正文一样只在载荷里活。
+- 新 RPC `SendTest`（`POST /notification-channels/{id}/send-test`）按渠道类型分派：EMAIL 走原测试邮件、
+  SMS 发一条真验证码、WEBHOOK 在渠道页显式拒绝（端到端验证在规则页）。老 `SendTestEmail` 保留为兼容入口。
+
+**Sender**（`data/channel/sms_sender.go` + 两家适配器，全部纯 stdlib）：
+- 阿里云 Dysmsapi SendSms：RPC 风格 HMAC-SHA1 签名（canonical query 按 RFC3986 编码，
+  stringToSign = `POST&%2F&...`，密钥 `secret+"&"`）；手机号收国内裸号。
+- 腾讯云 sms SendSms（2021-01-11）：TC3-HMAC-SHA256 四段派生签名，签名盖整个 JSON 请求体；
+  手机号只认 E.164。`NormalizePhoneNumber` 出国内裸号 + E.164 两形供两家各取（导出给绑定入口复用同一判据）。
+- **短信没有自由文本通道**：正文由服务商审核模板渲染，系统只填 `params["code"]`。
+  没带 code 的投递（如告警被路由到 SMS）在选账号之前就拒绝并写明原因——那是路由/调用方的问题，
+  记 FAILED，不混进 SKIPPED 让管理员白查配置。**规则页与告警页的渠道下拉因此不提供 SMS**（必错选项），
+  只有台账页筛选项按"有 Sender 即进下拉"的既有规矩加了 SMS。
+- Precheck 按服务商核对必填项（腾讯云多 app id 与地域），一次性验证码不进队列干等。
+
+**业务链路**：
+- 忘记密码：identifier 像手机号（无 `@` 且能归一）→ 查 PHONE 凭证 → 显式点名 `Channel=SMS` 发验证码
+  （存量库没有 `PHONE_BIND_CODE` 路由行——播种只在空表时发生，显式点名让老实例开箱即用，不经路由表）；
+  否则维持邮箱路径。防枚举口径两边一致（查无此人静默 200）。`ResetPasswordByCode` 同一形态判定选凭证类型。
+- 绑定联系方式：`BindContact`/`VerifyContact` 启用 proto 里预留的 `phone` oneof 分支，验证码走 SMS，
+  通过后写 PHONE 登录凭证（占位哈希，与 EMAIL 凭证同款）。
+- react 忘记密码页文案放开为"邮箱/手机号"（ele/vben 无此页面）；三端渠道页加 SMS 表单段
+  （服务商切换的必填差异在 tooltip/help 里说清，不摆红星）；台账页渠道筛选三端加 SMS。
+
+**台账文案**：mailtext 加三对 SMS 专用文案（找回密码/手机绑定/渠道测试短信）——短信正文来自服务商模板，
+这三对只落台账，但措辞不冒充"邮件"，台账读得出走的哪个渠道。
+
+**测试语义（与既有分支的差别）**：WEBHOOK + 测试发送从"进 SendDirect 后类型守卫拒绝（留 SKIPPED 台账）"
+改为"服务层类型分派当场拒绝（不留台账）"——入参级守卫与"recipient 为空"同级；SMS 在注册表无 sender 时
+仍是 FAILED 台账（装配/代码问题，见渠道测试分支的 sqlite 用例）。
+
+**门禁**：`go test ./...` 全绿（新增签名钉值/归一化/必填校验单测 + 更新的渠道测试分支用例）；
+三端 typecheck 退出码均 0。真实厂商出站需部署侧配好 AccessKey 后在渠道页"测试发送"验收
+（本地无厂商凭据，签名正确性由钉值单测锁定）。
+
 ## 5. 与 go-wind-im 的可抄性对照
 
 | IM 的做法 | 结论 |
@@ -1543,7 +1591,8 @@ P2 新增事件类型时的落点清单（一枚 `INTERNAL_MESSAGE` 要逐个点
   它至今没有实现，路由到它的投递必然记 FAILED，放进来等于给一个筛不出的值占位。C 之前这一条是
   "EMAIL + INTERNAL"（WEBHOOK 还没有出口），当时的理由"路由表还没把它分给任何事件"随着规则表进 DB 而失效——
   管理员现在建一行 WEBHOOK 规则就能写出这一类台账行，下拉却筛不到就是**假阴性**。三端同形
-  （react `channelOptions` / ele `FILTERED_CHANNEL_KEYS` / vben `notificationDeliveryChannelFilterList`），
+  （react `channelOptions` / ele `FILTERED_CHANNEL_KEYS` / vben `notificationDeliveryChannelFilterList`）。
+  **2026-10-15 起 SMS 有实现，三端下拉均已加进 SMS**（见 §4 SMS）。
   各自的注释都写明"路由是数据库表，不靠默认规则集决定筛什么"。
 
 ### 运行期实测发现并修掉的两个缺陷（2026-09-19，只有真发一次信才看得见）
@@ -1609,8 +1658,8 @@ Mailpit 在 1025 上明文接收、默认不要求 AUTH，所以渠道配置要 
 | **id=8** | **自选 + 真发成功** | **SENT** | **5** | 本次闭环：`SendReceipt.ChannelID = account.ID` 在真实投递下成立 |
 
 本节取证时仍未覆盖的一段：`SendDirect` 之后的**异步**补台账 —— 已由 §4 P2-3（2026-09-20）连运行期证据一起补上；
-WEBHOOK 出口已由 §4 C3 落地、N（2026-09-21）起带五种出站风格与载荷模板；SMS 到今天**依然只有枚举没有 Sender**
-（不是"缺测试"而是"缺代码"，见 §6 决策点 2）。
+WEBHOOK 出口已由 §4 C3 落地、N（2026-09-21）起带五种出站风格与载荷模板；SMS（取证时）**只有枚举没有 Sender**
+（不是"缺测试"而是"缺代码"，见 §6 决策点 2）—— **2026-10-15 起有实现，见 §4 SMS**。
 
 ### 收件箱不钉归属：一处越权读 + 一处越权写（2026-09-20，运行期实测发现并修掉）
 

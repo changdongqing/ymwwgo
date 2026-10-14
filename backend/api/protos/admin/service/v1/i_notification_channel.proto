@@ -54,4 +54,12 @@ service NotificationChannelService {
       body: "*"
     };
   }
+
+  // 发送测试消息（按渠道类型分派：EMAIL 走邮件，SMS 发测试验证码）
+  rpc SendTest(notification_channel.service.v1.SendTestRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/admin/v1/notification-channels/{id}/send-test"
+      body: "*"
+    };
+  }
 }

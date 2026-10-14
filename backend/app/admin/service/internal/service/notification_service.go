@@ -289,6 +289,7 @@ func (s *NotificationService) sendOnce(
 		RecipientUserID: req.GetRecipientUserId(),
 		OperatorUserID:  req.GetOperatorUserId(),
 		RelatedID:       req.GetRelatedId(),
+		Params:          req.GetParams(),
 	})
 	if sendErr == nil {
 		sentAt := time.Now()
@@ -363,6 +364,7 @@ func (s *NotificationService) dispatchAsync(
 			Target:     req.GetTarget(),
 			Title:      req.GetTitle(),
 			Content:    req.GetContent(),
+			Params:     req.GetParams(),
 		},
 		asynq.MaxRetry(notificationDispatchMaxRetry),
 		asynq.Timeout(notificationDispatchTimeout),
@@ -485,6 +487,7 @@ func dispatchRequest(row *notificationV1.NotificationDelivery, payload *task.Not
 		OperatorUserId:  row.CreatedBy,
 		RelatedId:       row.RelatedId,
 		RequestId:       row.RequestId,
+		Params:          payload.Params,
 	}
 }
 
