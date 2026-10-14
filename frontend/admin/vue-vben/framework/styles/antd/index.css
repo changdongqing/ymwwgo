@@ -102,7 +102,8 @@ html.dark {
    #676E7C（= 220 9.25% 44.51%）：白 5.12 / #F4F4F5 4.66 / 页面大底 #F1F3F6 4.61 / #F0F2F5 4.57。
    选择器写成 html:not(.dark)（权重 0-2-0）而不是 :root，为的是赢过内置配色预设
    （default.css 的 [data-theme=violet] 等同样声明 --muted-foreground，权重 0-1-0）；
-   暗色侧不动：#A1A1A8 在 L0/L1/L2 上全部 ≥4.5，实测无违规。 */
+   暗色侧不在此覆写：它由 design-tokens/dark.css 的默认块直接落 §2.3 的 #8B949E
+   （2026-10-14 前是 240 5% 64.9% = #A1A1AA，两档在 L0/L1/浮层 上实测都达标）。 */
 html:not(.dark) {
   --muted-foreground: 220 9.25% 44.51%;
 }

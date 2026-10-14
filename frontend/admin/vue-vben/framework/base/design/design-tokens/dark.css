@@ -27,7 +27,11 @@
   /* --muted-foreground: 215 20.2% 65.1%; */
 
   --muted: 240 3.7% 15.9%;
-  --muted-foreground: 240 5% 64.9%;
+  /* 次要文字 = §2.3 定稿 #8B949E（换算成 HSL 三元组，与 react SECONDARY_TEXT_DARK、
+     ele --el-text-color-secondary 暗态同值）。原值 240 5% 64.9% 换算为 #A1A1AA，比规范亮一档，
+     两档在 L0/L1/浮层 上实测都达标（7.47/6.92/6.31 与 6.23/5.77/5.26），换过来是为了三端同值。
+     只改本块（.dark / data-theme=default）；其余内置配色预设自带一套中性色，不在本口径内。 */
+  --muted-foreground: 211.6 8.92% 58.24%;
 
   /* 主题颜色 */
 

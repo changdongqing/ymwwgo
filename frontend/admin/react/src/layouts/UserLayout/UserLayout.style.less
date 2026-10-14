@@ -11,9 +11,10 @@
   overflow: hidden;
   position: relative;
 
-  /* 亮色模式背景 */
+  /* 亮色模式背景：§2.2 页面画布档 #F1F3F6（原值 #f5f7fa 是 antd 默认底，与 vben
+     --background-deep / ele --el-bg-color-page 不同档）*/
   &.light-mode {
-    background: #f5f7fa;
+    background: #f1f3f6;
   }
 
   /* 暗黑模式背景：§2.3 暗色 L0 大底。
@@ -121,7 +122,7 @@
       }
 
       .user-layout-wrapper:not(.light-mode) & {
-        background: radial-gradient(circle, rgba(147, 51, 234, 0.1) 0%, transparent 70%);
+        background: radial-gradient(circle, color-mix(in srgb, var(--brand-primary) 10%, transparent) 0%, transparent 70%);
       }
     }
   }
