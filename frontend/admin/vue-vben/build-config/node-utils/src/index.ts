@@ -16,4 +16,3 @@ export * from 'execa';
 export { default as fs } from 'node:fs/promises';
 
 export { type PackageJson, readPackageJSON } from 'pkg-types';
-export { rimraf } from 'rimraf';

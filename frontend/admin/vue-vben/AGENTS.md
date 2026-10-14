@@ -456,6 +456,19 @@ vxe-table 的巨型递归类型与 `DeepPartial` 展开做结构比较时极易�
 
 `build.target` 必须 **es2022+**（`build-config/vite-config/src/config/application.ts`）。降到 es2015 会因依赖中 jiti 的顶层 await 直接断构建。
 
+### `build-config/` 不在门禁视野里（dev/build 起不来的第一嫌疑）
+
+`tsconfig.json` 的 `include` 只有 `src/**` 与 `framework/**`（现数：`vue-tsc --listFiles` 的程序里有改过的两个
+`.vue`，而 `build-config/node-utils/src/index.ts` 计数 0），所以 **`pnpm run typecheck` 全绿不等于 `pnpm dev` /
+`pnpm build` 起得来**：`vite.config.mts` 及其引到的 `build-config/**` 一旦 import 到不在依赖集里的包，只在启动
+那一刻炸 `ERR_MODULE_NOT_FOUND`，门禁一声不响。单包化提交（`b5be60037` 删 `internal/*/package.json`）就是这样把
+`rimraf` 漏出依赖集的——`build-config/node-utils/src/index.ts` 里那行 `export { rimraf } from 'rimraf'` 全仓引用计数 0，
+2026-10-14 删掉该行后 `VITE ready` + `/` 回 200（红/绿各跑了一次）。
+
+**真要补依赖，先看 lock 的删除行**：同日实测把 `"rimraf": "catalog:"` 写进 `devDependencies` 再 `pnpm install`，
+它连带把 `@intlify/shared` 从 11.4.13 漂到 `12.0.0-alpha.4`（lock 30 加 / 8 删），撞上面"版本钉死"那条铁律；
+`git diff pnpm-lock.yaml` 里出现与本任务无关的漂移就回滚 lock + package.json，优先走"删死引用"这条路。
+
 ### `$t()` 空键崩溃
 
 `$t(undefined)` 或不存在的 key 会直接抛错崩页面（曾致菜单页白屏崩溃）。用 `$t()` 前确认 key 已在 `locales/langs/`（zh-CN + en-US 同步）登记；key 来自变量时先保证非空。
