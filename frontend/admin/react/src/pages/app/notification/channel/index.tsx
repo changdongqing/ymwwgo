@@ -4,6 +4,7 @@ import TableExportButton from '@/components/common/TableExportButton';
 import ListTable from '@/components/common/ListTable';
 import {
   ModalForm,
+  DrawerForm,
   ProFormText,
   ProFormDigit,
   ProFormSelect,
@@ -443,12 +444,14 @@ const NotificationChannelManagement = () => {
         />
       </div>
 
-      <ModalForm
+      {/* 新建/编辑用抽屉不用弹窗：扩展渠道的 settings 动态表单字段多（6~8 个），
+          弹窗高度挤不下；抽屉纵向空间足、与 ele 端渠道抽屉同形。 */}
+      <DrawerForm
         title={drawerMode === 'create' ? t('create') : t('edit')}
         width={560}
         open={drawerOpen}
         onOpenChange={setDrawerOpen}
-        modalProps={{ destroyOnHidden: true, mask: { closable: false } }}
+        drawerProps={{ destroyOnHidden: true, maskClosable: false }}
         submitTimeout={3000}
         onFinish={handleSubmit}
         initialValues={
@@ -624,7 +627,7 @@ const NotificationChannelManagement = () => {
         </ProFormDependency>
         <ProFormSwitch name="enabled" label={t('enabled')} />
         <ProFormTextArea name="remark" label={t('remark')} fieldProps={{ rows: 2 }} />
-      </ModalForm>
+      </DrawerForm>
 
       <ModalForm<{ recipient: string }>
         title={
