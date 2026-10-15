@@ -6,6 +6,7 @@ require (
 	entgo.io/ent v0.14.6
 	github.com/alicebob/miniredis/v2 v2.39.0
 	github.com/envoyproxy/protoc-gen-validate v1.3.3
+	github.com/expr-lang/expr v1.17.8
 	github.com/getkin/kin-openapi v0.149.0
 	github.com/glebarez/sqlite v1.11.0
 	github.com/go-kratos/kratos/v2 v2.9.2

@@ -1144,6 +1144,22 @@ var DefaultMenus = []*permissionV1.Menu{
 		},
 	},
 	{
+		// AI Agent 编排（可视化画布）：登录即可用
+		Id:        trans.Ptr(uint32(86)),
+		ParentId:  trans.Ptr(uint32(80)),
+		Type:      permissionV1.Menu_MENU.Enum(),
+		Name:      trans.Ptr("AiAgentApps"),
+		Path:      trans.Ptr("agents"),
+		Component: trans.Ptr("app/ai/agent/index.vue"),
+		CreatedAt: timeutil.TimeToTimestamppb(trans.Ptr(time.Now())),
+		Meta: &permissionV1.MenuMeta{
+			Title:     trans.Ptr("menu.ai.agents"),
+			Icon:      trans.Ptr("lucide:workflow"),
+			Order:     trans.Ptr(int32(6)),
+			KeepAlive: trans.Ptr(true),
+		},
+	},
+	{
 		// AI 用量：当前用户 tokens 汇总与流水，登录即可用
 		Id:        trans.Ptr(uint32(85)),
 		ParentId:  trans.Ptr(uint32(80)),

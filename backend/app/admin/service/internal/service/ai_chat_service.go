@@ -321,13 +321,15 @@ func (s *AiChatService) resolveConversation(ctx context.Context, operator *authe
 }
 
 // checkTokenQuota 套餐 AI_TOKENS 月度配额检查；未配置该维度即不限量。
-func (s *AiChatService) checkTokenQuota(ctx context.Context, operator *authenticationV1.UserTokenPayload) error {
+// checkAiTokenQuota 租户级月度 token 配额检查（chat 与 agent 运行共用同一口径）：
+// 平台用户（tenant 0）不限；未配置限额或限额为 0 不限；当月累计达到限额拒绝发起。
+func checkAiTokenQuota(ctx context.Context, usageLogRepo *data.AiUsageLogRepo, log *bLogger.Helper, operator *authenticationV1.UserTokenPayload) error {
 	tenantId := operator.GetTenantId()
 	if tenantId == 0 {
 		return nil // 平台用户不限（运营侧自用）
 	}
 
-	limit, configured, err := s.usageLogRepo.FetchTenantTokenQuotaLimit(ctx, tenantId)
+	limit, configured, err := usageLogRepo.FetchTenantTokenQuotaLimit(ctx, tenantId)
 	if err != nil {
 		return err
 	}
@@ -336,15 +338,19 @@ func (s *AiChatService) checkTokenQuota(ctx context.Context, operator *authentic
 	}
 
 	monthStart := time.Date(time.Now().Year(), time.Now().Month(), 1, 0, 0, 0, 0, time.Local)
-	used, err := s.usageLogRepo.SumTokensByTenantSince(ctx, tenantId, monthStart)
+	used, err := usageLogRepo.SumTokensByTenantSince(ctx, tenantId, monthStart)
 	if err != nil {
 		return err
 	}
 	if used >= limit {
-		s.log.Warnf(ctx, "ai token quota exceeded: tenant=%d used=%d limit=%d", tenantId, used, limit)
+		log.Warnf(ctx, "ai token quota exceeded: tenant=%d used=%d limit=%d", tenantId, used, limit)
 		return adminV1.ErrorBadRequest("ai token quota exceeded for this month")
 	}
 	return nil
+}
+
+func (s *AiChatService) checkTokenQuota(ctx context.Context, operator *authenticationV1.UserTokenPayload) error {
+	return checkAiTokenQuota(ctx, s.usageLogRepo, s.log, operator)
 }
 
 // newOpenAIClientForProvider 从 provider 表行构造客户端（api_key 密文就地解密，
