@@ -544,12 +544,11 @@ async function handleTestSend() {
     </Grid>
 
     <!-- 创建/编辑 -->
-    <a-modal
+    <a-drawer
       v-model:open="editOpen"
       :title="editMode === 'create' ? $t('page.notificationChannel.create') : $t('page.notificationChannel.edit')"
-      :confirm-loading="editSaving"
       destroy-on-close
-      @ok="handleSave"
+      :width="560"
     >
       <a-form layout="vertical" class="pt-2">
         <a-form-item :label="$t('page.notificationChannel.name')" required>
@@ -748,7 +747,15 @@ async function handleTestSend() {
           <a-textarea v-model:value="form.remark" :rows="2" />
         </a-form-item>
       </a-form>
-    </a-modal>
+          <template #footer>
+        <a-space style="display: flex; justify-content: flex-end">
+          <a-button @click="editOpen = false">{{ $t('ui.button.cancel') }}</a-button>
+          <a-button type="primary" :loading="editSaving" @click="handleSave">
+            {{ $t('ui.button.ok') }}
+          </a-button>
+        </a-space>
+      </template>
+</a-drawer>
 
     <!-- 测试发送 -->
     <a-modal

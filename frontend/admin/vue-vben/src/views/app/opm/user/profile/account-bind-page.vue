@@ -161,12 +161,11 @@ async function handleVerify() {
     </List>
 
     <!-- 绑定邮箱对话框：发送验证码 → 校验并写入 EMAIL 凭证 -->
-    <a-modal
+    <a-drawer
       v-model:open="bindOpen"
       :title="$t('page.user.profile.bind.bindEmailTitle')"
-      :confirm-loading="verifying"
       destroy-on-close
-      @ok="handleVerify"
+      :width="480"
     >
       <a-form layout="vertical" class="pt-2">
         <a-form-item :label="$t('page.user.profile.bind.newEmail')" required>
@@ -187,7 +186,15 @@ async function handleVerify() {
           </div>
         </a-form-item>
       </a-form>
-    </a-modal>
+          <template #footer>
+        <a-space style="display: flex; justify-content: flex-end">
+          <a-button @click="bindOpen = false">{{ $t('ui.button.cancel') }}</a-button>
+          <a-button type="primary" :loading="verifying" @click="handleVerify">
+            {{ $t('ui.button.ok') }}
+          </a-button>
+        </a-space>
+      </template>
+</a-drawer>
   </Page>
 </template>
 

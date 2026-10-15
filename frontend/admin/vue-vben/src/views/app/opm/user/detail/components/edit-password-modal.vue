@@ -1,7 +1,7 @@
 ﻿<script lang="ts" setup>
 import { ref } from 'vue';
 
-import { useVbenModal } from '@vben/common-ui';
+import { useVbenDrawer } from '@vben/common-ui';
 import { $t } from '@vben/locales';
 
 import { notification } from 'ant-design-vue';
@@ -45,9 +45,10 @@ const [BaseForm, baseFormApi] = useVbenForm({
   ],
 });
 
-const [Modal, modalApi] = useVbenModal({
+const [Drawer, drawerApi] = useVbenDrawer({
+  class: 'w-[520px]',
   onCancel() {
-    modalApi.close();
+    drawerApi.close();
   },
 
   async onConfirm() {
@@ -69,7 +70,7 @@ const [Modal, modalApi] = useVbenModal({
       });
 
       setLoading(false);
-      modalApi.close();
+      drawerApi.close();
       return;
     }
 
@@ -80,7 +81,7 @@ const [Modal, modalApi] = useVbenModal({
       });
 
       setLoading(false);
-      modalApi.close();
+      drawerApi.close();
 
       notification.success({
         message: $t('ui.notification.update_status_success'),
@@ -97,7 +98,7 @@ const [Modal, modalApi] = useVbenModal({
   onOpenChange(isOpen: boolean) {
     if (isOpen) {
       // 获取传入的数据
-      data.value = modalApi.getData<any>();
+      data.value = drawerApi.getData<any>();
 
       setLoading(false);
 
@@ -106,12 +107,12 @@ const [Modal, modalApi] = useVbenModal({
 });
 
 function setLoading(loading: boolean) {
-  modalApi.setState({ confirmLoading: loading });
+  drawerApi.setState({ confirmLoading: loading });
 }
 </script>
 
 <template>
-  <Modal :title="$t('page.user.button.editPassword')">
+  <Drawer :title="$t('page.user.button.editPassword')">
     <BaseForm />
-  </Modal>
+  </Drawer>
 </template>
