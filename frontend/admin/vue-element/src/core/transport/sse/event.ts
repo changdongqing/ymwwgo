@@ -34,4 +34,11 @@ export const SSE_EVENT = {
    * 本事件是前端展示"模型正在调工具"的唯一信息源（尽力而为，丢帧可容忍）。
    */
   AIChatTool: "ai_chat_tool",
+
+  /**
+   * AI Agent 试运行实时推送。
+   * data 为 `AgentRunEvent` 的 protojson：runId/appId/seq/phase/nodeId/summary/status。
+   * Run 同步响应携带完整 trace，以响应为准（尽力而为丢帧可容忍）。
+   */
+  AgentRun: "ai_agent_run",
 } as const;

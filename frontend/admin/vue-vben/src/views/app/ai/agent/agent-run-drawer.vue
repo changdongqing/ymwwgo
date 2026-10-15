@@ -6,9 +6,17 @@ import { $t } from '@vben/locales';
 
 import { message } from 'ant-design-vue';
 
+import { globalSSEClient, SSE_EVENT } from '#/transport/sse';
 import { runAiAgentApp } from '#/api';
 
 const emit = defineEmits<{ success: [] }>();
+
+function onFrame(data: any) {
+  if (!data || typeof data !== 'object' || data.appId !== app.value.id) return;
+  if (data.phase === 'node_end') {
+    liveSteps.value.push(`${data.nodeId} ok`);
+  }
+}
 
 const [Drawer, drawerApi] = useVbenDrawer({
   class: 'w-[520px]',
@@ -33,10 +41,19 @@ const [Drawer, drawerApi] = useVbenDrawer({
     }
   },
   onOpenChange(isOpen) {
-    if (!isOpen) return;
+    // 关闭时注销订阅（反复开关会累加回调），并清空上一次的实时帧
+    if (!isOpen) {
+      offFrame?.();
+      offFrame = undefined;
+      liveSteps.value = [];
+      return;
+    }
     const data = drawerApi.getData<{ row: any }>() ?? { row: {} };
     app.value = data.row ?? {};
     Object.keys(runForm).forEach((k) => delete runForm[k]);
+    liveSteps.value = [];
+    globalSSEClient.on(SSE_EVENT.AgentRun, onFrame);
+    offFrame = () => globalSSEClient.off(SSE_EVENT.AgentRun, onFrame);
     // start 节点 inputVars 声明解析（graph JSON 里取）
     try {
       const g = app.value.graph ? JSON.parse(app.value.graph) : {};
@@ -49,6 +66,8 @@ const [Drawer, drawerApi] = useVbenDrawer({
 });
 
 const app = ref<any>({});
+const liveSteps = ref<string[]>([]);
+let offFrame: (() => void) | undefined;
 const runForm = reactive<Record<string, string>>({});
 const inputVars = ref<Array<{ name?: string; label?: string; required?: boolean }>>([]);
 </script>
@@ -66,6 +85,9 @@ const inputVars = ref<Array<{ name?: string; label?: string; required?: boolean 
       </a-form-item>
       <div v-if="inputVars.length === 0" class="text-xs text-muted-foreground pb-2">
         {{ $t('page.aiAgent.runs.noInputs') }}
+      </div>
+      <div v-if="liveSteps.length > 0" class="pb-2 text-xs text-muted-foreground">
+        {{ liveSteps.join(' · ') }}
       </div>
     </a-form>
   </Drawer>
