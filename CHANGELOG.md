@@ -10,6 +10,17 @@
 
 ### 新增
 
+- 通知渠道全量扩展（go-utils/notify 39 渠道接入，react 先行）：企业微信应用/钉钉工作通知/
+  飞书应用/公众号模板消息/Telegram/Slack/Discord/Teams/Google Chat/Webex/Line/Matrix/
+  Mattermost/RocketChat/Zulip、Bark/ntfy/Gotify/Server酱/WxPusher/Pushover/PushBullet/
+  PushDeer、极光/个推、华为云/云片/Twilio/Vonage/WhatsApp 短信、Mailgun/SendGrid/Postmark、
+  IFTTT/Join/Home Assistant、Datadog/Opsgenie/PagerDuty。新渠道配置整包存 settings 列
+  （敏感字段加密落库、回显脱敏、留空不修改），配置表单按后端 schema 动态渲染（新增渠道
+  只需一份字段声明）。台账/路由规则页新增「扩展渠道（EXT）」选项——告警与通知可路由到
+  任一扩展渠道。已部署实例：make openapi + 重启 + 「接口同步」后新端点生效。
+
+### 新增
+
 - AI Agent 编排 M1（可视化画布，react 先行）：Agent 应用 CRUD + 图执行引擎
   （五种节点：开始/知识检索/LLM/条件分支/结束；模板引用上游输出、条件表达式走
   expr 语法）+ 同步试运行（逐节点执行轨迹 + token 用量）+ 运行台账落库。
