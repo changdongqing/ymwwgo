@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import type { ProColumns, ActionType } from '@ant-design/pro-components';
 import TableExportButton from '@/components/common/TableExportButton';
 import ListTable from '@/components/common/ListTable';
@@ -12,6 +12,7 @@ import {
   ProFormDependency,
 } from '@ant-design/pro-components';
 import { Button, Popconfirm, Tag, App } from 'antd';
+import type { ProFormItemProps } from '@ant-design/pro-components';
 import { EditOutlined, DeleteOutlined, PlusOutlined, SendOutlined } from '@ant-design/icons';
 import { useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -30,6 +31,7 @@ import {
   useUpdateNotificationChannel,
   useCreateNotificationChannel,
 } from '@/api/hooks/notification-channel';
+import { useListChannelSchemas, type ChannelSchema } from '@/api/hooks/notification-channel-schema';
 import { useProTableScrollY } from '@/hooks/useProTableScrollY';
 import ContentContainer from '@/layouts/components/PageContainer/ContentContainer';
 
@@ -37,20 +39,23 @@ import ContentContainer from '@/layouts/components/PageContainer/ContentContaine
  * 渠道类型 → 文案/颜色。列必须按 record.type 渲染：一个渠道类型对应一列自己的配置
  * （SMTP 那几列对 WEBHOOK 没有意义，反之 webhookUrl 对邮件渠道为空），混着显示会读成"没配"。
  */
-const CHANNEL_TYPE_LABEL_KEY: Record<
-  NonNullable<NotificationChannel['type']>,
-  string
-> = {
+const CHANNEL_TYPE_LABEL_KEY: Partial<Record<NonNullable<NotificationChannel['type']>, string>> = {
   EMAIL: 'typeEmail',
   WEBHOOK: 'typeWebhook',
   SMS: 'typeSms',
 };
 
-const CHANNEL_TYPE_COLOR: Record<NonNullable<NotificationChannel['type']>, string> = {
+// EXT_* 扩展渠道的展示名/分组来自后端 schema（settings 列那批），不在 i18n 里逐个维护。
+// 判定"是不是扩展渠道"的唯一真理源 = schema 清单（hook 数据），组件内用 schemaByType。
+
+const CHANNEL_TYPE_COLOR: Partial<Record<NonNullable<NotificationChannel['type']>, string>> = {
   EMAIL: 'blue',
   WEBHOOK: 'purple',
   SMS: 'cyan',
 };
+
+/** EXT_* 扩展渠道的 Tag 统一色。 */
+const EXT_TAG_COLOR = 'geekblue';
 
 /**
  * 短信服务商 → 文案。列值就是 proto SmsProvider 成员名的同一组字符串（枚举按名字配对）。
@@ -117,6 +122,25 @@ const NotificationChannelManagement = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const tableScrollY = useProTableScrollY(containerRef);
 
+  // 扩展渠道 schema：展示名/分组/动态表单的唯一数据源
+  const schemasQuery = useListChannelSchemas();
+  const schemas = useMemo(() => schemasQuery.data?.items ?? [], [schemasQuery.data]);
+  const schemaByType = useMemo(
+    () => new Map<string, ChannelSchema>(schemas.map((s) => [String(s.type), s])),
+    [schemas],
+  );
+  const isExtType = (t?: string) => !!t && schemaByType.has(t);
+  // 类型下拉按 schema 分组（EXT 部分），老三样固定在最前
+  const extTypeOptions = useMemo(() => {
+    const groups = new Map<string, { label: string; value: string }[]>();
+    for (const s of schemas) {
+      const g = String(s.group || 'EXT');
+      if (!groups.has(g)) groups.set(g, []);
+      groups.get(g)!.push({ label: String(s.label), value: String(s.type) });
+    }
+    return [...groups.entries()].map(([group, options]) => ({ label: t(`extGroup.${group}`), options }));
+  }, [schemas, t]);
+
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [drawerMode, setDrawerMode] = useState<'create' | 'edit'>('create');
   const [selected, setSelected] = useState<NotificationChannel | undefined>();
@@ -167,8 +191,9 @@ const NotificationChannelManagement = () => {
           password: password || undefined,
           webhookSecret: webhookSecret || undefined,
           smsAccessSecret: smsAccessSecret || undefined,
-          updateMask:
-            'name,type,smtpHost,smtpPort,smtpUsername,smtpFrom,smtpFromName,smtpTls,webhookUrl,webhookSignStyle,webhookPayloadTemplate,smsProvider,smsAccessKeyId,smsSignName,smsTemplateCode,smsAppId,smsRegion,enabled,remark',
+          updateMask: isExtType(data.type)
+            ? 'name,type,settings,enabled,remark'
+            : 'name,type,smtpHost,smtpPort,smtpUsername,smtpFrom,smtpFromName,smtpTls,webhookUrl,webhookSignStyle,webhookPayloadTemplate,smsProvider,smsAccessKeyId,smsSignName,smsTemplateCode,smsAppId,smsRegion,enabled,remark',
         };
         await updateMutation.mutateAsync(req);
         message.success(t('updateSuccess'));
@@ -212,8 +237,8 @@ const NotificationChannelManagement = () => {
       width: 100,
       render: (_, record) =>
         record.type ? (
-          <Tag color={CHANNEL_TYPE_COLOR[record.type]}>
-            {t(CHANNEL_TYPE_LABEL_KEY[record.type])}
+          <Tag color={CHANNEL_TYPE_COLOR[record.type] ?? EXT_TAG_COLOR}>
+            {schemaByType.get(record.type)?.label ?? t(CHANNEL_TYPE_LABEL_KEY[record.type] ?? record.type)}
           </Tag>
         ) : (
           '-'
@@ -445,8 +470,14 @@ const NotificationChannelManagement = () => {
             { label: t('typeEmail'), value: 'EMAIL' },
             { label: t('typeWebhook'), value: 'WEBHOOK' },
             { label: t('typeSms'), value: 'SMS' },
+            ...extTypeOptions.map((g) => ({
+              label: g.label,
+              title: g.label,
+              options: g.options,
+            })),
           ]}
           disabled={drawerMode === 'edit'}
+          showSearch
           rules={[{ required: true }]}
         />
         {/* 三类渠道各自的配置项分组显示：表单里同时摆几组，管理员要自己猜哪一组生效。
@@ -493,6 +524,8 @@ const NotificationChannelManagement = () => {
                   tooltip={t('webhookSecretHint')}
                 />
               </>
+            ) : isExtType(type) ? (
+              <SettingsFormFields schema={schemaByType.get(String(type))} />
             ) : type === 'SMS' ? (
               <>
                 <ProFormSelect
@@ -620,3 +653,50 @@ const NotificationChannelManagement = () => {
 };
 
 export default NotificationChannelManagement;
+
+
+/** schema 字段类型 → 动态表单（settings 命名空间：提交时 values.settings = {name: value}）。 */
+function SettingsFormFields({ schema }: { schema: ChannelSchema | undefined }) {
+  const { t } = useTranslation('notification-channel');
+  if (!schema) return null;
+  return (
+    <>
+      {schema.targetLabel && (
+        <div style={{ color: 'var(--ant-color-text-tertiary, #aaa)', fontSize: 12, marginBottom: 8 }}>
+          {t('ext.targetLabel', { label: schema.targetLabel })}
+        </div>
+      )}
+      {(schema.fields ?? []).map((f) => {
+        const name = ['settings', String(f.name)];
+        const label = String(f.label ?? f.name);
+        const rules = f.required ? [{ required: true, message: t('ext.required', { label }) }] : [];
+        const common = { name, label, rules, tooltip: f.hint || undefined, extra: undefined };
+        switch (f.type) {
+          case 'textarea':
+            return <ProFormTextArea key={f.name} {...common} fieldProps={{ rows: 3, placeholder: f.placeholder }} />;
+          case 'number':
+            return <ProFormDigit key={f.name} {...common} fieldProps={{ precision: 0, placeholder: f.placeholder }} />;
+          case 'password':
+            return (
+              <ProFormText.Password
+                key={f.name}
+                {...(common as ProFormItemProps)}
+                placeholder={f.placeholder || t('ext.secretKeepHint')}
+              />
+            );
+          case 'select':
+            return (
+              <ProFormSelect
+                key={f.name}
+                {...common}
+                options={(f.options ?? []).map((o) => ({ label: o === '' ? t('ext.optionDefault') : o, value: o }))}
+                fieldProps={{ allowClear: true }}
+              />
+            );
+          default:
+            return <ProFormText key={f.name} {...common} placeholder={f.placeholder} />;
+        }
+      })}
+    </>
+  );
+}

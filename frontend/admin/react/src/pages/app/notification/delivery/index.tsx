@@ -39,6 +39,7 @@ const CHANNEL_COLORS: Record<notificationservicev1_Channel, string> = {
   SMS: 'green',
   WEBHOOK: 'purple',
   INTERNAL: 'cyan',
+  EXT: 'geekblue',
   CHANNEL_UNSPECIFIED: 'default',
 };
 
@@ -59,7 +60,7 @@ const eventTypeOptions = (t: (key: string) => string) =>
 // 管理员建一行 WEBHOOK 规则，下一趟投递就写进台账。SMS 自 2026-10-15 起有实现
 // （渠道页配好短信账号后即可写出台账行），进下拉。
 const channelOptions = (t: (key: string) => string) =>
-  (['EMAIL', 'WEBHOOK', 'SMS', 'INTERNAL'] as const).map((value) => ({ value, label: t(`channelMap.${value}`) }));
+  (['EMAIL', 'WEBHOOK', 'SMS', 'EXT', 'INTERNAL'] as const).map((value) => ({ value, label: t(`channelMap.${value}`) }));
 
 // ProTable 的 sorter key 来自 dataIndex（camelCase），这里显式转成数据库列名，与台账列口径对齐。
 // （后端 orderBy 的 JSON 数组形自己会做 camel→snake 归一，透传驼峰也排得动；但拼错的列名

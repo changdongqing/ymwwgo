@@ -25,6 +25,7 @@
   "channelMap": {
     "EMAIL": "邮件",
     "SMS": "短信",
+    "EXT": "扩展渠道",
     "WEBHOOK": "Webhook",
     "INTERNAL": "站内信"
   },

@@ -43,6 +43,7 @@
     "EMAIL": "邮件",
     "SMS": "短信",
     "WEBHOOK": "Webhook",
-    "INTERNAL": "站内信"
+    "INTERNAL": "站内信",
+    "EXT": "扩展渠道"
   }
 }

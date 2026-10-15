@@ -88,5 +88,19 @@
   "invalidEmail": "Invalid email address",
   "invalidPhone": "Invalid phone number (CN mobile or E.164 format)",
   "testSendSuccess": "Test message sent, please check the inbox",
-  "testSendFailed": "Failed to send test message"
+  "testSendFailed": "Failed to send test message",
+  "": {
+    "extGroup.IM": "IM / Chat",
+    "extGroup.PUSH": "Personal Push",
+    "extGroup.MOBILE": "Mobile Push",
+    "extGroup.SMS": "SMS / Messaging",
+    "extGroup.MAIL": "Email API",
+    "extGroup.AUTO": "Automation",
+    "extGroup.OPS": "Ops Alerting",
+    "extGroup.EXT": "Other Channels",
+    "ext.targetLabel": "Delivery target: {{label}} (required by test send and deliveries)",
+    "ext.required": "{{label}} is required",
+    "ext.secretKeepHint": "Leave empty to keep the stored value",
+    "ext.optionDefault": "default"
+  }
 }

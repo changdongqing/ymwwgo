@@ -43,6 +43,7 @@
     "EMAIL": "Email",
     "SMS": "SMS",
     "WEBHOOK": "Webhook",
-    "INTERNAL": "In-app"
+    "INTERNAL": "In-app",
+    "EXT": "Extended"
   }
 }

@@ -88,5 +88,19 @@
   "invalidEmail": "邮箱格式不正确",
   "invalidPhone": "手机号格式不正确（支持大陆手机号或 E.164 格式）",
   "testSendSuccess": "测试消息已发送，请查收",
-  "testSendFailed": "测试消息发送失败"
+  "testSendFailed": "测试消息发送失败",
+  "": {
+    "extGroup.IM": "IM / 群聊",
+    "extGroup.PUSH": "个人推送",
+    "extGroup.MOBILE": "移动推送",
+    "extGroup.SMS": "短信 / 消息",
+    "extGroup.MAIL": "邮件 API",
+    "extGroup.AUTO": "效率自动化",
+    "extGroup.OPS": "运维告警",
+    "extGroup.EXT": "其他扩展渠道",
+    "ext.targetLabel": "运行目标：{{label}}（测试发送与投递时按渠道填写）",
+    "ext.required": "请输入{{label}}",
+    "ext.secretKeepHint": "留空表示不修改已存值",
+    "ext.optionDefault": "默认"
+  }
 }
