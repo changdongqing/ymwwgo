@@ -7319,6 +7319,7 @@ export type monitor_alertservicev1_AlertOp =
 export type notificationservicev1_Channel =
   | 'CHANNEL_UNSPECIFIED'
   | 'EMAIL'
+  | 'EXT'
   | 'INTERNAL'
   | 'SMS'
   | 'WEBHOOK';
@@ -7594,6 +7595,8 @@ export type notificationservicev1_NotificationDelivery = {
 // 表的初始四行由代码里那份同形常量播种（见 docs/notification_domain_design.md §3.5、§4 P2-C）。
 export type notificationservicev1_EventType =
   | 'CHANNEL_TEST_EMAIL'
+  // 渠道测试消息（扩展渠道 EXT_* 的"测试发送"）。
+  | 'CHANNEL_TEST_EXT'
   // 渠道配置测试短信（渠道页"测试发送"）：与 CHANNEL_TEST_EMAIL 同因同果，只差渠道。
   | 'CHANNEL_TEST_SMS'
   | 'CONTACT_BIND_CODE'
@@ -7651,6 +7654,10 @@ export interface NotificationChannelService {
   SendTest(
     request: notification_channelservicev1_SendTestRequest,
   ): Promise<wellKnownEmpty>;
+  // 全量扩展渠道 schema（独立集合路径，避免与 /{id} 参数路由抢配）
+  ListChannelSchemas(
+    request: wellKnownEmpty,
+  ): Promise<notification_channelservicev1_ListChannelSchemasResponse>;
 }
 
 export function createNotificationChannelServiceClient(
@@ -7835,6 +7842,14 @@ export function createNotificationChannelServiceClient(
         method: 'SendTest',
       }) as Promise<wellKnownEmpty>;
     },
+    ListChannelSchemas(_request) {
+      const path = `admin/v1/notification-channel-schemas`;
+      const body = null;
+      return transport.unary(path, 'GET', body, {
+        service: 'NotificationChannelService',
+        method: 'ListChannelSchemas',
+      }) as Promise<notification_channelservicev1_ListChannelSchemasResponse>;
+    },
   };
 }
 // 查询通知渠道列表 - 回应
@@ -7857,6 +7872,9 @@ export type notification_channelservicev1_NotificationChannel = {
   id?: number;
   name?: string;
   remark?: string;
+  // 扩展渠道（EXT_*）的配置整包（JSON）。读回显为**脱敏版**：schema 声明为 sensitive 的
+  // 字段值恒为空串——前端"留空 = 不修改"；写入（Create/Update）时为明文，服务端加密落库。
+  settings?: string;
   smsAccessKeyId?: string;
   // 腾讯云必填（SmsSdkAppId，控制台"应用管理"里那串数字）；阿里云留空。
   smsAppId?: string;
@@ -7886,9 +7904,55 @@ export type notification_channelservicev1_NotificationChannel = {
 
 // 渠道类型
 export type notification_channelservicev1_NotificationChannel_Type =
+  // ---- 个人推送（8）----
+  | 'BARK'
+  // ---- 运维告警（3）----
+  | 'DATADOG'
+  | 'DINGTALK_APP'
+  | 'DISCORD'
   | 'EMAIL'
+  | 'FEISHU_APP'
+  | 'GCHAT'
+  | 'GETUI'
+  | 'GOTIFY'
+  | 'HOMEASSISTANT'
+  // ---- 短信/消息（5）----
+  | 'HUAWEISMS'
+  // ---- 效率自动化（3）----
+  | 'IFTTT'
+  | 'JOIN'
+  // ---- 移动推送服务（2）----
+  | 'JPUSH'
+  | 'LINE'
+  // ---- 邮件 API（3）----
+  | 'MAILGUN'
+  | 'MATRIX'
+  | 'MATTERMOST'
+  | 'NTFY'
+  | 'OPSGENIE'
+  | 'PAGERDUTY'
+  | 'POSTMARK'
+  | 'PUSHBULLET'
+  | 'PUSHDEER'
+  | 'PUSHOVER'
+  | 'ROCKETCHAT'
+  | 'SENDGRID'
+  | 'SERVERCHAN'
+  | 'SLACK'
   | 'SMS'
-  | 'WEBHOOK';
+  | 'TEAMS'
+  | 'TELEGRAM'
+  | 'TWILIO'
+  | 'VONAGE'
+  | 'WEBEX'
+  | 'WEBHOOK'
+  | 'WECHAT'
+  // ---- IM（15）----（EXT_* 扩展渠道：配置在 settings 列）
+  | 'WECOM_APP'
+  | 'WHATSAPP'
+  | 'WXPUSHER'
+  | 'YUNPIAN'
+  | 'ZULIP';
 // SMTP 加密方式
 export type notification_channelservicev1_NotificationChannel_TlsMode =
   | 'NONE'
@@ -7922,6 +7986,8 @@ export type notification_channelservicev1_CreateNotificationChannelRequest = {
   data: notification_channelservicev1_NotificationChannel | undefined;
   // 明文密码（服务端加密存储，不落日志）
   password?: string;
+  // 扩展渠道配置（JSON 明文，含敏感字段；服务端按 schema 加密落库。仅 EXT_* 渠道）
+  settings?: string;
   // 明文访问密钥 Secret（服务端加密存储，不落日志；仅 SMS 渠道）
   smsAccessSecret?: string;
   // 明文签名密钥（服务端加密存储，不落日志；留空 = 不签名）
@@ -7934,6 +8000,8 @@ export type notification_channelservicev1_UpdateNotificationChannelRequest = {
   id: number | undefined;
   // 明文密码；留空表示不修改已存密码
   password?: string;
+  // 扩展渠道配置（JSON 明文；仅 EXT_* 渠道。schema sensitive 字段留空 = 保留已存值）
+  settings?: string;
   // 明文访问密钥 Secret；留空表示不修改已存密钥（仅 SMS 渠道）
   smsAccessSecret?: string;
   updateMask: undefined | wellKnownFieldMask;
@@ -7958,6 +8026,33 @@ export type notification_channelservicev1_SendTestRequest = {
   id: number | undefined;
   // 收件目标：EMAIL 为邮箱地址，SMS 为手机号（E.164 或纯号码均可）
   recipient: string | undefined;
+};
+
+// 全量渠道 schema - 回应
+export type notification_channelservicev1_ListChannelSchemasResponse = {
+  items: notification_channelservicev1_ChannelSchema[] | undefined;
+};
+
+// 扩展渠道声明
+export type notification_channelservicev1_ChannelSchema = {
+  fields: notification_channelservicev1_ChannelField[] | undefined;
+  group: string | undefined;
+  label: string | undefined;
+  needsTarget: boolean | undefined;
+  targetLabel: string | undefined;
+  type: string | undefined;
+};
+
+// 扩展渠道的字段声明（schema 驱动配置表单；见 docs/notify_channels_expansion.md §2.2）
+export type notification_channelservicev1_ChannelField = {
+  hint: string | undefined;
+  label: string | undefined;
+  name: string | undefined;
+  options: string[] | undefined;
+  placeholder: string | undefined;
+  required: boolean | undefined;
+  sensitive: boolean | undefined;
+  type: string | undefined;
 };
 
 // 用户通知偏好服务（自助：读写的都是当前操作人自己的偏好，无管理面）。
