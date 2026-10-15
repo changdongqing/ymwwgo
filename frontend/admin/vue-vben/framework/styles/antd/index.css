@@ -75,7 +75,8 @@
   --gowind-warning-text: color-mix(in srgb, hsl(var(--warning)) 50%, #0b0f19);
   --gowind-danger-text: color-mix(in srgb, hsl(var(--destructive)) 70%, #0b0f19);
 
-  /* 实底语义色上的前景：白字在浅色 #FF3860 上只有 3.51:1，暗墨 5.46:1（§2.1） */
+  /* 实底语义色上的前景（现只用于开关轨道这类非按钮小字；危险实底按钮
+     2026-10-15 起两态都走原生白字，§2.1）：白字在浅色 #FF3860 上只有 3.51:1，暗墨 5.46:1 */
   --gowind-solid-ink: #0b0f19;
 
   /* AI 用量页汇总数字（24px/600，大字号下限 3.0:1）——与 react / vue-element 端同名变量同值。
@@ -161,11 +162,9 @@ html.dark .ant-tag.ant-tag-geekblue {
   color: var(--gowind-danger-text) !important;
 }
 
-/* 危险实底按钮：只有浅色需要换暗墨（#FF3860 上白字 3.51）。暗色侧 antd 把 colorError 派生成
-   #DC3355，白字实测 4.52:1 已达标，换暗墨反而掉到 4.24 —— 大扫测里踩过一次，勿再全局套用。 */
-html:not(.dark) .ant-btn.ant-btn-primary.ant-btn-dangerous {
-  color: var(--gowind-solid-ink) !important;
-}
+/* 危险实底按钮不再换暗墨（2026-10-15 用户裁决）：暗墨坐在红色实底上观感刺眼，亮/暗两态
+   一律回 ant-design-vue 原生白字——3.51:1 的数值取舍让位观感，沿革见 docs/design-language.md §2.1。
+   （此处曾是 `html:not(.dark) .ant-btn.ant-btn-primary.ant-btn-dangerous` → var(--gowind-solid-ink)） */
 
 /* 激活页签文字（暗色实测 #035EC7 on #111827 = 2.90） */
 .ant-tabs .ant-tabs-tab.ant-tabs-tab-active .ant-tabs-tab-btn {
