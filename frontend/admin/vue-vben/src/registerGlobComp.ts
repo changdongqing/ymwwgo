@@ -6,7 +6,9 @@ import {
   Card,
   Descriptions,
   Divider,
+  Drawer,
   Dropdown,
+  Empty,
   Form,
   Input,
   InputNumber,
@@ -62,5 +64,9 @@ export function registerGlobComp(app: App) {
     // 运行时只有一条 Vue warn: Failed to resolve component: a-radio-group）
     .use(Radio)
     // Upload 的 install 同时注册 AUpload 与 AUploadDragger（Excel 导入弹窗用 a-upload-dragger）
-    .use(Upload);
+    .use(Upload)
+    // Drawer：六处弹窗改抽屉（通知渠道/规则/模板、监控告警、账号绑定、套餐配额）模板用裸 <a-drawer>
+    // Empty：监控告警页空态用 <a-empty>。两者漏注册时只有 Vue warn、抽屉/空态整块不渲染
+    .use(Drawer)
+    .use(Empty);
 }
