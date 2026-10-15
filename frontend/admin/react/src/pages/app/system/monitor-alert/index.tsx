@@ -2,7 +2,7 @@ import { useRef, useState } from 'react';
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import ListTable from '@/components/common/ListTable';
 import {
-  ModalForm,
+  DrawerForm,
   ProFormDependency,
   ProFormText,
   ProFormTextArea,
@@ -305,12 +305,12 @@ const MonitorAlertPage = () => {
         />
       </div>
 
-      <ModalForm
+      <DrawerForm
         title={formMode === 'create' ? t('create') : t('edit')}
         width={560}
         open={formOpen}
         onOpenChange={setFormOpen}
-        modalProps={{ destroyOnHidden: true, mask: { closable: false } }}
+        drawerProps={{ destroyOnHidden: true, mask: { closable: false } }}
         submitTimeout={3000}
         onFinish={handleSubmit}
         initialValues={
@@ -372,7 +372,7 @@ const MonitorAlertPage = () => {
         />
         <ProFormSwitch name="isEnabled" label={t('isEnabled')} />
         <ProFormTextArea name="remark" label={t('remark')} fieldProps={{ rows: 2 }} />
-      </ModalForm>
+      </DrawerForm>
     </ContentContainer>
   );
 };

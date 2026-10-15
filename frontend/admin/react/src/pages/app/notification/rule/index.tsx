@@ -3,6 +3,7 @@ import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import ListTable from '@/components/common/ListTable';
 import {
   ModalForm,
+  DrawerForm,
   ProFormText,
   ProFormTextArea,
   ProFormSelect,
@@ -309,12 +310,12 @@ const NotificationRulePage = () => {
         />
       </div>
 
-      <ModalForm
+      <DrawerForm
         title={formMode === 'create' ? t('create') : t('edit')}
         width={520}
         open={formOpen}
         onOpenChange={setFormOpen}
-        modalProps={{ destroyOnHidden: true, mask: { closable: false } }}
+        drawerProps={{ destroyOnHidden: true, mask: { closable: false } }}
         submitTimeout={3000}
         onFinish={handleSubmit}
         initialValues={
@@ -340,7 +341,7 @@ const NotificationRulePage = () => {
         <ProFormSwitch name="isAsync" label={t('isAsync')} fieldProps={{ checkedChildren: t('isAsyncOn'), unCheckedChildren: t('isAsyncOff') }} />
         <ProFormSwitch name="isEnabled" label={t('isEnabled')} />
         <ProFormTextArea name="remark" label={t('remark')} fieldProps={{ rows: 2 }} />
-      </ModalForm>
+      </DrawerForm>
 
       <ModalForm<{ target?: string }>
         title={t('testDispatchTitle', {

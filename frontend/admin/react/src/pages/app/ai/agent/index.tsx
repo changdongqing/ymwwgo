@@ -2,7 +2,7 @@ import { useRef, useState } from 'react';
 import type { ProColumns, ActionType } from '@ant-design/pro-components';
 import ListTable from '@/components/common/ListTable';
 import {
-  ModalForm,
+  DrawerForm,
   ProFormText,
   ProFormTextArea,
   ProFormSwitch,
@@ -184,12 +184,12 @@ const AiAgentAppManagement = () => {
         />
       </div>
 
-      <ModalForm
+      <DrawerForm
         title={editing ? t('edit') : t('create')}
         width={520}
         open={formOpen}
         onOpenChange={setFormOpen}
-        modalProps={{ destroyOnHidden: true }}
+        drawerProps={{ destroyOnHidden: true }}
         onFinish={handleSubmit}
         initialValues={editing ?? { enabled: true }}
       >
@@ -200,7 +200,7 @@ const AiAgentAppManagement = () => {
         />
         <ProFormTextArea name="description" label={t('description')} fieldProps={{ rows: 2 }} />
         <ProFormSwitch name="enabled" label={t('enabled')} />
-      </ModalForm>
+      </DrawerForm>
 
       <AgentCanvas open={!!canvasApp} app={canvasApp} onClose={() => { setCanvasApp(undefined); refresh(); }} />
     </ContentContainer>
