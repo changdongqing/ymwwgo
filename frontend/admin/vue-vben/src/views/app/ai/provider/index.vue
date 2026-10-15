@@ -148,11 +148,16 @@ function endpointText(row: AiProvider): string {
   <Page auto-content-height>
     <Grid :table-title="$t('page.aiProvider.moduleName')">
       <template #toolbar-tools>
-        <a-button type="primary" class="mr-2" @click="handleAdd">
+        <!-- Preflight svg{display:block} 会把 icon+文本竖排，定式见 vben-tailwind-preflight-svg-block-icon-wrap -->
+        <a-button
+          type="primary"
+          class="mr-2 whitespace-nowrap [&>svg]:inline-block [&>svg]:align-middle"
+          @click="handleAdd"
+        >
           <template #icon>
             <LucidePlus />
           </template>
-          {{ $t('page.aiProvider.name') }}
+          {{ $t('page.aiProvider.button.create') }}
         </a-button>
       </template>
       <template #modelType="{ row }">

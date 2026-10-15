@@ -287,7 +287,11 @@ function handleNewConversation() {
           </span>
         </div>
         <div class="px-3 pt-2">
-          <a-button block @click="handleNewConversation">
+          <a-button
+            block
+            class="whitespace-nowrap [&>svg]:inline-block [&>svg]:align-middle"
+            @click="handleNewConversation"
+          >
             <template #icon>
               <Iconify icon="lucide:plus" />
             </template>

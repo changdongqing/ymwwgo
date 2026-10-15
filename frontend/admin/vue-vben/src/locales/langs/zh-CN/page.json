@@ -954,7 +954,10 @@
     "apiKeyHintLabel": "当前 Key",
     "notSet": "未设置",
     "enabledOn": "启用",
-    "enabledOff": "禁用"
+    "enabledOff": "禁用",
+    "button": {
+      "create": "创建提供商"
+    }
   },
   "aiChat": {
     "moduleName": "对话",
@@ -1004,7 +1007,10 @@
     "upload": "上传入库",
     "deleteDocConfirm": "确定删除该文档吗？切片将一并删除。",
     "action": "操作",
-    "uploadSuccess": "入库成功，共 {chunks} 个切片"
+    "uploadSuccess": "入库成功，共 {chunks} 个切片",
+    "button": {
+      "create": "创建知识库"
+    }
   },
   "aiInsights": {
     "title": "AI 安全与异常洞察",

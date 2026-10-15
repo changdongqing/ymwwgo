@@ -942,7 +942,10 @@
     "apiKeyHintLabel": "Current key",
     "notSet": "Not set",
     "enabledOn": "Enabled",
-    "enabledOff": "Disabled"
+    "enabledOff": "Disabled",
+    "button": {
+      "create": "Create provider"
+    }
   },
   "aiChat": {
     "moduleName": "conversation",
@@ -992,7 +995,10 @@
     "upload": "Upload",
     "deleteDocConfirm": "Delete this doc? Its chunks will be removed too.",
     "action": "Actions",
-    "uploadSuccess": "Ingested with {chunks} chunks"
+    "uploadSuccess": "Ingested with {chunks} chunks",
+    "button": {
+      "create": "Create knowledge base"
+    }
   },
   "aiInsights": {
     "title": "AI Security & Anomaly Insights",
