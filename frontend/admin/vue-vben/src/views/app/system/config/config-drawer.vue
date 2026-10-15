@@ -76,6 +76,7 @@ const [BaseForm, baseFormApi] = useVbenForm({
       fieldName: 'isBuiltIn',
       label: $t('page.config.isBuiltIn'),
       defaultValue: false,
+      componentProps: { class: 'w-auto' },
     },
   ],
 });

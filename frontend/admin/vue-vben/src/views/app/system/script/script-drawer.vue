@@ -153,6 +153,7 @@ const [BaseForm, baseFormApi] = useVbenForm({
       label: $t('page.script.critical'),
       defaultValue: false,
       help: $t('page.script.criticalTip'),
+      componentProps: { class: 'w-auto' },
     },
   ],
 });

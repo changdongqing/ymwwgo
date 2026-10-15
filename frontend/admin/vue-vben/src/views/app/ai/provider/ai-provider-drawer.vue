@@ -115,12 +115,14 @@ const [BaseForm, baseFormApi] = useVbenForm({
       label: $t('page.aiProvider.isDefault'),
       component: 'Switch',
       defaultValue: false,
+      componentProps: { class: 'w-auto' },
     },
     {
       fieldName: 'isEnabled',
       label: $t('page.aiProvider.isEnabled'),
       component: 'Switch',
       defaultValue: true,
+      componentProps: { class: 'w-auto' },
     },
     {
       fieldName: 'remark',
