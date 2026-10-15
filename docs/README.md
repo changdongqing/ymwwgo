@@ -54,7 +54,7 @@
 | [task_system.md](./task_system.md) | 任务调度系统：配置与启动链、任务数据模型、调度生命周期、系统级常驻任务、脚本任务桥、管理页、多租户语义与排障 | 加任务类型、排"任务没跑"、接新调度需求前 |
 | [sys_config.md](./sys_config.md) | 参数管理（sys_config）：平台全局动态参数的键值模型、缓存读取器（GetConfigBool/Int/String 与负缓存）、写路径与多实例 Redis 失效广播、内置参数按键补种、新参数接入步骤 | 接入新的运行时参数、改口令策略阈值链路、排"改了参数没生效"前 |
 | [sse_architecture.md](./sse_architecture.md) | SSE 推送架构：服务端配置与生命周期、流鉴权与 streamID 语义、事件生产、三端消费模块、部署拓扑与排障 | 改推送链路、加新事件类型、排"收不到通知"前 |
-| [notification_domain_design.md](./notification_domain_design.md) | 通知域：现状盘点、与 go-wind-im 的可抄性对照、运行期实测发现、移植记录与代码生成坑。各阶段（P0–P2 / C / C7 / M / N 及遗留欠账）的落地状态以文内状态标记与验收清单（§4、§7）为准，本索引不转载状态史 | 动通知相关代码前先读；推进 P3、改台账或路由规则语义前回来更新文内状态标记 |
+| [notification_domain_design.md](./notification_domain_design.md) | 通知域：现状盘点、与 go-wind-im 的可抄性对照、运行期实测发现、移植记录与代码生成坑。各阶段（P0–P2 / C / C7 / M / N / P3 / SMS 及遗留欠账）的落地状态以文内状态标记与验收清单（§4、§7）为准，本索引不转载状态史 | 动通知相关代码前先读；推进新阶段（如给告警接短信）、改台账或路由规则语义前回来更新文内状态标记 |
 | [data_scope_design.md](./data_scope_design.md) | 角色级数据范围：五档语义、聚合、执行层、新表接入步骤 | 新表接入数据范围或改聚合规则前 |
 | [audit-log-producer-design.md](./audit-log-producer-design.md) | 六类审计日志的生产者设计与采集层实施状态 | 改审计采集、加新日志字段时 |
 | [script_system.md](./script_system.md) | 脚本级插件系统：五类扩展点、安全模型、运维 | 写脚本/改钩子点/接任务桥前 |

@@ -1511,7 +1511,8 @@ gow run admin
       `sha256=HMAC_SHA256(secret, "<x-gw-timestamp>." + 原始 body 字节)` 复算，密钥只在创建/更新时提交、读视图恒不回显。
       302 不跟随、非 2xx 一律 FAILED（`peer answered <status>`）。
       ~~已知未修：显式 `target` 的测试投递不落 `channel_id`~~ —— **欠账 1 已修**（见本节 C7 之后的「欠账 1」条）。
-      仍然未修的：`RevokeMessage` 的对象级授权（见本节末尾）、SMS 仍只有枚举没有 Sender。
+      ~~仍然未修的：`RevokeMessage` 的对象级授权（见本节末尾）、SMS 仍只有枚举没有 Sender~~
+      —— 前者**仍未修**；后者 **SMS 已于 2026-10-15 落地**（见 §4 SMS）。
 - [x] C7 全新安装链路 + 通知域的平台侧授权：三张通知表都是**平台级**（无 TenantID mixin），页面 authority 写死
       `sys:platform_admin`，所以后端也必须有同一道判定 —— 现在由 `notification_platform_guard.go` 的
       `requirePlatformAdmin` 承担，挂在渠道 6 + 规则 6 + 台账 2 共 14 个方法上。
