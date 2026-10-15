@@ -23,6 +23,7 @@ import type { aiservicev1_AiAgentApp as AiAgentApp } from '@/api/generated/admin
 import { useListAiKnowledgeBases } from '@/api/hooks/ai-knowledge';
 import { useListAiProviders } from '@/api/hooks/ai-provider';
 import { useRunAiAgentApp, useUpdateAiAgentApp } from '@/api/hooks/ai-agent';
+import { useAgentRunStream } from './agent-runs-drawer';
 import { PaginationQuery } from '@/core';
 
 /**
@@ -544,6 +545,33 @@ function TestRunDrawer({
   const { t } = useTranslation('ai-agent');
   const [form] = Form.useForm();
   const [result, setResult] = useState<RunResult | undefined>();
+  // SSE 实时轨迹帧（ai_agent_run）：Run 同步响应到达前先逐节点呈现，
+  // 响应到达后以 result.trace 全量覆盖（尽力而为丢帧可容忍）
+  const [liveSteps, setLiveSteps] = useState<Array<Record<string, any>>>([]);
+
+  // useAgentRunStream 以 appId 过滤帧；仅抽屉打开时订阅
+  useEffect(() => {
+    if (!open || !appId) return;
+    return useAgentRunStream(appId, (frame) => {
+      if (frame.phase === 'node_end') {
+        setLiveSteps((prev) => [
+          ...prev,
+          { nodeId: frame.nodeId, type: '', status: frame.status ?? 'ok', ms: 0, summary: frame.summary },
+        ]);
+      } else if (frame.phase === 'error') {
+        setLiveSteps((prev) => [
+          ...prev,
+          { nodeId: '', type: '', status: 'error', ms: 0, error: frame.summary },
+        ]);
+      }
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, appId]);
+
+  // 打开新一次试运行时清空上一次的实时帧
+  useEffect(() => {
+    if (open) setLiveSteps([]);
+  }, [open]);
 
   const handleRun = async () => {
     if (!appId) return;
@@ -558,12 +586,13 @@ function TestRunDrawer({
     }
   };
 
-  let traceSteps: any[] = [];
+  // 响应未到达时先用 SSE 实时帧呈现；响应到达后以全量 trace 覆盖
+  let traceSteps: any[] = result?.trace ? [] : liveSteps;
   if (result?.trace) {
     try {
       traceSteps = JSON.parse(result.trace);
     } catch {
-      traceSteps = [];
+      traceSteps = liveSteps;
     }
   }
 

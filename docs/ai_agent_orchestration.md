@@ -97,6 +97,22 @@ condition 恰有两条出边且 `branch` 恰为 true/false 各一；其余节点
 5. 失败：节点执行错误 → 运行行 FAILED + 已产生的 trace 与用量照记（部分执行可见）；
    引擎错误（图走不通/超出步数）同 FAILED，error 列写原因。
 
+### 3.1 SSE 流式执行（M2 已落地）
+
+Run 保持同步 RPC 语义不变（M1 trace/台账路径原样），流式是**实时观感增强**：
+
+- 新事件 `ai_agent_run`（`sseevent.AgentRun`）：data 为 `AgentRunEvent` protojson——
+  `{runId, appId, seq, phase, nodeId, summary, status}`；phase ∈
+  `node_start | node_end | error | done`；
+- 发布点在引擎 `deps.onStep` 回调（每节点 node_start/node_end 各一帧）与 service
+  收尾（done/error 帧）；streamId 与 AI 对话同为发起用户 userId（复用既有用户流）；
+- 语义与 chat 同哲学：SSE 帧尽力而为丢帧可容忍（`TryPublish` 满即丢），
+  Run 同步响应携带完整 trace 与终态，前端以响应为准校正实时帧；
+- 未接线 publisher（旧装配/单测）noop 降级——流式观感静默缺失，不影响同步语义；
+- 三端消费：事件注册表加 `AgentRun` 项（真相源 sseevent.go 两边同改）；
+  react 试运行面板 `useAgentRunStream` 订阅（appId 过滤），响应未到达时先呈现
+  实时帧、到达后全量 trace 覆盖。
+
 ## 4. 数据模型
 
 | 表 | 关键列 | 说明 |
@@ -108,9 +124,9 @@ condition 恰有两条出边且 `branch` 恰为 true/false 各一；其余节点
 
 - **M1（本期）**：引擎 + CRUD + 同步 Run + 运行台账 + react 画布先行
   （列表页 + 全屏画布编辑器 + 试运行面板，@xyflow/react）。门禁全绿。
-- **M2（未排期，需求驱动）**：ele/vben 画布移植（vue-flow）；SSE 流式（LLM 节点增量推
-  `ai_agent_chunk` 事件，复用 SSE 网关）；script 节点（go-scripts 沙箱）、http 节点；
-  应用版本/发布；运行台账页筛选项打磨。
+- **M2（部分落地）**：SSE 流式已落地（见 §3.1，事件名定为 `ai_agent_run`，非早期
+  设想的 `ai_agent_chunk`——推的是节点阶段帧而非 LLM token 增量）；ele/vben 画布移植
+  （vue-flow）与 script/http 节点、应用版本/发布仍未排期。
 - **M3（设想）**：对外 OpenAPI（AK/SK 调用 Agent）、定时触发（任务桥）、工具市场
   （把脚本引擎的钩子暴露为 LLM 工具）。
 

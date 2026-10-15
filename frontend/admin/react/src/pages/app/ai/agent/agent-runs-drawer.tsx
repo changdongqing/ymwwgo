@@ -142,3 +142,38 @@ export default function AgentRunsDrawer({
     </Drawer>
   );
 }
+
+import { useEffect } from 'react';
+import { globalSSEClient, SSE_EVENT } from '@/core';
+
+/**
+ * 订阅本用户流上的 ai_agent_run 帧（试运行实时观感）。
+ * 帧形：AgentRunEvent protojson（runId/appId/seq/phase/nodeId/summary/status）。
+ * 丢帧可容忍：Run 同步响应携带完整 trace，以响应为准。
+ */
+export function useAgentRunStream(
+  appId: number | undefined,
+  onFrame: (frame: {
+    runId: number;
+    appId: number;
+    seq: number;
+    phase: string;
+    nodeId?: string;
+    summary?: string;
+    status?: string;
+  }) => void,
+  enabled = true,
+) {
+  useEffect(() => {
+    if (!enabled || !appId) return;
+    const handler = (data: unknown) => {
+      const frame = data as { appId?: number };
+      if (!frame || typeof frame !== 'object' || frame.appId !== appId) return;
+      onFrame(frame as Parameters<typeof onFrame>[0]);
+    };
+    globalSSEClient.on(SSE_EVENT.AgentRun, handler);
+    return () => {
+      globalSSEClient.off(SSE_EVENT.AgentRun, handler);
+    };
+  }, [appId, enabled, onFrame]);
+}
