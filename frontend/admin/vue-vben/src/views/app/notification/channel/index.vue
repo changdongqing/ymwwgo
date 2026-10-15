@@ -639,7 +639,7 @@ async function handleTestSend() {
             <a-select-option value="WEBHOOK">
               {{ $t('page.notificationChannel.typeWebhook') }}
             </a-select-option>
-            <a-select-optgroup
+            <a-select-opt-group
               v-for="group in extTypeGroups"
               :key="group.group"
               :label="group.label"
@@ -651,7 +651,7 @@ async function handleTestSend() {
               >
                 {{ opt.label }}
               </a-select-option>
-            </a-select-optgroup>
+            </a-select-opt-group>
           </a-select>
         </a-form-item>
         <!-- 三类渠道各自的配置项分组显示：表单里同时摆几组，管理员要自己猜哪一组生效。
