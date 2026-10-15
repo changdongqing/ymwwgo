@@ -5,6 +5,8 @@
   "typeEmail": "邮件 (SMTP)",
   "typeWebhook": "Webhook",
   "typeSms": "短信",
+  "smsAliyun": "阿里云短信",
+  "smsTencent": "腾讯云短信",
   "smtpHost": "SMTP 服务器",
   "smtpPort": "端口",
   "smtpUsername": "SMTP 用户名",
@@ -77,5 +79,10 @@
   "invalidEmail": "邮箱格式不正确",
   "invalidPhone": "手机号格式不正确（支持大陆手机号或 E.164 格式）",
   "testSendSuccess": "测试消息已发送，请查收",
-  "testSendFailed": "测试消息发送失败"
+  "testSendFailed": "测试消息发送失败",
+  "ext": {
+    "targetLabel": "运行目标：{label}（测试发送与投递时按渠道填写）",
+    "secretKeepHint": "留空表示不修改已存值",
+    "optionDefault": "默认"
+  }
 }

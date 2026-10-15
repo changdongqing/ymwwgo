@@ -5,6 +5,8 @@
   "typeEmail": "Email (SMTP)",
   "typeWebhook": "Webhook",
   "typeSms": "SMS",
+  "smsAliyun": "Aliyun SMS",
+  "smsTencent": "Tencent SMS",
   "smtpHost": "SMTP Server",
   "smtpPort": "Port",
   "smtpUsername": "SMTP Username",
@@ -77,5 +79,10 @@
   "invalidEmail": "Invalid email address",
   "invalidPhone": "Invalid phone number (CN mobile or E.164 format)",
   "testSendSuccess": "Test message sent, please check the inbox",
-  "testSendFailed": "Failed to send test message"
+  "testSendFailed": "Failed to send test message",
+  "ext": {
+    "targetLabel": "Delivery target: {label} (required by test send and deliveries)",
+    "secretKeepHint": "Leave empty to keep the stored value",
+    "optionDefault": "default"
+  }
 }
