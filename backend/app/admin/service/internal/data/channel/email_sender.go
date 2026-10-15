@@ -52,6 +52,7 @@ func (s *EmailSender) Send(ctx context.Context, req *SendRequest) (*SendReceipt,
 		Username: account.Username,
 		Password: account.Password,
 		From:     account.From,
+		FromName: account.FromName,
 		TlsMode:  account.TlsMode,
 	}, []string{req.Target}, req.Title, req.Content); err != nil {
 		// 账号已选出：失败也必须把"是哪条渠道没发出去"带回给台账（见 Sender 的契约）。

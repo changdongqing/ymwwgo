@@ -224,6 +224,20 @@ func (_c *NotificationChannelCreate) SetNillableSMTPFrom(v *string) *Notificatio
 	return _c
 }
 
+// SetSMTPFromName sets the "smtp_from_name" field.
+func (_c *NotificationChannelCreate) SetSMTPFromName(v string) *NotificationChannelCreate {
+	_c.mutation.SetSMTPFromName(v)
+	return _c
+}
+
+// SetNillableSMTPFromName sets the "smtp_from_name" field if the given value is not nil.
+func (_c *NotificationChannelCreate) SetNillableSMTPFromName(v *string) *NotificationChannelCreate {
+	if v != nil {
+		_c.SetSMTPFromName(*v)
+	}
+	return _c
+}
+
 // SetSMTPTLS sets the "smtp_tls" field.
 func (_c *NotificationChannelCreate) SetSMTPTLS(v notificationchannel.SMTPTLS) *NotificationChannelCreate {
 	_c.mutation.SetSMTPTLS(v)
@@ -594,6 +608,10 @@ func (_c *NotificationChannelCreate) createSpec() (*NotificationChannel, *sqlgra
 		_spec.SetField(notificationchannel.FieldSMTPFrom, field.TypeString, value)
 		_node.SMTPFrom = &value
 	}
+	if value, ok := _c.mutation.SMTPFromName(); ok {
+		_spec.SetField(notificationchannel.FieldSMTPFromName, field.TypeString, value)
+		_node.SMTPFromName = &value
+	}
 	if value, ok := _c.mutation.SMTPTLS(); ok {
 		_spec.SetField(notificationchannel.FieldSMTPTLS, field.TypeEnum, value)
 		_node.SMTPTLS = &value
@@ -949,6 +967,24 @@ func (u *NotificationChannelUpsert) UpdateSMTPFrom() *NotificationChannelUpsert 
 // ClearSMTPFrom clears the value of the "smtp_from" field.
 func (u *NotificationChannelUpsert) ClearSMTPFrom() *NotificationChannelUpsert {
 	u.SetNull(notificationchannel.FieldSMTPFrom)
+	return u
+}
+
+// SetSMTPFromName sets the "smtp_from_name" field.
+func (u *NotificationChannelUpsert) SetSMTPFromName(v string) *NotificationChannelUpsert {
+	u.Set(notificationchannel.FieldSMTPFromName, v)
+	return u
+}
+
+// UpdateSMTPFromName sets the "smtp_from_name" field to the value that was provided on create.
+func (u *NotificationChannelUpsert) UpdateSMTPFromName() *NotificationChannelUpsert {
+	u.SetExcluded(notificationchannel.FieldSMTPFromName)
+	return u
+}
+
+// ClearSMTPFromName clears the value of the "smtp_from_name" field.
+func (u *NotificationChannelUpsert) ClearSMTPFromName() *NotificationChannelUpsert {
+	u.SetNull(notificationchannel.FieldSMTPFromName)
 	return u
 }
 
@@ -1517,6 +1553,27 @@ func (u *NotificationChannelUpsertOne) UpdateSMTPFrom() *NotificationChannelUpse
 func (u *NotificationChannelUpsertOne) ClearSMTPFrom() *NotificationChannelUpsertOne {
 	return u.Update(func(s *NotificationChannelUpsert) {
 		s.ClearSMTPFrom()
+	})
+}
+
+// SetSMTPFromName sets the "smtp_from_name" field.
+func (u *NotificationChannelUpsertOne) SetSMTPFromName(v string) *NotificationChannelUpsertOne {
+	return u.Update(func(s *NotificationChannelUpsert) {
+		s.SetSMTPFromName(v)
+	})
+}
+
+// UpdateSMTPFromName sets the "smtp_from_name" field to the value that was provided on create.
+func (u *NotificationChannelUpsertOne) UpdateSMTPFromName() *NotificationChannelUpsertOne {
+	return u.Update(func(s *NotificationChannelUpsert) {
+		s.UpdateSMTPFromName()
+	})
+}
+
+// ClearSMTPFromName clears the value of the "smtp_from_name" field.
+func (u *NotificationChannelUpsertOne) ClearSMTPFromName() *NotificationChannelUpsertOne {
+	return u.Update(func(s *NotificationChannelUpsert) {
+		s.ClearSMTPFromName()
 	})
 }
 
@@ -2287,6 +2344,27 @@ func (u *NotificationChannelUpsertBulk) UpdateSMTPFrom() *NotificationChannelUps
 func (u *NotificationChannelUpsertBulk) ClearSMTPFrom() *NotificationChannelUpsertBulk {
 	return u.Update(func(s *NotificationChannelUpsert) {
 		s.ClearSMTPFrom()
+	})
+}
+
+// SetSMTPFromName sets the "smtp_from_name" field.
+func (u *NotificationChannelUpsertBulk) SetSMTPFromName(v string) *NotificationChannelUpsertBulk {
+	return u.Update(func(s *NotificationChannelUpsert) {
+		s.SetSMTPFromName(v)
+	})
+}
+
+// UpdateSMTPFromName sets the "smtp_from_name" field to the value that was provided on create.
+func (u *NotificationChannelUpsertBulk) UpdateSMTPFromName() *NotificationChannelUpsertBulk {
+	return u.Update(func(s *NotificationChannelUpsert) {
+		s.UpdateSMTPFromName()
+	})
+}
+
+// ClearSMTPFromName clears the value of the "smtp_from_name" field.
+func (u *NotificationChannelUpsertBulk) ClearSMTPFromName() *NotificationChannelUpsertBulk {
+	return u.Update(func(s *NotificationChannelUpsert) {
+		s.ClearSMTPFromName()
 	})
 }
 

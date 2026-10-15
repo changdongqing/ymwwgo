@@ -145,6 +145,10 @@ func (m *NotificationChannel) validate(all bool) error {
 		// no validation rules for SmsRegion
 	}
 
+	if m.SmtpFromName != nil {
+		// no validation rules for SmtpFromName
+	}
+
 	if m.CreatedBy != nil {
 		// no validation rules for CreatedBy
 	}

@@ -42597,6 +42597,7 @@ type NotificationChannelMutation struct {
 	smtp_username            *string
 	smtp_password            *string
 	smtp_from                *string
+	smtp_from_name           *string
 	smtp_tls                 *notificationchannel.SMTPTLS
 	webhook_url              *string
 	webhook_secret           *string
@@ -43499,6 +43500,55 @@ func (m *NotificationChannelMutation) ResetSMTPFrom() {
 	delete(m.clearedFields, notificationchannel.FieldSMTPFrom)
 }
 
+// SetSMTPFromName sets the "smtp_from_name" field.
+func (m *NotificationChannelMutation) SetSMTPFromName(s string) {
+	m.smtp_from_name = &s
+}
+
+// SMTPFromName returns the value of the "smtp_from_name" field in the mutation.
+func (m *NotificationChannelMutation) SMTPFromName() (r string, exists bool) {
+	v := m.smtp_from_name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSMTPFromName returns the old "smtp_from_name" field's value of the NotificationChannel entity.
+// If the NotificationChannel object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NotificationChannelMutation) OldSMTPFromName(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSMTPFromName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSMTPFromName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSMTPFromName: %w", err)
+	}
+	return oldValue.SMTPFromName, nil
+}
+
+// ClearSMTPFromName clears the value of the "smtp_from_name" field.
+func (m *NotificationChannelMutation) ClearSMTPFromName() {
+	m.smtp_from_name = nil
+	m.clearedFields[notificationchannel.FieldSMTPFromName] = struct{}{}
+}
+
+// SMTPFromNameCleared returns if the "smtp_from_name" field was cleared in this mutation.
+func (m *NotificationChannelMutation) SMTPFromNameCleared() bool {
+	_, ok := m.clearedFields[notificationchannel.FieldSMTPFromName]
+	return ok
+}
+
+// ResetSMTPFromName resets all changes to the "smtp_from_name" field.
+func (m *NotificationChannelMutation) ResetSMTPFromName() {
+	m.smtp_from_name = nil
+	delete(m.clearedFields, notificationchannel.FieldSMTPFromName)
+}
+
 // SetSMTPTLS sets the "smtp_tls" field.
 func (m *NotificationChannelMutation) SetSMTPTLS(n notificationchannel.SMTPTLS) {
 	m.smtp_tls = &n
@@ -44121,7 +44171,7 @@ func (m *NotificationChannelMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *NotificationChannelMutation) Fields() []string {
-	fields := make([]string, 0, 27)
+	fields := make([]string, 0, 28)
 	if m.created_at != nil {
 		fields = append(fields, notificationchannel.FieldCreatedAt)
 	}
@@ -44166,6 +44216,9 @@ func (m *NotificationChannelMutation) Fields() []string {
 	}
 	if m.smtp_from != nil {
 		fields = append(fields, notificationchannel.FieldSMTPFrom)
+	}
+	if m.smtp_from_name != nil {
+		fields = append(fields, notificationchannel.FieldSMTPFromName)
 	}
 	if m.smtp_tls != nil {
 		fields = append(fields, notificationchannel.FieldSMTPTLS)
@@ -44241,6 +44294,8 @@ func (m *NotificationChannelMutation) Field(name string) (ent.Value, bool) {
 		return m.SMTPPassword()
 	case notificationchannel.FieldSMTPFrom:
 		return m.SMTPFrom()
+	case notificationchannel.FieldSMTPFromName:
+		return m.SMTPFromName()
 	case notificationchannel.FieldSMTPTLS:
 		return m.SMTPTLS()
 	case notificationchannel.FieldWebhookURL:
@@ -44304,6 +44359,8 @@ func (m *NotificationChannelMutation) OldField(ctx context.Context, name string)
 		return m.OldSMTPPassword(ctx)
 	case notificationchannel.FieldSMTPFrom:
 		return m.OldSMTPFrom(ctx)
+	case notificationchannel.FieldSMTPFromName:
+		return m.OldSMTPFromName(ctx)
 	case notificationchannel.FieldSMTPTLS:
 		return m.OldSMTPTLS(ctx)
 	case notificationchannel.FieldWebhookURL:
@@ -44441,6 +44498,13 @@ func (m *NotificationChannelMutation) SetField(name string, value ent.Value) err
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetSMTPFrom(v)
+		return nil
+	case notificationchannel.FieldSMTPFromName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSMTPFromName(v)
 		return nil
 	case notificationchannel.FieldSMTPTLS:
 		v, ok := value.(notificationchannel.SMTPTLS)
@@ -44643,6 +44707,9 @@ func (m *NotificationChannelMutation) ClearedFields() []string {
 	if m.FieldCleared(notificationchannel.FieldSMTPFrom) {
 		fields = append(fields, notificationchannel.FieldSMTPFrom)
 	}
+	if m.FieldCleared(notificationchannel.FieldSMTPFromName) {
+		fields = append(fields, notificationchannel.FieldSMTPFromName)
+	}
 	if m.FieldCleared(notificationchannel.FieldSMTPTLS) {
 		fields = append(fields, notificationchannel.FieldSMTPTLS)
 	}
@@ -44728,6 +44795,9 @@ func (m *NotificationChannelMutation) ClearField(name string) error {
 		return nil
 	case notificationchannel.FieldSMTPFrom:
 		m.ClearSMTPFrom()
+		return nil
+	case notificationchannel.FieldSMTPFromName:
+		m.ClearSMTPFromName()
 		return nil
 	case notificationchannel.FieldSMTPTLS:
 		m.ClearSMTPTLS()
@@ -44817,6 +44887,9 @@ func (m *NotificationChannelMutation) ResetField(name string) error {
 		return nil
 	case notificationchannel.FieldSMTPFrom:
 		m.ResetSMTPFrom()
+		return nil
+	case notificationchannel.FieldSMTPFromName:
+		m.ResetSMTPFromName()
 		return nil
 	case notificationchannel.FieldSMTPTLS:
 		m.ResetSMTPTLS()

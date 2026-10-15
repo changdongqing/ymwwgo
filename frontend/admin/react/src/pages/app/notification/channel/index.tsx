@@ -168,7 +168,7 @@ const NotificationChannelManagement = () => {
           webhookSecret: webhookSecret || undefined,
           smsAccessSecret: smsAccessSecret || undefined,
           updateMask:
-            'name,type,smtpHost,smtpPort,smtpUsername,smtpFrom,smtpTls,webhookUrl,webhookSignStyle,webhookPayloadTemplate,smsProvider,smsAccessKeyId,smsSignName,smsTemplateCode,smsAppId,smsRegion,enabled,remark',
+            'name,type,smtpHost,smtpPort,smtpUsername,smtpFrom,smtpFromName,smtpTls,webhookUrl,webhookSignStyle,webhookPayloadTemplate,smsProvider,smsAccessKeyId,smsSignName,smsTemplateCode,smsAppId,smsRegion,enabled,remark',
         };
         await updateMutation.mutateAsync(req);
         message.success(t('updateSuccess'));
@@ -569,6 +569,7 @@ const NotificationChannelManagement = () => {
                   }
                 />
                 <ProFormText name="smtpFrom" label={t('smtpFrom')} placeholder="noreply@example.com" />
+                <ProFormText name="smtpFromName" label={t('smtpFromName')} placeholder="GoWind" />
                 <ProFormSelect
                   name="smtpTls"
                   label={t('smtpTls')}

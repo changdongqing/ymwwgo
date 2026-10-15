@@ -119,6 +119,11 @@ func SMTPFrom(v string) predicate.NotificationChannel {
 	return predicate.NotificationChannel(sql.FieldEQ(FieldSMTPFrom, v))
 }
 
+// SMTPFromName applies equality check predicate on the "smtp_from_name" field. It's identical to SMTPFromNameEQ.
+func SMTPFromName(v string) predicate.NotificationChannel {
+	return predicate.NotificationChannel(sql.FieldEQ(FieldSMTPFromName, v))
+}
+
 // WebhookURL applies equality check predicate on the "webhook_url" field. It's identical to WebhookURLEQ.
 func WebhookURL(v string) predicate.NotificationChannel {
 	return predicate.NotificationChannel(sql.FieldEQ(FieldWebhookURL, v))
@@ -992,6 +997,81 @@ func SMTPFromEqualFold(v string) predicate.NotificationChannel {
 // SMTPFromContainsFold applies the ContainsFold predicate on the "smtp_from" field.
 func SMTPFromContainsFold(v string) predicate.NotificationChannel {
 	return predicate.NotificationChannel(sql.FieldContainsFold(FieldSMTPFrom, v))
+}
+
+// SMTPFromNameEQ applies the EQ predicate on the "smtp_from_name" field.
+func SMTPFromNameEQ(v string) predicate.NotificationChannel {
+	return predicate.NotificationChannel(sql.FieldEQ(FieldSMTPFromName, v))
+}
+
+// SMTPFromNameNEQ applies the NEQ predicate on the "smtp_from_name" field.
+func SMTPFromNameNEQ(v string) predicate.NotificationChannel {
+	return predicate.NotificationChannel(sql.FieldNEQ(FieldSMTPFromName, v))
+}
+
+// SMTPFromNameIn applies the In predicate on the "smtp_from_name" field.
+func SMTPFromNameIn(vs ...string) predicate.NotificationChannel {
+	return predicate.NotificationChannel(sql.FieldIn(FieldSMTPFromName, vs...))
+}
+
+// SMTPFromNameNotIn applies the NotIn predicate on the "smtp_from_name" field.
+func SMTPFromNameNotIn(vs ...string) predicate.NotificationChannel {
+	return predicate.NotificationChannel(sql.FieldNotIn(FieldSMTPFromName, vs...))
+}
+
+// SMTPFromNameGT applies the GT predicate on the "smtp_from_name" field.
+func SMTPFromNameGT(v string) predicate.NotificationChannel {
+	return predicate.NotificationChannel(sql.FieldGT(FieldSMTPFromName, v))
+}
+
+// SMTPFromNameGTE applies the GTE predicate on the "smtp_from_name" field.
+func SMTPFromNameGTE(v string) predicate.NotificationChannel {
+	return predicate.NotificationChannel(sql.FieldGTE(FieldSMTPFromName, v))
+}
+
+// SMTPFromNameLT applies the LT predicate on the "smtp_from_name" field.
+func SMTPFromNameLT(v string) predicate.NotificationChannel {
+	return predicate.NotificationChannel(sql.FieldLT(FieldSMTPFromName, v))
+}
+
+// SMTPFromNameLTE applies the LTE predicate on the "smtp_from_name" field.
+func SMTPFromNameLTE(v string) predicate.NotificationChannel {
+	return predicate.NotificationChannel(sql.FieldLTE(FieldSMTPFromName, v))
+}
+
+// SMTPFromNameContains applies the Contains predicate on the "smtp_from_name" field.
+func SMTPFromNameContains(v string) predicate.NotificationChannel {
+	return predicate.NotificationChannel(sql.FieldContains(FieldSMTPFromName, v))
+}
+
+// SMTPFromNameHasPrefix applies the HasPrefix predicate on the "smtp_from_name" field.
+func SMTPFromNameHasPrefix(v string) predicate.NotificationChannel {
+	return predicate.NotificationChannel(sql.FieldHasPrefix(FieldSMTPFromName, v))
+}
+
+// SMTPFromNameHasSuffix applies the HasSuffix predicate on the "smtp_from_name" field.
+func SMTPFromNameHasSuffix(v string) predicate.NotificationChannel {
+	return predicate.NotificationChannel(sql.FieldHasSuffix(FieldSMTPFromName, v))
+}
+
+// SMTPFromNameIsNil applies the IsNil predicate on the "smtp_from_name" field.
+func SMTPFromNameIsNil() predicate.NotificationChannel {
+	return predicate.NotificationChannel(sql.FieldIsNull(FieldSMTPFromName))
+}
+
+// SMTPFromNameNotNil applies the NotNil predicate on the "smtp_from_name" field.
+func SMTPFromNameNotNil() predicate.NotificationChannel {
+	return predicate.NotificationChannel(sql.FieldNotNull(FieldSMTPFromName))
+}
+
+// SMTPFromNameEqualFold applies the EqualFold predicate on the "smtp_from_name" field.
+func SMTPFromNameEqualFold(v string) predicate.NotificationChannel {
+	return predicate.NotificationChannel(sql.FieldEqualFold(FieldSMTPFromName, v))
+}
+
+// SMTPFromNameContainsFold applies the ContainsFold predicate on the "smtp_from_name" field.
+func SMTPFromNameContainsFold(v string) predicate.NotificationChannel {
+	return predicate.NotificationChannel(sql.FieldContainsFold(FieldSMTPFromName, v))
 }
 
 // SMTPTLSEQ applies the EQ predicate on the "smtp_tls" field.

@@ -11148,6 +11148,9 @@ components:
                 smsRegion:
                     type: string
                     description: 服务地域（腾讯云如 ap-guangzhou；阿里云留空）
+                smtpFromName:
+                    type: string
+                    description: 发件人显示名（仅 EMAIL 渠道）
                 createdBy:
                     type: integer
                     format: uint32

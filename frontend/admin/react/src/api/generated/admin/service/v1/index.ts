@@ -7447,6 +7447,7 @@ export type notification_channelservicev1_NotificationChannel = {
   // 阿里云模板正文含 ${code}，腾讯云模板正文含 {1}——同一份占位语义，各家用各家的写法。
   smsTemplateCode?: string;
   smtpFrom?: string;
+  smtpFromName?: string;
   smtpHost?: string;
   smtpPort?: number;
   smtpTls?: notification_channelservicev1_NotificationChannel_TlsMode;

@@ -854,6 +854,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			notificationchannel.FieldSMTPUsername:           {Type: field.TypeString, Column: notificationchannel.FieldSMTPUsername},
 			notificationchannel.FieldSMTPPassword:           {Type: field.TypeString, Column: notificationchannel.FieldSMTPPassword},
 			notificationchannel.FieldSMTPFrom:               {Type: field.TypeString, Column: notificationchannel.FieldSMTPFrom},
+			notificationchannel.FieldSMTPFromName:           {Type: field.TypeString, Column: notificationchannel.FieldSMTPFromName},
 			notificationchannel.FieldSMTPTLS:                {Type: field.TypeEnum, Column: notificationchannel.FieldSMTPTLS},
 			notificationchannel.FieldWebhookURL:             {Type: field.TypeString, Column: notificationchannel.FieldWebhookURL},
 			notificationchannel.FieldWebhookSecret:          {Type: field.TypeString, Column: notificationchannel.FieldWebhookSecret},
@@ -5416,6 +5417,11 @@ func (f *NotificationChannelFilter) WhereSMTPPassword(p entql.StringP) {
 // WhereSMTPFrom applies the entql string predicate on the smtp_from field.
 func (f *NotificationChannelFilter) WhereSMTPFrom(p entql.StringP) {
 	f.Where(p.Field(notificationchannel.FieldSMTPFrom))
+}
+
+// WhereSMTPFromName applies the entql string predicate on the smtp_from_name field.
+func (f *NotificationChannelFilter) WhereSMTPFromName(p entql.StringP) {
+	f.Where(p.Field(notificationchannel.FieldSMTPFromName))
 }
 
 // WhereSMTPTLS applies the entql string predicate on the smtp_tls field.

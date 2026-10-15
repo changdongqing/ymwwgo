@@ -1663,6 +1663,7 @@ var (
 		{Name: "smtp_username", Type: field.TypeString, Nullable: true, Comment: "SMTP 用户名"},
 		{Name: "smtp_password", Type: field.TypeString, Nullable: true, Comment: "SMTP 密码/授权码（EncryptIfNeeded 加密存储）"},
 		{Name: "smtp_from", Type: field.TypeString, Nullable: true, Comment: "发件人地址"},
+		{Name: "smtp_from_name", Type: field.TypeString, Nullable: true, Comment: "发件人显示名（如 GoWind，收件客户端直接显示该名）"},
 		{Name: "smtp_tls", Type: field.TypeEnum, Nullable: true, Comment: "加密方式", Enums: []string{"NONE", "START_TLS", "SSL"}, Default: "START_TLS"},
 		{Name: "webhook_url", Type: field.TypeString, Nullable: true, Comment: "Webhook 回调地址（仅 WEBHOOK 渠道）"},
 		{Name: "webhook_secret", Type: field.TypeString, Nullable: true, Comment: "Webhook 签名密钥（EncryptIfNeeded 加密存储，仅 WEBHOOK 渠道）"},

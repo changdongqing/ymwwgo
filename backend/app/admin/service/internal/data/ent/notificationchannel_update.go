@@ -319,6 +319,26 @@ func (_u *NotificationChannelUpdate) ClearSMTPFrom() *NotificationChannelUpdate 
 	return _u
 }
 
+// SetSMTPFromName sets the "smtp_from_name" field.
+func (_u *NotificationChannelUpdate) SetSMTPFromName(v string) *NotificationChannelUpdate {
+	_u.mutation.SetSMTPFromName(v)
+	return _u
+}
+
+// SetNillableSMTPFromName sets the "smtp_from_name" field if the given value is not nil.
+func (_u *NotificationChannelUpdate) SetNillableSMTPFromName(v *string) *NotificationChannelUpdate {
+	if v != nil {
+		_u.SetSMTPFromName(*v)
+	}
+	return _u
+}
+
+// ClearSMTPFromName clears the value of the "smtp_from_name" field.
+func (_u *NotificationChannelUpdate) ClearSMTPFromName() *NotificationChannelUpdate {
+	_u.mutation.ClearSMTPFromName()
+	return _u
+}
+
 // SetSMTPTLS sets the "smtp_tls" field.
 func (_u *NotificationChannelUpdate) SetSMTPTLS(v notificationchannel.SMTPTLS) *NotificationChannelUpdate {
 	_u.mutation.SetSMTPTLS(v)
@@ -734,6 +754,12 @@ func (_u *NotificationChannelUpdate) sqlSave(ctx context.Context) (_node int, er
 	if _u.mutation.SMTPFromCleared() {
 		_spec.ClearField(notificationchannel.FieldSMTPFrom, field.TypeString)
 	}
+	if value, ok := _u.mutation.SMTPFromName(); ok {
+		_spec.SetField(notificationchannel.FieldSMTPFromName, field.TypeString, value)
+	}
+	if _u.mutation.SMTPFromNameCleared() {
+		_spec.ClearField(notificationchannel.FieldSMTPFromName, field.TypeString)
+	}
 	if value, ok := _u.mutation.SMTPTLS(); ok {
 		_spec.SetField(notificationchannel.FieldSMTPTLS, field.TypeEnum, value)
 	}
@@ -1115,6 +1141,26 @@ func (_u *NotificationChannelUpdateOne) SetNillableSMTPFrom(v *string) *Notifica
 // ClearSMTPFrom clears the value of the "smtp_from" field.
 func (_u *NotificationChannelUpdateOne) ClearSMTPFrom() *NotificationChannelUpdateOne {
 	_u.mutation.ClearSMTPFrom()
+	return _u
+}
+
+// SetSMTPFromName sets the "smtp_from_name" field.
+func (_u *NotificationChannelUpdateOne) SetSMTPFromName(v string) *NotificationChannelUpdateOne {
+	_u.mutation.SetSMTPFromName(v)
+	return _u
+}
+
+// SetNillableSMTPFromName sets the "smtp_from_name" field if the given value is not nil.
+func (_u *NotificationChannelUpdateOne) SetNillableSMTPFromName(v *string) *NotificationChannelUpdateOne {
+	if v != nil {
+		_u.SetSMTPFromName(*v)
+	}
+	return _u
+}
+
+// ClearSMTPFromName clears the value of the "smtp_from_name" field.
+func (_u *NotificationChannelUpdateOne) ClearSMTPFromName() *NotificationChannelUpdateOne {
+	_u.mutation.ClearSMTPFromName()
 	return _u
 }
 
@@ -1562,6 +1608,12 @@ func (_u *NotificationChannelUpdateOne) sqlSave(ctx context.Context) (_node *Not
 	}
 	if _u.mutation.SMTPFromCleared() {
 		_spec.ClearField(notificationchannel.FieldSMTPFrom, field.TypeString)
+	}
+	if value, ok := _u.mutation.SMTPFromName(); ok {
+		_spec.SetField(notificationchannel.FieldSMTPFromName, field.TypeString, value)
+	}
+	if _u.mutation.SMTPFromNameCleared() {
+		_spec.ClearField(notificationchannel.FieldSMTPFromName, field.TypeString)
 	}
 	if value, ok := _u.mutation.SMTPTLS(); ok {
 		_spec.SetField(notificationchannel.FieldSMTPTLS, field.TypeEnum, value)

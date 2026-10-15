@@ -43,6 +43,8 @@ const (
 	FieldSMTPPassword = "smtp_password"
 	// FieldSMTPFrom holds the string denoting the smtp_from field in the database.
 	FieldSMTPFrom = "smtp_from"
+	// FieldSMTPFromName holds the string denoting the smtp_from_name field in the database.
+	FieldSMTPFromName = "smtp_from_name"
 	// FieldSMTPTLS holds the string denoting the smtp_tls field in the database.
 	FieldSMTPTLS = "smtp_tls"
 	// FieldWebhookURL holds the string denoting the webhook_url field in the database.
@@ -89,6 +91,7 @@ var Columns = []string{
 	FieldSMTPUsername,
 	FieldSMTPPassword,
 	FieldSMTPFrom,
+	FieldSMTPFromName,
 	FieldSMTPTLS,
 	FieldWebhookURL,
 	FieldWebhookSecret,
@@ -336,6 +339,11 @@ func BySMTPPassword(opts ...sql.OrderTermOption) OrderOption {
 // BySMTPFrom orders the results by the smtp_from field.
 func BySMTPFrom(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldSMTPFrom, opts...).ToFunc()
+}
+
+// BySMTPFromName orders the results by the smtp_from_name field.
+func BySMTPFromName(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldSMTPFromName, opts...).ToFunc()
 }
 
 // BySMTPTLS orders the results by the smtp_tls field.

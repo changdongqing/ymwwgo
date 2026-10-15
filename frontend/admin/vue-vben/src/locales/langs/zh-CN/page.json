@@ -743,6 +743,7 @@
     "passwordSet": "已配置",
     "passwordNotSet": "未配置",
     "smtpFrom": "发件人地址",
+    "smtpFromName": "发件人显示名",
     "smtpTls": "加密方式",
     "tlsNone": "不加密",
     "tlsStartTls": "STARTTLS",

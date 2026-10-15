@@ -48,6 +48,8 @@ type NotificationChannel struct {
 	SMTPPassword *string `json:"-"`
 	// 发件人地址
 	SMTPFrom *string `json:"smtp_from,omitempty"`
+	// 发件人显示名（如 GoWind，收件客户端直接显示该名）
+	SMTPFromName *string `json:"smtp_from_name,omitempty"`
 	// 加密方式
 	SMTPTLS *notificationchannel.SMTPTLS `json:"smtp_tls,omitempty"`
 	// Webhook 回调地址（仅 WEBHOOK 渠道）
@@ -82,7 +84,7 @@ func (*NotificationChannel) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case notificationchannel.FieldID, notificationchannel.FieldCreatedBy, notificationchannel.FieldUpdatedBy, notificationchannel.FieldDeletedBy, notificationchannel.FieldSMTPPort:
 			values[i] = new(sql.NullInt64)
-		case notificationchannel.FieldRemark, notificationchannel.FieldStatus, notificationchannel.FieldName, notificationchannel.FieldType, notificationchannel.FieldSMTPHost, notificationchannel.FieldSMTPUsername, notificationchannel.FieldSMTPPassword, notificationchannel.FieldSMTPFrom, notificationchannel.FieldSMTPTLS, notificationchannel.FieldWebhookURL, notificationchannel.FieldWebhookSecret, notificationchannel.FieldWebhookSignStyle, notificationchannel.FieldWebhookPayloadTemplate, notificationchannel.FieldSmsProvider, notificationchannel.FieldSmsAccessKeyID, notificationchannel.FieldSmsAccessSecret, notificationchannel.FieldSmsSignName, notificationchannel.FieldSmsTemplateCode, notificationchannel.FieldSmsAppID, notificationchannel.FieldSmsRegion:
+		case notificationchannel.FieldRemark, notificationchannel.FieldStatus, notificationchannel.FieldName, notificationchannel.FieldType, notificationchannel.FieldSMTPHost, notificationchannel.FieldSMTPUsername, notificationchannel.FieldSMTPPassword, notificationchannel.FieldSMTPFrom, notificationchannel.FieldSMTPFromName, notificationchannel.FieldSMTPTLS, notificationchannel.FieldWebhookURL, notificationchannel.FieldWebhookSecret, notificationchannel.FieldWebhookSignStyle, notificationchannel.FieldWebhookPayloadTemplate, notificationchannel.FieldSmsProvider, notificationchannel.FieldSmsAccessKeyID, notificationchannel.FieldSmsAccessSecret, notificationchannel.FieldSmsSignName, notificationchannel.FieldSmsTemplateCode, notificationchannel.FieldSmsAppID, notificationchannel.FieldSmsRegion:
 			values[i] = new(sql.NullString)
 		case notificationchannel.FieldCreatedAt, notificationchannel.FieldUpdatedAt, notificationchannel.FieldDeletedAt:
 			values[i] = new(sql.NullTime)
@@ -209,6 +211,13 @@ func (_m *NotificationChannel) assignValues(columns []string, values []any) erro
 			} else if value.Valid {
 				_m.SMTPFrom = new(string)
 				*_m.SMTPFrom = value.String
+			}
+		case notificationchannel.FieldSMTPFromName:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field smtp_from_name", values[i])
+			} else if value.Valid {
+				_m.SMTPFromName = new(string)
+				*_m.SMTPFromName = value.String
 			}
 		case notificationchannel.FieldSMTPTLS:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -395,6 +404,11 @@ func (_m *NotificationChannel) String() string {
 	builder.WriteString(", ")
 	if v := _m.SMTPFrom; v != nil {
 		builder.WriteString("smtp_from=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.SMTPFromName; v != nil {
+		builder.WriteString("smtp_from_name=")
 		builder.WriteString(*v)
 	}
 	builder.WriteString(", ")

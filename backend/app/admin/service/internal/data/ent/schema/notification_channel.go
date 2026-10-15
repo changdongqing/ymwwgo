@@ -64,6 +64,10 @@ func (NotificationChannel) Fields() []ent.Field {
 			Comment("发件人地址").
 			Optional().
 			Nillable(),
+		field.String("smtp_from_name").
+			Comment("发件人显示名（如 GoWind，收件客户端直接显示该名）").
+			Optional().
+			Nillable(),
 		field.Enum("smtp_tls").
 			Comment("加密方式").
 			NamedValues(

@@ -292,6 +292,7 @@ func (r *NotificationChannelRepo) Create(ctx context.Context, req *notificationC
 		SetNillableSMTPPort(req.Data.SmtpPort).
 		SetNillableSMTPUsername(req.Data.SmtpUsername).
 		SetNillableSMTPFrom(req.Data.SmtpFrom).
+		SetNillableSMTPFromName(req.Data.SmtpFromName).
 		SetNillableSMTPTLS(r.tlsConverter.ToEntity(req.Data.SmtpTls)).
 		SetNillableWebhookURL(req.Data.WebhookUrl).
 		SetNillableWebhookSignStyle(r.styleConverter.ToEntity(req.Data.WebhookSignStyle)).
@@ -344,6 +345,7 @@ func (r *NotificationChannelRepo) Update(ctx context.Context, req *notificationC
 				SetNillableSMTPPort(req.Data.SmtpPort).
 				SetNillableSMTPUsername(req.Data.SmtpUsername).
 				SetNillableSMTPFrom(req.Data.SmtpFrom).
+				SetNillableSMTPFromName(req.Data.SmtpFromName).
 				SetNillableSMTPTLS(r.tlsConverter.ToEntity(req.Data.SmtpTls)).
 				SetNillableWebhookURL(req.Data.WebhookUrl).
 				SetNillableWebhookSignStyle(r.styleConverter.ToEntity(req.Data.WebhookSignStyle)).
@@ -415,6 +417,7 @@ type SmtpAccount struct {
 	Username string
 	Password string
 	From     string
+	FromName string
 	TlsMode  string
 	Enabled  bool
 }
@@ -455,6 +458,7 @@ func (r *NotificationChannelRepo) GetFirstEnabledEmailChannel(ctx context.Contex
 		Username: derefStr(e.SMTPUsername),
 		Password: password,
 		From:     derefStr(e.SMTPFrom),
+		FromName: derefStr(e.SMTPFromName),
 		// SMTPTLS 为可空列：此前 string(*e.SMTPTLS) 裸解引用，NULL 行会 panic，
 		// 对齐同函数族其余字段的 nil 安全取值（derefStrP）。
 		TlsMode: derefStrP(e.SMTPTLS),
@@ -489,6 +493,7 @@ func (r *NotificationChannelRepo) GetDecryptedSmtpAccount(ctx context.Context, i
 		Username: derefStr(entity.SMTPUsername),
 		Password: password,
 		From:     derefStr(entity.SMTPFrom),
+		FromName: derefStr(entity.SMTPFromName),
 		TlsMode:  derefStrP(entity.SMTPTLS),
 		Enabled:  entity.Status != nil && *entity.Status == notificationchannel.StatusOn,
 	}, nil

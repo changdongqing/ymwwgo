@@ -271,7 +271,8 @@ type NotificationChannel struct {
 	// 腾讯云必填（SmsSdkAppId，控制台"应用管理"里那串数字）；阿里云留空。
 	SmsAppId *string `protobuf:"bytes,27,opt,name=sms_app_id,json=smsAppId,proto3,oneof" json:"sms_app_id,omitempty"` // 短信应用 ID
 	// 腾讯云必填（如 ap-guangzhou）；阿里云留空（默认 cn-hangzhou）。
-	SmsRegion     *string                `protobuf:"bytes,28,opt,name=sms_region,json=smsRegion,proto3,oneof" json:"sms_region,omitempty"` // 服务地域
+	SmsRegion     *string                `protobuf:"bytes,28,opt,name=sms_region,json=smsRegion,proto3,oneof" json:"sms_region,omitempty"`            // 服务地域
+	SmtpFromName  *string                `protobuf:"bytes,29,opt,name=smtp_from_name,json=smtpFromName,proto3,oneof" json:"smtp_from_name,omitempty"` // 发件人显示名
 	CreatedBy     *uint32                `protobuf:"varint,100,opt,name=created_by,json=createdBy,proto3,oneof" json:"created_by,omitempty"`
 	UpdatedBy     *uint32                `protobuf:"varint,101,opt,name=updated_by,json=updatedBy,proto3,oneof" json:"updated_by,omitempty"`
 	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,200,opt,name=created_at,json=createdAt,proto3,oneof" json:"created_at,omitempty"`
@@ -460,6 +461,13 @@ func (x *NotificationChannel) GetSmsAppId() string {
 func (x *NotificationChannel) GetSmsRegion() string {
 	if x != nil && x.SmsRegion != nil {
 		return *x.SmsRegion
+	}
+	return ""
+}
+
+func (x *NotificationChannel) GetSmtpFromName() string {
+	if x != nil && x.SmtpFromName != nil {
+		return *x.SmtpFromName
 	}
 	return ""
 }
@@ -907,7 +915,7 @@ var File_notification_channel_service_v1_notification_channel_proto protoreflect
 
 const file_notification_channel_service_v1_notification_channel_proto_rawDesc = "" +
 	"\n" +
-	":notification_channel/service/v1/notification_channel.proto\x12\x1fnotification_channel.service.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a google/protobuf/field_mask.proto\x1a\x1epagination/v1/pagination.proto\"\xf1\x14\n" +
+	":notification_channel/service/v1/notification_channel.proto\x12\x1fnotification_channel.service.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a google/protobuf/field_mask.proto\x1a\x1epagination/v1/pagination.proto\"\xdf\x15\n" +
 	"\x13NotificationChannel\x12#\n" +
 	"\x02id\x18\x01 \x01(\rB\x0e\xbaG\v\x92\x02\b渠道IDH\x00R\x02id\x88\x01\x01\x12+\n" +
 	"\x04name\x18\x02 \x01(\tB\x12\xbaG\x0f\x92\x02\f渠道名称H\x01R\x04name\x88\x01\x01\x12f\n" +
@@ -935,15 +943,16 @@ const file_notification_channel_service_v1_notification_channel_proto_rawDesc = 
 	"\n" +
 	"sms_app_id\x18\x1b \x01(\tBB\xbaG?\x92\x02<短信应用 ID（腾讯云 SmsSdkAppId；阿里云留空）H\x14R\bsmsAppId\x88\x01\x01\x12g\n" +
 	"\n" +
-	"sms_region\x18\x1c \x01(\tBC\xbaG@\x92\x02=服务地域（腾讯云如 ap-guangzhou；阿里云留空）H\x15R\tsmsRegion\x88\x01\x01\x12\"\n" +
+	"sms_region\x18\x1c \x01(\tBC\xbaG@\x92\x02=服务地域（腾讯云如 ap-guangzhou；阿里云留空）H\x15R\tsmsRegion\x88\x01\x01\x12Y\n" +
+	"\x0esmtp_from_name\x18\x1d \x01(\tB.\xbaG+\x92\x02(发件人显示名（仅 EMAIL 渠道）H\x16R\fsmtpFromName\x88\x01\x01\x12\"\n" +
 	"\n" +
-	"created_by\x18d \x01(\rH\x16R\tcreatedBy\x88\x01\x01\x12\"\n" +
+	"created_by\x18d \x01(\rH\x17R\tcreatedBy\x88\x01\x01\x12\"\n" +
 	"\n" +
-	"updated_by\x18e \x01(\rH\x17R\tupdatedBy\x88\x01\x01\x12?\n" +
+	"updated_by\x18e \x01(\rH\x18R\tupdatedBy\x88\x01\x01\x12?\n" +
 	"\n" +
-	"created_at\x18\xc8\x01 \x01(\v2\x1a.google.protobuf.TimestampH\x18R\tcreatedAt\x88\x01\x01\x12?\n" +
+	"created_at\x18\xc8\x01 \x01(\v2\x1a.google.protobuf.TimestampH\x19R\tcreatedAt\x88\x01\x01\x12?\n" +
 	"\n" +
-	"updated_at\x18\xc9\x01 \x01(\v2\x1a.google.protobuf.TimestampH\x19R\tupdatedAt\x88\x01\x01\"'\n" +
+	"updated_at\x18\xc9\x01 \x01(\v2\x1a.google.protobuf.TimestampH\x1aR\tupdatedAt\x88\x01\x01\"'\n" +
 	"\x04Type\x12\t\n" +
 	"\x05EMAIL\x10\x00\x12\v\n" +
 	"\aWEBHOOK\x10\x01\x12\a\n" +
@@ -977,7 +986,8 @@ const file_notification_channel_service_v1_notification_channel_proto_rawDesc = 
 	"\x0e_sms_sign_nameB\x14\n" +
 	"\x12_sms_template_codeB\r\n" +
 	"\v_sms_app_idB\r\n" +
-	"\v_sms_regionB\r\n" +
+	"\v_sms_regionB\x11\n" +
+	"\x0f_smtp_from_nameB\r\n" +
 	"\v_created_byB\r\n" +
 	"\v_updated_byB\r\n" +
 	"\v_created_atB\r\n" +

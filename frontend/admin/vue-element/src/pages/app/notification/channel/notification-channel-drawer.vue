@@ -173,6 +173,9 @@
         <ElFormItem :label="t('pages.notification_channel.smtpFrom')" prop="smtpFrom">
           <ElInput v-model="drawer.formData.smtpFrom" placeholder="noreply@example.com" clearable />
         </ElFormItem>
+        <ElFormItem :label="t('pages.notification_channel.smtpFromName')" prop="smtpFromName">
+          <ElInput v-model="drawer.formData.smtpFromName" placeholder="GoWind" clearable />
+        </ElFormItem>
 
         <ElFormItem :label="t('pages.notification_channel.smtpTls')" prop="smtpTls">
           <ElSelect v-model="drawer.formData.smtpTls">
@@ -268,6 +271,7 @@ const drawer = useDrawerForm({
     smtpUsername: "",
     password: "",
     smtpFrom: "",
+    smtpFromName: "",
     smtpTls: "START_TLS",
     webhookUrl: "",
     webhookSignStyle: "CUSTOM",
@@ -355,6 +359,7 @@ function open(options: { create: boolean; row?: any }) {
       smtpPort: row.smtpPort ?? 587,
       smtpUsername: row.smtpUsername || "",
       smtpFrom: row.smtpFrom || "",
+      smtpFromName: row.smtpFromName || "",
       smtpTls: row.smtpTls || "START_TLS",
       webhookUrl: row.webhookUrl || "",
       // 存量行这两列是空的，而空值的实际行为就是 CUSTOM（后端 resolveWebhookStyle 的归一化）：

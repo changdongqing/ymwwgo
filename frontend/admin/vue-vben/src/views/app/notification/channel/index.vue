@@ -232,6 +232,7 @@ const form = reactive({
   smtpUsername: '',
   password: '',
   smtpFrom: '',
+  smtpFromName: '',
   smtpTls: 'START_TLS',
   webhookUrl: '',
   webhookSignStyle: 'CUSTOM',
@@ -253,7 +254,7 @@ function openCreate() {
   editingId.value = undefined;
   Object.assign(form, {
     name: '', type: 'EMAIL', smtpHost: '', smtpPort: 587, smtpUsername: '',
-    password: '', smtpFrom: '', smtpTls: 'START_TLS',
+    password: '', smtpFrom: '', smtpFromName: '', smtpTls: 'START_TLS',
     webhookUrl: '', webhookSignStyle: 'CUSTOM', webhookPayloadTemplate: '',
     webhookSecret: '',
     smsProvider: 'ALIYUN', smsAccessKeyId: '', smsAccessSecret: '', smsSignName: '',
@@ -275,6 +276,7 @@ function openEdit(row: NotificationChannel) {
     // 三处密钥都不回显（读视图只有 hasPassword / hasWebhookSecret / hasSmsAccessSecret 三个布尔）：留空 = 不改
     password: '',
     smtpFrom: row.smtpFrom || '',
+    smtpFromName: row.smtpFromName || '',
     smtpTls: row.smtpTls || 'START_TLS',
     webhookUrl: row.webhookUrl || '',
     webhookSignStyle: row.webhookSignStyle || 'CUSTOM',
@@ -721,6 +723,9 @@ async function handleTestSend() {
           </a-form-item>
           <a-form-item :label="$t('page.notificationChannel.smtpFrom')">
             <a-input v-model:value="form.smtpFrom" placeholder="noreply@example.com" />
+          </a-form-item>
+          <a-form-item :label="$t('page.notificationChannel.smtpFromName')">
+            <a-input v-model:value="form.smtpFromName" placeholder="GoWind" />
           </a-form-item>
           <a-form-item :label="$t('page.notificationChannel.smtpTls')">
             <a-select v-model:value="form.smtpTls">

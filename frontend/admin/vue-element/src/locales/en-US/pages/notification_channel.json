@@ -15,6 +15,7 @@
   "passwordSet": "Configured",
   "passwordNotSet": "Not Set",
   "smtpFrom": "From Address",
+  "smtpFromName": "From Name",
   "smtpTls": "Encryption",
   "tlsNone": "None",
   "tlsStartTls": "STARTTLS",
