@@ -37,11 +37,13 @@ type AiAgentAppRepo struct {
 }
 
 func NewAiAgentAppRepo(ctx *bootstrap.Context, entClient *entCrud.EntClient[*ent.Client]) *AiAgentAppRepo {
-	return &AiAgentAppRepo{
+	repo := &AiAgentAppRepo{
 		log:       ctx.NewLoggerHelper("ai-agent-app/repo/admin-service"),
 		entClient: entClient,
 		mapper:    mapper.NewCopierMapper[aiV1.AiAgentApp, ent.AiAgentApp](),
 	}
+	repo.init()
+	return repo
 }
 
 func (r *AiAgentAppRepo) init() {

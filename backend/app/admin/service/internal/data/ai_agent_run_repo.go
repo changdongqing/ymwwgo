@@ -38,7 +38,7 @@ type AiAgentRunRepo struct {
 }
 
 func NewAiAgentRunRepo(ctx *bootstrap.Context, entClient *entCrud.EntClient[*ent.Client]) *AiAgentRunRepo {
-	return &AiAgentRunRepo{
+	repo := &AiAgentRunRepo{
 		log:       ctx.NewLoggerHelper("ai-agent-run/repo/admin-service"),
 		entClient: entClient,
 		mapper:    mapper.NewCopierMapper[aiV1.AiAgentRun, ent.AiAgentRun](),
@@ -46,6 +46,8 @@ func NewAiAgentRunRepo(ctx *bootstrap.Context, entClient *entCrud.EntClient[*ent
 			aiV1.AiAgentRun_Status_name, aiV1.AiAgentRun_Status_value,
 		),
 	}
+	repo.init()
+	return repo
 }
 
 func (r *AiAgentRunRepo) init() {

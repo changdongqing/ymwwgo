@@ -1,4 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+// ReactFlow 样式必须引入：handle/controls/minimap 全靠它——漏引时 handle 塌成 0 高，
+// 连线的命中判定永远失败（e2e 实证：真实鼠标在 handle 中心 down/move/up 仍连不出边）
+import '@xyflow/react/dist/style.css';
 import {
   Background,
   Controls,
@@ -286,6 +289,8 @@ export default function AgentCanvas({ open, app, onClose }: AgentCanvasProps) {
       open={open}
       onClose={onClose}
       width="100%"
+      // 全屏画布不需要遮罩：mask 会以同级 z-index 压住工具条（真实点击被拦，e2e 实证）
+      mask={false}
       destroyOnHidden
       styles={{ body: { padding: 0, display: 'flex', flexDirection: 'column' } }}
     >
@@ -402,6 +407,8 @@ function NodeConfigDrawer({
       open={open}
       onClose={onClose}
       width={420}
+      // 画布内侧板不带 mask：配置时仍可直接操作画布与工具条（带 mask 会全屏拦截，e2e 实证）
+      mask={false}
       destroyOnHidden
       extra={
         nodeType !== 'start' ? (
@@ -569,6 +576,7 @@ function TestRunDrawer({
         onClose();
       }}
       width={480}
+      mask={false}
       destroyOnHidden
     >
       <Form form={form} layout="vertical">
