@@ -5,6 +5,7 @@
   "typeEmail": "Email (SMTP)",
   "typeWebhook": "Webhook",
   "typeSms": "SMS",
+  "typeSmsWithProviders": "SMS (Aliyun / Tencent Cloud)",
   "smtpHost": "SMTP Server",
   "smtpPort": "Port",
   "smtpUsername": "SMTP Username",

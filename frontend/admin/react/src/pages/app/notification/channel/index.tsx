@@ -478,7 +478,8 @@ const NotificationChannelManagement = () => {
           options={[
             { label: t('typeEmail'), value: 'EMAIL' },
             { label: t('typeWebhook'), value: 'WEBHOOK' },
-            { label: t('typeSms'), value: 'SMS' },
+            // 点名服务商：扩展分组里有华为云/云片/Twilio 等，不点明的话"阿里云/腾讯云在哪"要靠猜
+            { label: t('typeSmsWithProviders'), value: 'SMS' },
             ...extTypeOptions.map((g) => ({
               label: g.label,
               title: g.label,
