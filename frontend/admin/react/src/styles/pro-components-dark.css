@@ -17,7 +17,9 @@
 .ant-pro-table .ant-table-tbody > tr > td {
   border-bottom: 1px solid;
 }
-.ant-pro-table .ant-table-tbody > tr:hover > td {
+/* 占位行（暂无数据）不参与行 hover：空态占位被撑满整个表体后，
+   行 hover 灰会涂满整块不可交互区域；antd 原生对占位行 hover 本就是容器白底 */
+.ant-pro-table .ant-table-tbody > tr:not(.ant-table-placeholder):hover > td {
   background-color: var(--ant-color-fill-secondary) !important;
 }
 /* 固定列（右侧操作列 / 左侧固定列）hover 时必须仍是不透明底色。
