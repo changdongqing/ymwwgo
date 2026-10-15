@@ -8,7 +8,7 @@ import {
   ProFormSwitch,
 } from '@ant-design/pro-components';
 import { Button, Popconfirm, Tag, App } from 'antd';
-import { EditOutlined, DeleteOutlined, PlusOutlined, ApartmentOutlined } from '@ant-design/icons';
+import { EditOutlined, DeleteOutlined, PlusOutlined, ApartmentOutlined, HistoryOutlined } from '@ant-design/icons';
 import { useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import type { aiservicev1_AiAgentApp as AiAgentApp } from '@/api/generated/admin/service/v1';
@@ -23,6 +23,7 @@ import {
 import { useProTableScrollY } from '@/hooks/useProTableScrollY';
 import ContentContainer from '@/layouts/components/PageContainer/ContentContainer';
 import AgentCanvas from './agent-canvas';
+import AgentRunsDrawer from './agent-runs-drawer';
 
 /**
  * AI Agent 编排应用列表（M1）：
@@ -41,6 +42,7 @@ const AiAgentAppManagement = () => {
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<AiAgentApp | undefined>();
   const [canvasApp, setCanvasApp] = useState<AiAgentApp | undefined>();
+  const [runsApp, setRunsApp] = useState<AiAgentApp | undefined>();
 
   const refresh = () => {
     actionRef.current?.reload();
@@ -136,6 +138,15 @@ const AiAgentAppManagement = () => {
         >
           {t('edit')}
         </Button>,
+        <Button
+          key="runs"
+          type="link"
+          size="small"
+          icon={<HistoryOutlined />}
+          onClick={() => setRunsApp(record)}
+        >
+          {t('openRuns')}
+        </Button>,
         <Popconfirm key="delete" title={t('deleteConfirm')} onConfirm={() => handleDelete(record)}>
           <Button danger type="link" size="small" icon={<DeleteOutlined />}>
             {t('delete')}
@@ -203,6 +214,7 @@ const AiAgentAppManagement = () => {
       </DrawerForm>
 
       <AgentCanvas open={!!canvasApp} app={canvasApp} onClose={() => { setCanvasApp(undefined); refresh(); }} />
+      <AgentRunsDrawer open={!!runsApp} app={runsApp} onClose={() => setRunsApp(undefined)} />
     </ContentContainer>
   );
 };

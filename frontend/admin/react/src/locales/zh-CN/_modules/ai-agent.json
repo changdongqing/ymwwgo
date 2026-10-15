@@ -72,5 +72,16 @@
     "tokens": "tokens: {{total}}",
     "output": "产出",
     "trace": "执行轨迹"
-  }
+  },
+  "runs": {
+    "title": "运行台账",
+    "empty": "该应用还没有运行记录",
+    "succeeded": "成功",
+    "failed": "失败",
+    "running": "运行中",
+    "tokens": "tokens: {{total}}",
+    "loadMore": "加载更多",
+    "total": "共 {{total}} 条"
+  },
+  "openRuns": "运行台账"
 }

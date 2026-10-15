@@ -72,5 +72,16 @@
     "tokens": "tokens: {{total}}",
     "output": "Output",
     "trace": "Trace"
-  }
+  },
+  "runs": {
+    "title": "Run History",
+    "empty": "No runs for this app yet",
+    "succeeded": "Succeeded",
+    "failed": "Failed",
+    "running": "Running",
+    "tokens": "tokens: {{total}}",
+    "loadMore": "Load more",
+    "total": "{{total}} total"
+  },
+  "openRuns": "Runs"
 }
