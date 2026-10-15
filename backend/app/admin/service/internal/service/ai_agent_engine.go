@@ -282,6 +282,9 @@ type agentEngineDeps struct {
 	searchKnowledge func(ctx context.Context, node *agentGraphNode, query string) (contextText string, hits int, err error)
 	// runLLM 执行 LLM 节点（含工具调用循环），返回最终答案与用量。
 	runLLM func(ctx context.Context, node *agentGraphNode, system, user string) (string, agentUsage, error)
+	// onStep 节点执行阶段回调（node_start / node_end），SSE 流式观感用；nil = 不推。
+	// 推帧失败（订阅端慢）不影响执行——回调实现方自己保证尽力而为语义。
+	onStep func(phase, nodeID, summary, status string)
 }
 
 // executeAgentGraph 从 start 走图到 end，返回产出、轨迹与累计用量。
@@ -332,6 +335,10 @@ func executeAgentGraph(
 		stepUsage := agentUsage{}
 		summary := ""
 		branchTaken := "" // condition 节点的分支判定（"true"/"false"），选边用
+
+		if deps.onStep != nil {
+			deps.onStep("node_start", node.ID, "", "")
+		}
 
 		switch node.Type {
 		case "start":
@@ -391,6 +398,9 @@ func executeAgentGraph(
 				NodeID: node.ID, Type: node.Type, Status: "ok",
 				Ms: time.Since(stepStart).Milliseconds(), Summary: "done",
 			})
+			if deps.onStep != nil {
+				deps.onStep("node_end", node.ID, "done", "ok")
+			}
 			return outText, trace, usage, nil
 
 		default:
@@ -408,6 +418,9 @@ func executeAgentGraph(
 				return &u
 			}(),
 		})
+		if deps.onStep != nil {
+			deps.onStep("node_end", node.ID, summary, "ok")
+		}
 
 		// 选下一条边：condition 按 true/false 分支取，其余取唯一出边。
 		var next *agentGraphEdge

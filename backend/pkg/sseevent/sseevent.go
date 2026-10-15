@@ -41,3 +41,12 @@ const AIChatChunk = "ai_chat_chunk"
 // 并执行完成后推一帧；工具轮不进消息落库（落库的 assistant 消息只有最终
 // 答案），本事件是前端展示"模型正在调工具"的唯一信息源（尽力而为，丢帧可容忍）。
 const AIChatTool = "ai_chat_tool"
+
+// AgentRun AI Agent 运行实时推送（试运行流式观感）。
+//
+// data: 为 ai.service.v1.AgentRunEvent 的 protojson（camelCase 键：
+// runId / appId / seq / phase / nodeId / summary / status）。
+// 一次试运行产生多帧：每节点 node_start + node_end 各一帧，收尾 done 或 error 一帧。
+// 尽力而为丢帧可容忍：Run 同步响应携带完整 trace 与终态，以响应为准。
+// streamId 与 AI 对话同为发起用户 userId（复用既有用户流，免重复连接）。
+const AgentRun = "ai_agent_run"

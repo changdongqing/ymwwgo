@@ -232,6 +232,120 @@ var _ interface {
 	ErrorName() string
 } = AiAgentAppValidationError{}
 
+// Validate checks the field values on AgentRunEvent with the rules defined in
+// the proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *AgentRunEvent) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on AgentRunEvent with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in AgentRunEventMultiError, or
+// nil if none found.
+func (m *AgentRunEvent) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *AgentRunEvent) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for RunId
+
+	// no validation rules for AppId
+
+	// no validation rules for Seq
+
+	// no validation rules for Phase
+
+	// no validation rules for NodeId
+
+	// no validation rules for Summary
+
+	// no validation rules for Status
+
+	if len(errors) > 0 {
+		return AgentRunEventMultiError(errors)
+	}
+
+	return nil
+}
+
+// AgentRunEventMultiError is an error wrapping multiple validation errors
+// returned by AgentRunEvent.ValidateAll() if the designated constraints
+// aren't met.
+type AgentRunEventMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m AgentRunEventMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m AgentRunEventMultiError) AllErrors() []error { return m }
+
+// AgentRunEventValidationError is the validation error returned by
+// AgentRunEvent.Validate if the designated constraints aren't met.
+type AgentRunEventValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e AgentRunEventValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e AgentRunEventValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e AgentRunEventValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e AgentRunEventValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e AgentRunEventValidationError) ErrorName() string { return "AgentRunEventValidationError" }
+
+// Error satisfies the builtin error interface
+func (e AgentRunEventValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sAgentRunEvent.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = AgentRunEventValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = AgentRunEventValidationError{}
+
 // Validate checks the field values on AiAgentRun with the rules defined in the
 // proto definition for this message. If any rules are violated, the first
 // error encountered is returned, or nil if there are no violations.

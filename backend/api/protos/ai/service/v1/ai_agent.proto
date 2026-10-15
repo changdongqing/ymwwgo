@@ -78,6 +78,21 @@ message AiAgentApp {
   optional google.protobuf.Timestamp updated_at = 201 [json_name = "updatedAt"];
 }
 
+// SSE `ai_agent_run` 事件 data 形状（protojson，camelCase 键）。
+//
+// 仅在服务层用于构造事件载荷，不挂 HTTP 路由。
+// 一次试运行产生多帧：每节点 node_start + node_end 各一帧，收尾 done 或 error 一帧。
+// 尽力而为丢帧可容忍：Run 同步响应携带完整 trace 与终态，以响应为准。
+message AgentRunEvent {
+  uint32 run_id = 1 [json_name = "runId"];   // 运行 ID
+  uint32 app_id = 2 [json_name = "appId"];   // 应用 ID
+  uint32 seq = 3;                            // 帧序号（运行内单调递增，从 0 开始）
+  string phase = 4;                          // node_start | node_end | error | done
+  string node_id = 5 [json_name = "nodeId"]; // 节点 ID（phase=done 时为空）
+  string summary = 6;                        // 节点摘要（node_end）或错误文本（error）
+  string status = 7;                         // ok | error（node_end 帧）；done/error 帧为空
+}
+
 // Agent 运行记录
 message AiAgentRun {
   // 运行状态

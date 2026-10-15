@@ -187,6 +187,7 @@ func TestExecuteAgentGraphLinear(t *testing.T) {
 	g := agentTestGraph(t, agentLinearGraphJSON)
 
 	var gotQuery, gotSystem, gotUser string
+	var steps []string
 	deps := &agentEngineDeps{
 		searchKnowledge: func(ctx context.Context, node *agentGraphNode, query string) (string, int, error) {
 			gotQuery = query
@@ -195,6 +196,9 @@ func TestExecuteAgentGraphLinear(t *testing.T) {
 		runLLM: func(ctx context.Context, node *agentGraphNode, system, user string) (string, agentUsage, error) {
 			gotSystem, gotUser = system, user
 			return "七天无理由", agentUsage{Prompt: 10, Completion: 5, Total: 15}, nil
+		},
+		onStep: func(phase, nodeID, summary, status string) {
+			steps = append(steps, phase+":"+nodeID)
 		},
 	}
 
@@ -217,6 +221,21 @@ func TestExecuteAgentGraphLinear(t *testing.T) {
 	}
 	if len(trace) != 4 {
 		t.Fatalf("trace steps = %d (%+v)", len(trace), trace)
+	}
+	// onStep 每节点两帧（node_start/node_end），SSE 流式观感的数据源
+	wantSteps := []string{
+		"node_start:start_1", "node_end:start_1",
+		"node_start:kb_1", "node_end:kb_1",
+		"node_start:llm_1", "node_end:llm_1",
+		"node_start:end_1", "node_end:end_1",
+	}
+	if len(steps) != len(wantSteps) {
+		t.Fatalf("onStep frames = %d, want %d (%v)", len(steps), len(wantSteps), steps)
+	}
+	for i, w := range wantSteps {
+		if steps[i] != w {
+			t.Fatalf("onStep[%d] = %s, want %s", i, steps[i], w)
+		}
 	}
 	for i, want := range []string{"start_1", "kb_1", "llm_1", "end_1"} {
 		if trace[i].NodeID != want {

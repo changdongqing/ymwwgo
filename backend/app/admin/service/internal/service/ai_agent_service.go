@@ -12,21 +12,40 @@ import (
 	"github.com/tx7do/go-utils/trans"
 	"github.com/tx7do/kratos-bootstrap/bootstrap"
 	bLogger "github.com/tx7do/kratos-bootstrap/logger"
+	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/types/known/emptypb"
 
 	adminV1 "go-wind-admin/api/gen/go/admin/service/v1"
 	aiV1 "go-wind-admin/api/gen/go/ai/service/v1"
 	authenticationV1 "go-wind-admin/api/gen/go/authentication/service/v1"
 
+	"github.com/tx7do/kratos-transport/transport/sse"
 	"go-wind-admin/app/admin/service/internal/data"
 	"go-wind-admin/app/admin/service/internal/data/ent"
 	"go-wind-admin/app/admin/service/internal/data/ent/aiagentrun"
+	"strconv"
+
+	"github.com/tx7do/go-utils/id"
 	"go-wind-admin/pkg/middleware/auth"
+	"go-wind-admin/pkg/sseevent"
 )
 
 // AiAgentService AI Agent 编排（可视化画布）：
 // 应用 CRUD + 同步试运行（图引擎）+ 运行台账。
 // 模型调用/知识检索/配额用量全部复用 AI 模块既有链路（见 docs/ai_agent_orchestration.md §1）。
+type AiAgentRunPublisher interface {
+	Publish(ctx context.Context, streamId sse.StreamID, event *sse.Event)
+	TryPublish(ctx context.Context, streamId sse.StreamID, event *sse.Event) bool
+}
+
+// noopAiAgentRunPublisher 未接线（测试/旧装配）时的空实现：流式观感静默降级。
+type noopAiAgentRunPublisher struct{}
+
+func (noopAiAgentRunPublisher) Publish(_ context.Context, _ sse.StreamID, _ *sse.Event) {}
+func (noopAiAgentRunPublisher) TryPublish(_ context.Context, _ sse.StreamID, _ *sse.Event) bool {
+	return false
+}
+
 type AiAgentService struct {
 	log           *bLogger.Helper
 	appRepo       *data.AiAgentAppRepo
@@ -34,6 +53,14 @@ type AiAgentService struct {
 	providerRepo  *data.AiProviderRepo
 	knowledgeRepo *data.AiKnowledgeRepo
 	usageLogRepo  *data.AiUsageLogRepo
+	runPublisher  AiAgentRunPublisher
+}
+
+// RegisterAiAgentRunPublisher 接线 SSE 发布者（sse_server 装配期调用；幂等覆盖）。
+func (s *AiAgentService) RegisterAiAgentRunPublisher(p AiAgentRunPublisher) {
+	if p != nil {
+		s.runPublisher = p
+	}
 }
 
 func NewAiAgentService(
@@ -176,9 +203,34 @@ func (s *AiAgentService) Run(ctx context.Context, req *aiV1.RunAiAgentAppRequest
 	}
 
 	start := time.Now()
+	seq := uint32(0)
+	publishFrame := func(phase, nodeID, summary, status string) {
+		data, err := protojson.Marshal(&aiV1.AgentRunEvent{
+			RunId:   runID,
+			AppId:   app.ID,
+			Seq:     seq,
+			Phase:   phase,
+			NodeId:  nodeID,
+			Summary: summary,
+			Status:  status,
+		})
+		seq++
+		if err != nil {
+			s.log.Errorf(ctx, "marshal agent run event failed, skip push: %v", err)
+			return
+		}
+		// 尽力而为：订阅端慢/断线即丢帧；Run 同步响应携带完整 trace，以响应为准。
+		s.runPublisher.TryPublish(ctx, sse.StreamID(strconv.FormatUint(uint64(operator.UserId), 10)), &sse.Event{
+			ID:    []byte(id.NewGUIDv4(false)),
+			Data:  data,
+			Event: []byte(sseevent.AgentRun),
+		})
+	}
+
 	output, trace, usage, execErr := executeAgentGraph(ctx, g, req.GetInput(), &agentEngineDeps{
 		searchKnowledge: s.searchKnowledgeForAgent(operator),
 		runLLM:          s.runLLMForAgent(operator),
+		onStep:          publishFrame,
 	})
 	durationMs := uint32(time.Since(start).Milliseconds())
 
@@ -189,7 +241,10 @@ func (s *AiAgentService) Run(ctx context.Context, req *aiV1.RunAiAgentAppRequest
 	if execErr != nil {
 		status = aiagentrun.StatusFailed
 		errMsg = execErr.Error()
+		publishFrame("error", "", errMsg, "")
 		s.log.Errorf(ctx, "ai agent run [%d] app [%d] failed: %s", runID, app.ID, execErr.Error())
+	} else {
+		publishFrame("done", "", output, "")
 	}
 
 	if err = s.runRepo.SettleResult(ctx, runID, status, output, errMsg, string(traceJSON),
@@ -327,4 +382,3 @@ func (s *AiAgentService) runLLMForAgent(operator *authenticationV1.UserTokenPayl
 		}, nil
 	}
 }
-

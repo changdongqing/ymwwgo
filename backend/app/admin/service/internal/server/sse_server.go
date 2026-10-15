@@ -14,6 +14,7 @@ func NewSseServer(
 	ctx *bootstrap.Context,
 	internalMessageService *service.InternalMessageService,
 	aiChatService *service.AiChatService,
+	aiAgentService *service.AiAgentService,
 ) *sseServer.Server {
 	cfg := ctx.GetConfig()
 
@@ -31,6 +32,11 @@ func NewSseServer(
 	// 同一个 sse.Server 实例同时充当 AI 对话 chunk 的发布者（AiChatPublisher 接口）。
 	if aiChatService != nil {
 		aiChatService.RegisterAiChatPublisher(srv)
+	}
+
+	// 以及 AI Agent 运行实时帧的发布者（AiAgentRunPublisher 接口）。
+	if aiAgentService != nil {
+		aiAgentService.RegisterAiAgentRunPublisher(srv)
 	}
 
 	//srv.CreateStream("test")
