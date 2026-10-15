@@ -20,7 +20,14 @@
       </ElFormItem>
 
       <ElFormItem :label="t('pages.notification_channel.type')" prop="type">
-        <ElSelect v-model="drawer.formData.type" :disabled="!isCreate" filterable>
+        <!-- teleported=false：浮层渲染在抽屉 DOM 内，位置必跟随抽屉；
+             默认 teleport 到 body 时 popper 对抽屉动画中的触发元素定位会算错（浮层飞到屏幕左上） -->
+        <ElSelect
+          v-model="drawer.formData.type"
+          :disabled="!isCreate"
+          filterable
+          :teleported="false"
+        >
           <ElOption :label="t('pages.notification_channel.typeEmail')" value="EMAIL" />
           <ElOption :label="t('pages.notification_channel.typeWebhook')" value="WEBHOOK" />
           <ElOptionGroup

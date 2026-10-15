@@ -69,6 +69,33 @@
   --brand-primary: var(--el-color-primary);
 }
 
+// ============================================
+// 1. ElSelect 分组下拉（渠道类型等）显式样式
+//    EP 默认样式在某些缓存/按需组合下会丢分组缩进与标题弱化，显式钉死：
+//    分组标题=小号灰字不可点；组内选项相对分组标题缩进，层级感明确
+// ============================================
+.el-select-dropdown {
+  .el-select-group__title {
+    color: var(--el-text-color-secondary, #909399) !important;
+    font-size: 12px !important;
+    line-height: 24px !important;
+    padding: 0 20px !important;
+    cursor: default !important;
+  }
+
+  .el-select-group__wrap:not(:first-of-type) {
+    padding-top: 4px;
+  }
+
+  .el-select-group {
+    padding: 0 0 0 10px;
+
+    .el-select-dropdown__item {
+      padding-left: 20px !important;
+    }
+  }
+}
+
 // 针对 Element Plus 全局布局强制开启抗锯齿
 // 注意：text-rendering 使用 auto 而非 geometricPrecision
 // geometricPrecision 对非标准字重（如 450/500）的中文小字号有已知渲染 bug
