@@ -175,6 +175,11 @@ const NotificationChannelManagement = () => {
   const handleSubmit = async (values: Record<string, any>) => {
     // 三个密钥是请求级字段（不进 data）：读视图只有 hasPassword / hasWebhookSecret / hasSmsAccessSecret 布尔
     const { password, webhookSecret, smsAccessSecret, settings, ...data } = values;
+    // 拆分选项合成键：SMS@ALIYUN / SMS@TENCENT → type=SMS + smsProvider
+    if (String(data.type).startsWith('SMS@')) {
+      data.smsProvider = String(data.type).split('@')[1];
+      data.type = 'SMS';
+    }
     // 扩展渠道：动态表单的 settings 对象序列化为 JSON 明文上送（sensitive 留空 = 保留已存值）
     if (isExtType(data.type)) {
       data.settings = settings ? JSON.stringify(settings) : '';
@@ -464,6 +469,11 @@ const NotificationChannelManagement = () => {
                 smsAccessSecret: undefined,
                 // 同列表列：该列为空时按 CUSTOM 摆进表单，否则这一项是空的、改不动
                 webhookSignStyle: selected?.webhookSignStyle ?? 'CUSTOM',
+                // SMS 行回显成拆分选项的合成键（SMS@ALIYUN / SMS@TENCENT），提交时再拆回
+                type:
+                  selected?.type === 'SMS'
+                    ? `SMS@${selected.smsProvider ?? 'ALIYUN'}`
+                    : selected?.type,
               }
         }
       >
@@ -478,14 +488,12 @@ const NotificationChannelManagement = () => {
           options={[
             { label: t('typeEmail'), value: 'EMAIL' },
             { label: t('typeWebhook'), value: 'WEBHOOK' },
-            // 阿里云/腾讯云并入"短信 / 消息"分组且居组首：验证码主力与扩展短信渠道一处找
-            ...extTypeOptions.map((g) => ({
-              label: g.label,
-              title: g.label,
-              options: g.group === 'SMS'
-                ? [{ label: t('typeSmsWithProviders'), value: 'SMS' }, ...g.options]
-                : g.options,
-            })),
+            // 阿里云/腾讯云不进分组：扩展分组里没有同厂短选项时（如 ntfy mock 场景），
+            // 孤项挂组壳反而让人迷惑——平铺与 EMAIL/WEBHOOK 同级，点名服务商
+            { label: t('typeSmsWithProviders'), value: 'SMS' },
+            ...extTypeOptions
+              .filter((g) => g.group !== 'SMS')
+              .map((g) => ({ label: g.label, title: g.label, options: g.options })),
           ]}
           disabled={drawerMode === 'edit'}
           showSearch
@@ -537,7 +545,7 @@ const NotificationChannelManagement = () => {
               </>
             ) : isExtType(type) ? (
               <SettingsFormFields schema={schemaByType.get(String(type))} />
-            ) : type === 'SMS' ? (
+            ) : String(type).startsWith('SMS') ? (
               <>
                 <ProFormSelect
                   name="smsProvider"

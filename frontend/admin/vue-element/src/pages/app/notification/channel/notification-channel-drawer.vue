@@ -20,10 +20,21 @@
       </ElFormItem>
 
       <ElFormItem :label="t('pages.notification_channel.type')" prop="type">
-        <ElSelect v-model="drawer.formData.type" :disabled="!isCreate">
+        <ElSelect v-model="drawer.formData.type" :disabled="!isCreate" filterable>
           <ElOption :label="t('pages.notification_channel.typeEmail')" value="EMAIL" />
           <ElOption :label="t('pages.notification_channel.typeWebhook')" value="WEBHOOK" />
-          <ElOption :label="t('pages.notification_channel.typeSms')" value="SMS" />
+          <ElOptionGroup
+            v-for="group in extTypeGroups"
+            :key="group.group"
+            :label="group.label"
+          >
+            <ElOption
+              v-for="opt in group.options"
+              :key="opt.value"
+              :label="opt.label"
+              :value="opt.value"
+            />
+          </ElOptionGroup>
         </ElSelect>
       </ElFormItem>
 
@@ -88,7 +99,62 @@
         </ElFormItem>
       </template>
 
-      <template v-else-if="drawer.formData.type === 'SMS'">
+      <template v-else-if="isExtType(drawer.formData.type)">
+        <div v-if="extSchema?.targetLabel" class="field-tip" style="margin-bottom: 8px">
+          {{ t("pages.notification_channel.ext.targetLabel", { label: extSchema.targetLabel }) }}
+        </div>
+        <ElFormItem
+          v-for="field in extSchema?.fields ?? []"
+          :key="field.name"
+          :label="field.label ?? field.name"
+          :prop="field.name"
+        >
+          <ElInputNumber
+            v-if="field.type === 'number'"
+            v-model="drawer.formData.settings[field.name!]"
+            :min="0"
+            class="!w-full"
+          />
+          <ElSelect
+            v-else-if="field.type === 'select'"
+            v-model="drawer.formData.settings[field.name!]"
+            clearable
+          >
+            <ElOption
+              v-for="opt in field.options ?? []"
+              :key="opt"
+              :label="opt || t('pages.notification_channel.ext.optionDefault')"
+              :value="opt"
+            />
+          </ElSelect>
+          <ElInput
+            v-else-if="field.type === 'textarea'"
+            v-model="drawer.formData.settings[field.name!] as string"
+            type="textarea"
+            :rows="3"
+            :placeholder="field.placeholder"
+          />
+          <ElInput
+            v-else
+            v-model="drawer.formData.settings[field.name!] as string"
+            :type="field.type === 'password' || field.sensitive ? 'password' : 'text'"
+            show-password
+            :placeholder="
+              isCreate
+                ? (field.placeholder ?? t('pages.notification_channel.ext.placeholder'))
+                : t('pages.notification_channel.ext.secretKeepHint')
+            "
+          />
+          <div v-if="field.hint" class="field-tip">{{ field.hint }}</div>
+        </ElFormItem>
+      </template>
+
+      <template
+        v-else-if="
+          drawer.formData.type === 'SMS' ||
+          String(drawer.formData.type).startsWith('SMS@')
+        "
+      >
         <ElFormItem :label="t('pages.notification_channel.smsProvider')" prop="smsProvider">
           <ElSelect v-model="drawer.formData.smsProvider">
             <ElOption :label="t('pages.notification_channel.providerAliyun')" value="ALIYUN" />
@@ -211,7 +277,6 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref } from "vue";
 import {
   ElButton,
   ElForm,
@@ -225,11 +290,71 @@ import {
 
 import ProModal from "@/components/Pro/ProModal/index.vue";
 import { useDrawerForm } from "@/components/Pro/composables/useDrawerForm";
+import { computed, ref } from "vue";
 import { useI18n } from "@/core/i18n";
 import {
   createNotificationChannel,
+  fetchListChannelSchemas,
   updateNotificationChannel,
+  type NotificationChannelSchema,
 } from "@/api/composables";
+
+/**
+ * 扩展渠道 schema（ListChannelSchemas）与分组下拉/动态表单的联动。
+ * 必须是 ref：setup 期发起请求，模板与分组计算都依赖它就绪后的数据。
+ */
+const extSchemas = ref<NotificationChannelSchema[]>([]);
+fetchListChannelSchemas().then((items) => {
+  extSchemas.value = items;
+});
+
+/** 是否扩展渠道类型（EXT_*：配置整包走 settings）。 */
+function isExtType(type?: string): boolean {
+  return !!type && extSchemas.value.some((s) => s.type === type);
+}
+
+function extSchemaOf(type?: string): NotificationChannelSchema | undefined {
+  return isExtType(type) ? extSchemas.value.find((s) => s.type === type) : undefined;
+}
+
+const GROUP_LABELS: Record<string, string> = {
+  IM: "IM / 群聊",
+  PUSH: "个人推送",
+  MOBILE: "移动推送",
+  SMS: "短信 / 消息",
+  MAIL: "邮件 API",
+  AUTO: "效率自动化",
+  OPS: "运维告警",
+};
+
+/** 分组下拉：按 schema 分组（阿里云/腾讯云短信是老三样，平铺在分组外不在此列）。 */
+const extTypeGroups = computed(() => {
+  const acc: { group: string; label: string; options: { label: string; value: string }[] }[] = [];
+  for (const s of extSchemas.value) {
+    const group = s.group ?? "EXT";
+    let node = acc.find((g) => g.group === group);
+    if (!node) {
+      node = { group, label: GROUP_LABELS[group] ?? group, options: [] };
+      acc.push(node);
+    }
+    node.options.push({ label: s.label ?? s.type ?? "", value: s.type ?? "" });
+  }
+  // 阿里云/腾讯云拆成两个一级选项（与华为云并列）；合成键 SMS@provider 提交/回显时互转
+  const smsGroup = acc.find((g) => g.group === "SMS");
+  if (smsGroup) {
+    smsGroup.options.unshift(
+      {
+        label: t("pages.notification_channel.smsAliyun"),
+        value: "SMS@ALIYUN",
+      },
+      {
+        label: t("pages.notification_channel.smsTencent"),
+        value: "SMS@TENCENT",
+      },
+    );
+  }
+  return acc;
+});
 
 const emit = defineEmits<{
   success: [];
@@ -279,6 +404,7 @@ const drawer = useDrawerForm({
     webhookSecret: "",
     smsProvider: "ALIYUN",
     smsAccessKeyId: "",
+    settings: {} as Record<string, any>,
     smsAccessSecret: "",
     smsSignName: "",
     smsTemplateCode: "",
@@ -290,11 +416,13 @@ const drawer = useDrawerForm({
   // password / webhookSecret / smsAccessSecret 是请求级字段，与 data 并列发出去：读视图只有
   // hasPassword / hasWebhookSecret / hasSmsAccessSecret 三个布尔，所以它们既不进 data、也不进 updateMask。
   createFn: async (values: Record<string, any>) => {
-    const { password, webhookSecret, smsAccessSecret, ...data } = values;
+    const { password, webhookSecret, smsAccessSecret, ...data } =
+      splitSmsComposite(values);
     return createNotificationChannel(data, password, webhookSecret, smsAccessSecret);
   },
   updateFn: (id: number, values: Record<string, any>) => {
-    const { password, webhookSecret, smsAccessSecret, ...data } = values;
+    const { password, webhookSecret, smsAccessSecret, ...data } =
+      splitSmsComposite(values);
     return updateNotificationChannel(
       id,
       data,
@@ -304,6 +432,26 @@ const drawer = useDrawerForm({
     );
   },
 });
+
+/**
+ * 拆分选项合成键还原：SMS@ALIYUN / SMS@TENCENT → type=SMS + smsProvider。
+ * 下拉里阿里云/腾讯云是两个一级选项，数据面仍是同一条 SMS 渠道行（sms_provider 列区分）。
+ */
+function splitSmsComposite(values: Record<string, any>): Record<string, any> {
+  const { ...data } = values;
+  if (String(data.type ?? "").startsWith("SMS@")) {
+    data.smsProvider = String(data.type).split("@")[1];
+    data.type = "SMS";
+  }
+  return data;
+}
+
+/** 当前类型对应的扩展渠道 schema（非 EXT 类型为 undefined）。 */
+const extSchema = computed(() =>
+  isExtType(drawer.formData.type)
+    ? extSchemaOf(drawer.formData.type)
+    : undefined,
+);
 
 const formRules = computed(() => ({
   name: [{ required: true, message: t("pages.notification_channel.requiredName"), trigger: "blur" }],
@@ -354,7 +502,10 @@ function open(options: { create: boolean; row?: any }) {
   drawer.open(options, (row: any) => {
     Object.assign(drawer.formData, {
       name: row.name || "",
-      type: row.type || "EMAIL",
+      type:
+        row.type === "SMS"
+          ? `SMS@${row.smsProvider ?? "ALIYUN"}`
+          : row.type || "EMAIL",
       smtpHost: row.smtpHost || "",
       smtpPort: row.smtpPort ?? 587,
       smtpUsername: row.smtpUsername || "",
