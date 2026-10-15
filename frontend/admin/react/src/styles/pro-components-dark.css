@@ -469,7 +469,8 @@ html[data-theme='dark'] .ant-form .ant-input:not(.ant-input-affix-wrapper .ant-i
 [data-theme='dark'] .ant-drawer .ant-form-item-label > label {
   color: #c9d1d9;
 }
-/* 底部按钮区：独立底部容器，最暗底色（#0D1117）与表单彻底隔离，按钮居右 */
+/* 底部按钮区：与抽屉同层 L1 表面（§2.3：抽屉属 #111827 表面层，ele/vben 端 footer 同口径），
+   仅靠顶部发丝线分隔；早前"最暗底色隔离"的做法会在底部留下一道 L0 深色条 */
 .ant-drawer-footer {
   padding: 20px 24px !important;
   display: flex;
@@ -477,7 +478,7 @@ html[data-theme='dark'] .ant-form .ant-input:not(.ant-input-affix-wrapper .ant-i
   gap: 12px;
 }
 [data-theme='dark'] .ant-drawer-footer {
-  background-color: #0b0f19 !important;
+  background-color: #111827 !important;
   border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
 }
 
