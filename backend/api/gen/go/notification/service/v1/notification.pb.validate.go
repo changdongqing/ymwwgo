@@ -572,6 +572,10 @@ func (m *SendDirectNotificationRequest) validate(all bool) error {
 		// no validation rules for ChannelId
 	}
 
+	if m.ProviderId != nil {
+		// no validation rules for ProviderId
+	}
+
 	if m.Channel != nil {
 		// no validation rules for Channel
 	}

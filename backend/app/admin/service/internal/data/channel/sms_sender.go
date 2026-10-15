@@ -83,7 +83,7 @@ func (s *SmsSender) Send(ctx context.Context, req *SendRequest) (*SendReceipt, e
 		return &SendReceipt{ChannelID: account.ID}, fmt.Errorf("send sms via channel [%d] failed: %w", account.ID, err)
 	}
 
-	_, sendErr := svc.Send(ctx, &notify.Message{
+	receipt, sendErr := svc.Send(ctx, &notify.Message{
 		Target: req.Target,
 		Params: map[string]string{"code": code},
 	})
@@ -92,7 +92,12 @@ func (s *SmsSender) Send(ctx context.Context, req *SendRequest) (*SendReceipt, e
 		return &SendReceipt{ChannelID: account.ID}, s.wrapSendFailure(account.ID, sendErr)
 	}
 
-	return &SendReceipt{ChannelID: account.ID}, nil
+	// 服务商侧消息 ID（阿里云 RequestId、腾讯云 SerialNo）带回落台账
+	providerID := ""
+	if receipt != nil {
+		providerID = receipt.ProviderID
+	}
+	return &SendReceipt{ChannelID: account.ID, ProviderID: providerID}, nil
 }
 
 // wrapSendFailure 库错误 → 台账文案：目标不合法（手机号归一失败）等库层配置类错误

@@ -51,7 +51,9 @@ type NotificationDelivery struct {
 	// 实际尝试投递次数（含首次）
 	Attempts *uint32 `json:"attempts,omitempty"`
 	// 投递完成时间
-	SentAt       *time.Time `json:"sent_at,omitempty"`
+	SentAt *time.Time `json:"sent_at,omitempty"`
+	// 服务商侧的消息/请求 ID（扩展渠道回执带回，对账用）
+	ProviderID   *string `json:"provider_id,omitempty"`
 	selectValues sql.SelectValues
 }
 
@@ -62,7 +64,7 @@ func (*NotificationDelivery) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case notificationdelivery.FieldID, notificationdelivery.FieldCreatedBy, notificationdelivery.FieldUpdatedBy, notificationdelivery.FieldDeletedBy, notificationdelivery.FieldChannelID, notificationdelivery.FieldRecipientUserID, notificationdelivery.FieldRelatedID, notificationdelivery.FieldAttempts:
 			values[i] = new(sql.NullInt64)
-		case notificationdelivery.FieldEventType, notificationdelivery.FieldChannel, notificationdelivery.FieldTarget, notificationdelivery.FieldStatus, notificationdelivery.FieldLastError, notificationdelivery.FieldRequestID:
+		case notificationdelivery.FieldEventType, notificationdelivery.FieldChannel, notificationdelivery.FieldTarget, notificationdelivery.FieldStatus, notificationdelivery.FieldLastError, notificationdelivery.FieldRequestID, notificationdelivery.FieldProviderID:
 			values[i] = new(sql.NullString)
 		case notificationdelivery.FieldCreatedAt, notificationdelivery.FieldUpdatedAt, notificationdelivery.FieldDeletedAt, notificationdelivery.FieldSentAt:
 			values[i] = new(sql.NullTime)
@@ -206,6 +208,13 @@ func (_m *NotificationDelivery) assignValues(columns []string, values []any) err
 				_m.SentAt = new(time.Time)
 				*_m.SentAt = value.Time
 			}
+		case notificationdelivery.FieldProviderID:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field provider_id", values[i])
+			} else if value.Valid {
+				_m.ProviderID = new(string)
+				*_m.ProviderID = value.String
+			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
 		}
@@ -325,6 +334,11 @@ func (_m *NotificationDelivery) String() string {
 	if v := _m.SentAt; v != nil {
 		builder.WriteString("sent_at=")
 		builder.WriteString(v.Format(time.ANSIC))
+	}
+	builder.WriteString(", ")
+	if v := _m.ProviderID; v != nil {
+		builder.WriteString("provider_id=")
+		builder.WriteString(*v)
 	}
 	builder.WriteByte(')')
 	return builder.String()

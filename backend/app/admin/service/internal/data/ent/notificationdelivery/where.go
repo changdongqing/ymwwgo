@@ -124,6 +124,11 @@ func SentAt(v time.Time) predicate.NotificationDelivery {
 	return predicate.NotificationDelivery(sql.FieldEQ(FieldSentAt, v))
 }
 
+// ProviderID applies equality check predicate on the "provider_id" field. It's identical to ProviderIDEQ.
+func ProviderID(v string) predicate.NotificationDelivery {
+	return predicate.NotificationDelivery(sql.FieldEQ(FieldProviderID, v))
+}
+
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
 func CreatedAtEQ(v time.Time) predicate.NotificationDelivery {
 	return predicate.NotificationDelivery(sql.FieldEQ(FieldCreatedAt, v))
@@ -987,6 +992,81 @@ func SentAtIsNil() predicate.NotificationDelivery {
 // SentAtNotNil applies the NotNil predicate on the "sent_at" field.
 func SentAtNotNil() predicate.NotificationDelivery {
 	return predicate.NotificationDelivery(sql.FieldNotNull(FieldSentAt))
+}
+
+// ProviderIDEQ applies the EQ predicate on the "provider_id" field.
+func ProviderIDEQ(v string) predicate.NotificationDelivery {
+	return predicate.NotificationDelivery(sql.FieldEQ(FieldProviderID, v))
+}
+
+// ProviderIDNEQ applies the NEQ predicate on the "provider_id" field.
+func ProviderIDNEQ(v string) predicate.NotificationDelivery {
+	return predicate.NotificationDelivery(sql.FieldNEQ(FieldProviderID, v))
+}
+
+// ProviderIDIn applies the In predicate on the "provider_id" field.
+func ProviderIDIn(vs ...string) predicate.NotificationDelivery {
+	return predicate.NotificationDelivery(sql.FieldIn(FieldProviderID, vs...))
+}
+
+// ProviderIDNotIn applies the NotIn predicate on the "provider_id" field.
+func ProviderIDNotIn(vs ...string) predicate.NotificationDelivery {
+	return predicate.NotificationDelivery(sql.FieldNotIn(FieldProviderID, vs...))
+}
+
+// ProviderIDGT applies the GT predicate on the "provider_id" field.
+func ProviderIDGT(v string) predicate.NotificationDelivery {
+	return predicate.NotificationDelivery(sql.FieldGT(FieldProviderID, v))
+}
+
+// ProviderIDGTE applies the GTE predicate on the "provider_id" field.
+func ProviderIDGTE(v string) predicate.NotificationDelivery {
+	return predicate.NotificationDelivery(sql.FieldGTE(FieldProviderID, v))
+}
+
+// ProviderIDLT applies the LT predicate on the "provider_id" field.
+func ProviderIDLT(v string) predicate.NotificationDelivery {
+	return predicate.NotificationDelivery(sql.FieldLT(FieldProviderID, v))
+}
+
+// ProviderIDLTE applies the LTE predicate on the "provider_id" field.
+func ProviderIDLTE(v string) predicate.NotificationDelivery {
+	return predicate.NotificationDelivery(sql.FieldLTE(FieldProviderID, v))
+}
+
+// ProviderIDContains applies the Contains predicate on the "provider_id" field.
+func ProviderIDContains(v string) predicate.NotificationDelivery {
+	return predicate.NotificationDelivery(sql.FieldContains(FieldProviderID, v))
+}
+
+// ProviderIDHasPrefix applies the HasPrefix predicate on the "provider_id" field.
+func ProviderIDHasPrefix(v string) predicate.NotificationDelivery {
+	return predicate.NotificationDelivery(sql.FieldHasPrefix(FieldProviderID, v))
+}
+
+// ProviderIDHasSuffix applies the HasSuffix predicate on the "provider_id" field.
+func ProviderIDHasSuffix(v string) predicate.NotificationDelivery {
+	return predicate.NotificationDelivery(sql.FieldHasSuffix(FieldProviderID, v))
+}
+
+// ProviderIDIsNil applies the IsNil predicate on the "provider_id" field.
+func ProviderIDIsNil() predicate.NotificationDelivery {
+	return predicate.NotificationDelivery(sql.FieldIsNull(FieldProviderID))
+}
+
+// ProviderIDNotNil applies the NotNil predicate on the "provider_id" field.
+func ProviderIDNotNil() predicate.NotificationDelivery {
+	return predicate.NotificationDelivery(sql.FieldNotNull(FieldProviderID))
+}
+
+// ProviderIDEqualFold applies the EqualFold predicate on the "provider_id" field.
+func ProviderIDEqualFold(v string) predicate.NotificationDelivery {
+	return predicate.NotificationDelivery(sql.FieldEqualFold(FieldProviderID, v))
+}
+
+// ProviderIDContainsFold applies the ContainsFold predicate on the "provider_id" field.
+func ProviderIDContainsFold(v string) predicate.NotificationDelivery {
+	return predicate.NotificationDelivery(sql.FieldContainsFold(FieldProviderID, v))
 }
 
 // And groups predicates with the AND operator between them.

@@ -1776,6 +1776,7 @@ var (
 		{Name: "request_id", Type: field.TypeString, Nullable: true, Size: 64, Comment: "派发请求ID（幂等锚）"},
 		{Name: "attempts", Type: field.TypeUint32, Nullable: true, Comment: "实际尝试投递次数（含首次）", Default: 0},
 		{Name: "sent_at", Type: field.TypeTime, Nullable: true, Comment: "投递完成时间"},
+		{Name: "provider_id", Type: field.TypeString, Nullable: true, Comment: "服务商侧的消息/请求 ID（扩展渠道回执带回，对账用）"},
 	}
 	// SysNotificationDeliveriesTable holds the schema information for the "sys_notification_deliveries" table.
 	SysNotificationDeliveriesTable = &schema.Table{

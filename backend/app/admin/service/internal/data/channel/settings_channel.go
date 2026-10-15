@@ -258,7 +258,7 @@ func (s *SettingsSender) Send(ctx context.Context, req *SendRequest) (*SendRecei
 		return nil, err
 	}
 
-	_, sendErr := service.Send(ctx, &notify.Message{
+	receipt, sendErr := service.Send(ctx, &notify.Message{
 		Target:  req.Target,
 		Title:   req.Title,
 		Content: req.Content,
@@ -266,7 +266,12 @@ func (s *SettingsSender) Send(ctx context.Context, req *SendRequest) (*SendRecei
 	if sendErr != nil {
 		return &SendReceipt{ChannelID: account.ID}, fmt.Errorf("send via settings channel [%d] (%s) failed: %w", account.ID, account.TypeName, sendErr)
 	}
-	return &SendReceipt{ChannelID: account.ID}, nil
+	// 服务商侧消息 ID（阿里云 RequestId 等）带回落台账，对账用
+	providerID := ""
+	if receipt != nil {
+		providerID = receipt.ProviderID
+	}
+	return &SendReceipt{ChannelID: account.ID, ProviderID: providerID}, nil
 }
 
 // pickAccount 显式 ID 优先，否则取第一个启用的扩展渠道行——

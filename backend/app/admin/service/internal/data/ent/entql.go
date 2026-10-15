@@ -954,6 +954,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			notificationdelivery.FieldRequestID:       {Type: field.TypeString, Column: notificationdelivery.FieldRequestID},
 			notificationdelivery.FieldAttempts:        {Type: field.TypeUint32, Column: notificationdelivery.FieldAttempts},
 			notificationdelivery.FieldSentAt:          {Type: field.TypeTime, Column: notificationdelivery.FieldSentAt},
+			notificationdelivery.FieldProviderID:      {Type: field.TypeString, Column: notificationdelivery.FieldProviderID},
 		},
 	}
 	graph.Nodes[31] = &sqlgraph.Node{
@@ -5889,6 +5890,11 @@ func (f *NotificationDeliveryFilter) WhereAttempts(p entql.Uint32P) {
 // WhereSentAt applies the entql time.Time predicate on the sent_at field.
 func (f *NotificationDeliveryFilter) WhereSentAt(p entql.TimeP) {
 	f.Where(p.Field(notificationdelivery.FieldSentAt))
+}
+
+// WhereProviderID applies the entql string predicate on the provider_id field.
+func (f *NotificationDeliveryFilter) WhereProviderID(p entql.StringP) {
+	f.Where(p.Field(notificationdelivery.FieldProviderID))
 }
 
 // addPredicate implements the predicateAdder interface.

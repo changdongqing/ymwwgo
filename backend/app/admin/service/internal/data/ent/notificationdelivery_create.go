@@ -260,6 +260,20 @@ func (_c *NotificationDeliveryCreate) SetNillableSentAt(v *time.Time) *Notificat
 	return _c
 }
 
+// SetProviderID sets the "provider_id" field.
+func (_c *NotificationDeliveryCreate) SetProviderID(v string) *NotificationDeliveryCreate {
+	_c.mutation.SetProviderID(v)
+	return _c
+}
+
+// SetNillableProviderID sets the "provider_id" field if the given value is not nil.
+func (_c *NotificationDeliveryCreate) SetNillableProviderID(v *string) *NotificationDeliveryCreate {
+	if v != nil {
+		_c.SetProviderID(*v)
+	}
+	return _c
+}
+
 // SetID sets the "id" field.
 func (_c *NotificationDeliveryCreate) SetID(v uint32) *NotificationDeliveryCreate {
 	_c.mutation.SetID(v)
@@ -438,6 +452,10 @@ func (_c *NotificationDeliveryCreate) createSpec() (*NotificationDelivery, *sqlg
 	if value, ok := _c.mutation.SentAt(); ok {
 		_spec.SetField(notificationdelivery.FieldSentAt, field.TypeTime, value)
 		_node.SentAt = &value
+	}
+	if value, ok := _c.mutation.ProviderID(); ok {
+		_spec.SetField(notificationdelivery.FieldProviderID, field.TypeString, value)
+		_node.ProviderID = &value
 	}
 	return _node, _spec
 }
@@ -818,6 +836,24 @@ func (u *NotificationDeliveryUpsert) UpdateSentAt() *NotificationDeliveryUpsert 
 // ClearSentAt clears the value of the "sent_at" field.
 func (u *NotificationDeliveryUpsert) ClearSentAt() *NotificationDeliveryUpsert {
 	u.SetNull(notificationdelivery.FieldSentAt)
+	return u
+}
+
+// SetProviderID sets the "provider_id" field.
+func (u *NotificationDeliveryUpsert) SetProviderID(v string) *NotificationDeliveryUpsert {
+	u.Set(notificationdelivery.FieldProviderID, v)
+	return u
+}
+
+// UpdateProviderID sets the "provider_id" field to the value that was provided on create.
+func (u *NotificationDeliveryUpsert) UpdateProviderID() *NotificationDeliveryUpsert {
+	u.SetExcluded(notificationdelivery.FieldProviderID)
+	return u
+}
+
+// ClearProviderID clears the value of the "provider_id" field.
+func (u *NotificationDeliveryUpsert) ClearProviderID() *NotificationDeliveryUpsert {
+	u.SetNull(notificationdelivery.FieldProviderID)
 	return u
 }
 
@@ -1254,6 +1290,27 @@ func (u *NotificationDeliveryUpsertOne) UpdateSentAt() *NotificationDeliveryUpse
 func (u *NotificationDeliveryUpsertOne) ClearSentAt() *NotificationDeliveryUpsertOne {
 	return u.Update(func(s *NotificationDeliveryUpsert) {
 		s.ClearSentAt()
+	})
+}
+
+// SetProviderID sets the "provider_id" field.
+func (u *NotificationDeliveryUpsertOne) SetProviderID(v string) *NotificationDeliveryUpsertOne {
+	return u.Update(func(s *NotificationDeliveryUpsert) {
+		s.SetProviderID(v)
+	})
+}
+
+// UpdateProviderID sets the "provider_id" field to the value that was provided on create.
+func (u *NotificationDeliveryUpsertOne) UpdateProviderID() *NotificationDeliveryUpsertOne {
+	return u.Update(func(s *NotificationDeliveryUpsert) {
+		s.UpdateProviderID()
+	})
+}
+
+// ClearProviderID clears the value of the "provider_id" field.
+func (u *NotificationDeliveryUpsertOne) ClearProviderID() *NotificationDeliveryUpsertOne {
+	return u.Update(func(s *NotificationDeliveryUpsert) {
+		s.ClearProviderID()
 	})
 }
 
@@ -1856,6 +1913,27 @@ func (u *NotificationDeliveryUpsertBulk) UpdateSentAt() *NotificationDeliveryUps
 func (u *NotificationDeliveryUpsertBulk) ClearSentAt() *NotificationDeliveryUpsertBulk {
 	return u.Update(func(s *NotificationDeliveryUpsert) {
 		s.ClearSentAt()
+	})
+}
+
+// SetProviderID sets the "provider_id" field.
+func (u *NotificationDeliveryUpsertBulk) SetProviderID(v string) *NotificationDeliveryUpsertBulk {
+	return u.Update(func(s *NotificationDeliveryUpsert) {
+		s.SetProviderID(v)
+	})
+}
+
+// UpdateProviderID sets the "provider_id" field to the value that was provided on create.
+func (u *NotificationDeliveryUpsertBulk) UpdateProviderID() *NotificationDeliveryUpsertBulk {
+	return u.Update(func(s *NotificationDeliveryUpsert) {
+		s.UpdateProviderID()
+	})
+}
+
+// ClearProviderID clears the value of the "provider_id" field.
+func (u *NotificationDeliveryUpsertBulk) ClearProviderID() *NotificationDeliveryUpsertBulk {
+	return u.Update(func(s *NotificationDeliveryUpsert) {
+		s.ClearProviderID()
 	})
 }
 

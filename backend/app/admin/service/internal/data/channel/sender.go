@@ -54,6 +54,10 @@ type SendRequest struct {
 type SendReceipt struct {
 	// ChannelID 实际使用的渠道配置 ID——台账要能回答"这条到底走的哪个 SMTP 账号"。
 	ChannelID uint32
+
+	// ProviderID 服务商侧的消息/请求 ID（阿里云 RequestId、腾讯云 SerialNo 等），
+	// 拿得到就带——落台账 provider_id 列，方便对账。多数渠道没有就留空。
+	ProviderID string
 }
 
 // Sender 一种投递渠道的实现。

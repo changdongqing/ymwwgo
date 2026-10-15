@@ -500,7 +500,9 @@ type SendDirectNotificationRequest struct {
 	Content string `protobuf:"bytes,4,opt,name=content,proto3" json:"content,omitempty"` // 通知正文
 	// 显式指定渠道配置：测试邮件必须打到"正在调的那一条"，不能退化成"取第一个启用的"。
 	// 留空则由渠道选择策略取第一个启用的同类型渠道。
-	ChannelId       *uint32  `protobuf:"varint,5,opt,name=channel_id,json=channelId,proto3,oneof" json:"channel_id,omitempty"`                     // 指定渠道配置ID
+	ChannelId *uint32 `protobuf:"varint,5,opt,name=channel_id,json=channelId,proto3,oneof" json:"channel_id,omitempty"` // 指定渠道配置ID
+	// 服务商侧的消息/请求 ID（阿里云 RequestId、腾讯云 SerialNo 等，扩展渠道回执带回）
+	ProviderId      *string  `protobuf:"bytes,20,opt,name=provider_id,json=providerId,proto3,oneof" json:"provider_id,omitempty"`                  // 服务商消息 ID
 	Channel         *Channel `protobuf:"varint,6,opt,name=channel,proto3,enum=notification.service.v1.Channel,oneof" json:"channel,omitempty"`     // 投递渠道（留空由事件类型路由决定）
 	RecipientUserId *uint32  `protobuf:"varint,7,opt,name=recipient_user_id,json=recipientUserId,proto3,oneof" json:"recipient_user_id,omitempty"` // 收件用户ID（仅台账归类用）
 	OperatorUserId  *uint32  `protobuf:"varint,8,opt,name=operator_user_id,json=operatorUserId,proto3,oneof" json:"operator_user_id,omitempty"`    // 操作人用户ID（系统发起时留空）
@@ -584,6 +586,13 @@ func (x *SendDirectNotificationRequest) GetChannelId() uint32 {
 		return *x.ChannelId
 	}
 	return 0
+}
+
+func (x *SendDirectNotificationRequest) GetProviderId() string {
+	if x != nil && x.ProviderId != nil {
+		return *x.ProviderId
+	}
+	return ""
 }
 
 func (x *SendDirectNotificationRequest) GetChannel() Channel {
@@ -751,7 +760,7 @@ const file_notification_service_v1_notification_proto_rawDesc = "" +
 	"\x05items\x18\x01 \x03(\v2-.notification.service.v1.NotificationDeliveryR\x05items\x12\x14\n" +
 	"\x05total\x18\x02 \x01(\x04R\x05total\"0\n" +
 	"\x1eGetNotificationDeliveryRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\rR\x02id\"\xc8\f\n" +
+	"\x02id\x18\x01 \x01(\rR\x02id\"\xaa\r\n" +
 	"\x1dSendDirectNotificationRequest\x12\x82\x01\n" +
 	"\n" +
 	"event_type\x18\x01 \x01(\x0e2\".notification.service.v1.EventTypeB?\xbaG<\x92\x029业务事件类型（决定渠道路由与台账分类）R\teventType\x12E\n" +
@@ -759,16 +768,18 @@ const file_notification_service_v1_notification_proto_rawDesc = "" +
 	"\x05title\x18\x03 \x01(\tB)\xbaG&\x92\x02#通知标题（邮件为 Subject）R\x05title\x12J\n" +
 	"\acontent\x18\x04 \x01(\tB0\xbaG-\x92\x02*通知正文（邮件为纯文本正文）R\acontent\x12\\\n" +
 	"\n" +
-	"channel_id\x18\x05 \x01(\rB8\xbaG5\x92\x022指定渠道配置ID，留空取第一个启用的H\x00R\tchannelId\x88\x01\x01\x12w\n" +
-	"\achannel\x18\x06 \x01(\x0e2 .notification.service.v1.ChannelB6\xbaG3\x92\x020投递渠道，留空由事件类型路由决定H\x01R\achannel\x88\x01\x01\x12]\n" +
-	"\x11recipient_user_id\x18\a \x01(\rB,\xbaG)\x92\x02&收件用户ID（仅台账归类用）H\x02R\x0frecipientUserId\x88\x01\x01\x12a\n" +
-	"\x10operator_user_id\x18\b \x01(\rB2\xbaG/\x92\x02,操作人用户ID（系统发起时留空）H\x03R\x0eoperatorUserId\x88\x01\x01\x12Y\n" +
+	"channel_id\x18\x05 \x01(\rB8\xbaG5\x92\x022指定渠道配置ID，留空取第一个启用的H\x00R\tchannelId\x88\x01\x01\x12P\n" +
+	"\vprovider_id\x18\x14 \x01(\tB*\xbaG'\x92\x02$服务商侧消息 ID（对账用）H\x01R\n" +
+	"providerId\x88\x01\x01\x12w\n" +
+	"\achannel\x18\x06 \x01(\x0e2 .notification.service.v1.ChannelB6\xbaG3\x92\x020投递渠道，留空由事件类型路由决定H\x02R\achannel\x88\x01\x01\x12]\n" +
+	"\x11recipient_user_id\x18\a \x01(\rB,\xbaG)\x92\x02&收件用户ID（仅台账归类用）H\x03R\x0frecipientUserId\x88\x01\x01\x12a\n" +
+	"\x10operator_user_id\x18\b \x01(\rB2\xbaG/\x92\x02,操作人用户ID（系统发起时留空）H\x04R\x0eoperatorUserId\x88\x01\x01\x12Y\n" +
 	"\n" +
-	"related_id\x18\t \x01(\rB5\xbaG2\x92\x02/关联业务对象ID（按 event_type 解释）H\x04R\trelatedId\x88\x01\x01\x12V\n" +
+	"related_id\x18\t \x01(\rB5\xbaG2\x92\x02/关联业务对象ID（按 event_type 解释）H\x05R\trelatedId\x88\x01\x01\x12V\n" +
 	"\n" +
 	"request_id\x18\n" +
-	" \x01(\tB2\xbaG/\x92\x02,派发请求ID（留空则服务端生成）H\x05R\trequestId\x88\x01\x01\x12e\n" +
-	"\rtemplate_code\x18\v \x01(\tB;\xbaG8\x92\x025通知模板编码（给出时覆盖 title/content）H\x06R\ftemplateCode\x88\x01\x01\x12\x9b\x01\n" +
+	" \x01(\tB2\xbaG/\x92\x02,派发请求ID（留空则服务端生成）H\x06R\trequestId\x88\x01\x01\x12e\n" +
+	"\rtemplate_code\x18\v \x01(\tB;\xbaG8\x92\x025通知模板编码（给出时覆盖 title/content）H\aR\ftemplateCode\x88\x01\x01\x12\x9b\x01\n" +
 	"\rtemplate_vars\x18\f \x03(\v2H.notification.service.v1.SendDirectNotificationRequest.TemplateVarsEntryB,\xbaG)\x92\x02&模板变量（占位符名 → 值）R\ftemplateVars\x12\x8a\x01\n" +
 	"\x06params\x18\r \x03(\v2B.notification.service.v1.SendDirectNotificationRequest.ParamsEntryB.\xbaG+\x92\x02(渠道原生参数（SMS 验证码等）R\x06params\x1a?\n" +
 	"\x11TemplateVarsEntry\x12\x10\n" +
@@ -777,7 +788,8 @@ const file_notification_service_v1_notification_proto_rawDesc = "" +
 	"\vParamsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01B\r\n" +
-	"\v_channel_idB\n" +
+	"\v_channel_idB\x0e\n" +
+	"\f_provider_idB\n" +
 	"\n" +
 	"\b_channelB\x14\n" +
 	"\x12_recipient_user_idB\x13\n" +

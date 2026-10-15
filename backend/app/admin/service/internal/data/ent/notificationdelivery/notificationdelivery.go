@@ -47,6 +47,8 @@ const (
 	FieldAttempts = "attempts"
 	// FieldSentAt holds the string denoting the sent_at field in the database.
 	FieldSentAt = "sent_at"
+	// FieldProviderID holds the string denoting the provider_id field in the database.
+	FieldProviderID = "provider_id"
 	// Table holds the table name of the notificationdelivery in the database.
 	Table = "sys_notification_deliveries"
 )
@@ -71,6 +73,7 @@ var Columns = []string{
 	FieldRequestID,
 	FieldAttempts,
 	FieldSentAt,
+	FieldProviderID,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -266,4 +269,9 @@ func ByAttempts(opts ...sql.OrderTermOption) OrderOption {
 // BySentAt orders the results by the sent_at field.
 func BySentAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldSentAt, opts...).ToFunc()
+}
+
+// ByProviderID orders the results by the provider_id field.
+func ByProviderID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldProviderID, opts...).ToFunc()
 }

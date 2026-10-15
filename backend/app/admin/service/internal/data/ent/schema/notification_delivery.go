@@ -134,6 +134,10 @@ func (NotificationDelivery) Fields() []ent.Field {
 			Comment("投递完成时间").
 			Optional().
 			Nillable(),
+		field.String("provider_id").
+			Comment("服务商侧的消息/请求 ID（扩展渠道回执带回，对账用）").
+			Optional().
+			Nillable(),
 	}
 }
 

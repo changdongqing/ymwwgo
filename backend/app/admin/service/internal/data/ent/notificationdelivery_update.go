@@ -398,6 +398,26 @@ func (_u *NotificationDeliveryUpdate) ClearSentAt() *NotificationDeliveryUpdate 
 	return _u
 }
 
+// SetProviderID sets the "provider_id" field.
+func (_u *NotificationDeliveryUpdate) SetProviderID(v string) *NotificationDeliveryUpdate {
+	_u.mutation.SetProviderID(v)
+	return _u
+}
+
+// SetNillableProviderID sets the "provider_id" field if the given value is not nil.
+func (_u *NotificationDeliveryUpdate) SetNillableProviderID(v *string) *NotificationDeliveryUpdate {
+	if v != nil {
+		_u.SetProviderID(*v)
+	}
+	return _u
+}
+
+// ClearProviderID clears the value of the "provider_id" field.
+func (_u *NotificationDeliveryUpdate) ClearProviderID() *NotificationDeliveryUpdate {
+	_u.mutation.ClearProviderID()
+	return _u
+}
+
 // Mutation returns the NotificationDeliveryMutation object of the builder.
 func (_u *NotificationDeliveryUpdate) Mutation() *NotificationDeliveryMutation {
 	return _u.mutation
@@ -592,6 +612,12 @@ func (_u *NotificationDeliveryUpdate) sqlSave(ctx context.Context) (_node int, e
 	}
 	if _u.mutation.SentAtCleared() {
 		_spec.ClearField(notificationdelivery.FieldSentAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.ProviderID(); ok {
+		_spec.SetField(notificationdelivery.FieldProviderID, field.TypeString, value)
+	}
+	if _u.mutation.ProviderIDCleared() {
+		_spec.ClearField(notificationdelivery.FieldProviderID, field.TypeString)
 	}
 	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
@@ -984,6 +1010,26 @@ func (_u *NotificationDeliveryUpdateOne) ClearSentAt() *NotificationDeliveryUpda
 	return _u
 }
 
+// SetProviderID sets the "provider_id" field.
+func (_u *NotificationDeliveryUpdateOne) SetProviderID(v string) *NotificationDeliveryUpdateOne {
+	_u.mutation.SetProviderID(v)
+	return _u
+}
+
+// SetNillableProviderID sets the "provider_id" field if the given value is not nil.
+func (_u *NotificationDeliveryUpdateOne) SetNillableProviderID(v *string) *NotificationDeliveryUpdateOne {
+	if v != nil {
+		_u.SetProviderID(*v)
+	}
+	return _u
+}
+
+// ClearProviderID clears the value of the "provider_id" field.
+func (_u *NotificationDeliveryUpdateOne) ClearProviderID() *NotificationDeliveryUpdateOne {
+	_u.mutation.ClearProviderID()
+	return _u
+}
+
 // Mutation returns the NotificationDeliveryMutation object of the builder.
 func (_u *NotificationDeliveryUpdateOne) Mutation() *NotificationDeliveryMutation {
 	return _u.mutation
@@ -1208,6 +1254,12 @@ func (_u *NotificationDeliveryUpdateOne) sqlSave(ctx context.Context) (_node *No
 	}
 	if _u.mutation.SentAtCleared() {
 		_spec.ClearField(notificationdelivery.FieldSentAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.ProviderID(); ok {
+		_spec.SetField(notificationdelivery.FieldProviderID, field.TypeString, value)
+	}
+	if _u.mutation.ProviderIDCleared() {
+		_spec.ClearField(notificationdelivery.FieldProviderID, field.TypeString)
 	}
 	_spec.AddModifiers(_u.modifiers...)
 	_node = &NotificationDelivery{config: _u.config}

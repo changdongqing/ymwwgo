@@ -47984,6 +47984,7 @@ type NotificationDeliveryMutation struct {
 	attempts             *uint32
 	addattempts          *int32
 	sent_at              *time.Time
+	provider_id          *string
 	clearedFields        map[string]struct{}
 	done                 bool
 	oldValue             func(context.Context) (*NotificationDelivery, error)
@@ -49074,6 +49075,55 @@ func (m *NotificationDeliveryMutation) ResetSentAt() {
 	delete(m.clearedFields, notificationdelivery.FieldSentAt)
 }
 
+// SetProviderID sets the "provider_id" field.
+func (m *NotificationDeliveryMutation) SetProviderID(s string) {
+	m.provider_id = &s
+}
+
+// ProviderID returns the value of the "provider_id" field in the mutation.
+func (m *NotificationDeliveryMutation) ProviderID() (r string, exists bool) {
+	v := m.provider_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldProviderID returns the old "provider_id" field's value of the NotificationDelivery entity.
+// If the NotificationDelivery object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NotificationDeliveryMutation) OldProviderID(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldProviderID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldProviderID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldProviderID: %w", err)
+	}
+	return oldValue.ProviderID, nil
+}
+
+// ClearProviderID clears the value of the "provider_id" field.
+func (m *NotificationDeliveryMutation) ClearProviderID() {
+	m.provider_id = nil
+	m.clearedFields[notificationdelivery.FieldProviderID] = struct{}{}
+}
+
+// ProviderIDCleared returns if the "provider_id" field was cleared in this mutation.
+func (m *NotificationDeliveryMutation) ProviderIDCleared() bool {
+	_, ok := m.clearedFields[notificationdelivery.FieldProviderID]
+	return ok
+}
+
+// ResetProviderID resets all changes to the "provider_id" field.
+func (m *NotificationDeliveryMutation) ResetProviderID() {
+	m.provider_id = nil
+	delete(m.clearedFields, notificationdelivery.FieldProviderID)
+}
+
 // Where appends a list predicates to the NotificationDeliveryMutation builder.
 func (m *NotificationDeliveryMutation) Where(ps ...predicate.NotificationDelivery) {
 	m.predicates = append(m.predicates, ps...)
@@ -49108,7 +49158,7 @@ func (m *NotificationDeliveryMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *NotificationDeliveryMutation) Fields() []string {
-	fields := make([]string, 0, 17)
+	fields := make([]string, 0, 18)
 	if m.created_at != nil {
 		fields = append(fields, notificationdelivery.FieldCreatedAt)
 	}
@@ -49160,6 +49210,9 @@ func (m *NotificationDeliveryMutation) Fields() []string {
 	if m.sent_at != nil {
 		fields = append(fields, notificationdelivery.FieldSentAt)
 	}
+	if m.provider_id != nil {
+		fields = append(fields, notificationdelivery.FieldProviderID)
+	}
 	return fields
 }
 
@@ -49202,6 +49255,8 @@ func (m *NotificationDeliveryMutation) Field(name string) (ent.Value, bool) {
 		return m.Attempts()
 	case notificationdelivery.FieldSentAt:
 		return m.SentAt()
+	case notificationdelivery.FieldProviderID:
+		return m.ProviderID()
 	}
 	return nil, false
 }
@@ -49245,6 +49300,8 @@ func (m *NotificationDeliveryMutation) OldField(ctx context.Context, name string
 		return m.OldAttempts(ctx)
 	case notificationdelivery.FieldSentAt:
 		return m.OldSentAt(ctx)
+	case notificationdelivery.FieldProviderID:
+		return m.OldProviderID(ctx)
 	}
 	return nil, fmt.Errorf("unknown NotificationDelivery field %s", name)
 }
@@ -49372,6 +49429,13 @@ func (m *NotificationDeliveryMutation) SetField(name string, value ent.Value) er
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetSentAt(v)
+		return nil
+	case notificationdelivery.FieldProviderID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetProviderID(v)
 		return nil
 	}
 	return fmt.Errorf("unknown NotificationDelivery field %s", name)
@@ -49541,6 +49605,9 @@ func (m *NotificationDeliveryMutation) ClearedFields() []string {
 	if m.FieldCleared(notificationdelivery.FieldSentAt) {
 		fields = append(fields, notificationdelivery.FieldSentAt)
 	}
+	if m.FieldCleared(notificationdelivery.FieldProviderID) {
+		fields = append(fields, notificationdelivery.FieldProviderID)
+	}
 	return fields
 }
 
@@ -49606,6 +49673,9 @@ func (m *NotificationDeliveryMutation) ClearField(name string) error {
 	case notificationdelivery.FieldSentAt:
 		m.ClearSentAt()
 		return nil
+	case notificationdelivery.FieldProviderID:
+		m.ClearProviderID()
+		return nil
 	}
 	return fmt.Errorf("unknown NotificationDelivery nullable field %s", name)
 }
@@ -49664,6 +49734,9 @@ func (m *NotificationDeliveryMutation) ResetField(name string) error {
 		return nil
 	case notificationdelivery.FieldSentAt:
 		m.ResetSentAt()
+		return nil
+	case notificationdelivery.FieldProviderID:
+		m.ResetProviderID()
 		return nil
 	}
 	return fmt.Errorf("unknown NotificationDelivery field %s", name)
