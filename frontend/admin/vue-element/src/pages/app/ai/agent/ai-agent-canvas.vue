@@ -6,6 +6,7 @@
     :destroy-on-close="true"
     :title="canvasTitle"
     class="ai-agent-canvas-drawer"
+    :append-to-body="true"
   >
     <div class="canvas-body">
       <div class="canvas-toolbar">
@@ -336,6 +337,10 @@ watch(visible, (v) => {
   if (v) {
     window.setTimeout(() => {
       flowReady.value = true;
+      // fitViewOnInit 在视口尺寸未测完时会静默不跑（宽屏真机偶发），挂载后显式补一次
+      window.setTimeout(() => {
+        vueFlow.fitView({ padding: 0.1, maxZoom: 1.5 });
+      }, 150);
     }, 400);
   } else {
     flowReady.value = false;

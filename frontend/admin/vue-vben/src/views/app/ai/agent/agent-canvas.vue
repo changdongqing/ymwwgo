@@ -64,9 +64,13 @@ const [Drawer, drawerApi] = useVbenDrawer({
       configOpen.value = false;
       testOpen.value = false;
       runResult.value = undefined;
-      // 抽屉开启动画期间挂载 VueFlow 会触发 fitView 前视口未初始化的告警，等动画结束再挂
+      // 抽屉开启动画期间挂载 VueFlow 会触发 fitView 前视口未初始化的告警，等动画结束再挂；
+      // fitViewOnInit 在视口尺寸未测完时会静默不跑，挂载后显式补一次
       window.setTimeout(() => {
         flowReady.value = true;
+        window.setTimeout(() => {
+          vueFlow.fitView({ padding: 0.1, maxZoom: 1.5 });
+        }, 150);
       }, 400);
       // 知识库/模型提供商下拉数据（保存期后端强校验，这里只为选择项）
       fetchListAiKnowledgeBases(new PaginationQuery({ paging: { page: 1, pageSize: 100 } }))
