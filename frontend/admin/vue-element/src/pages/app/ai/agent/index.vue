@@ -16,8 +16,11 @@
     </template>
   </ProPage>
 
-  <!-- 创建/编辑抽屉：基本信息 + graph JSON（画布编辑器 vue-flow 版另立排期） -->
+  <!-- 创建/编辑抽屉：基本信息 + graph JSON（保存期后端强校验） -->
   <AiAgentDrawer ref="drawerRef" @success="handleSuccess" />
+
+  <!-- 画布编辑器（vue-flow 版，与 react 基准同构） -->
+  <AiAgentCanvas ref="canvasRef" @success="handleSuccess" />
 
   <!-- 试运行抽屉 -->
   <AiAgentRunDrawer ref="runRef" @success="handleSuccess" />
@@ -34,6 +37,7 @@ import { ElTag } from "element-plus";
 import ProPage from "@/components/Pro/ProPage/index.vue";
 import type { ProPageConfig } from "@/components/Pro/ProPage/types";
 import AiAgentDrawer from "./ai-agent-drawer.vue";
+import AiAgentCanvas from "./ai-agent-canvas.vue";
 import AiAgentRunDrawer from "./ai-agent-run-drawer.vue";
 import AiAgentRunsDrawer from "./ai-agent-runs-drawer.vue";
 import { useI18n } from "@/core/i18n";
@@ -44,6 +48,7 @@ const { t } = useI18n();
 
 const pageRef = ref();
 const drawerRef = ref();
+const canvasRef = ref();
 const runRef = ref();
 const runsRef = ref();
 
@@ -84,6 +89,7 @@ const pageConfig = computed<ProPageConfig>(() => ({
         width: 300,
         cellType: "tool",
         buttons: [
+          { name: "canvas", label: t("pages.ai_agent.openCanvas"), icon: "lucide:network" },
           { name: "edit", label: t("common.button.edit"), icon: "lucide:pen-line" },
           { name: "run", label: t("pages.ai_agent.testRun"), icon: "lucide:play" },
           { name: "runs", label: t("pages.ai_agent.runsTitle"), icon: "lucide:history" },
@@ -108,6 +114,7 @@ function handleEdit(row: any) {
 }
 
 function handleOperate(data: { name: string; row: any }) {
+  if (data.name === "canvas") canvasRef.value?.open(data.row);
   if (data.name === "run") runRef.value?.open(data.row);
   if (data.name === "runs") runsRef.value?.open(data.row);
 }

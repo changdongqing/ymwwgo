@@ -43,9 +43,12 @@
             :title="t('pages.ai_knowledge.deleteDocConfirm')"
             @confirm="handleDelete(row)"
           >
-            <ElButton type="danger" text size="small">
-              <Icon icon="lucide:trash-2" />
-            </ElButton>
+            <!-- EP 2.14 起 Popconfirm 触发器是具名 #reference 插槽，默认插槽被无视（按钮静默消失） -->
+            <template #reference>
+              <ElButton type="danger" text size="small">
+                <Icon icon="lucide:trash-2" />
+              </ElButton>
+            </template>
           </ElPopconfirm>
         </template>
       </ElTableColumn>

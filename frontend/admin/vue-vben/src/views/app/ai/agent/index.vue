@@ -15,11 +15,13 @@ import TableExportButton from '#/components/TableExportButton.vue';
 import type {
   aiservicev1_AiAgentApp as AiAgentApp,
 } from '#/api/generated/admin/service/v1';
+import AgentCanvas from './agent-canvas.vue';
 import AgentEditDrawer from './agent-edit-drawer.vue';
 import AgentRunDrawer from './agent-run-drawer.vue';
 import AgentRunsDrawer from './agent-runs-drawer.vue';
 
-// 三个抽屉：编辑（表单）/ 试运行（输入表单+运行）/ 运行台账（只读列表）
+// 抽屉们：画布（全屏编辑器）/ 编辑（表单）/ 试运行（输入表单+运行）/ 运行台账（只读列表）
+const [CanvasDrawer, canvasDrawerApi] = useVbenDrawer({ connectedComponent: AgentCanvas });
 const [EditDrawer, editDrawerApi] = useVbenDrawer({ connectedComponent: AgentEditDrawer });
 const [RunDrawer, runDrawerApi] = useVbenDrawer({ connectedComponent: AgentRunDrawer });
 const [RunsDrawer, runsDrawerApi] = useVbenDrawer({ connectedComponent: AgentRunsDrawer });
@@ -85,6 +87,11 @@ function openCreate() {
   editDrawerApi.open();
 }
 
+function openCanvas(row: AiAgentApp) {
+  canvasDrawerApi.setData({ row });
+  canvasDrawerApi.open();
+}
+
 function openEdit(row: AiAgentApp) {
   editDrawerApi.setState({ title: $t('page.aiAgent.edit') });
   editDrawerApi.setData({ create: false, row });
@@ -129,6 +136,9 @@ async function handleDelete(row: AiAgentApp) {
         <a-tag v-else>{{ $t('page.aiAgent.enabledOff') }}</a-tag>
       </template>
       <template #action="{ row }">
+        <a-button type="link" size="small" @click.stop="openCanvas(row)">
+          {{ $t('page.aiAgent.openCanvas') }}
+        </a-button>
         <a-button type="link" size="small" @click.stop="openEdit(row)">
           {{ $t('common.edit') }}
         </a-button>
@@ -150,6 +160,7 @@ async function handleDelete(row: AiAgentApp) {
         </a-popconfirm>
       </template>
     </Grid>
+    <CanvasDrawer />
     <EditDrawer />
     <RunDrawer />
     <RunsDrawer />
