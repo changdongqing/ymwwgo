@@ -114,7 +114,8 @@ const AiAgentAppManagement = () => {
     {
       title: t('actions'),
       valueType: 'option',
-      width: 200,
+      // 画布/编辑应用/运行台账/删除四个带图标按钮实测约 341px（en 335），窄了必截断
+      width: 360,
       fixed: 'right',
       render: (_, record) => [
         <Button
