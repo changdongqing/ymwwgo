@@ -30,8 +30,8 @@ require (
 	github.com/tx7do/go-crud/pagination v0.0.16
 	github.com/tx7do/go-crud/viewer v0.0.8
 	github.com/tx7do/go-scripts v0.0.9
-	github.com/tx7do/go-scripts/javascript v0.0.9
-	github.com/tx7do/go-scripts/lua v0.0.10
+	github.com/tx7do/go-scripts/javascript v0.0.10
+	github.com/tx7do/go-scripts/lua v0.0.12
 	github.com/tx7do/go-utils v1.1.42
 	github.com/tx7do/go-utils/aggregator v0.0.5
 	github.com/tx7do/go-utils/captcha v0.0.4
