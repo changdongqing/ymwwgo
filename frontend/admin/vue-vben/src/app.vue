@@ -29,6 +29,13 @@ const tokenTheme = computed(() => {
   return {
     algorithm,
     token: tokens,
+    components: {
+      Drawer: {
+        // 抽屉按 §2.3 属 L1 表面（#111827），不是浮层（#1C2128）；
+        // 全局 colorBgElevated 取的是 --popover，单独把 Drawer 拨回 --card
+        colorBgElevated: tokens.colorBgContainer,
+      },
+    },
   };
 });
 </script>
