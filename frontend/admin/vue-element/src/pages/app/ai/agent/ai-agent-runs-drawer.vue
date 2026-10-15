@@ -63,7 +63,7 @@ const loading = ref(false);
 const app = ref<any>();
 const runs = ref<any[]>([]);
 
-const runsTitle = computed(() => t("pages.ai_agent.runs.title", { name: app.value?.name || "" }));
+const runsTitle = computed(() => `${t("pages.ai_agent.runsTitle")} · ${app.value?.name || ""}`);
 
 function parseTrace(raw?: string): Array<Record<string, any>> {
   if (!raw) return [];

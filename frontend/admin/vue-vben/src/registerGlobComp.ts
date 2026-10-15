@@ -23,6 +23,7 @@ import {
   Table,
   Tabs,
   Tag,
+  Timeline,
   Tooltip,
   Tree,
   Upload,
@@ -68,5 +69,8 @@ export function registerGlobComp(app: App) {
     // Drawer：六处弹窗改抽屉（通知渠道/规则/模板、监控告警、账号绑定、套餐配额）模板用裸 <a-drawer>
     // Empty：监控告警页空态用 <a-empty>。两者漏注册时只有 Vue warn、抽屉/空态整块不渲染
     .use(Drawer)
-    .use(Empty);
+    .use(Empty)
+    // Timeline：AI Agent 运行台账抽屉的逐节点轨迹用 <a-timeline>+<a-timeline-item>，
+    // install 同时注册 ATimeline / ATimelineItem（同 Radio 模式），漏注册时轨迹整块不渲染
+    .use(Timeline);
 }

@@ -5,7 +5,7 @@ import { useVbenDrawer } from '@vben/common-ui';
 import { $t } from '@vben/locales';
 
 
-import { fetchListAiAgentRuns } from '#/api';
+import { fetchListAiAgentRuns, PaginationQuery } from '#/api';
 
 // antd 组件（vben 手工注册模式）：Tag/Timeline 用 a-tag / a-timeline
 function parseTrace(raw?: string): Array<Record<string, any>> {
@@ -30,11 +30,12 @@ const [Drawer, drawerApi] = useVbenDrawer({
     const data = drawerApi.getData<{ row: any }>() ?? { row: {} };
     app.value = data.row ?? {};
     loading.value = true;
-    fetchListAiAgentRuns({
-      page: 1,
-      pageSize: 20,
-      formValues: { appId: String(app.value.id) },
-    } as any)
+    fetchListAiAgentRuns(
+      new PaginationQuery({
+        paging: { page: 1, pageSize: 20 },
+        formValues: { appId: String(app.value.id) },
+      }),
+    )
       .then((resp: any) => {
         runs.value = resp.items ?? [];
       })
@@ -49,7 +50,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
 </script>
 
 <template>
-  <Drawer :title="$t('page.aiAgent.runs.title', { name: app?.name || '' })">
+  <Drawer :title="`${$t('page.aiAgent.runsTitle')} · ${app?.name || ''}`">
     <div v-if="runs.length === 0 && !loading" class="text-xs text-muted-foreground pb-2">
       {{ $t('page.aiAgent.runs.empty') }}
     </div>
