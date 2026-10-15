@@ -55,6 +55,27 @@
   /* --vxe-ui-table-fixed-scrolling-box-shadow-color: rgb(0 0 0 / 80%); */
 }
 
+/* 暗色表格配色对齐设计语言规范 §2.3/§3.3（ele styles/vendors/_vxe-table.scss 暗色块同值）：
+   表头独立次级色 #1F2937、行 hover 用主色 8% α、斑马纹 white 3%。
+   不走上面那套 --accent 映射的原因：默认暗色块的 --accent 是中性灰
+   （216 5% 19% ≈ #2E3238），表头会浮出一条与蓝黑底色系脱节的灰带。
+   浅色不带 .dark 继续吃上面的 token 映射（--accent ≈ 规范浅表头 #F0F2F5 系）。 */
+.dark .vxe-grid {
+  --vxe-ui-table-header-background-color: #1f2937;
+  --vxe-ui-table-header-font-color: #e5eaf3;
+  --vxe-ui-table-row-striped-background-color: rgb(255 255 255 / 3%);
+  --vxe-ui-table-row-hover-background-color: hsl(var(--primary) / 8%);
+  --vxe-ui-table-row-hover-striped-background-color: hsl(var(--primary) / 8%);
+  --vxe-ui-table-row-radio-checked-background-color: hsl(var(--primary) / 8%);
+  --vxe-ui-table-row-hover-radio-checked-background-color: hsl(var(--primary) / 8%);
+  --vxe-ui-table-row-checkbox-checked-background-color: hsl(var(--primary) / 8%);
+  --vxe-ui-table-row-hover-checkbox-checked-background-color: hsl(
+    var(--primary) / 8%
+  );
+  --vxe-ui-table-row-current-background-color: hsl(var(--primary) / 8%);
+  --vxe-ui-table-row-hover-current-background-color: hsl(var(--primary) / 8%);
+}
+
 /* vxe 把遮罩内容装进一个 top:50% + translateY(-50%) 的零高盒（.vxe-loading--wrapper），
    插槽里的骨架写 height:100% 会跟它一起塌成 0（实测：DOM 在、paint 面积 0）。
    拉满整块遮罩，加载态才拿得到表体的真实高度；transform 必须一起清掉，
