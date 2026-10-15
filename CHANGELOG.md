@@ -6,10 +6,16 @@
 > 历史条目基于 Git 提交记录回溯整理，仅记录对使用者有影响的功能性变更，
 > 日常重构、代码风格、CI 调整等不在逐一列举。
 
-## [Unreleased]
+## [1.4.0] - 2026-10-15
 
 ### 新增
 
+- AI Agent 编排（全栈，三端齐备）：Agent 应用 CRUD + 图执行引擎（五种节点：开始/
+  知识检索/LLM/条件分支/结束；模板引用上游输出、条件表达式走 expr 语法）+ 可视化画布
+  编辑器（react @xyflow/react 先行，vue-element / vue-vben 移植 vue-flow 版）+ 试运行
+  SSE 流式执行（ai_agent_run 事件逐节点实时推送，运行轨迹先呈现、同步 trace 后覆盖）+
+  运行台账（落库 + 行内抽屉浏览）。模型/知识库/配额复用 AI 模块既有链路；已部署实例：
+  make openapi + 重启 + 「接口同步」（新端点 `/admin/v1/ai/agents*`）与「菜单同步」后可见。
 - 通知渠道全量扩展（go-utils/notify 39 渠道接入，react 先行）：企业微信应用/钉钉工作通知/
   飞书应用/公众号模板消息/Telegram/Slack/Discord/Teams/Google Chat/Webex/Line/Matrix/
   Mattermost/RocketChat/Zulip、Bark/ntfy/Gotify/Server酱/WxPusher/Pushover/PushBullet/
@@ -17,27 +23,37 @@
   IFTTT/Join/Home Assistant、Datadog/Opsgenie/PagerDuty。新渠道配置整包存 settings 列
   （敏感字段加密落库、回显脱敏、留空不修改），配置表单按后端 schema 动态渲染（新增渠道
   只需一份字段声明）。台账/路由规则页新增「扩展渠道（EXT）」选项——告警与通知可路由到
-  任一扩展渠道。已部署实例：make openapi + 重启 + 「接口同步」后新端点生效。
-
-### 新增
-
-- AI Agent 编排 M1（可视化画布，react 先行）：Agent 应用 CRUD + 图执行引擎
-  （五种节点：开始/知识检索/LLM/条件分支/结束；模板引用上游输出、条件表达式走
-  expr 语法）+ 同步试运行（逐节点执行轨迹 + token 用量）+ 运行台账落库。
-  模型/知识库/配额复用 AI 模块既有链路；新端点 `/admin/v1/ai/agents*` 与新菜单行
-  需「接口同步」「菜单同步」后可见。
-
-### 新增
-
+  任一扩展渠道；阿里云/腾讯云短信拆为两个一级选项并入「短信 / 消息」分组。已部署实例：
+  make openapi + 重启 + 「接口同步」后新端点生效。
 - 短信通知渠道（阿里云 / 腾讯云，全栈三端）：通知渠道页可选「短信」类型，配置服务商访问密钥
   （加密存储、不回显）、短信签名与验证码模板；「测试发送」按渠道类型分派（邮件走测试邮件、
   短信发一条真验证码）。短信正文由服务商侧审核模板渲染，系统只填验证码——没有自由文本通道，
-  因此路由规则页不提供 SMS 选项（无验证码的投递会明确失败）。
+  因此路由规则页不提供 SMS 选项（无验证码的投递会明确失败）。已部署实例升级：重启前先
+  `make openapi`（新端点 `POST /notification-channels/{id}/send-test` 需在管理页
+  「接口同步」重建 Api 表后才可达）；台账 `event_type` 枚举加 `CHANNEL_TEST_SMS` /
+  `PHONE_BIND_CODE` 两值（迁移自动加列）。
 - 忘记密码支持手机号：输入绑定的手机号即走短信验证码（需已配置启用的短信渠道），邮箱路径不变；
   绑定联系方式接口同步启用手机号分支（验证码经短信下发，通过后写入手机号登录凭证）。
-- 已部署实例升级：重启前先 `make openapi`（新端点 `POST /notification-channels/{id}/send-test`
-  需在管理页「接口同步」重建 Api 表后才可达）；台账 `event_type` 枚举加 `CHANNEL_TEST_SMS` /
-  `PHONE_BIND_CODE` 两值（迁移自动加列）。
+- 通知投递台账新增服务商侧消息 ID 列（Receipt.ProviderID），跨系统对账有据可查。
+
+### 变更
+
+- 通知发送层下沉 go-utils/notify 子模块（本仓 channel 包收薄为适配层）；SMTP 渠道
+  新增发件人显示名 smtpFromName。
+- 三端新建/编辑表单统一由弹窗改抽屉（AI Agent、路由规则、通知模板、监控告警、渠道、
+  改密、MFA 绑定、知识库文档管理等十余处），长表单不再挤在弹窗里。
+- vue-vben 端去微服务单包化：26 个 workspace 框架包并入 framework/，workspace 归零、
+  全工程唯一 node_modules——采用者克隆即用，不再依赖 workspace 拓扑。
+
+### 修复
+
+- 设计语言对齐扫尾（三端）：登录/品牌面板与插画硬编码色接回 token、图表与画布元素
+  显式取 token 不吃 CSS 层叠、固定列 hover 漏字、空表格占位行禁 hover 高亮、
+  vben vxe 暗色表头/行 hover 配色对齐设计语言、抽屉暗色底色统一 L1 表面 #111827。
+- vue-vben 画布/抽屉系列修复：分组下拉注册名、Drawer/Empty 未注册整块不渲染、
+  抽屉表单 Switch 被 w-full 撑满整行、AI 页新建按钮 icon+文本竖排、画布抽屉盖不住
+  布局侧栏 + fitView 竞态、dev API 改走 vite 代理同源转发（直连被 CORS 拦）、
+  pnpm dev 起不来的 rimraf 死引用。
 
 ## [1.3.0] - 2026-10-08
 
