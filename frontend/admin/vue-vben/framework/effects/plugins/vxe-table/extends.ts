@@ -93,6 +93,20 @@ function extendProxyOption(
 }
 
 export function extendsDefaultFormatter(vxeUI: VxeUIExport) {
+  // vxe 新版（@vxe-ui/core 4.4+）已内置同名 formatter，直接 add 会刷
+  // "参数 tableCellFormatMethod 重复定义"警告；先 delete 再用我们的实现覆盖
+  // （审计日志/站内信等页的 formatDateTime 列依赖 @vben/utils 的格式）
+  for (const name of [
+    'formatDate',
+    'formatDateTime',
+    'formatCent',
+    'formatPercent',
+    'formatThousand',
+    'formatStr',
+  ]) {
+    vxeUI.formats.delete(name);
+  }
+
   vxeUI.formats.add('formatDate', {
     tableCellFormatMethod({ cellValue }) {
       return formatDate(cellValue);
