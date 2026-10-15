@@ -1,9 +1,8 @@
 <template>
-  <ElDialog
+  <ElDrawer
     :model-value="visible"
     :title="t('pages.ai_knowledge.docsTitle', { name: base?.name || '' })"
     width="680px"
-    align-center
     :close-on-click-modal="false"
     @update:model-value="(v: boolean) => emit('update:visible', v)"
     @closed="resetForm"
@@ -51,7 +50,7 @@
         </template>
       </ElTableColumn>
     </ElTable>
-  </ElDialog>
+  </ElDrawer>
 </template>
 
 <script lang="ts" setup>
