@@ -58,7 +58,10 @@
         </ElFormItem>
 
         <ElFormItem :label="t('pages.notification_channel.webhookSignStyle')" prop="webhookSignStyle">
-          <ElSelect v-model="drawer.formData.webhookSignStyle">
+          <ElSelect
+            v-model="drawer.formData.webhookSignStyle"
+            :teleported="false"
+          >
             <ElOption :label="t('pages.notification_channel.signStyleCustom')" value="CUSTOM" />
             <ElOption :label="t('pages.notification_channel.signStyleNone')" value="NONE" />
             <ElOption :label="t('pages.notification_channel.signStyleDingtalk')" value="DINGTALK" />
@@ -163,7 +166,8 @@
         "
       >
         <ElFormItem :label="t('pages.notification_channel.smsProvider')" prop="smsProvider">
-          <ElSelect v-model="drawer.formData.smsProvider">
+          <ElSelect
+          :teleported="false" v-model="drawer.formData.smsProvider">
             <ElOption :label="t('pages.notification_channel.providerAliyun')" value="ALIYUN" />
             <ElOption :label="t('pages.notification_channel.providerTencent')" value="TENCENT" />
           </ElSelect>
@@ -251,7 +255,8 @@
         </ElFormItem>
 
         <ElFormItem :label="t('pages.notification_channel.smtpTls')" prop="smtpTls">
-          <ElSelect v-model="drawer.formData.smtpTls">
+          <ElSelect
+          :teleported="false" v-model="drawer.formData.smtpTls">
             <ElOption :label="t('pages.notification_channel.tlsNone')" value="NONE" />
             <ElOption :label="t('pages.notification_channel.tlsStartTls')" value="START_TLS" />
             <ElOption :label="t('pages.notification_channel.tlsSsl')" value="SSL" />
