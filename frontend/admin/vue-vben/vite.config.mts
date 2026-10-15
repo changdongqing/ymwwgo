@@ -49,6 +49,13 @@ export default defineConfig(async () => {
       },
       server: {
         proxy: {
+          // 后端 API 代理（对齐 react 的 VITE_PROXY 定式）：完整路径原样转发，
+          // 前缀 /admin 不剥——后端路由本身就挂在 /admin/v1 下
+          '/admin': {
+            // 后端 refresh token 走 HttpOnly Cookie，changeOrigin 保证 Host 指向后端
+            changeOrigin: true,
+            target: 'http://localhost:7788',
+          },
           '/api': {
             changeOrigin: true,
             rewrite: (path) => path.replace(/^\/api/, ''),
