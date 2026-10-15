@@ -18,8 +18,8 @@
  * 适用范围只在"文字前景"；**实底填充上的白字不要动**：暗色下 antd 的 colorError 派生成 #DC3355，
  * 白字实测 4.52:1 已达标，而 §2.1 的暗墨 #0B0F19 在其上只有 4.24:1（2026-09-28 大扫测里
  * 我误把暗墨用到暗色徽标/危险实底按钮，新造出 40 条违规，故实底暗墨规则只在浅色生效）。
- * 2026-10-15 起危险**实底按钮**两态都回原生白字（用户裁决：暗墨在红色实底上观感刺眼），
- * 暗墨只剩徽标/开关轨道这类非按钮小字，见下。
+ * 2026-10-15 起危险**实底按钮**与**徽标数字**两态都回原生白字（用户裁决：暗墨在红色实底上观感刺眼），
+ * 暗墨只剩开关轨道这类非按钮小字，见下。
  */
 
 :root {
@@ -28,8 +28,8 @@
   --gowind-warning-text: color-mix(in srgb, var(--app-color-warning) 50%, #0b0f19);
   --gowind-danger-text: color-mix(in srgb, var(--app-color-destructive) 70%, #0b0f19);
 
-  /* 实底语义色上的前景 = §2.1 的暗色 L0（现只用于徽标/开关轨道这类非按钮小字；
-     危险实底按钮 2026-10-15 起两态都走原生白字）：白字在 #FF3860 上只有 3.51:1，暗墨有 5.46:1 */
+  /* 实底语义色上的前景 = §2.1 的暗色 L0（现只用于开关轨道这类非按钮小字；
+     危险实底按钮与徽标数字 2026-10-15 起两态都走原生白字）：白字在 #FF3860 上只有 3.51:1，暗墨有 5.46:1 */
   --gowind-solid-ink: #0b0f19;
 
   /* 「主文字」档（§2.1 表「文字-主」#1F2937 / §2.3 暗色「文字」主 #F8FAFC）。
@@ -128,11 +128,6 @@ html[data-theme='dark'] .ant-tag.ant-tag-filled.ant-tag-geekblue {
    一律回 antd 原生白字——3.51:1 的数值取舍让位观感，沿革见 docs/design-language.md §2.1。 */
 .ant-btn.ant-btn-color-dangerous:not(.ant-btn-variant-solid) {
   color: var(--gowind-danger-text) !important;
-}
-
-/* ---------- 徽标实底数字：EP/antd 都在这里写死白字，浅色实底下暗墨才达标（5.46:1） ---------- */
-html[data-theme='light'] .ant-badge-count.ant-scroll-number {
-  color: var(--gowind-solid-ink) !important;
 }
 
 /* ---------- 选中态的主色文字（菜单 4.47 / 标签栏 4.33 → 5.16 / 5.01） ----------

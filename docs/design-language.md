@@ -48,8 +48,9 @@ vben 任务页"启动全部任务"= `#FAFAFA` on `#57D188` **1.85:1**；react �
 属库内派生值、暂未统一。
 **危险实底按钮的沿革（2026-10-15 定稿）**：react/vben 曾按对比度把亮色 danger 实底按钮前景改成暗墨
 （`#0B0F19` on `#FF3860` 5.46:1），用户实测裁决回退——暗墨坐在红色实底上观感刺眼，**亮/暗两态一律回
-各 UI 库原生白字**，3.51:1 的数值取舍让位观感（按钮文案是短动作词，不构成阅读障碍）。暗墨（`--gowind-solid-ink`）
-只保留在徽标数字/开关轨道这类**非按钮**小字上；success/warning 实底不受本条影响（白字在那两档上 1.87/1.74 真不可读）。
+各 UI 库原生白字**，3.51:1 的数值取舍让位观感（按钮文案是短动作词，不构成阅读障碍）。**同日第二批：
+徽标数字一并回退**——react（antd）/ele（EP）删除浅色徽标暗墨规则，恢复库原生白字；vben 本就无此规则。
+暗墨（`--gowind-solid-ink`）只剩开关轨道这类**非按钮**小字；success/warning 实底不受本条影响（白字在那两档上 1.87/1.74 真不可读）。
 
 **语义色当文字用（Tag 文字态、link/text/plain 按钮、页签激活态、查询区折叠按钮、链接）不许直接用基准色**：
 基准色在白底上是 destructive **3.51** / success **1.93** / warning **1.74**（primary 4.95 也只是勉强过），
@@ -433,4 +434,5 @@ delivery/rule 两页的 `listAction` 自 catch 一并剥掉；`locales/{en-US,zh
 **未动、需点头**：ele 暗色 vxe 固定列与 35 处 `fixed: 'right'` 的同构漏字（react `10637946` 先例）——本机在跑的 :7788 二进制取不到 captcha、登录后页面进不去，按构造改的风险大于收益；vben `icon-500.vue` 其余物件色（`#2f2e41` 15 枚 / `#3f3d56` 8 枚 / `#f2f2f2` 4 枚 / `#a8a8a8` 1 枚，插画形状而非主题 chrome）保留。剩余死文件候选（已现量引用面，删不删待点名）：react `layouts/UserLayout/components/{Background.tsx,background.less}`（95 + 194 行、0 importer）、ele `src/assets/images/401.svg`（34510 B）与 `404.svg`（26633 B）——该目录只有 `logo.png`/`default-avatar.png` 被 import，两枚 `.svg` 全仓 0 引用（含 `assets/images` 路径式与模板串写法都查过）。react `public/icons.svg`（5031 B）**不属这一口径**：public 目录无条件拷进 `dist`，静态 grep 0 命中不足以判死。
 
 2026-10-15 用户裁决回退一条（§2.1「危险实底按钮的沿革」）：亮色 danger 实底按钮的前景从暗墨 `#0B0F19` 改回各 UI 库原生白字，亮/暗两态一致——用户原话场景是「同步 API」按钮亮色下黑字坐在红底上刺眼。落点：react `semantic-text.css` 删 `html[data-theme='light'] .ant-btn-color-dangerous.ant-btn-variant-solid` 那条、vben `framework/styles/antd/index.css` 删 `html:not(.dark) .ant-btn-primary.ant-btn-dangerous` 那条（ele 本就无此规则，EP 原生白字）。`--gowind-solid-ink` 的适用面随之收窄为徽标数字/开关轨道这类非按钮小字；success/warning 实底按钮的暗墨不受影响。
+同日第二批（徽标）：通知铃铛角标数字在 react/ele 两端同为暗墨坐红底，用户裁决一并回白字。落点：react `semantic-text.css` 删 `html[data-theme='light'] .ant-badge-count.ant-scroll-number` 那条（antd 原生白字，暗色本就未覆盖）、ele `_element-plus.scss` 删 `.el-badge__content--{danger,primary,success,warning}` 那条（EP 原生 `--el-color-white`，该规则不带主题作用域、暗色也一并恢复白字）；vben 无徽标规则未动。`--gowind-solid-ink` 适用面再收窄为仅开关轨道（ele 侧登录页验证码占位文案另有使用）。
 

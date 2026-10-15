@@ -627,10 +627,5 @@ html.dark {
   --el-tag-text-color: var(--gowind-danger-text) !important;
 }
 
-/* ---------- 徽标实底：§2.1 的暗色 L0 前景（EP 这里写死 color-white） ---------- */
-.el-badge__content.el-badge__content--danger,
-.el-badge__content.el-badge__content--primary,
-.el-badge__content.el-badge__content--success,
-.el-badge__content.el-badge__content--warning {
-  color: var(--gowind-solid-ink) !important;
-}
+/* 徽标实底不再换暗墨（2026-10-15 用户裁决，与危险实底按钮同批）：暗墨坐在红色实底上观感刺眼，
+   亮/暗两态一律回 EP 原生白字（--el-color-white），沿革见 docs/design-language.md §2.1。 */
