@@ -501,9 +501,17 @@ const NotificationChannelManagement = () => {
           options={[
             { label: t('typeEmail'), value: 'EMAIL' },
             { label: t('typeWebhook'), value: 'WEBHOOK' },
-            // 阿里云/腾讯云不进分组：扩展分组里没有同厂短选项时（如 ntfy mock 场景），
-            // 孤项挂组壳反而让人迷惑——平铺与 EMAIL/WEBHOOK 同级，点名服务商
-            { label: t('typeSmsWithProviders'), value: 'SMS' },
+            // 短信 / 消息 分组：阿里云/腾讯云拆成两个一级选项（合成键 SMS@provider，
+            // 提交/回显时与 type=SMS + smsProvider 互转），与扩展短信渠道并列
+            {
+              label: t('extGroup.SMS'),
+              title: t('extGroup.SMS'),
+              options: [
+                { label: t('smsAliyun'), value: 'SMS@ALIYUN' },
+                { label: t('smsTencent'), value: 'SMS@TENCENT' },
+                ...(extTypeOptions.find((g) => g.group === 'SMS')?.options ?? []),
+              ],
+            },
             ...extTypeOptions
               .filter((g) => g.group !== 'SMS')
               .map((g) => ({ label: g.label, title: g.label, options: g.options })),
