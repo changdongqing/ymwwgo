@@ -64,6 +64,7 @@
 | [frontend_development_environment_preparation.md](./frontend_development_environment_preparation.md) | 前端开发工具安装、npm 镜像源 | 新机器搭前端环境时 |
 | [windows-startup-guide.md](./windows-startup-guide.md) | Windows 本地从零启动全流程与常见问题 | Windows 开发机首次搭建时（含 FAQ） |
 | [design-language.md](./design-language.md) | 三端视觉唯一权威值表（颜色/圆角/布局尺寸） | 改任何视觉相关代码前 |
+| [ai_agent_orchestration.md](./ai_agent_orchestration.md) | AI Agent 编排：图 DSL（五种节点）、执行语义、数据模型、M1/M2 分期；复用 AI 模块的提供商/知识库/配额链路 | 做 Agent 编排相关改动（画布/引擎/运行台账）前 |
 | [ai_module.md](./ai_module.md) | AI 模块：流式对话语义、提供商密钥、AI_TOKENS 配额与白名单、知识库 RAG（含文件上传/重索引任务）、脚本 ai 模块、审计日报、安全洞察（告警零文案 i18n 架构）、智能问数（双白名单+租户谓词）与 pgvector 部署要求 | 改 AI 相关代码（对话/提供商/知识库/配额/脚本 ai）前 |
 | [brand/](./brand/) | 品牌资产（logo / favicon / 锁版 / wordmark） | 换品牌或引用素材时 |
 
