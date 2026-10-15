@@ -139,7 +139,7 @@ const NotificationChannelManagement = () => {
       if (!groups.has(g)) groups.set(g, []);
       groups.get(g)!.push({ label: String(s.label), value: String(s.type) });
     }
-    return [...groups.entries()].map(([group, options]) => ({ label: t(`extGroup.${group}`), options }));
+    return [...groups.entries()].map(([group, options]) => ({ group, label: t(`extGroup.${group}`), options }));
   }, [schemas, t]);
 
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -478,12 +478,13 @@ const NotificationChannelManagement = () => {
           options={[
             { label: t('typeEmail'), value: 'EMAIL' },
             { label: t('typeWebhook'), value: 'WEBHOOK' },
-            // 点名服务商：扩展分组里有华为云/云片/Twilio 等，不点明的话"阿里云/腾讯云在哪"要靠猜
-            { label: t('typeSmsWithProviders'), value: 'SMS' },
+            // 阿里云/腾讯云并入"短信 / 消息"分组且居组首：验证码主力与扩展短信渠道一处找
             ...extTypeOptions.map((g) => ({
               label: g.label,
               title: g.label,
-              options: g.options,
+              options: g.group === 'SMS'
+                ? [{ label: t('typeSmsWithProviders'), value: 'SMS' }, ...g.options]
+                : g.options,
             })),
           ]}
           disabled={drawerMode === 'edit'}
