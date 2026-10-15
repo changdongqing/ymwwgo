@@ -317,7 +317,8 @@ func (r *NotificationChannelRepo) Create(ctx context.Context, req *notificationC
 	if req.GetSmsAccessSecret() != "" {
 		builder.SetSmsAccessSecret(smsSecret)
 	}
-
+	// settings 由服务层按 schema 规范化（required 校验 + 敏感字段加密）后传入存储态 JSON
+	builder.SetNillableSettings(req.Data.Settings)
 	created, err := builder.Save(ctx)
 	if err != nil {
 		r.log.Errorf(ctx, "insert notification channel failed: %s", err.Error())
@@ -384,6 +385,8 @@ func (r *NotificationChannelRepo) Update(ctx context.Context, req *notificationC
 				}
 				builder.SetSmsAccessSecret(smsSecret)
 			}
+			// settings 由服务层按 schema 合并/加密后传入存储态 JSON
+			builder.SetNillableSettings(req.Data.Settings)
 		},
 		func(s *sql.Selector) {
 			s.Where(sql.EQ(notificationchannel.FieldID, req.GetId()))
@@ -579,6 +582,47 @@ func (r *NotificationChannelRepo) webhookAccountOf(ctx context.Context, entity *
 		SignStyle:       derefStrP(entity.WebhookSignStyle),
 		PayloadTemplate: derefStrP(entity.WebhookPayloadTemplate),
 	}, nil
+}
+
+// GetSettingsRaw 取扩展渠道的存储态配置原文（settings 为加密 JSON，schema 感知的解密在 channel 包）。
+// 返回：类型名（proto Type 枚举名）、settings 存储态 JSON、启用状态。
+func (r *NotificationChannelRepo) GetSettingsRaw(ctx context.Context, id uint32) (typeName, storeJSON string, enabled bool, err error) {
+	entity, err := r.entClient.Client().NotificationChannel.Query().
+		Where(notificationchannel.IDEQ(id)).
+		Only(ctx)
+	if err != nil {
+		r.log.Errorf(ctx, "get settings channel [%d] failed: %s", id, err.Error())
+		return "", "", false, adminV1.ErrorNotFound("notification channel not found")
+	}
+	return string(entity.Type), derefStrP(entity.Settings), entity.Status != nil && *entity.Status == notificationchannel.StatusOn, nil
+}
+
+// GetFirstEnabledSettingsRaw 自选策略：类型落在 types 清单内的第一个启用行。
+func (r *NotificationChannelRepo) GetFirstEnabledSettingsRaw(ctx context.Context, types []string) (typeName, storeJSON string, err error) {
+	if len(types) == 0 {
+		return "", "", adminV1.ErrorNotFound("no enabled settings channel")
+	}
+	typeValues := make([]notificationchannel.Type, 0, len(types))
+	for _, t := range types {
+		typeValues = append(typeValues, notificationchannel.Type(t))
+	}
+	entities, err := r.entClient.Client().NotificationChannel.Query().
+		Where(
+			notificationchannel.TypeIn(typeValues...),
+			notificationchannel.StatusEQ(notificationchannel.StatusOn),
+		).
+		Order(ent.Asc(notificationchannel.FieldID)).
+		Limit(1).
+		All(ctx)
+	if err != nil {
+		r.log.Errorf(ctx, "query enabled settings channel failed: %s", err.Error())
+		return "", "", adminV1.ErrorInternalServerError("query settings channel failed")
+	}
+	if len(entities) == 0 {
+		return "", "", adminV1.ErrorNotFound("no enabled settings channel")
+	}
+	e := entities[0]
+	return string(e.Type), derefStrP(e.Settings), nil
 }
 
 // statusFromEnabled DTO enabled 布尔 → ent status 枚举

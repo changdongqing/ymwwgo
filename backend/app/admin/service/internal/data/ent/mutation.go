@@ -45493,6 +45493,7 @@ type NotificationChannelMutation struct {
 	status                   *notificationchannel.Status
 	name                     *string
 	_type                    *notificationchannel.Type
+	settings                 *string
 	smtp_host                *string
 	smtp_port                *uint32
 	addsmtp_port             *int32
@@ -46134,6 +46135,55 @@ func (m *NotificationChannelMutation) OldType(ctx context.Context) (v notificati
 // ResetType resets all changes to the "type" field.
 func (m *NotificationChannelMutation) ResetType() {
 	m._type = nil
+}
+
+// SetSettings sets the "settings" field.
+func (m *NotificationChannelMutation) SetSettings(s string) {
+	m.settings = &s
+}
+
+// Settings returns the value of the "settings" field in the mutation.
+func (m *NotificationChannelMutation) Settings() (r string, exists bool) {
+	v := m.settings
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSettings returns the old "settings" field's value of the NotificationChannel entity.
+// If the NotificationChannel object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NotificationChannelMutation) OldSettings(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSettings is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSettings requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSettings: %w", err)
+	}
+	return oldValue.Settings, nil
+}
+
+// ClearSettings clears the value of the "settings" field.
+func (m *NotificationChannelMutation) ClearSettings() {
+	m.settings = nil
+	m.clearedFields[notificationchannel.FieldSettings] = struct{}{}
+}
+
+// SettingsCleared returns if the "settings" field was cleared in this mutation.
+func (m *NotificationChannelMutation) SettingsCleared() bool {
+	_, ok := m.clearedFields[notificationchannel.FieldSettings]
+	return ok
+}
+
+// ResetSettings resets all changes to the "settings" field.
+func (m *NotificationChannelMutation) ResetSettings() {
+	m.settings = nil
+	delete(m.clearedFields, notificationchannel.FieldSettings)
 }
 
 // SetSMTPHost sets the "smtp_host" field.
@@ -47073,7 +47123,7 @@ func (m *NotificationChannelMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *NotificationChannelMutation) Fields() []string {
-	fields := make([]string, 0, 28)
+	fields := make([]string, 0, 29)
 	if m.created_at != nil {
 		fields = append(fields, notificationchannel.FieldCreatedAt)
 	}
@@ -47103,6 +47153,9 @@ func (m *NotificationChannelMutation) Fields() []string {
 	}
 	if m._type != nil {
 		fields = append(fields, notificationchannel.FieldType)
+	}
+	if m.settings != nil {
+		fields = append(fields, notificationchannel.FieldSettings)
 	}
 	if m.smtp_host != nil {
 		fields = append(fields, notificationchannel.FieldSMTPHost)
@@ -47186,6 +47239,8 @@ func (m *NotificationChannelMutation) Field(name string) (ent.Value, bool) {
 		return m.Name()
 	case notificationchannel.FieldType:
 		return m.GetType()
+	case notificationchannel.FieldSettings:
+		return m.Settings()
 	case notificationchannel.FieldSMTPHost:
 		return m.SMTPHost()
 	case notificationchannel.FieldSMTPPort:
@@ -47251,6 +47306,8 @@ func (m *NotificationChannelMutation) OldField(ctx context.Context, name string)
 		return m.OldName(ctx)
 	case notificationchannel.FieldType:
 		return m.OldType(ctx)
+	case notificationchannel.FieldSettings:
+		return m.OldSettings(ctx)
 	case notificationchannel.FieldSMTPHost:
 		return m.OldSMTPHost(ctx)
 	case notificationchannel.FieldSMTPPort:
@@ -47365,6 +47422,13 @@ func (m *NotificationChannelMutation) SetField(name string, value ent.Value) err
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetType(v)
+		return nil
+	case notificationchannel.FieldSettings:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSettings(v)
 		return nil
 	case notificationchannel.FieldSMTPHost:
 		v, ok := value.(string)
@@ -47594,6 +47658,9 @@ func (m *NotificationChannelMutation) ClearedFields() []string {
 	if m.FieldCleared(notificationchannel.FieldRemark) {
 		fields = append(fields, notificationchannel.FieldRemark)
 	}
+	if m.FieldCleared(notificationchannel.FieldSettings) {
+		fields = append(fields, notificationchannel.FieldSettings)
+	}
 	if m.FieldCleared(notificationchannel.FieldSMTPHost) {
 		fields = append(fields, notificationchannel.FieldSMTPHost)
 	}
@@ -47682,6 +47749,9 @@ func (m *NotificationChannelMutation) ClearField(name string) error {
 		return nil
 	case notificationchannel.FieldRemark:
 		m.ClearRemark()
+		return nil
+	case notificationchannel.FieldSettings:
+		m.ClearSettings()
 		return nil
 	case notificationchannel.FieldSMTPHost:
 		m.ClearSMTPHost()
@@ -47774,6 +47844,9 @@ func (m *NotificationChannelMutation) ResetField(name string) error {
 		return nil
 	case notificationchannel.FieldType:
 		m.ResetType()
+		return nil
+	case notificationchannel.FieldSettings:
+		m.ResetSettings()
 		return nil
 	case notificationchannel.FieldSMTPHost:
 		m.ResetSMTPHost()

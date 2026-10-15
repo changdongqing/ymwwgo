@@ -33,6 +33,8 @@ const (
 	FieldName = "name"
 	// FieldType holds the string denoting the type field in the database.
 	FieldType = "type"
+	// FieldSettings holds the string denoting the settings field in the database.
+	FieldSettings = "settings"
 	// FieldSMTPHost holds the string denoting the smtp_host field in the database.
 	FieldSMTPHost = "smtp_host"
 	// FieldSMTPPort holds the string denoting the smtp_port field in the database.
@@ -86,6 +88,7 @@ var Columns = []string{
 	FieldStatus,
 	FieldName,
 	FieldType,
+	FieldSettings,
 	FieldSMTPHost,
 	FieldSMTPPort,
 	FieldSMTPUsername,
@@ -157,9 +160,48 @@ const DefaultType = TypeEmail
 
 // Type values.
 const (
-	TypeEmail   Type = "EMAIL"
-	TypeWebhook Type = "WEBHOOK"
-	TypeSms     Type = "SMS"
+	TypeEmail         Type = "EMAIL"
+	TypeWebhook       Type = "WEBHOOK"
+	TypeSms           Type = "SMS"
+	TypeWecomApp      Type = "WECOM_APP"
+	TypeDingtalkApp   Type = "DINGTALK_APP"
+	TypeFeishuApp     Type = "FEISHU_APP"
+	TypeWechat        Type = "WECHAT"
+	TypeTelegram      Type = "TELEGRAM"
+	TypeSlack         Type = "SLACK"
+	TypeDiscord       Type = "DISCORD"
+	TypeTeams         Type = "TEAMS"
+	TypeGchat         Type = "GCHAT"
+	TypeWebex         Type = "WEBEX"
+	TypeLine          Type = "LINE"
+	TypeMatrix        Type = "MATRIX"
+	TypeMattermost    Type = "MATTERMOST"
+	TypeRocketchat    Type = "ROCKETCHAT"
+	TypeZulip         Type = "ZULIP"
+	TypeBark          Type = "BARK"
+	TypeNtfy          Type = "NTFY"
+	TypeGotify        Type = "GOTIFY"
+	TypeServerchan    Type = "SERVERCHAN"
+	TypeWxpusher      Type = "WXPUSHER"
+	TypePushover      Type = "PUSHOVER"
+	TypePushbullet    Type = "PUSHBULLET"
+	TypePushdeer      Type = "PUSHDEER"
+	TypeJpush         Type = "JPUSH"
+	TypeGetui         Type = "GETUI"
+	TypeHuaweisms     Type = "HUAWEISMS"
+	TypeYunpian       Type = "YUNPIAN"
+	TypeTwilio        Type = "TWILIO"
+	TypeVonage        Type = "VONAGE"
+	TypeWhatsapp      Type = "WHATSAPP"
+	TypeMailgun       Type = "MAILGUN"
+	TypeSendgrid      Type = "SENDGRID"
+	TypePostmark      Type = "POSTMARK"
+	TypeIfttt         Type = "IFTTT"
+	TypeJoin          Type = "JOIN"
+	TypeHomeassistant Type = "HOMEASSISTANT"
+	TypeDatadog       Type = "DATADOG"
+	TypeOpsgenie      Type = "OPSGENIE"
+	TypePagerduty     Type = "PAGERDUTY"
 )
 
 func (_type Type) String() string {
@@ -169,7 +211,7 @@ func (_type Type) String() string {
 // TypeValidator is a validator for the "type" field enum values. It is called by the builders before save.
 func TypeValidator(_type Type) error {
 	switch _type {
-	case TypeEmail, TypeWebhook, TypeSms:
+	case TypeEmail, TypeWebhook, TypeSms, TypeWecomApp, TypeDingtalkApp, TypeFeishuApp, TypeWechat, TypeTelegram, TypeSlack, TypeDiscord, TypeTeams, TypeGchat, TypeWebex, TypeLine, TypeMatrix, TypeMattermost, TypeRocketchat, TypeZulip, TypeBark, TypeNtfy, TypeGotify, TypeServerchan, TypeWxpusher, TypePushover, TypePushbullet, TypePushdeer, TypeJpush, TypeGetui, TypeHuaweisms, TypeYunpian, TypeTwilio, TypeVonage, TypeWhatsapp, TypeMailgun, TypeSendgrid, TypePostmark, TypeIfttt, TypeJoin, TypeHomeassistant, TypeDatadog, TypeOpsgenie, TypePagerduty:
 		return nil
 	default:
 		return fmt.Errorf("notificationchannel: invalid enum value for type field: %q", _type)
@@ -314,6 +356,11 @@ func ByName(opts ...sql.OrderTermOption) OrderOption {
 // ByType orders the results by the type field.
 func ByType(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldType, opts...).ToFunc()
+}
+
+// BySettings orders the results by the settings field.
+func BySettings(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldSettings, opts...).ToFunc()
 }
 
 // BySMTPHost orders the results by the smtp_host field.

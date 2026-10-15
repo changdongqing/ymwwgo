@@ -154,6 +154,20 @@ func (_c *NotificationChannelCreate) SetNillableType(v *notificationchannel.Type
 	return _c
 }
 
+// SetSettings sets the "settings" field.
+func (_c *NotificationChannelCreate) SetSettings(v string) *NotificationChannelCreate {
+	_c.mutation.SetSettings(v)
+	return _c
+}
+
+// SetNillableSettings sets the "settings" field if the given value is not nil.
+func (_c *NotificationChannelCreate) SetNillableSettings(v *string) *NotificationChannelCreate {
+	if v != nil {
+		_c.SetSettings(*v)
+	}
+	return _c
+}
+
 // SetSMTPHost sets the "smtp_host" field.
 func (_c *NotificationChannelCreate) SetSMTPHost(v string) *NotificationChannelCreate {
 	_c.mutation.SetSMTPHost(v)
@@ -588,6 +602,10 @@ func (_c *NotificationChannelCreate) createSpec() (*NotificationChannel, *sqlgra
 		_spec.SetField(notificationchannel.FieldType, field.TypeEnum, value)
 		_node.Type = value
 	}
+	if value, ok := _c.mutation.Settings(); ok {
+		_spec.SetField(notificationchannel.FieldSettings, field.TypeString, value)
+		_node.Settings = &value
+	}
 	if value, ok := _c.mutation.SMTPHost(); ok {
 		_spec.SetField(notificationchannel.FieldSMTPHost, field.TypeString, value)
 		_node.SMTPHost = &value
@@ -871,6 +889,24 @@ func (u *NotificationChannelUpsert) SetType(v notificationchannel.Type) *Notific
 // UpdateType sets the "type" field to the value that was provided on create.
 func (u *NotificationChannelUpsert) UpdateType() *NotificationChannelUpsert {
 	u.SetExcluded(notificationchannel.FieldType)
+	return u
+}
+
+// SetSettings sets the "settings" field.
+func (u *NotificationChannelUpsert) SetSettings(v string) *NotificationChannelUpsert {
+	u.Set(notificationchannel.FieldSettings, v)
+	return u
+}
+
+// UpdateSettings sets the "settings" field to the value that was provided on create.
+func (u *NotificationChannelUpsert) UpdateSettings() *NotificationChannelUpsert {
+	u.SetExcluded(notificationchannel.FieldSettings)
+	return u
+}
+
+// ClearSettings clears the value of the "settings" field.
+func (u *NotificationChannelUpsert) ClearSettings() *NotificationChannelUpsert {
+	u.SetNull(notificationchannel.FieldSettings)
 	return u
 }
 
@@ -1441,6 +1477,27 @@ func (u *NotificationChannelUpsertOne) SetType(v notificationchannel.Type) *Noti
 func (u *NotificationChannelUpsertOne) UpdateType() *NotificationChannelUpsertOne {
 	return u.Update(func(s *NotificationChannelUpsert) {
 		s.UpdateType()
+	})
+}
+
+// SetSettings sets the "settings" field.
+func (u *NotificationChannelUpsertOne) SetSettings(v string) *NotificationChannelUpsertOne {
+	return u.Update(func(s *NotificationChannelUpsert) {
+		s.SetSettings(v)
+	})
+}
+
+// UpdateSettings sets the "settings" field to the value that was provided on create.
+func (u *NotificationChannelUpsertOne) UpdateSettings() *NotificationChannelUpsertOne {
+	return u.Update(func(s *NotificationChannelUpsert) {
+		s.UpdateSettings()
+	})
+}
+
+// ClearSettings clears the value of the "settings" field.
+func (u *NotificationChannelUpsertOne) ClearSettings() *NotificationChannelUpsertOne {
+	return u.Update(func(s *NotificationChannelUpsert) {
+		s.ClearSettings()
 	})
 }
 
@@ -2232,6 +2289,27 @@ func (u *NotificationChannelUpsertBulk) SetType(v notificationchannel.Type) *Not
 func (u *NotificationChannelUpsertBulk) UpdateType() *NotificationChannelUpsertBulk {
 	return u.Update(func(s *NotificationChannelUpsert) {
 		s.UpdateType()
+	})
+}
+
+// SetSettings sets the "settings" field.
+func (u *NotificationChannelUpsertBulk) SetSettings(v string) *NotificationChannelUpsertBulk {
+	return u.Update(func(s *NotificationChannelUpsert) {
+		s.SetSettings(v)
+	})
+}
+
+// UpdateSettings sets the "settings" field to the value that was provided on create.
+func (u *NotificationChannelUpsertBulk) UpdateSettings() *NotificationChannelUpsertBulk {
+	return u.Update(func(s *NotificationChannelUpsert) {
+		s.UpdateSettings()
+	})
+}
+
+// ClearSettings clears the value of the "settings" field.
+func (u *NotificationChannelUpsertBulk) ClearSettings() *NotificationChannelUpsertBulk {
+	return u.Update(func(s *NotificationChannelUpsert) {
+		s.ClearSettings()
 	})
 }
 

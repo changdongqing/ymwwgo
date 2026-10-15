@@ -33,6 +33,7 @@ const (
 	Channel_SMS                 Channel = 2 // 短信（阿里云/腾讯云：验证码类事件，走渠道行配的审核模板）
 	Channel_WEBHOOK             Channel = 3 // Webhook（HTTP 回调，P2-C 落地）
 	Channel_INTERNAL            Channel = 4 // 站内信
+	Channel_EXT                 Channel = 5 // 扩展渠道（go-utils/notify 全量接入：telegram/wecom_app/bark/ntfy…，
 )
 
 // Enum value maps for Channel.
@@ -43,6 +44,7 @@ var (
 		2: "SMS",
 		3: "WEBHOOK",
 		4: "INTERNAL",
+		5: "EXT",
 	}
 	Channel_value = map[string]int32{
 		"CHANNEL_UNSPECIFIED": 0,
@@ -50,6 +52,7 @@ var (
 		"SMS":                 2,
 		"WEBHOOK":             3,
 		"INTERNAL":            4,
+		"EXT":                 5,
 	}
 )
 
@@ -101,6 +104,8 @@ const (
 	// 手机号绑定验证码短信：由 SMS 渠道显式投递（调用方带 channel=SMS，不经路由表），
 	// 正文来自渠道行配置的审核模板，占位值走 params.code。
 	EventType_PHONE_BIND_CODE EventType = 7
+	// 渠道测试消息（扩展渠道 EXT_* 的"测试发送"）。
+	EventType_CHANNEL_TEST_EXT EventType = 8
 )
 
 // Enum value maps for EventType.
@@ -114,6 +119,7 @@ var (
 		5: "MONITOR_ALERT",
 		6: "CHANNEL_TEST_SMS",
 		7: "PHONE_BIND_CODE",
+		8: "CHANNEL_TEST_EXT",
 	}
 	EventType_value = map[string]int32{
 		"EVENT_TYPE_UNSPECIFIED": 0,
@@ -124,6 +130,7 @@ var (
 		"MONITOR_ALERT":          5,
 		"CHANNEL_TEST_SMS":       6,
 		"PHONE_BIND_CODE":        7,
+		"CHANNEL_TEST_EXT":       8,
 	}
 )
 
@@ -781,13 +788,14 @@ const file_notification_service_v1_notification_proto_rawDesc = "" +
 	"\x18SendNotificationResponse\x12/\n" +
 	"\vdelivery_id\x18\x01 \x01(\rB\x0e\xbaG\v\x92\x02\b台账IDR\n" +
 	"deliveryId\x12S\n" +
-	"\x06status\x18\x02 \x01(\x0e2'.notification.service.v1.DeliveryStatusB\x12\xbaG\x0f\x92\x02\f投递结果R\x06status*Q\n" +
+	"\x06status\x18\x02 \x01(\x0e2'.notification.service.v1.DeliveryStatusB\x12\xbaG\x0f\x92\x02\f投递结果R\x06status*Z\n" +
 	"\aChannel\x12\x17\n" +
 	"\x13CHANNEL_UNSPECIFIED\x10\x00\x12\t\n" +
 	"\x05EMAIL\x10\x01\x12\a\n" +
 	"\x03SMS\x10\x02\x12\v\n" +
 	"\aWEBHOOK\x10\x03\x12\f\n" +
-	"\bINTERNAL\x10\x04*\xc3\x01\n" +
+	"\bINTERNAL\x10\x04\x12\a\n" +
+	"\x03EXT\x10\x05*\xd9\x01\n" +
 	"\tEventType\x12\x1a\n" +
 	"\x16EVENT_TYPE_UNSPECIFIED\x10\x00\x12\x17\n" +
 	"\x13PASSWORD_RESET_CODE\x10\x01\x12\x15\n" +
@@ -796,7 +804,8 @@ const file_notification_service_v1_notification_proto_rawDesc = "" +
 	"\x10INTERNAL_MESSAGE\x10\x04\x12\x11\n" +
 	"\rMONITOR_ALERT\x10\x05\x12\x14\n" +
 	"\x10CHANNEL_TEST_SMS\x10\x06\x12\x13\n" +
-	"\x0fPHONE_BIND_CODE\x10\a*a\n" +
+	"\x0fPHONE_BIND_CODE\x10\a\x12\x14\n" +
+	"\x10CHANNEL_TEST_EXT\x10\b*a\n" +
 	"\x0eDeliveryStatus\x12\x1f\n" +
 	"\x1bDELIVERY_STATUS_UNSPECIFIED\x10\x00\x12\v\n" +
 	"\aSENDING\x10\x01\x12\b\n" +

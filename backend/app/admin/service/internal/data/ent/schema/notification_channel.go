@@ -36,13 +36,57 @@ func (NotificationChannel) Fields() []ent.Field {
 			Comment("渠道名称").
 			NotEmpty(),
 		field.Enum("type").
-			Comment("渠道类型（EMAIL / WEBHOOK / SMS）").
+			Comment("渠道类型（EMAIL/WEBHOOK/SMS 老三样 + EXT_* 扩展渠道）").
 			NamedValues(
 				"Email", "EMAIL",
 				"Webhook", "WEBHOOK",
 				"Sms", "SMS",
+				// EXT_* 扩展渠道（settings 列整包配置；成员名与 proto Type 枚举逐字相同）
+				"WecomApp", "WECOM_APP",
+				"DingtalkApp", "DINGTALK_APP",
+				"FeishuApp", "FEISHU_APP",
+				"Wechat", "WECHAT",
+				"Telegram", "TELEGRAM",
+				"Slack", "SLACK",
+				"Discord", "DISCORD",
+				"Teams", "TEAMS",
+				"Gchat", "GCHAT",
+				"Webex", "WEBEX",
+				"Line", "LINE",
+				"Matrix", "MATRIX",
+				"Mattermost", "MATTERMOST",
+				"Rocketchat", "ROCKETCHAT",
+				"Zulip", "ZULIP",
+				"Bark", "BARK",
+				"Ntfy", "NTFY",
+				"Gotify", "GOTIFY",
+				"Serverchan", "SERVERCHAN",
+				"Wxpusher", "WXPUSHER",
+				"Pushover", "PUSHOVER",
+				"Pushbullet", "PUSHBULLET",
+				"Pushdeer", "PUSHDEER",
+				"Jpush", "JPUSH",
+				"Getui", "GETUI",
+				"Huaweisms", "HUAWEISMS",
+				"Yunpian", "YUNPIAN",
+				"Twilio", "TWILIO",
+				"Vonage", "VONAGE",
+				"Whatsapp", "WHATSAPP",
+				"Mailgun", "MAILGUN",
+				"Sendgrid", "SENDGRID",
+				"Postmark", "POSTMARK",
+				"Ifttt", "IFTTT",
+				"Join", "JOIN",
+				"Homeassistant", "HOMEASSISTANT",
+				"Datadog", "DATADOG",
+				"Opsgenie", "OPSGENIE",
+				"Pagerduty", "PAGERDUTY",
 			).
 			Default("EMAIL"),
+		field.Text("settings").
+			Comment("扩展渠道配置 JSON（sensitive 字段值 EncryptIfNeeded 加密）").
+			Optional().
+			Nillable(),
 		field.String("smtp_host").
 			Comment("SMTP 服务器地址").
 			Optional().

@@ -187,6 +187,7 @@ func initApp(ctx *bootstrap.Context) (*kratos.App, func(), error) {
 	channelRegistry.Register(channel.NewEmailSender(notificationChannelRepo))
 	channelRegistry.Register(channel.NewWebhookSender(notificationChannelRepo))
 	channelRegistry.Register(channel.NewSmsSender(notificationChannelRepo))
+	channelRegistry.Register(channel.NewSettingsSender(notificationChannelRepo))
 	notificationService := service.NewNotificationService(ctx, notificationDeliveryRepo, notificationRuleRepo, notificationTemplateRepo, channelRegistry)
 	notificationTemplateService := service.NewNotificationTemplateService(ctx, notificationTemplateRepo)
 	// 监控告警：评估器依赖通知出口，装配顺序在 NotificationService 之后

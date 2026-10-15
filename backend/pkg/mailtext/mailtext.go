@@ -197,3 +197,21 @@ func ChannelTestSms(ctx context.Context, channelID, operatorID uint32) (title, c
 	t := tableOf(ctx)
 	return t.channelTestSmsTitle, fmt.Sprintf(t.channelTestSmsBody, channelID, operatorID)
 }
+
+// ChannelTestExt 扩展渠道（EXT_*）测试消息，对应 EventType_CHANNEL_TEST_EXT。
+// 出站正文是通用测试文案（各渠道无模板概念）；台账文案与出站正文同一段。
+func ChannelTestExt(ctx context.Context, operatorID uint32) (title, content string) {
+	title = "GoWind Admin 通知渠道测试消息"
+	if LocaleEnUS == Resolve(ctx) {
+		title = "GoWind Admin notification channel test message"
+	}
+	content = "这是一条来自 GoWind Admin 的测试消息。\n" +
+		"收到即说明扩展渠道配置可用。\n" +
+		fmt.Sprintf("操作人用户 ID: %d\n", operatorID)
+	if LocaleEnUS == Resolve(ctx) {
+		content = "This is a test message from GoWind Admin.\n" +
+			"Receiving it means the extension channel is configured correctly.\n" +
+			fmt.Sprintf("Operator user ID: %d\n", operatorID)
+	}
+	return title, content
+}

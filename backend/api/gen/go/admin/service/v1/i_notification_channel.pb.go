@@ -28,7 +28,8 @@ var File_admin_service_v1_i_notification_channel_proto protoreflect.FileDescript
 
 const file_admin_service_v1_i_notification_channel_proto_rawDesc = "" +
 	"\n" +
-	"-admin/service/v1/i_notification_channel.proto\x12\x10admin.service.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1epagination/v1/pagination.proto\x1a:notification_channel/service/v1/notification_channel.proto2\xc5\t\n" +
+	"-admin/service/v1/i_notification_channel.proto\x12\x10admin.service.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1epagination/v1/pagination.proto\x1a:notification_channel/service/v1/notification_channel.proto2\xe2\n" +
+	"\n" +
 	"\x1aNotificationChannelService\x12\x9f\x01\n" +
 	"\x17ListNotificationChannel\x12\x19.pagination.PagingRequest\x1a@.notification_channel.service.v1.ListNotificationChannelResponse\"'\x82\xd3\xe4\x93\x02!\x12\x1f/admin/v1/notification-channels\x12\xbc\x01\n" +
 	"\x16GetNotificationChannel\x12>.notification_channel.service.v1.GetNotificationChannelRequest\x1a4.notification_channel.service.v1.NotificationChannel\",\x82\xd3\xe4\x93\x02&\x12$/admin/v1/notification-channels/{id}\x12\xc0\x01\n" +
@@ -36,7 +37,8 @@ const file_admin_service_v1_i_notification_channel_proto_rawDesc = "" +
 	"\x19UpdateNotificationChannel\x12A.notification_channel.service.v1.UpdateNotificationChannelRequest\x1a\x16.google.protobuf.Empty\"/\x82\xd3\xe4\x93\x02):\x01*\x1a$/admin/v1/notification-channels/{id}\x12\xa4\x01\n" +
 	"\x19DeleteNotificationChannel\x12A.notification_channel.service.v1.DeleteNotificationChannelRequest\x1a\x16.google.protobuf.Empty\",\x82\xd3\xe4\x93\x02&*$/admin/v1/notification-channels/{id}\x12\x9f\x01\n" +
 	"\rSendTestEmail\x125.notification_channel.service.v1.SendTestEmailRequest\x1a\x16.google.protobuf.Empty\"?\x82\xd3\xe4\x93\x029:\x01*\"4/admin/v1/notification-channels/{id}/send-test-email\x12\x8f\x01\n" +
-	"\bSendTest\x120.notification_channel.service.v1.SendTestRequest\x1a\x16.google.protobuf.Empty\"9\x82\xd3\xe4\x93\x023:\x01*\"./admin/v1/notification-channels/{id}/send-testB\xc6\x01\n" +
+	"\bSendTest\x120.notification_channel.service.v1.SendTestRequest\x1a\x16.google.protobuf.Empty\"9\x82\xd3\xe4\x93\x023:\x01*\"./admin/v1/notification-channels/{id}/send-test\x12\x9a\x01\n" +
+	"\x12ListChannelSchemas\x12\x16.google.protobuf.Empty\x1a;.notification_channel.service.v1.ListChannelSchemasResponse\"/\x82\xd3\xe4\x93\x02)\x12'/admin/v1/notification-channels/schemasB\xc6\x01\n" +
 	"\x14com.admin.service.v1B\x19INotificationChannelProtoP\x01Z1go-wind-admin/api/gen/go/admin/service/v1;adminpb\xa2\x02\x03ASX\xaa\x02\x10Admin.Service.V1\xca\x02\x10Admin\\Service\\V1\xe2\x02\x1cAdmin\\Service\\V1\\GPBMetadata\xea\x02\x12Admin::Service::V1b\x06proto3"
 
 var file_admin_service_v1_i_notification_channel_proto_goTypes = []any{
@@ -47,30 +49,33 @@ var file_admin_service_v1_i_notification_channel_proto_goTypes = []any{
 	(*v11.DeleteNotificationChannelRequest)(nil), // 4: notification_channel.service.v1.DeleteNotificationChannelRequest
 	(*v11.SendTestEmailRequest)(nil),             // 5: notification_channel.service.v1.SendTestEmailRequest
 	(*v11.SendTestRequest)(nil),                  // 6: notification_channel.service.v1.SendTestRequest
-	(*v11.ListNotificationChannelResponse)(nil),  // 7: notification_channel.service.v1.ListNotificationChannelResponse
-	(*v11.NotificationChannel)(nil),              // 8: notification_channel.service.v1.NotificationChannel
-	(*emptypb.Empty)(nil),                        // 9: google.protobuf.Empty
+	(*emptypb.Empty)(nil),                        // 7: google.protobuf.Empty
+	(*v11.ListNotificationChannelResponse)(nil),  // 8: notification_channel.service.v1.ListNotificationChannelResponse
+	(*v11.NotificationChannel)(nil),              // 9: notification_channel.service.v1.NotificationChannel
+	(*v11.ListChannelSchemasResponse)(nil),       // 10: notification_channel.service.v1.ListChannelSchemasResponse
 }
 var file_admin_service_v1_i_notification_channel_proto_depIdxs = []int32{
-	0, // 0: admin.service.v1.NotificationChannelService.ListNotificationChannel:input_type -> pagination.PagingRequest
-	1, // 1: admin.service.v1.NotificationChannelService.GetNotificationChannel:input_type -> notification_channel.service.v1.GetNotificationChannelRequest
-	2, // 2: admin.service.v1.NotificationChannelService.CreateNotificationChannel:input_type -> notification_channel.service.v1.CreateNotificationChannelRequest
-	3, // 3: admin.service.v1.NotificationChannelService.UpdateNotificationChannel:input_type -> notification_channel.service.v1.UpdateNotificationChannelRequest
-	4, // 4: admin.service.v1.NotificationChannelService.DeleteNotificationChannel:input_type -> notification_channel.service.v1.DeleteNotificationChannelRequest
-	5, // 5: admin.service.v1.NotificationChannelService.SendTestEmail:input_type -> notification_channel.service.v1.SendTestEmailRequest
-	6, // 6: admin.service.v1.NotificationChannelService.SendTest:input_type -> notification_channel.service.v1.SendTestRequest
-	7, // 7: admin.service.v1.NotificationChannelService.ListNotificationChannel:output_type -> notification_channel.service.v1.ListNotificationChannelResponse
-	8, // 8: admin.service.v1.NotificationChannelService.GetNotificationChannel:output_type -> notification_channel.service.v1.NotificationChannel
-	8, // 9: admin.service.v1.NotificationChannelService.CreateNotificationChannel:output_type -> notification_channel.service.v1.NotificationChannel
-	9, // 10: admin.service.v1.NotificationChannelService.UpdateNotificationChannel:output_type -> google.protobuf.Empty
-	9, // 11: admin.service.v1.NotificationChannelService.DeleteNotificationChannel:output_type -> google.protobuf.Empty
-	9, // 12: admin.service.v1.NotificationChannelService.SendTestEmail:output_type -> google.protobuf.Empty
-	9, // 13: admin.service.v1.NotificationChannelService.SendTest:output_type -> google.protobuf.Empty
-	7, // [7:14] is the sub-list for method output_type
-	0, // [0:7] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	0,  // 0: admin.service.v1.NotificationChannelService.ListNotificationChannel:input_type -> pagination.PagingRequest
+	1,  // 1: admin.service.v1.NotificationChannelService.GetNotificationChannel:input_type -> notification_channel.service.v1.GetNotificationChannelRequest
+	2,  // 2: admin.service.v1.NotificationChannelService.CreateNotificationChannel:input_type -> notification_channel.service.v1.CreateNotificationChannelRequest
+	3,  // 3: admin.service.v1.NotificationChannelService.UpdateNotificationChannel:input_type -> notification_channel.service.v1.UpdateNotificationChannelRequest
+	4,  // 4: admin.service.v1.NotificationChannelService.DeleteNotificationChannel:input_type -> notification_channel.service.v1.DeleteNotificationChannelRequest
+	5,  // 5: admin.service.v1.NotificationChannelService.SendTestEmail:input_type -> notification_channel.service.v1.SendTestEmailRequest
+	6,  // 6: admin.service.v1.NotificationChannelService.SendTest:input_type -> notification_channel.service.v1.SendTestRequest
+	7,  // 7: admin.service.v1.NotificationChannelService.ListChannelSchemas:input_type -> google.protobuf.Empty
+	8,  // 8: admin.service.v1.NotificationChannelService.ListNotificationChannel:output_type -> notification_channel.service.v1.ListNotificationChannelResponse
+	9,  // 9: admin.service.v1.NotificationChannelService.GetNotificationChannel:output_type -> notification_channel.service.v1.NotificationChannel
+	9,  // 10: admin.service.v1.NotificationChannelService.CreateNotificationChannel:output_type -> notification_channel.service.v1.NotificationChannel
+	7,  // 11: admin.service.v1.NotificationChannelService.UpdateNotificationChannel:output_type -> google.protobuf.Empty
+	7,  // 12: admin.service.v1.NotificationChannelService.DeleteNotificationChannel:output_type -> google.protobuf.Empty
+	7,  // 13: admin.service.v1.NotificationChannelService.SendTestEmail:output_type -> google.protobuf.Empty
+	7,  // 14: admin.service.v1.NotificationChannelService.SendTest:output_type -> google.protobuf.Empty
+	10, // 15: admin.service.v1.NotificationChannelService.ListChannelSchemas:output_type -> notification_channel.service.v1.ListChannelSchemasResponse
+	8,  // [8:16] is the sub-list for method output_type
+	0,  // [0:8] is the sub-list for method input_type
+	0,  // [0:0] is the sub-list for extension type_name
+	0,  // [0:0] is the sub-list for extension extendee
+	0,  // [0:0] is the sub-list for field type_name
 }
 
 func init() { file_admin_service_v1_i_notification_channel_proto_init() }

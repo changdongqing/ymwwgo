@@ -33,6 +33,8 @@ enum Channel {
   SMS = 2;                 // 短信（阿里云/腾讯云：验证码类事件，走渠道行配的审核模板）
   WEBHOOK = 3;             // Webhook（HTTP 回调，P2-C 落地）
   INTERNAL = 4;            // 站内信
+  EXT = 5;                 // 扩展渠道（go-utils/notify 全量接入：telegram/wecom_app/bark/ntfy…，
+                           // 具体渠道由台账 channel_id → 渠道行的 type 回答）
 }
 
 // 业务事件类型。路由（事件 → 渠道 / 是否异步）由 sys_notification_rules 表决定，
@@ -59,6 +61,9 @@ enum EventType {
   // 手机号绑定验证码短信：由 SMS 渠道显式投递（调用方带 channel=SMS，不经路由表），
   // 正文来自渠道行配置的审核模板，占位值走 params.code。
   PHONE_BIND_CODE = 7;
+
+  // 渠道测试消息（扩展渠道 EXT_* 的"测试发送"）。
+  CHANNEL_TEST_EXT = 8;
 }
 
 // 投递状态

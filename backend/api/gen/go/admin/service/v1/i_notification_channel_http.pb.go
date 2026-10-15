@@ -25,6 +25,7 @@ const _ = http.SupportPackageIsVersion1
 const OperationNotificationChannelServiceCreateNotificationChannel = "/admin.service.v1.NotificationChannelService/CreateNotificationChannel"
 const OperationNotificationChannelServiceDeleteNotificationChannel = "/admin.service.v1.NotificationChannelService/DeleteNotificationChannel"
 const OperationNotificationChannelServiceGetNotificationChannel = "/admin.service.v1.NotificationChannelService/GetNotificationChannel"
+const OperationNotificationChannelServiceListChannelSchemas = "/admin.service.v1.NotificationChannelService/ListChannelSchemas"
 const OperationNotificationChannelServiceListNotificationChannel = "/admin.service.v1.NotificationChannelService/ListNotificationChannel"
 const OperationNotificationChannelServiceSendTest = "/admin.service.v1.NotificationChannelService/SendTest"
 const OperationNotificationChannelServiceSendTestEmail = "/admin.service.v1.NotificationChannelService/SendTestEmail"
@@ -37,6 +38,8 @@ type NotificationChannelServiceHTTPServer interface {
 	DeleteNotificationChannel(context.Context, *v11.DeleteNotificationChannelRequest) (*emptypb.Empty, error)
 	// GetNotificationChannel 查询通知渠道详情
 	GetNotificationChannel(context.Context, *v11.GetNotificationChannelRequest) (*v11.NotificationChannel, error)
+	// ListChannelSchemas 全量扩展渠道 schema
+	ListChannelSchemas(context.Context, *emptypb.Empty) (*v11.ListChannelSchemasResponse, error)
 	// ListNotificationChannel 查询通知渠道列表
 	ListNotificationChannel(context.Context, *v1.PagingRequest) (*v11.ListNotificationChannelResponse, error)
 	// SendTest 发送测试消息（按渠道类型分派：EMAIL 走邮件，SMS 发测试验证码）
@@ -56,6 +59,7 @@ func RegisterNotificationChannelServiceHTTPServer(s *http.Server, srv Notificati
 	r.DELETE("/admin/v1/notification-channels/{id}", _NotificationChannelService_DeleteNotificationChannel0_HTTP_Handler(srv))
 	r.POST("/admin/v1/notification-channels/{id}/send-test-email", _NotificationChannelService_SendTestEmail0_HTTP_Handler(srv))
 	r.POST("/admin/v1/notification-channels/{id}/send-test", _NotificationChannelService_SendTest0_HTTP_Handler(srv))
+	r.GET("/admin/v1/notification-channels/schemas", _NotificationChannelService_ListChannelSchemas0_HTTP_Handler(srv))
 }
 
 func _NotificationChannelService_ListNotificationChannel0_HTTP_Handler(srv NotificationChannelServiceHTTPServer) func(ctx http.Context) error {
@@ -218,6 +222,25 @@ func _NotificationChannelService_SendTest0_HTTP_Handler(srv NotificationChannelS
 	}
 }
 
+func _NotificationChannelService_ListChannelSchemas0_HTTP_Handler(srv NotificationChannelServiceHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in emptypb.Empty
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationNotificationChannelServiceListChannelSchemas)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.ListChannelSchemas(ctx, req.(*emptypb.Empty))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*v11.ListChannelSchemasResponse)
+		return ctx.Result(200, reply)
+	}
+}
+
 type NotificationChannelServiceHTTPClient interface {
 	// CreateNotificationChannel 创建通知渠道
 	CreateNotificationChannel(ctx context.Context, req *v11.CreateNotificationChannelRequest, opts ...http.CallOption) (rsp *v11.NotificationChannel, err error)
@@ -225,6 +248,8 @@ type NotificationChannelServiceHTTPClient interface {
 	DeleteNotificationChannel(ctx context.Context, req *v11.DeleteNotificationChannelRequest, opts ...http.CallOption) (rsp *emptypb.Empty, err error)
 	// GetNotificationChannel 查询通知渠道详情
 	GetNotificationChannel(ctx context.Context, req *v11.GetNotificationChannelRequest, opts ...http.CallOption) (rsp *v11.NotificationChannel, err error)
+	// ListChannelSchemas 全量扩展渠道 schema
+	ListChannelSchemas(ctx context.Context, req *emptypb.Empty, opts ...http.CallOption) (rsp *v11.ListChannelSchemasResponse, err error)
 	// ListNotificationChannel 查询通知渠道列表
 	ListNotificationChannel(ctx context.Context, req *v1.PagingRequest, opts ...http.CallOption) (rsp *v11.ListNotificationChannelResponse, err error)
 	// SendTest 发送测试消息（按渠道类型分派：EMAIL 走邮件，SMS 发测试验证码）
@@ -277,6 +302,20 @@ func (c *NotificationChannelServiceHTTPClientImpl) GetNotificationChannel(ctx co
 	pattern := "/admin/v1/notification-channels/{id}"
 	path := binding.EncodeURL(pattern, in, true)
 	opts = append(opts, http.Operation(OperationNotificationChannelServiceGetNotificationChannel))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+// ListChannelSchemas 全量扩展渠道 schema
+func (c *NotificationChannelServiceHTTPClientImpl) ListChannelSchemas(ctx context.Context, in *emptypb.Empty, opts ...http.CallOption) (*v11.ListChannelSchemasResponse, error) {
+	var out v11.ListChannelSchemasResponse
+	pattern := "/admin/v1/notification-channels/schemas"
+	path := binding.EncodeURL(pattern, in, true)
+	opts = append(opts, http.Operation(OperationNotificationChannelServiceListChannelSchemas))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
 	if err != nil {

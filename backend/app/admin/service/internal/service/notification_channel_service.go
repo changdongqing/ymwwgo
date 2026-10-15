@@ -18,6 +18,7 @@ import (
 	"go-wind-admin/pkg/middleware/auth"
 
 	"go-wind-admin/app/admin/service/internal/data"
+	"go-wind-admin/app/admin/service/internal/data/channel"
 )
 
 // NotificationChannelService 通知渠道管理（平台级配置）。
@@ -52,7 +53,14 @@ func (s *NotificationChannelService) ListNotificationChannel(ctx context.Context
 		return nil, err
 	}
 
-	return s.repo.List(ctx, req)
+	resp, err := s.repo.List(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	for _, it := range resp.GetItems() {
+		it.Settings = sanitizeSettingsForRead(it.GetType().String(), it.GetSettings())
+	}
+	return resp, nil
 }
 
 func (s *NotificationChannelService) GetNotificationChannel(ctx context.Context, req *notificationChannelV1.GetNotificationChannelRequest) (*notificationChannelV1.NotificationChannel, error) {
@@ -64,7 +72,12 @@ func (s *NotificationChannelService) GetNotificationChannel(ctx context.Context,
 		return nil, err
 	}
 
-	return s.repo.Get(ctx, req.GetId())
+	dto, err := s.repo.Get(ctx, req.GetId())
+	if err != nil {
+		return nil, err
+	}
+	dto.Settings = sanitizeSettingsForRead(dto.GetType().String(), dto.GetSettings())
+	return dto, nil
 }
 
 func (s *NotificationChannelService) CreateNotificationChannel(ctx context.Context, req *notificationChannelV1.CreateNotificationChannelRequest) (*notificationChannelV1.NotificationChannel, error) {
@@ -81,6 +94,11 @@ func (s *NotificationChannelService) CreateNotificationChannel(ctx context.Conte
 		return nil, err
 	}
 	req.Data.CreatedBy = trans.Ptr(operator.UserId)
+
+	// 扩展渠道：settings 明文 JSON 按 schema 校验 + 敏感字段加密（存储态），写入 data 供 repo 落列
+	if err = s.normalizeSettingsForWrite(ctx, req.Data); err != nil {
+		return nil, err
+	}
 
 	id, err := s.repo.Create(ctx, req, operator.UserId)
 	if err != nil {
@@ -104,6 +122,11 @@ func (s *NotificationChannelService) UpdateNotificationChannel(ctx context.Conte
 		return nil, err
 	}
 	req.Data.UpdatedBy = trans.Ptr(operator.UserId)
+
+	// 扩展渠道：settings 合并（sensitive 留空 = 保留已存密文）后写回 data
+	if err = s.mergeSettingsForUpdate(ctx, req); err != nil {
+		return nil, err
+	}
 
 	if err = s.repo.Update(ctx, req, operator.UserId); err != nil {
 		return nil, err
@@ -187,7 +210,18 @@ func (s *NotificationChannelService) sendTest(ctx context.Context, id uint32, re
 		return nil, adminV1.ErrorBadRequest("webhook channels are tested from the notification-rules page")
 
 	default:
-		return nil, adminV1.ErrorBadRequest("unsupported channel type %s", dto.GetType().String())
+		// EXT_* 扩展渠道：按 schema 判定是否要求 target，正文走通用测试文案
+		schema := channel.SettingsSchemaByType(dto.GetType().String())
+		if schema == nil {
+			return nil, adminV1.ErrorBadRequest("unsupported channel type %s", dto.GetType().String())
+		}
+		if schema.NeedsTarget && recipient == "" {
+			return nil, adminV1.ErrorBadRequest("recipient is required (%s)", schema.TargetLabel)
+		}
+		sendReq.EventType = notificationV1.EventType_CHANNEL_TEST_EXT
+		sendReq.Channel = trans.Ptr(notificationV1.Channel_EXT)
+		sendReq.Title, sendReq.Content = mailtext.ChannelTestExt(ctx, operator.UserId)
+	
 	}
 
 	if _, err = s.notifier.SendDirect(ctx, sendReq); err != nil {
@@ -201,4 +235,60 @@ func (s *NotificationChannelService) sendTest(ctx context.Context, id uint32, re
 
 func itoa(v uint32) string {
 	return strconv.FormatUint(uint64(v), 10)
+}
+
+// normalizeSettingsForWrite 创建时把 settings 明文 JSON 规范化为存储态
+// （required 校验 + sensitive 字段加密）；非扩展渠道要求 settings 为空。
+func (s *NotificationChannelService) normalizeSettingsForWrite(ctx context.Context, data *notificationChannelV1.NotificationChannel) error {
+	typeName := data.GetType().String()
+	if channel.SettingsSchemaByType(typeName) == nil {
+		if data.GetSettings() != "" {
+			return adminV1.ErrorBadRequest("settings only applies to EXT_* channel types")
+		}
+		return nil
+	}
+	storeJSON, err := channel.NormalizeSettingsForStore(typeName, data.GetSettings())
+	if err != nil {
+		return adminV1.ErrorBadRequest("%s", err.Error())
+	}
+	data.Settings = trans.Ptr(storeJSON)
+	return nil
+}
+
+// mergeSettingsForUpdate 更新时的 settings 合并（sensitive 留空 = 保留已存密文）。
+func (s *NotificationChannelService) mergeSettingsForUpdate(ctx context.Context, req *notificationChannelV1.UpdateNotificationChannelRequest) error {
+	data := req.Data
+	typeName := data.GetType().String()
+	if channel.SettingsSchemaByType(typeName) == nil {
+		if data.GetSettings() != "" {
+			return adminV1.ErrorBadRequest("settings only applies to EXT_* channel types")
+		}
+		return nil
+	}
+	_, oldStoreJSON, _, err := s.repo.GetSettingsRaw(ctx, req.GetId())
+	if err != nil {
+		return err
+	}
+	storeJSON, err := channel.MergeSettingsForStore(typeName, oldStoreJSON, data.GetSettings())
+	if err != nil {
+		return adminV1.ErrorBadRequest("%s", err.Error())
+	}
+	data.Settings = trans.Ptr(storeJSON)
+	return nil
+}
+
+// sanitizeSettingsForRead 读回显脱敏（sensitive 字段值恒空串）。
+func sanitizeSettingsForRead(typeName, storeJSON string) *string {
+	if storeJSON == "" {
+		return nil
+	}
+	return trans.Ptr(channel.SanitizeSettingsForDTO(typeName, storeJSON))
+}
+
+// ListChannelSchemas 全量扩展渠道 schema（前端动态表单的数据源）。
+func (s *NotificationChannelService) ListChannelSchemas(ctx context.Context, _ *emptypb.Empty) (*notificationChannelV1.ListChannelSchemasResponse, error) {
+	if err := requirePlatformAdmin(ctx, s.log, "notification channel schemas"); err != nil {
+		return nil, err
+	}
+	return &notificationChannelV1.ListChannelSchemasResponse{Items: channel.ListSettingsSchemas()}, nil
 }

@@ -4265,6 +4265,19 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/NotificationChannel'
+    /admin/v1/notification-channels/schemas:
+        get:
+            tags:
+                - NotificationChannelService
+            description: 全量扩展渠道 schema
+            operationId: NotificationChannelService_ListChannelSchemas
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListChannelSchemasResponse'
     /admin/v1/notification-channels/{id}:
         get:
             tags:
@@ -8774,6 +8787,46 @@ components:
                     type: string
                     description: 新密码
             description: 修改用户密码（需要验证旧密码） - 请求
+        ChannelField:
+            type: object
+            properties:
+                name:
+                    type: string
+                label:
+                    type: string
+                type:
+                    type: string
+                required:
+                    type: boolean
+                sensitive:
+                    type: boolean
+                placeholder:
+                    type: string
+                hint:
+                    type: string
+                options:
+                    type: array
+                    items:
+                        type: string
+            description: 扩展渠道的字段声明（schema 驱动配置表单；见 docs/notify_channels_expansion.md §2.2）
+        ChannelSchema:
+            type: object
+            properties:
+                type:
+                    type: string
+                group:
+                    type: string
+                label:
+                    type: string
+                targetLabel:
+                    type: string
+                needsTarget:
+                    type: boolean
+                fields:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/ChannelField'
+            description: 扩展渠道声明
         ChatRequest:
             type: object
             properties:
@@ -9033,6 +9086,9 @@ components:
                 smsAccessSecret:
                     type: string
                     description: 短信访问密钥 Secret
+                settings:
+                    type: string
+                    description: 扩展渠道配置（JSON 明文，含敏感字段；服务端按 schema 加密落库。仅 EXT_* 渠道）
             description: 创建通知渠道 - 请求
         CreateNotificationRuleRequest:
             type: object
@@ -10446,6 +10502,14 @@ components:
                 total:
                     type: string
             description: 查询列表 - 回应
+        ListChannelSchemasResponse:
+            type: object
+            properties:
+                items:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/ChannelSchema'
+            description: 全量渠道 schema - 回应
         ListConfigResponse:
             type: object
             properties:
@@ -11404,6 +11468,7 @@ components:
                         - SMS
                         - WEBHOOK
                         - INTERNAL
+                        - EXT
                     type: string
                     description: 告警渠道（显式指定）
                     format: enum
@@ -11454,6 +11519,45 @@ components:
                         - EMAIL
                         - WEBHOOK
                         - SMS
+                        - WECOM_APP
+                        - DINGTALK_APP
+                        - FEISHU_APP
+                        - WECHAT
+                        - TELEGRAM
+                        - SLACK
+                        - DISCORD
+                        - TEAMS
+                        - GCHAT
+                        - WEBEX
+                        - LINE
+                        - MATRIX
+                        - MATTERMOST
+                        - ROCKETCHAT
+                        - ZULIP
+                        - BARK
+                        - NTFY
+                        - GOTIFY
+                        - SERVERCHAN
+                        - WXPUSHER
+                        - PUSHOVER
+                        - PUSHBULLET
+                        - PUSHDEER
+                        - JPUSH
+                        - GETUI
+                        - HUAWEISMS
+                        - YUNPIAN
+                        - TWILIO
+                        - VONAGE
+                        - WHATSAPP
+                        - MAILGUN
+                        - SENDGRID
+                        - POSTMARK
+                        - IFTTT
+                        - JOIN
+                        - HOMEASSISTANT
+                        - DATADOG
+                        - OPSGENIE
+                        - PAGERDUTY
                     type: string
                     description: 渠道类型
                     format: enum
@@ -11500,6 +11604,9 @@ components:
                 webhookPayloadTemplate:
                     type: string
                     description: Webhook 载荷模板，留空用该风格的内置默认 JSON
+                settings:
+                    type: string
+                    description: 扩展渠道配置 JSON（读回显脱敏）
                 enabled:
                     type: boolean
                     description: 是否启用
@@ -11564,6 +11671,7 @@ components:
                         - MONITOR_ALERT
                         - CHANNEL_TEST_SMS
                         - PHONE_BIND_CODE
+                        - CHANNEL_TEST_EXT
                     type: string
                     description: 业务事件类型
                     format: enum
@@ -11574,6 +11682,7 @@ components:
                         - SMS
                         - WEBHOOK
                         - INTERNAL
+                        - EXT
                     type: string
                     description: 投递渠道
                     format: enum
@@ -11681,6 +11790,7 @@ components:
                         - MONITOR_ALERT
                         - CHANNEL_TEST_SMS
                         - PHONE_BIND_CODE
+                        - CHANNEL_TEST_EXT
                     type: string
                     description: 业务事件类型（一张表内唯一）
                     format: enum
@@ -11691,6 +11801,7 @@ components:
                         - SMS
                         - WEBHOOK
                         - INTERNAL
+                        - EXT
                     type: string
                     description: 该事件投递走的渠道
                     format: enum
@@ -13896,6 +14007,9 @@ components:
                 smsAccessSecret:
                     type: string
                     description: 短信访问密钥 Secret，留空不修改
+                settings:
+                    type: string
+                    description: 扩展渠道配置（JSON 明文；仅 EXT_* 渠道。schema sensitive 字段留空 = 保留已存值）
             description: 更新通知渠道 - 请求
         UpdateNotificationPreferenceRequest:
             type: object

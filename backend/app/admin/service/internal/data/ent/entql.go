@@ -905,6 +905,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			notificationchannel.FieldStatus:                 {Type: field.TypeEnum, Column: notificationchannel.FieldStatus},
 			notificationchannel.FieldName:                   {Type: field.TypeString, Column: notificationchannel.FieldName},
 			notificationchannel.FieldType:                   {Type: field.TypeEnum, Column: notificationchannel.FieldType},
+			notificationchannel.FieldSettings:               {Type: field.TypeString, Column: notificationchannel.FieldSettings},
 			notificationchannel.FieldSMTPHost:               {Type: field.TypeString, Column: notificationchannel.FieldSMTPHost},
 			notificationchannel.FieldSMTPPort:               {Type: field.TypeUint32, Column: notificationchannel.FieldSMTPPort},
 			notificationchannel.FieldSMTPUsername:           {Type: field.TypeString, Column: notificationchannel.FieldSMTPUsername},
@@ -5668,6 +5669,11 @@ func (f *NotificationChannelFilter) WhereName(p entql.StringP) {
 // WhereType applies the entql string predicate on the type field.
 func (f *NotificationChannelFilter) WhereType(p entql.StringP) {
 	f.Where(p.Field(notificationchannel.FieldType))
+}
+
+// WhereSettings applies the entql string predicate on the settings field.
+func (f *NotificationChannelFilter) WhereSettings(p entql.StringP) {
+	f.Where(p.Field(notificationchannel.FieldSettings))
 }
 
 // WhereSMTPHost applies the entql string predicate on the smtp_host field.

@@ -21,13 +21,14 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	NotificationChannelService_List_FullMethodName          = "/notification_channel.service.v1.NotificationChannelService/List"
-	NotificationChannelService_Get_FullMethodName           = "/notification_channel.service.v1.NotificationChannelService/Get"
-	NotificationChannelService_Create_FullMethodName        = "/notification_channel.service.v1.NotificationChannelService/Create"
-	NotificationChannelService_Update_FullMethodName        = "/notification_channel.service.v1.NotificationChannelService/Update"
-	NotificationChannelService_Delete_FullMethodName        = "/notification_channel.service.v1.NotificationChannelService/Delete"
-	NotificationChannelService_SendTestEmail_FullMethodName = "/notification_channel.service.v1.NotificationChannelService/SendTestEmail"
-	NotificationChannelService_SendTest_FullMethodName      = "/notification_channel.service.v1.NotificationChannelService/SendTest"
+	NotificationChannelService_List_FullMethodName               = "/notification_channel.service.v1.NotificationChannelService/List"
+	NotificationChannelService_Get_FullMethodName                = "/notification_channel.service.v1.NotificationChannelService/Get"
+	NotificationChannelService_Create_FullMethodName             = "/notification_channel.service.v1.NotificationChannelService/Create"
+	NotificationChannelService_Update_FullMethodName             = "/notification_channel.service.v1.NotificationChannelService/Update"
+	NotificationChannelService_Delete_FullMethodName             = "/notification_channel.service.v1.NotificationChannelService/Delete"
+	NotificationChannelService_SendTestEmail_FullMethodName      = "/notification_channel.service.v1.NotificationChannelService/SendTestEmail"
+	NotificationChannelService_SendTest_FullMethodName           = "/notification_channel.service.v1.NotificationChannelService/SendTest"
+	NotificationChannelService_ListChannelSchemas_FullMethodName = "/notification_channel.service.v1.NotificationChannelService/ListChannelSchemas"
 )
 
 // NotificationChannelServiceClient is the client API for NotificationChannelService service.
@@ -50,6 +51,8 @@ type NotificationChannelServiceClient interface {
 	SendTestEmail(ctx context.Context, in *SendTestEmailRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// 按渠道类型发一条测试消息（验证渠道配置；EMAIL/SMS 需 recipient，WEBHOOK 不支持在此测试）
 	SendTest(ctx context.Context, in *SendTestRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	// 全量扩展渠道 schema（分组/标签/Target 语义/字段声明）：配置表单按它动态渲染
+	ListChannelSchemas(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ListChannelSchemasResponse, error)
 }
 
 type notificationChannelServiceClient struct {
@@ -130,6 +133,16 @@ func (c *notificationChannelServiceClient) SendTest(ctx context.Context, in *Sen
 	return out, nil
 }
 
+func (c *notificationChannelServiceClient) ListChannelSchemas(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ListChannelSchemasResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListChannelSchemasResponse)
+	err := c.cc.Invoke(ctx, NotificationChannelService_ListChannelSchemas_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // NotificationChannelServiceServer is the server API for NotificationChannelService service.
 // All implementations must embed UnimplementedNotificationChannelServiceServer
 // for forward compatibility.
@@ -150,6 +163,8 @@ type NotificationChannelServiceServer interface {
 	SendTestEmail(context.Context, *SendTestEmailRequest) (*emptypb.Empty, error)
 	// 按渠道类型发一条测试消息（验证渠道配置；EMAIL/SMS 需 recipient，WEBHOOK 不支持在此测试）
 	SendTest(context.Context, *SendTestRequest) (*emptypb.Empty, error)
+	// 全量扩展渠道 schema（分组/标签/Target 语义/字段声明）：配置表单按它动态渲染
+	ListChannelSchemas(context.Context, *emptypb.Empty) (*ListChannelSchemasResponse, error)
 	mustEmbedUnimplementedNotificationChannelServiceServer()
 }
 
@@ -180,6 +195,9 @@ func (UnimplementedNotificationChannelServiceServer) SendTestEmail(context.Conte
 }
 func (UnimplementedNotificationChannelServiceServer) SendTest(context.Context, *SendTestRequest) (*emptypb.Empty, error) {
 	return nil, status.Error(codes.Unimplemented, "method SendTest not implemented")
+}
+func (UnimplementedNotificationChannelServiceServer) ListChannelSchemas(context.Context, *emptypb.Empty) (*ListChannelSchemasResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListChannelSchemas not implemented")
 }
 func (UnimplementedNotificationChannelServiceServer) mustEmbedUnimplementedNotificationChannelServiceServer() {
 }
@@ -329,6 +347,24 @@ func _NotificationChannelService_SendTest_Handler(srv interface{}, ctx context.C
 	return interceptor(ctx, in, info, handler)
 }
 
+func _NotificationChannelService_ListChannelSchemas_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(emptypb.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(NotificationChannelServiceServer).ListChannelSchemas(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: NotificationChannelService_ListChannelSchemas_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(NotificationChannelServiceServer).ListChannelSchemas(ctx, req.(*emptypb.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // NotificationChannelService_ServiceDesc is the grpc.ServiceDesc for NotificationChannelService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -363,6 +399,10 @@ var NotificationChannelService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SendTest",
 			Handler:    _NotificationChannelService_SendTest_Handler,
+		},
+		{
+			MethodName: "ListChannelSchemas",
+			Handler:    _NotificationChannelService_ListChannelSchemas_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

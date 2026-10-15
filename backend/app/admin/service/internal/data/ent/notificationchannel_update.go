@@ -212,6 +212,26 @@ func (_u *NotificationChannelUpdate) SetNillableType(v *notificationchannel.Type
 	return _u
 }
 
+// SetSettings sets the "settings" field.
+func (_u *NotificationChannelUpdate) SetSettings(v string) *NotificationChannelUpdate {
+	_u.mutation.SetSettings(v)
+	return _u
+}
+
+// SetNillableSettings sets the "settings" field if the given value is not nil.
+func (_u *NotificationChannelUpdate) SetNillableSettings(v *string) *NotificationChannelUpdate {
+	if v != nil {
+		_u.SetSettings(*v)
+	}
+	return _u
+}
+
+// ClearSettings clears the value of the "settings" field.
+func (_u *NotificationChannelUpdate) ClearSettings() *NotificationChannelUpdate {
+	_u.mutation.ClearSettings()
+	return _u
+}
+
 // SetSMTPHost sets the "smtp_host" field.
 func (_u *NotificationChannelUpdate) SetSMTPHost(v string) *NotificationChannelUpdate {
 	_u.mutation.SetSMTPHost(v)
@@ -721,6 +741,12 @@ func (_u *NotificationChannelUpdate) sqlSave(ctx context.Context) (_node int, er
 	if value, ok := _u.mutation.GetType(); ok {
 		_spec.SetField(notificationchannel.FieldType, field.TypeEnum, value)
 	}
+	if value, ok := _u.mutation.Settings(); ok {
+		_spec.SetField(notificationchannel.FieldSettings, field.TypeString, value)
+	}
+	if _u.mutation.SettingsCleared() {
+		_spec.ClearField(notificationchannel.FieldSettings, field.TypeString)
+	}
 	if value, ok := _u.mutation.SMTPHost(); ok {
 		_spec.SetField(notificationchannel.FieldSMTPHost, field.TypeString, value)
 	}
@@ -1034,6 +1060,26 @@ func (_u *NotificationChannelUpdateOne) SetNillableType(v *notificationchannel.T
 	if v != nil {
 		_u.SetType(*v)
 	}
+	return _u
+}
+
+// SetSettings sets the "settings" field.
+func (_u *NotificationChannelUpdateOne) SetSettings(v string) *NotificationChannelUpdateOne {
+	_u.mutation.SetSettings(v)
+	return _u
+}
+
+// SetNillableSettings sets the "settings" field if the given value is not nil.
+func (_u *NotificationChannelUpdateOne) SetNillableSettings(v *string) *NotificationChannelUpdateOne {
+	if v != nil {
+		_u.SetSettings(*v)
+	}
+	return _u
+}
+
+// ClearSettings clears the value of the "settings" field.
+func (_u *NotificationChannelUpdateOne) ClearSettings() *NotificationChannelUpdateOne {
+	_u.mutation.ClearSettings()
 	return _u
 }
 
@@ -1575,6 +1621,12 @@ func (_u *NotificationChannelUpdateOne) sqlSave(ctx context.Context) (_node *Not
 	}
 	if value, ok := _u.mutation.GetType(); ok {
 		_spec.SetField(notificationchannel.FieldType, field.TypeEnum, value)
+	}
+	if value, ok := _u.mutation.Settings(); ok {
+		_spec.SetField(notificationchannel.FieldSettings, field.TypeString, value)
+	}
+	if _u.mutation.SettingsCleared() {
+		_spec.ClearField(notificationchannel.FieldSettings, field.TypeString)
 	}
 	if value, ok := _u.mutation.SMTPHost(); ok {
 		_spec.SetField(notificationchannel.FieldSMTPHost, field.TypeString, value)
