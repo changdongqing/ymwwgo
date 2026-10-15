@@ -55,6 +55,16 @@ const CHANNEL_TYPE_COLOR: Partial<Record<NonNullable<NotificationChannel['type']
   SMS: 'cyan',
 };
 
+/** settings 读回显 JSON 容错解析：坏数据返回 undefined，动态表单按全空处理。 */
+function safeParseSettings(raw: string): Record<string, unknown> | undefined {
+  try {
+    const parsed = JSON.parse(raw);
+    return typeof parsed === 'object' && parsed !== null ? (parsed as Record<string, unknown>) : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 /** EXT_* 扩展渠道的 Tag 统一色。 */
 const EXT_TAG_COLOR = 'geekblue';
 
@@ -474,6 +484,9 @@ const NotificationChannelManagement = () => {
                   selected?.type === 'SMS'
                     ? `SMS@${selected.smsProvider ?? 'ALIYUN'}`
                     : selected?.type,
+                // settings 读回显是脱敏 JSON 串：parse 成对象供动态表单回填
+                // （sensitive 字段值为空串=占位，留空提交即保留已存密文）
+                settings: selected?.settings ? safeParseSettings(selected.settings) : undefined,
               }
         }
       >

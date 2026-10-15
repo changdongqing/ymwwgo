@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import type { VxeGridProps } from '#/adapter/vxe-table';
 
-import { reactive, ref } from 'vue';
+import { computed, reactive, ref } from 'vue';
 
 import { Page } from '@vben/common-ui';
 import { $t } from '@vben/locales';
@@ -16,6 +16,12 @@ import {
   useSendTest,
   useUpdateNotificationChannel,
 } from '#/api';
+import {
+  EXT_GROUP_LABELS,
+  fetchListChannelSchemas,
+  parseSettingsSafe,
+  type NotificationChannelSchema,
+} from '#/api/composables/notification-channel-schema';
 import TableExportButton from '#/components/TableExportButton.vue';
 import type {
   notification_channelservicev1_NotificationChannel as NotificationChannel,
@@ -25,6 +31,52 @@ const { mutateAsync: createChannel } = useCreateNotificationChannel();
 const { mutateAsync: updateChannel } = useUpdateNotificationChannel();
 const { mutateAsync: deleteChannel } = useDeleteNotificationChannel();
 const { mutateAsync: sendTest } = useSendTest();
+
+// ---- 扩展渠道 schema（类型下拉分组 + 动态表单的数据源）----
+const extSchemas = ref<NotificationChannelSchema[]>([]);
+fetchListChannelSchemas().then((items) => {
+  extSchemas.value = items;
+});
+
+function isExtType(type?: string): boolean {
+  return !!type && extSchemas.value.some((s) => s.type === type);
+}
+
+function extSchemaOf(type?: string): NotificationChannelSchema | undefined {
+  return isExtType(type) ? extSchemas.value.find((s) => s.type === type) : undefined;
+}
+
+/** 类型下拉分组：SMS 组首插拆分项（阿里云/腾讯云合成键），其余组按 schema。 */
+const extTypeGroups = computed(() => {
+  const acc: {
+    group: string;
+    label: string;
+    options: { label: string; value: string }[];
+  }[] = [];
+  for (const s of extSchemas.value) {
+    const group = s.group ?? 'EXT';
+    let node = acc.find((g) => g.group === group);
+    if (!node) {
+      node = { group, label: EXT_GROUP_LABELS[group] ?? group, options: [] };
+      acc.push(node);
+    }
+    node.options.push({ label: s.label ?? s.type ?? '', value: s.type ?? '' });
+  }
+  const smsGroup = acc.find((g) => g.group === 'SMS');
+  if (smsGroup) {
+    smsGroup.options.unshift(
+      {
+        label: $t('page.notificationChannel.smsAliyun'),
+        value: 'SMS@ALIYUN',
+      },
+      {
+        label: $t('page.notificationChannel.smsTencent'),
+        value: 'SMS@TENCENT',
+      },
+    );
+  }
+  return acc;
+});
 
 const formOptions = {
   collapsed: false,
@@ -160,6 +212,9 @@ function typeLabel(type?: string): string {
     WEBHOOK: $t('page.notificationChannel.typeWebhook'),
     SMS: $t('page.notificationChannel.typeSms'),
   };
+  // EXT_* 扩展渠道的展示名来自 schema（i18n 不逐渠道维护）
+  const ext = extSchemaOf(type);
+  if (ext) return ext.label ?? type ?? '-';
   return (type && map[type]) || type || '-';
 }
 
@@ -169,6 +224,7 @@ function typeColor(type?: string): string {
     WEBHOOK: 'purple',
     SMS: 'cyan',
   };
+  if (isExtType(type)) return 'geekblue';
   return (type && map[type]) || 'default';
 }
 
@@ -245,6 +301,7 @@ const form = reactive({
   smsTemplateCode: '',
   smsAppId: '',
   smsRegion: '',
+  settings: {} as Record<string, any>,
   enabled: true,
   remark: '',
 });
@@ -259,6 +316,7 @@ function openCreate() {
     webhookSecret: '',
     smsProvider: 'ALIYUN', smsAccessKeyId: '', smsAccessSecret: '', smsSignName: '',
     smsTemplateCode: '', smsAppId: '', smsRegion: '',
+    settings: {},
     enabled: true, remark: '',
   });
   editOpen.value = true;
@@ -288,6 +346,8 @@ function openEdit(row: NotificationChannel) {
     smsTemplateCode: row.smsTemplateCode || '',
     smsAppId: row.smsAppId || '',
     smsRegion: row.smsRegion || '',
+    // settings 读回显是脱敏 JSON 串：parse 成对象供动态表单回填（sensitive 空串占位）
+    settings: parseSettingsSafe(row.settings),
     enabled: !!row.enabled,
     remark: row.remark || '',
   });
@@ -309,6 +369,8 @@ function buildChannelData(): Record<string, any> {
     data.webhookUrl = form.webhookUrl;
     data.webhookSignStyle = form.webhookSignStyle;
     data.webhookPayloadTemplate = form.webhookPayloadTemplate;
+  } else if (isExtType(form.type)) {
+    data.settings = JSON.stringify(form.settings);
   } else if (form.type === 'SMS') {
     data.smsProvider = form.smsProvider;
     data.smsAccessKeyId = form.smsAccessKeyId;
@@ -365,6 +427,15 @@ async function handleSave() {
         return;
       }
     }
+    // EXT：schema required 前端先拦一遍（后端保存期同规则兜底）
+    if (isExtType(form.type) && editMode.value === 'create') {
+      for (const field of extSchemaOf(form.type)?.fields ?? []) {
+        if (field.required && !form.settings[field.name!]) {
+          message.error(`${field.label ?? field.name} is required`);
+          return;
+        }
+      }
+    }
   }
   editSaving.value = true;
   try {
@@ -384,8 +455,9 @@ async function handleSave() {
         password,
         webhookSecret,
         smsAccessSecret,
-        updateMask:
-          'name,type,smtpHost,smtpPort,smtpUsername,smtpFrom,smtpTls,webhookUrl,webhookSignStyle,webhookPayloadTemplate,smsProvider,smsAccessKeyId,smsSignName,smsTemplateCode,smsAppId,smsRegion,enabled,remark',
+        updateMask: isExtType(form.type)
+          ? 'name,type,settings,enabled,remark'
+          : 'name,type,smtpHost,smtpPort,smtpUsername,smtpFrom,smtpTls,webhookUrl,webhookSignStyle,webhookPayloadTemplate,smsProvider,smsAccessKeyId,smsSignName,smsTemplateCode,smsAppId,smsRegion,enabled,remark',
       });
       message.success($t('page.notificationChannel.updateSuccess'));
     }
@@ -556,16 +628,30 @@ async function handleTestSend() {
         </a-form-item>
         <a-form-item :label="$t('page.notificationChannel.type')" required>
           <!-- 编辑态禁改类型：改类型等于换一条渠道实现，与规则页禁改 eventType 同理 -->
-          <a-select v-model:value="form.type" :disabled="editMode === 'edit'">
+          <a-select
+            v-model:value="form.type"
+            :disabled="editMode === 'edit'"
+            show-search
+          >
             <a-select-option value="EMAIL">
               {{ $t('page.notificationChannel.typeEmail') }}
             </a-select-option>
             <a-select-option value="WEBHOOK">
               {{ $t('page.notificationChannel.typeWebhook') }}
             </a-select-option>
-            <a-select-option value="SMS">
-              {{ $t('page.notificationChannel.typeSms') }}
-            </a-select-option>
+            <a-select-optgroup
+              v-for="group in extTypeGroups"
+              :key="group.group"
+              :label="group.label"
+            >
+              <a-select-option
+                v-for="opt in group.options"
+                :key="opt.value"
+                :value="opt.value"
+              >
+                {{ opt.label }}
+              </a-select-option>
+            </a-select-optgroup>
           </a-select>
         </a-form-item>
         <!-- 三类渠道各自的配置项分组显示：表单里同时摆几组，管理员要自己猜哪一组生效。
@@ -628,6 +714,57 @@ async function handleTestSend() {
                   : $t('page.notificationChannel.webhookSecretPlaceholder')
               "
             />
+          </a-form-item>
+        </template>
+        <template v-else-if="isExtType(form.type)">
+          <div
+            v-if="extSchemaOf(form.type)?.targetLabel"
+            class="mb-2 text-xs text-muted-foreground"
+          >
+            {{ $t('page.notificationChannel.ext.targetLabel', { label: extSchemaOf(form.type)?.targetLabel }) }}
+          </div>
+          <a-form-item
+            v-for="field in extSchemaOf(form.type)?.fields ?? []"
+            :key="field.name"
+            :label="field.label ?? field.name"
+            :required="field.required"
+          >
+            <a-input-number
+              v-if="field.type === 'number'"
+              v-model:value="form.settings[field.name!]"
+              :min="0"
+              class="w-full"
+            />
+            <a-select
+              v-else-if="field.type === 'select'"
+              v-model:value="form.settings[field.name!]"
+              allow-clear
+            >
+              <a-select-option
+                v-for="opt in field.options ?? []"
+                :key="opt"
+                :value="opt"
+              >
+                {{ opt || $t('page.notificationChannel.ext.optionDefault') }}
+              </a-select-option>
+            </a-select>
+            <a-textarea
+              v-else-if="field.type === 'textarea'"
+              v-model:value="form.settings[field.name!]"
+              :rows="3"
+              :placeholder="field.placeholder"
+            />
+            <a-input-password
+              v-else-if="field.type === 'password' || field.sensitive"
+              v-model:value="form.settings[field.name!]"
+              :placeholder="
+                editMode === 'edit'
+                  ? $t('page.notificationChannel.ext.secretKeepHint')
+                  : field.placeholder
+              "
+            />
+            <a-input v-else v-model:value="form.settings[field.name!]" :placeholder="field.placeholder" />
+            <div v-if="field.hint" class="text-xs text-muted-foreground">{{ field.hint }}</div>
           </a-form-item>
         </template>
         <template v-else-if="form.type === 'SMS'">

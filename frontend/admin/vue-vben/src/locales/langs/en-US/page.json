@@ -721,6 +721,8 @@
     "typeEmail": "Email (SMTP)",
     "typeWebhook": "Webhook",
     "typeSms": "SMS",
+    "smsAliyun": "Aliyun SMS",
+    "smsTencent": "Tencent SMS",
     "smtpHost": "SMTP Server",
     "smtpPort": "Port",
     "smtpUsername": "SMTP Username",
@@ -798,7 +800,12 @@
     "requiredRecipient": "Recipient is required",
     "createSuccess": "Created",
     "updateSuccess": "Saved",
-    "saveFailed": "Save failed"
+    "saveFailed": "Save failed",
+    "ext": {
+      "targetLabel": "Delivery target: {label} (required by test send and deliveries)",
+      "secretKeepHint": "Leave empty to keep the stored value",
+      "optionDefault": "default"
+    }
   },
   "notificationDelivery": {
     "moduleName": "Notification Deliveries",

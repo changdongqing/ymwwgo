@@ -304,9 +304,13 @@ import {
  * 必须是 ref：setup 期发起请求，模板与分组计算都依赖它就绪后的数据。
  */
 const extSchemas = ref<NotificationChannelSchema[]>([]);
-fetchListChannelSchemas().then((items) => {
-  extSchemas.value = items;
-});
+fetchListChannelSchemas()
+  .then((items) => {
+    extSchemas.value = items;
+  })
+  .catch(() => {
+    // schema 拉取失败不阻塞渠道 CRUD：EXT 类型下拉会缺项，错误由请求层日志带出
+  });
 
 /** 是否扩展渠道类型（EXT_*：配置整包走 settings）。 */
 function isExtType(type?: string): boolean {
@@ -506,6 +510,8 @@ function open(options: { create: boolean; row?: any }) {
         row.type === "SMS"
           ? `SMS@${row.smsProvider ?? "ALIYUN"}`
           : row.type || "EMAIL",
+      // settings 读回显是脱敏 JSON 串：parse 成对象供动态表单回填（sensitive 空串占位）
+      settings: row.settings ? parseSettingsSafe(row.settings) : {},
       smtpHost: row.smtpHost || "",
       smtpPort: row.smtpPort ?? 587,
       smtpUsername: row.smtpUsername || "",
@@ -530,6 +536,16 @@ function open(options: { create: boolean; row?: any }) {
 }
 
 defineExpose({ open });
+
+/** settings 读回显 JSON 容错解析：坏数据返回空对象，动态表单按全空处理。 */
+function parseSettingsSafe(raw: string): Record<string, any> {
+  try {
+    const parsed = JSON.parse(raw);
+    return typeof parsed === "object" && parsed !== null ? parsed : {};
+  } catch {
+    return {};
+  }
+}
 </script>
 
 <style lang="scss" scoped>

@@ -733,6 +733,8 @@
     "typeEmail": "邮件 (SMTP)",
     "typeWebhook": "Webhook",
     "typeSms": "短信",
+    "smsAliyun": "阿里云短信",
+    "smsTencent": "腾讯云短信",
     "smtpHost": "SMTP 服务器",
     "smtpPort": "端口",
     "smtpUsername": "SMTP 用户名",
@@ -810,7 +812,12 @@
     "requiredRecipient": "请输入收件人邮箱",
     "createSuccess": "创建成功",
     "updateSuccess": "保存成功",
-    "saveFailed": "保存失败"
+    "saveFailed": "保存失败",
+    "ext": {
+      "targetLabel": "运行目标：{label}（测试发送与投递时按渠道填写）",
+      "secretKeepHint": "留空表示不修改已存值",
+      "optionDefault": "默认"
+    }
   },
   "notificationDelivery": {
     "moduleName": "通知投递记录",
