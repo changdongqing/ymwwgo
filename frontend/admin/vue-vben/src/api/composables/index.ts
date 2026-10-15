@@ -64,6 +64,7 @@ export * from './server-monitor';
 // 通知渠道
 export * from './notification-channel';
 export * from './notification-channel-schema';
+export * from './ai-agent';
 // 通知投递台账（只读）
 export * from './notification-delivery';
 // 通知路由规则（事件 → 渠道 + 派发方式）

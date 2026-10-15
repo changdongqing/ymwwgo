@@ -1214,5 +1214,36 @@
       "manage": "管理会话",
       "empty": "暂无活跃会话"
     }
+  },
+  "aiAgent": {
+    "moduleName": "Agent 编排",
+    "name": "应用名称",
+    "description": "描述",
+    "enabled": "启用",
+    "enabledOn": "已启用",
+    "enabledOff": "已停用",
+    "updatedAt": "更新时间",
+    "graph": "图 DSL",
+    "graphPlaceholder": "{\"nodes\":[...],\"edges\":[...]}",
+    "graphHint": "图 DSL JSON：五种节点 start/knowledge/llm/condition/end；保存期后端强校验。可视化画布编辑器排期中，当前 JSON 手编",
+    "graphInvalid": "图 DSL 不是合法 JSON",
+    "requiredName": "请输入应用名称",
+    "create": "新建应用",
+    "edit": "编辑应用",
+    "deleteConfirm": "删除后运行台账不再可查，确认删除该 Agent 应用？",
+    "saveFailed": "保存失败",
+    "testRun": "试运行",
+    "runsTitle": "运行台账",
+    "runs": {
+      "testTitle": "试运行（{name}）",
+      "requiredInput": "该项必填",
+      "noInputs": "开始节点未声明输入变量",
+      "testSent": "运行完成",
+      "testFailed": "运行失败",
+      "succeeded": "成功",
+      "failed": "失败",
+      "running": "运行中",
+      "empty": "该应用还没有运行记录"
+    }
   }
 }
