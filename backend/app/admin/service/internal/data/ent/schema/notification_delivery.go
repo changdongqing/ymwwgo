@@ -51,6 +51,8 @@ func (NotificationDelivery) Fields() []ent.Field {
 				// SMS 渠道两个新事件：渠道测试短信与手机号绑定验证码
 				"ChannelTestSms", "CHANNEL_TEST_SMS",
 				"PhoneBindCode", "PHONE_BIND_CODE",
+				// 扩展渠道测试消息
+				"ChannelTestExt", "CHANNEL_TEST_EXT",
 			).
 			Optional().
 			Nillable(),
@@ -62,6 +64,8 @@ func (NotificationDelivery) Fields() []ent.Field {
 				"Sms", "SMS",
 				"Webhook", "WEBHOOK",
 				"Internal", "INTERNAL",
+				// 扩展渠道大类（39 个 EXT_* 渠道的台账统一记 EXT，具体渠道由 channel_id 回答）
+				"Ext", "EXT",
 			).
 			Optional().
 			Nillable(),

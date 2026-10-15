@@ -52,7 +52,7 @@ type NotificationChannelServiceClient interface {
 	SendTestEmail(ctx context.Context, in *v11.SendTestEmailRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// 发送测试消息（按渠道类型分派：EMAIL 走邮件，SMS 发测试验证码）
 	SendTest(ctx context.Context, in *v11.SendTestRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	// 全量扩展渠道 schema
+	// 全量扩展渠道 schema（独立集合路径，避免与 /{id} 参数路由抢配）
 	ListChannelSchemas(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*v11.ListChannelSchemasResponse, error)
 }
 
@@ -164,7 +164,7 @@ type NotificationChannelServiceServer interface {
 	SendTestEmail(context.Context, *v11.SendTestEmailRequest) (*emptypb.Empty, error)
 	// 发送测试消息（按渠道类型分派：EMAIL 走邮件，SMS 发测试验证码）
 	SendTest(context.Context, *v11.SendTestRequest) (*emptypb.Empty, error)
-	// 全量扩展渠道 schema
+	// 全量扩展渠道 schema（独立集合路径，避免与 /{id} 参数路由抢配）
 	ListChannelSchemas(context.Context, *emptypb.Empty) (*v11.ListChannelSchemasResponse, error)
 	mustEmbedUnimplementedNotificationChannelServiceServer()
 }

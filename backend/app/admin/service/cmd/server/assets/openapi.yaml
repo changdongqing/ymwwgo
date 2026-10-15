@@ -4169,6 +4169,19 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/TenantUsage'
+    /admin/v1/notification-channel-schemas:
+        get:
+            tags:
+                - NotificationChannelService
+            description: 全量扩展渠道 schema（独立集合路径，避免与 /{id} 参数路由抢配）
+            operationId: NotificationChannelService_ListChannelSchemas
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListChannelSchemasResponse'
     /admin/v1/notification-channels:
         get:
             tags:
@@ -4265,19 +4278,6 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/NotificationChannel'
-    /admin/v1/notification-channels/schemas:
-        get:
-            tags:
-                - NotificationChannelService
-            description: 全量扩展渠道 schema
-            operationId: NotificationChannelService_ListChannelSchemas
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ListChannelSchemasResponse'
     /admin/v1/notification-channels/{id}:
         get:
             tags:

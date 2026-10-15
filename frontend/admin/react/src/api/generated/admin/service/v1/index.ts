@@ -7654,7 +7654,7 @@ export interface NotificationChannelService {
   SendTest(
     request: notification_channelservicev1_SendTestRequest,
   ): Promise<wellKnownEmpty>;
-  // 全量扩展渠道 schema
+  // 全量扩展渠道 schema（独立集合路径，避免与 /{id} 参数路由抢配）
   ListChannelSchemas(
     request: wellKnownEmpty,
   ): Promise<notification_channelservicev1_ListChannelSchemasResponse>;
@@ -7843,7 +7843,7 @@ export function createNotificationChannelServiceClient(
       }) as Promise<wellKnownEmpty>;
     },
     ListChannelSchemas(_request) {
-      const path = `admin/v1/notification-channels/schemas`;
+      const path = `admin/v1/notification-channel-schemas`;
       const body = null;
       return transport.unary(path, 'GET', body, {
         service: 'NotificationChannelService',

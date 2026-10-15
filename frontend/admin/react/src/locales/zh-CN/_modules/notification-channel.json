@@ -102,5 +102,21 @@
     "ext.required": "请输入{{label}}",
     "ext.secretKeepHint": "留空表示不修改已存值",
     "ext.optionDefault": "默认"
+  },
+  "extGroup": {
+    "IM": "IM / 群聊",
+    "PUSH": "个人推送",
+    "MOBILE": "移动推送",
+    "SMS": "短信 / 消息",
+    "MAIL": "邮件 API",
+    "AUTO": "效率自动化",
+    "OPS": "运维告警",
+    "EXT": "其他扩展渠道"
+  },
+  "ext": {
+    "targetLabel": "运行目标：{{label}}（测试发送与投递时按渠道填写）",
+    "required": "请输入{{label}}",
+    "secretKeepHint": "留空表示不修改已存值",
+    "optionDefault": "默认"
   }
 }

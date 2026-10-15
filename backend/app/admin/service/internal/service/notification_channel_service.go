@@ -105,7 +105,13 @@ func (s *NotificationChannelService) CreateNotificationChannel(ctx context.Conte
 		return nil, err
 	}
 
-	return s.repo.Get(ctx, id)
+	dto, err := s.repo.Get(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	// 与 Get/List 同一条脱敏口径：创建响应也不回显 sensitive 字段
+	dto.Settings = sanitizeSettingsForRead(dto.GetType().String(), dto.GetSettings())
+	return dto, nil
 }
 
 func (s *NotificationChannelService) UpdateNotificationChannel(ctx context.Context, req *notificationChannelV1.UpdateNotificationChannelRequest) (*emptypb.Empty, error) {

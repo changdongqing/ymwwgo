@@ -173,7 +173,13 @@ const NotificationChannelManagement = () => {
 
   const handleSubmit = async (values: Record<string, any>) => {
     // 三个密钥是请求级字段（不进 data）：读视图只有 hasPassword / hasWebhookSecret / hasSmsAccessSecret 布尔
-    const { password, webhookSecret, smsAccessSecret, ...data } = values;
+    const { password, webhookSecret, smsAccessSecret, settings, ...data } = values;
+    // 扩展渠道：动态表单的 settings 对象序列化为 JSON 明文上送（sensitive 留空 = 保留已存值）
+    if (isExtType(data.type)) {
+      data.settings = settings ? JSON.stringify(settings) : '';
+    } else {
+      delete data.settings;
+    }
     try {
       if (drawerMode === 'create') {
         const req: notification_channelservicev1_CreateNotificationChannelRequest = {
@@ -377,9 +383,9 @@ const NotificationChannelManagement = () => {
         >
           {t('edit')}
         </Button>,
-        // 测试发送只对有"收件目标"的渠道有意义：EMAIL 测 SMTP 握手发信、SMS 发一条真验证码。
-        // WEBHOOK 的"当场试一次"在路由规则页（那里测的是事件 → 渠道 → 台账整条链）。
-        (record.type === 'EMAIL' || record.type === 'SMS') && (
+        // 测试发送对"有收件目标语义"的渠道有意义：EMAIL 测 SMTP、SMS 发真验证码、
+        // EXT_* 按 schema 发一条测试消息；WEBHOOK 的端到端验证在路由规则页。
+        (record.type === 'EMAIL' || record.type === 'SMS' || isExtType(record.type)) && (
           <Button key="test" type="link" size="small" icon={<SendOutlined />} onClick={() => setTestTarget(record)}>
             {t('testSend')}
           </Button>
@@ -639,11 +645,20 @@ const NotificationChannelManagement = () => {
           name="recipient"
           label={testTarget?.type === 'SMS' ? t('testRecipientPhone') : t('testRecipient')}
           rules={[
-            { required: true, message: testTarget?.type === 'SMS' ? t('requiredRecipientPhone') : t('requiredRecipient') },
-            // 校验跟随渠道类型：SMS 收手机号（宽松位数控，E.164 或大陆裸号），EMAIL 收邮箱。
-            testTarget?.type === 'SMS'
-              ? { pattern: /^\+?\d[\d\s-]{4,19}$/, message: t('invalidPhone') }
-              : { type: 'email', message: t('invalidEmail') },
+            {
+              required: true,
+              message:
+                testTarget?.type === 'SMS'
+                  ? t('requiredRecipientPhone')
+                  : t('requiredRecipient'),
+            },
+            // 校验跟随渠道类型：SMS 收手机号、EMAIL 收邮箱；EXT_* 的目标语义按渠道各不相同
+            // （chat_id/topic/设备 Key…），只做非空不做格式——格式错了由服务商报错进台账。
+            ...(testTarget?.type === 'SMS'
+              ? [{ pattern: /^\+?\d[\d\s-]{4,19}$/, message: t('invalidPhone') }]
+              : testTarget?.type === 'EMAIL'
+                ? [{ type: 'email' as const, message: t('invalidEmail') }]
+                : []),
           ]}
           placeholder={testTarget?.type === 'SMS' ? '13800138000' : 'you@example.com'}
         />

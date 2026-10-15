@@ -102,5 +102,21 @@
     "ext.required": "{{label}} is required",
     "ext.secretKeepHint": "Leave empty to keep the stored value",
     "ext.optionDefault": "default"
+  },
+  "extGroup": {
+    "IM": "IM / Chat",
+    "PUSH": "Personal Push",
+    "MOBILE": "Mobile Push",
+    "SMS": "SMS / Messaging",
+    "MAIL": "Email API",
+    "AUTO": "Automation",
+    "OPS": "Ops Alerting",
+    "EXT": "Other Channels"
+  },
+  "ext": {
+    "targetLabel": "Delivery target: {{label}} (required by test send and deliveries)",
+    "required": "{{label}} is required",
+    "secretKeepHint": "Leave empty to keep the stored value",
+    "optionDefault": "default"
   }
 }
