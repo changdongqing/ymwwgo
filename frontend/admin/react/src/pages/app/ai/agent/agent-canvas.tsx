@@ -39,12 +39,14 @@ type AgentNodeType = 'start' | 'knowledge' | 'llm' | 'condition' | 'end';
 
 const NODE_TYPE_ORDER: AgentNodeType[] = ['start', 'knowledge', 'llm', 'condition', 'end'];
 
+// 节点色走 styles/semantic-text.css 的主题档：原先写死的 #52c41a/#1677ff/#8c8c8c
+// 是"填充档"，当图标文字用在暗色节点底上只有 2~3:1，且 #1677ff 是已退役的旧主色。
 const NODE_META: Record<AgentNodeType, { color: string; icon: string }> = {
-  start: { color: '#52c41a', icon: '▶' },
-  knowledge: { color: '#722ed1', icon: '📚' },
-  llm: { color: '#1677ff', icon: '✦' },
-  condition: { color: '#fa8c16', icon: '⑃' },
-  end: { color: '#8c8c8c', icon: '■' },
+  start: { color: 'var(--gowind-node-start)', icon: '▶' },
+  knowledge: { color: 'var(--gowind-node-knowledge)', icon: '📚' },
+  llm: { color: 'var(--gowind-primary-text)', icon: '✦' },
+  condition: { color: 'var(--gowind-node-condition)', icon: '⑃' },
+  end: { color: 'var(--gowind-node-end)', icon: '■' },
 };
 
 /** 画布节点 data：nodeType + 图节点的 data 原文（配置抽屉直接编辑它）。 */

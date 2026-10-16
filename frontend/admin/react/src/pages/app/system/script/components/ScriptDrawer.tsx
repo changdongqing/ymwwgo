@@ -250,7 +250,7 @@ const ScriptDrawer: React.FC<ScriptDrawerProps> = ({ open, mode, data, onClose, 
           <span className="text-[color:var(--ant-color-error)]">* </span>
           {t('source')}
         </label>
-        <div className="rounded-lg border border-white/10 dark:border-white/8">
+        <div className="rounded-lg border border-[color:var(--ant-color-border-secondary)]">
           <Editor
             key={language}
             editorType={EditorType.CODE}
