@@ -85,9 +85,14 @@ vben 任务页"启动全部任务"= `#FAFAFA` on `#57D188` **1.85:1**；react �
 ### 2.2 中性色 · 浅色模式
 
 > **落地状态按端不同**（2026-09-25 复核，2026-09-29 补文字档一层，**2026-10-14 再订**）：vue-element ✓（页面画布**不是**由 `_element-plus.scss:34` 的 Sass map `$bg-color: ("page": #F1F3F6)` 落地的——它到不了运行时，实测 `--el-bg-color-page` 读回出厂值 `#F2F3F5`；生效档在该文件末尾的 `html:not(.dark)` 块里带 `!important`，同块补上浅色文字-主/常规两档 `#1F2937`/`#374151`；边框 `#E4E4E7` 那条本轮未复测，原记行号 `:31`/`:52` 均已漂）、vue-vben ✓（`framework/base/design/design-tokens/default.css:10`
-> `--background-deep: 216 20.11% 95.47%` = `#F1F3F6`；浅色 `--foreground` 本日起为 `215 28% 17%` = `#1F2937`，原先的 shadcn 出厂 `#323639` 属漏迁）、**react 半 ✓**——react 端只有
-> `core/preferences/config/darkTheme.ts` 一套 token 覆盖，**浅色模式的画布/边框仍走 antd `defaultAlgorithm`
-> 的默认派生值**，与本表不严格相等（要严格对齐需新增一套 light tokens，未做，属新工作）；
+> `--background-deep: 216 20.11% 95.47%` = `#F1F3F6`；浅色 `--foreground` 本日起为 `215 28% 17%` = `#1F2937`，原先的 shadcn 出厂 `#323639` 属漏迁）、**react ✓**（2026-10-16 起）——此前 react
+> 只有 `core/preferences/config/darkTheme.ts` 一套 token，**浅色全走 antd `defaultAlgorithm` 派生值**
+> （实测画布 `#F5F5F5`、卡片边框 `#F0F0F0`、卡片投影 `none`），与本表不严格相等；现已新增
+> `core/preferences/config/lightTheme.ts`（画布/容器/边框/大圆角）+ `styles/global.css` 的浅色卡片投影两档，
+> 实测 `--ant-color-bg-layout` `#F1F3F6`、`--ant-color-border-secondary` `#E4E4E7`、`--ant-color-split`
+> `rgba(10,10,37,.11)`（合成白底即 `#E4E4E7`，1.269）、卡片 `0 1px 2px rgba(0,0,0,.05)`、`borderRadiusLG` 12px。
+> **文字档与 placeholder 不进 token 层**：主/常规/次要由 `styles/semantic-text.css` + `colorTextDescription`
+> 承担；`colorTextPlaceholder` 刻意留 antd 档，理由见本节末注。
 > 例外是认证页：`layouts/UserLayout/UserLayout.style.less` 的 `.light-mode` 大底本日起直写本表 canvas `#F1F3F6`
 > （实测点主题按钮后 `backgroundColor = rgb(241,243,246)`，原先是 antd 默认底 `#f5f7fa`）——那是整页大底，不归 antd 派生链管。
 > 但**文字档三端已接上同一组值**：react 在 `src/styles/semantic-text.css`（主 `#1F2937` / 常规 `#374151` 两档 2026-10-14 补，加原有次要档）、ele 走 `_element-plus.scss` 的 `--el-text-color-{primary,regular,secondary}`、vben 走 `--foreground`（主）/ `--muted-foreground`（次要）——**vben 结构上没有"常规"档的 token**，正文要么取主档要么取次要档，本轮未新增第四层。
@@ -100,7 +105,7 @@ vben 任务页"启动全部任务"= `#FAFAFA` on `#57D188` **1.85:1**；react �
 | 文字-主 | `#1F2937` | — | 标题、重点（gray-800） |
 | 文字-常规 | `#374151` | — | 正文（gray-700） |
 | 文字-次要 | `#676E7C`（= `hsl(220 9.25% 44.51%)`） | — | 辅助说明、描述表标签。2026-09-29 由 `#6B7280`(gray-500) 提暗一档：旧值在白底 4.83 达标，但落在**实际容器底色**上就不够——antd 表头 `#F5F5F5` 4.43、vxe/EP 表头 `#F0F2F5` 4.31、画布 `#F1F3F6` 4.35；新值同底 4.70 / 4.57 / 4.61 |
-| 文字-占位 | `#9CA3AF` | — | placeholder（gray-400），**不参与 4.5 判定**，见下方豁免边界 |
+| 文字-占位 | `#9CA3AF` | — | placeholder（gray-400），**不参与 4.5 判定**，见下方豁免边界；**仅浅色档**，暗色 2026-10-16 起为 `#6E7681`（§2.3） |
 
 > **占位符档的豁免边界**（2026-09-29 定稿，三端一致）：`#9CA3AF` on 白 = 2.54，但它承载的是"尚未成为内容"的
 > 提示语，不是正文，按 4.5 判会把每一张带筛选区的列表页都报成缺陷；antd 同档更浅（`rgba(0,0,0,.25)`）。
@@ -108,6 +113,16 @@ vben 任务页"启动全部任务"= `#FAFAFA` on `#57D188` **1.85:1**；react �
 > 且带 `is-transparent` 空态标记的 `*placeholder` 节点才算这一档。
 > `.avatar-placeholder`（姓名首字，85px）、vxe 的"暂无数据"等**是内容文字，不豁免**，实测仍按 4.5 判。
 > 选中后的值走 EP 的 `#606266`（去掉 `is-transparent`），同样要量。
+>
+> **暗色不能照抄浅色的这个值**（2026-10-16 定稿，react 端已落）：占位档的判据是它与**同一控件里已输入值**的分离度，
+> 不是它对底色的对比度。浅侧 `#1F2937`/`#9CA3AF` 分离 **5.78 倍**；暗侧值文本 `#F8FAFC`（L1 上 16.96）配同一个
+> `#9CA3AF`（6.99）只有 **2.43 倍**——提示语跳到和真内容一个优先级上，用户原话是"暗色模式下太显眼，亮色似乎无事"。
+> 暗色改取已有的三级档 `#6E7681`（L1 上 3.86 / 浮层 `#1C2128` 上 3.52，分离度回到 **4.39 倍**），不新增 hex。
+> 顺带一条现证更正：上面那句"antd 同档更浅"在 **react 浅色侧才是实测真相**——react 新增的浅色 token 里
+> **不含 `colorTextPlaceholder`**（见本节开头"react ✓"那段末句），`:opm/users` 暗/亮两态各读 `::placeholder` 计算色，
+> 亮态仍为 `rgba(0,0,0,.25)`（合成 `#BFBFBF`，白底 2.57、分离 6.06 倍），**从未真的画出过 `#9CA3AF`**；
+> `#9CA3AF` 在 ele/vben 是写进变量的实值。这不是遗漏：占位档的判据是与已输入值的**分离度**，
+> antd 的 6.06 倍比 `#9CA3AF` 的 5.78 倍更"退后"，把浅色钉成 `#9CA3AF` 等于在浅色侧重犯暗色那轮刚修掉的毛病。
 
 灰阶统一走 Tailwind gray/slate 族（与暗色同一冷调体系），**次要档是唯一的例外**：`#676E7C` 不在 gray/slate
 的任一级上（gray-500 `#6B7280` 在淡底色上差 0.1~0.2，slate-500 `#64748B` 偏蓝过冷），按 2.1 的混色思路取冷灰。
@@ -119,6 +134,28 @@ Tailwind 灰阶（`slate-400` 在白底 2.60、在 `#F5F5F5` 上 2.38，`zinc-50
 （现证：同一 `<i class="el-icon">` 裸=白、加 `text-gray-400`=仍白、加 `text-[color:var(--el-text-color-secondary)]`=仍白、
 写 `style="--color: rgb(1,2,3)"`= **`rgb(1,2,3)`**）。要改 EP 组件的颜色走它自己的 `--color` 钩子，别写 `text-*`。
 浅色投影：卡片静止 `0 1px 2px rgba(0,0,0,.05)`，悬浮态 `0 4px 12px rgba(0,0,0,.08)`，克制不发光。
+
+> **投影只表达层级，不表达"这是块卡片"**（2026-10-16 定稿，react 已落）：同一层级、没有叠放关系的并列容器
+> 必须同档。此前 react 的列表页是**搜索卡浮、列表贴地**——搜索卡 `.ant-pro-table-search` 吃 Tailwind
+> `shadow-md`（`0 4px 6px -1px rgba(0,0,0,.1), 0 2px 4px -2px rgba(0,0,0,.1)`，α 与 Y 偏移都约是静止档的 2/4 倍），
+> 列表 `.ant-table` 一条投影都没有，两块中间还空 24px。读起来像"搜索卡压在列表上面"，而它们并没有这种关系。
+> 现在两块在亮色同取静止档、暗色同为 `none`（暗色靠 L1 面 + 8% 白描边分离，黑投影压在 `#0B0F19` 上不显形——
+> 原暗色那条 Tailwind `shadow-xl` 属于"写了不生效"的空规则，一并删）。
+> 顺带把两处描边越界值收回 token：亮侧原写 Tailwind gray-200 `#E5E7EB`（规范是 zinc-200 `#E4E4E7`）、
+> 暗侧原写 5% 白（正是本节上面点名的"卡片与大底糊成一片"那一档），现都走 `--ant-color-border-secondary`。
+> 落点 `src/styles/pro-components-dark.css`。
+>
+> **盒子的载体是宿主卡片，不是表格**（同日第二轮修正，react 已落）：上一版把描边/圆角/投影打在 `.ant-table` 上，
+> 而它坐在 `.ant-pro-table > .ant-pro-card > .ant-pro-card-body`（出厂 `padding: 0 24px`）里，
+> 于是可见盒子比搜索卡**窄 48px**（亮 1072 vs 1120、暗 1056 vs 1104）——用户口中的"列表 card"其实是那块宿主卡片，
+> 它本来就与搜索卡同起点同宽（两态实测 x/width 完全相等）、面也已是 L1/白，只是描边宽度 0：
+> **是"没画出来的那块卡片"，不是"这里没有卡片"**。现在 border/radius/box-shadow 全部上移到宿主层，
+> `.ant-table` 只保留 antd 自己的网格线。卡片体内缩从 24px 收到 §2.2 的 p-5(20px)，四边同一档——
+> ProTable 在宿主 inline 上写死 `padding-block-start: 0`（工具条原本贴卡片顶边），描边上移后必须 `!important`
+> 才收得到 20px，工具条自己补的那 8px `padding-top` 同步归零。
+> 同轮两处收口：表头分隔线从 Tailwind gray-200 `#E5E7EB` 回 `--ant-color-border-secondary`（亮暗同一条规则），
+> 并删掉一条实测被 antd 规则整体压过、从未生效的 `.ant-pro-table .ant-table-tbody > tr > td { border-bottom: 1px solid }`
+> ——亮/暗两态的行分隔线一直是 antd 的 colorSplit（亮 `#F0F0F0`、暗 6% 白），不是 currentColor 派生的近白色。
 
 ### 2.3 中性色 · 暗色模式（权威 = react 六轮定稿）
 
@@ -137,7 +174,8 @@ Tailwind 灰阶（`slate-400` 在白底 2.60、在 `#F5F5F5` 上 2.38，`zinc-50
 - **边框要"拒绝隐形"**：输入类 `rgba(255,255,255,.1)`（hover `.2`，focus 主色；2026-09-08 对齐 vben 实测值修订）、通用 `rgba(148,163,184,.28)`、分隔线 `rgba(255,255,255,.08)`（5% 时卡片与大底糊成一片）。
 - **文字**：主 `#F8FAFC`、次 `#8B949E`（L1 上 5.77 / 浮层 `#1C2128` 上 5.26，与 2.2 的浅色次要档 `#676E7C` 同为一档，
   2026-09-29 三端逐页实测对齐）、三级 `#6E7681`（L1 上 **3.86**，只给 12px 以上的非关键注记；2026-09-29 的三端逐页实测
-  没有任何渲染文本取该值，真要用进正文得先提到次要档）、placeholder `#9CA3AF`（提亮对齐 vben，豁免口径见 2.2 末注）；
+  没有任何渲染文本取该值，真要用进正文得先提到次要档）、**placeholder `#6E7681`**（= 三级档，2026-10-16 由 `#9CA3AF` 下调；
+  判据是它与自己控件里**已输入值**的分离度而非它对底色的对比度，见 2.2 末注的暗色补充）；
   表单标签降一档用 `#DCE3ED`（值是主角）。
 - **暗色语义色文字档另算**：暗色下 antd/EP 自己派生一套语义色，浅色的"深墨前景"规则在暗色是倒退，
   详见 2.1「语义色当文字用」的两条踩坑结论。
@@ -189,6 +227,7 @@ Tailwind 灰阶（`slate-400` 在白底 2.60、在 `#F5F5F5` 上 2.38，`zinc-50
 | 顶栏高度 | **50px** | react `src/layouts/MainLayout/index.tsx:300`；ele `src/styles/_variables.scss:16` `$navbar-height: 50px`；vben 50 ✓ |
 | 页签栏高度 | **38px** | vben `config.ts:78`；ele `core/preferences/config/default.ts:80`；react `core/preferences/config/default.ts:80`（chrome 形态） |
 | 内容边距 | **16px** | 由各端页面容器统一施加；ele `src/styles/_layouts.scss:9-10` `.app-container { padding: 16px }` |
+| 表格 → 分页器 | **16px** | react `src/styles/pro-components-dark.css` 的 `.ant-pro-table .ant-pagination { margin: 16px 0 0 }`（2026-10-16 起；**antd 自带的 `margin: 16px 0` 在本项目落不了地**，见下方分页器条注）；分页器下方 16px 由卡片 body 的 `padding-bottom` 提供，上下对称。**ele/vben 尚未对齐（同步债，见下条）** |
 
 > **ele 那两个 SCSS 常量别当布局尺寸读**：`src/styles/_variables.scss:14-15` 的
 > `$sidebar-width: 210px` / `$sidebar-width-collapsed: 54px` 只服务 logo 与菜单项图标对齐；
@@ -196,6 +235,25 @@ Tailwind 灰阶（`slate-400` 在白底 2.60、在 `#F5F5F5` 上 2.38，`zinc-50
 >
 > **沿革（退役旧值）**：react 顶栏 56 / 折叠 60、ele 折叠 54、ele `app-container` 15px——这些是
 > 2026-09 之前的现值，迁移已完成，不要再按"待办"读。
+>
+> **分页器那条为什么必须自己写（2026-10-16 现证，react）**：antd 的表格分页默认间距在
+> `es/table/style/pagination.js:13`，选择器是 `:where(.css-hash).ant-table-wrapper .ant-table-pagination`
+> （`margin: 16px 0`）。本项目开 `cssVar` 后，`.ant-table-wrapper` 上挂的是 `ant-table-css-var css-var-*`，
+> **没有那个 hash 类**（实测祖先链），`:where(.hash)` 前缀整条落空 ⇒ 分页器实际吃 antd 基础重置
+> `:where(.hash).ant-pagination { margin: 0 }`，上下 margin 实测都是 `0px`。
+> 于是 react 端原先那条 `margin-top: 0 !important`（挂在"分页器圆角（如果有）"的注释下，圆角本身也是空操作——
+> 底色早被设成 transparent）看着像"它把 16px 改坏了"，实际是**没有默认值可恢复**，删掉它间距仍是 0。
+> 这条机制对任何"以为 antd 会给"的间距/尺寸都成立：在 cssVar 模式下，凡选择器以
+> `:where(.hash).<父类>` 起头的默认样式，都要先实测祖先元素上到底有没有 hash 类，别按"框架自带"推定。
+>
+> **"表格 → 分页器 16px" 的另两端现状（2026-10-16 比对，同步债）**：规范值是先落地 react、
+> 另两端待跟——**ele 上 12px / 下 24px**（`src/components/Pro/ProPagination/index.vue:126-132` 的
+> `padding: 12px 0`；另有两条看着像意图但实际不生效的规则：`_layouts.scss:168-171` 的 `.table-section`
+> 在 `src/pages` 里根本不存在、`_dark-mode.scss:759-764` 想给 `.pro-pagination` 画 border-top 但全仓没有
+> 任何地方给它 border-width/style，所以真表格没有分隔线、只有骨架画了），**vben 上 0px / 下 8px**
+> （`use-vxe-grid.vue:403-408` 的网格卡只给 `p-2 pt-0`，`style.css:89-118` 只改 `.vxe-pager` 颜色不管间距）。
+> 三端里只有 react 原先是**主动归零**（`margin-top: 0 !important`，且该文件虽名为 `-dark` 却是两态共用），
+> 已修；把 ele 的 12→16、vben 的 0→16 记为移植时的收尾项，不是本轮欠的账。
 
 ### 2.7 动效
 
@@ -206,6 +264,46 @@ Tailwind 灰阶（`slate-400` 在白底 2.60、在 `#F5F5F5` 上 2.38，`zinc-50
 | 内容区 loading | 骨架屏优先于 spinner |
 | 侧栏折叠/浮层进出 | 150–250ms |
 | 无障碍 | 全局动效开关（preferences.transition.enable）必须生效；有条件时尊重 `prefers-reduced-motion` |
+
+> **react 端路由过渡的落点（2026-10-16 起）**：`layouts/MainLayout/index.tsx` 用带 key 的 `.page-transition`
+> 包裹 `<Outlet/>`，按 `preferences.transition.name` 挂 `.transition-{fade,fade-down,fade-slide,fade-up}`，
+> 具体值在 `styles/global.css`（进入 240ms `ease-in-out`、位移 8px、**只做起不做落**——ProLayout 的 Outlet
+> 没有可挂的退出相位；`enable=false` 与 `prefers-reduced-motion` 都走 `animation: none`）。
+> 填充档用 `backwards` 不用 `both`：`both` 会把终帧的 `transform` 永久留在元素上，非 none 的 transform
+> 让内容包裹层长期变成 containing block，页内 `position: fixed` 元素会被改挂到它下面（实测改回
+> `backwards` 后动画结束 `transform: none`）。
+> 这之前 `preferences.transition.{enable,name}` 在路由层从未被消费（只有错误页 `Fallback` 读它），
+> 偏好面板里的四档选择器是个显示"已生效"的死开关。入场位移取 8px 而非偏好面板预览动画的 20px：
+> 那个尺度属于 36px 小方块，搬到整屏内容上会读成跳帧。
+
+> **侧栏折叠：一条时钟，而不是四条**（2026-10-16 定稿，react 已落）。"生硬"不是曲线选错，而是同一次折叠被拆成
+> 互不同步的多个时钟——折叠前实测（`/opm/users` 逐元素读 computed transition）：
+>
+> | 元素 | 属性 | 原时长 | 原缓动 |
+> |---|---|---|---|
+> | 侧栏容器 | `width` | 300ms | `cubic-bezier(.4,0,.2,1)` |
+> | `.ant-menu` UL | `width` | 300ms | `cubic-bezier(.2,0,0,1)`（antd "Magic cubic"，与上一条复合成双缓动） |
+> | 菜单项 / 分组标题 | `padding` | **100ms** | `cubic-bezier(.215,.61,.355,1)`（`antd/es/menu/style/vertical.js:109`） |
+> | 菜单项 | `background-color`/`border-color` | 300ms | ease |
+> | 标签 `.ant-menu-title-content` | `opacity`/`margin` | 300ms | `cubic-bezier(.645,.045,.355,1)` |
+> | 图标 | `font-size` | 200ms | — |
+>
+> 于是几何（padding）100ms 就跑完、面板宽度还要再走 200ms，标签更滞后——读起来像"先弹一下再慢慢追"。
+> 现在参与折叠的属性（容器 `width`、Logo 区 `padding`、站名 `opacity`、菜单项 `padding`、标签 `opacity`/`margin`、
+> 图标 `font-size`/`margin`、箭头 `transform`）统一 **240ms + `cubic-bezier(.4,0,.2,1)`**（§2.7 允许档 150–250ms 内），
+> UL 的 `width` 过渡直接关掉（面板宽度由容器决定，第二层只会叠加缓动）；
+> hover 反馈（`background-color`/`border-color`/`color`）保留 antd 的 200ms，它不属于折叠。
+> 落点：`layouts/MainLayout/components/SiderMenu/index.tsx`（容器与 Logo 区 inline）+ `styles/pro-layout-overrides.css`
+> （菜单侧，作用域收在 `.app-sider` 内）。两条必须一起改的坑：
+> ① **`padding` 不能从菜单项的过渡里摘掉**——折叠态图标的定位就靠这个值（48px 轨道上实测 `padding-left` 11.67px）；
+> ② 站名原本随折叠**条件卸载**（面板还有 220px 宽时一帧消失，是同一类瞬时跳变），现改为常驻、
+> 靠 flex 收缩 + 同档淡出，Logo 区 `padding` 也从 `0 16px → 0`（图标靠 `justify-content: center` 归位）
+> 改成 `0 16px → 0 8px`（48 − 32 = 16，图标落在轨道正中）并让这条 padding 一起上时钟。
+> 全局动效开关（`preferences.transition.enable`）与 `prefers-reduced-motion` 都把这条折叠降到 `none`；
+> `.transition-disabled` 只挂在内容区 `.page-transition` 上，侧栏是它的兄弟节点，所以开关状态由 SiderMenu 自己落到 wrapper（`.sider-motion-off`）。
+>
+> 另：点击**展开分组**（submenu）本身没有横向位移——只有箭头 `transform` 与子容器 height 动画，子项挂载即
+> 是最终的 `padding-left: 48px`。所以"菜单项向右展开"的观感来自侧栏折叠，不是分组展开。
 
 ---
 
@@ -436,3 +534,34 @@ delivery/rule 两页的 `listAction` 自 catch 一并剥掉；`locales/{en-US,zh
 2026-10-15 用户裁决回退一条（§2.1「危险实底按钮的沿革」）：亮色 danger 实底按钮的前景从暗墨 `#0B0F19` 改回各 UI 库原生白字，亮/暗两态一致——用户原话场景是「同步 API」按钮亮色下黑字坐在红底上刺眼。落点：react `semantic-text.css` 删 `html[data-theme='light'] .ant-btn-color-dangerous.ant-btn-variant-solid` 那条、vben `framework/styles/antd/index.css` 删 `html:not(.dark) .ant-btn-primary.ant-btn-dangerous` 那条（ele 本就无此规则，EP 原生白字）。`--gowind-solid-ink` 的适用面随之收窄为徽标数字/开关轨道这类非按钮小字；success/warning 实底按钮的暗墨不受影响。
 同日第二批（徽标）：通知铃铛角标数字在 react/ele 两端同为暗墨坐红底，用户裁决一并回白字。落点：react `semantic-text.css` 删 `html[data-theme='light'] .ant-badge-count.ant-scroll-number` 那条（antd 原生白字，暗色本就未覆盖）、ele `_element-plus.scss` 删 `.el-badge__content--{danger,primary,success,warning}` 那条（EP 原生 `--el-color-white`，该规则不带主题作用域、暗色也一并恢复白字）；vben 无徽标规则未动。`--gowind-solid-ink` 适用面再收窄为仅开关轨道（ele 侧登录页验证码占位文案另有使用）。
 
+2026-10-16（react 端样式修整一轮，用户口径「整体、亮暗两态都看」）：**暗色 placeholder 下调一档**，判据见 §2.2 末注的暗色补充——落点三处：`core/preferences/config/darkTheme.ts`（`colorTextPlaceholder` + `DARK_PALETTE.placeholder` 都改指 `#6E7681`，token 是 Select/Picker/AutoComplete 这些没进 CSS 覆写的控件的唯一来源）、`styles/pro-components-dark.css`（`!important` 那块跟着换 hex，并把它里面那条 **v5 死选择器** `.ant-select-selection-placeholder` 改成 v6 现名 `.ant-select-placeholder`：同页现数 旧名命中 0 / 新名命中 2，同族的 `.ant-select-selection-item`  同样命中 0，值色目前靠 token 兜着所以没露馅）、`components/common/Editor/src/tiptap-editor.css`（暗态空态提示原取 `--tte-text-secondary` `#8B949E`，比改后的表单 placeholder 还亮，一并降到 `--tte-text-muted`）。实测（`:opm/users`，同源页读 `::placeholder` 计算色）：暗态 input 与 select 全部 `rgb(110,118,129)` 落 `rgb(17,24,39)`，亮态仍为 antd 派生 `rgba(0,0,0,.25)` 未受影响。
+同轮另四处同类瑕疵（都是"暗色优先写法在亮色下失效"，不动权威取值）：① dashboard `StatsCard`/`AiInsightsCard` 的图标块用 Tailwind `-400`（为深底校准的档）坐白卡，实测 1.61~2.98 连图形 3:1 都不够 → 补亮色档 `-600/-700`（cyan/emerald 试 `-600` 仍贴线 2.98/3.01，提到 `-700` 才 4.35/4.42），暗色侧保持 `-400`；卡片边框与内层小盒从 `border-white/N`、`bg-white/5` 改吃 `--ant-color-border-secondary`/`--ant-color-fill-quaternary`（同类还涉及 `RoleDrawer`、`ScriptDrawer`、`InboxDetailDrawer`）。② AI Agent 画布节点写死的 `#52c41a/#1677ff/#8c8c8c` 是**填充档**当图标文字用（暗色 2~3:1），且 `#1677ff` 是已退役旧主色 → `semantic-text.css` 新增 `--gowind-node-*` 两态档（暗取 -5、亮取 -7）。③ tiptap 编辑器自带一套 slate 暗色板（`#0f172a/#1e293b/#334155`）与全站蓝黑板并存，页面上是"两种暗色" → 12 个变量对齐 §2.3 的 L0/L1/L2/L3。④ `ai/query` 的 SQL 块 `bg-gray-900 text-gray-100` 不跟主题 → 改 `--ant-color-fill-tertiary`/`--ant-color-text`。
+标签栏暗色选中态同轮调整（`.tabsbar-chrome/.tabsbar-card`）：选中底由 14% 白降到已有的 `--ant-color-fill-secondary`（9% 白，与亮色档的减重比例 1.52→1.28 对齐亮色实测 1.14），并补 `--ant-color-border-secondary` 描边、未选中文字降 `--ant-color-text-secondary`（L1 上 5.77）hover 回主档——**减重的前提是同时把"哪页是选中"这件事交给文字通道承担**，否则单纯压低底色会让选中/未选中糊成一片。
+**未动、需点头**：暗色主色实底按钮仍走 antd darkAlgorithm 派生 `#035EC7`（白字 6.12 达标），是否统一成品牌蓝 `#006BE6` 未定；`tabsbar.css` 里标着"暗色模式适配"的 `.tabsbar-chrome`/`.tabsbar-card` 嵌套块是死代码（被 `.ant-tabs-nav .ant-tabs-tab` 的 4 类权重压过，两态都不生效，暗色 hover 底实际一直吃亮色档 `rgba(128,128,128,.08)`）。
+**ele/vben 待同步**：`vue-element/src/styles/_dark-mode.scss:26,59` 与 `vendors/_element-plus.scss:526` 的 `--el-text-color-placeholder` 仍是 `#9CA3AF`（暗色 6.99，本轮同一判据下也该降；EP 侧另有 `--dark-text-placeholder` 这个名字被时间戳/辅助说明共用，同步时要先拆开再动，否则会把非占位的三级文字一起压暗）；vben 的暗色 `--muted-foreground` 承担同类角色，需按同判据复测。
+门禁：react `npm run typecheck` 见本节末尾通用口径；本轮为纯 CSS/token 改动，无 TS 语义变化。
+
+2026-10-16 同日第二批（抽屉一轮，用户报的是"底部区背景 + 分隔线"，实测根因在线与一批**静默失效的规则**）：先给判据结论——抽屉底部区背景本身合规（暗 `#111827` 与抽屉体同层、亮白，两态一致，靠发丝线分隔，是 2026 既定口径），正因为层次全交给那条线，**线一不画底部区就"糊"进内容**。踩到的三类量具陷阱：
+① **antd v6 cssVar 实名换了，写错不报错**。`color: var(未定义)` 退化成 inherit，`border: 1px solid var(未定义)` 整条 shorthand IACVT 成 `border-style:none` ⇒ 线直接消失。现证（`:opm/users` 新建用户 + 顶栏偏好设置，两态各读）：偏好抽屉表头线两态都是 `0px none`、副标题两态都取**主档**（暗 `#F8FAFC`）。错名对照（react 端共 28 处 / 5 个 `.less`，另 2 处在 `iframe-layout.less` 与 `pro-components-dark.css`）：`--ant-text-color`→`--ant-color-text`、`--ant-text-color-secondary`→`--ant-color-text-secondary`、`--ant-text-color-tertiary`→`--ant-color-text-tertiary`、`--ant-border-color`→`--ant-color-border`、`--ant-border-color-split`→`--ant-color-split`、`--ant-color-mask`→`--ant-color-bg-mask`、`--ant-select-option-selected-bg`→`--ant-color-primary-bg`（后者是"选中项 hover 不冲灰"那条 `color-mix`，变量名不存在 ⇒ 规则整条没落地过）。改后现量：暗态偏好抽屉表头/底部都 `0.667px solid rgba(255,255,255,.08)`、副标题 `#8B949E`；亮态两条都 `rgba(5,5,5,.06)`、副标题 `rgba(0,0,0,.65)`，主/次层级回来。
+② **浮层投影的载体类名也换了**：v6 抽屉投影挂在 `.ant-drawer-content-wrapper`，弹窗的底色与投影都在 `.ant-modal-container`（`antd/es/modal/style/index.js:122-130` 现读 `contentBg`/`boxShadow` 挂 `-container`），而 `global.css` 的黑投影覆写打在早已无对应节点的 `.ant-drawer-content, .ant-modal-content` 上（DOM 命中 0）⇒ 暗色浮层吃到的是 darkAlgorithm 派生的**白** α 投影 `rgba(255,255,255,.016) -6px 0 16px…`，正是 §2.3「投影必须用黑」要避免的。改指新名后暗态 wrapper 现读 `rgba(0,0,0,.55) 0 12px 48px, rgba(0,0,0,.4) 0 2px 8px`；亮态本就黑，未受影响。modal 那半条是**源码为证、未实开弹窗**。
+③ 同抽屉两条线不同档：表头被 `pro-components-dark.css` 硬写 6%（落 L1 仅 1.170）、底部 8%（1.236），而 token `--ant-color-split` 暗色本就是 8% ⇒ 删掉硬写回 token，两线同档。表单标签硬写 `#C9D1D9`（11.49，不在 §2.3 色板）改吃 `--ant-color-text-heading` = 权威 `#DCE3ED`（13.73）；同文件那条"比画布亮一档（`#161B22`）"的注释与值不符，一并订正为"抽屉属 L1 `#111827`，与卡片同层"。
+顺带一条同类残留：`pro-components-dark.css` 里 `.ant-select-selection-placeholder`、`.ant-select-selection-item` 都是 v5 类名（现数命中 0），前者上一轮已改对 v6 的 `.ant-select-placeholder`，后者的选中值色目前靠 token 兜着、两态实测无色差，暂留。
+**未动、需点头**：① 亮色抽屉两条分隔线实测 1.140，比 §2.2 权威边框 `#E4E4E7`（1.269）还淡，而底部区又与体同色，亮色下"底部区"基本只由这条淡线撑着——提不提档待裁决；② `.ant-pro-top-nav-header`（`pro-layout-overrides.css:57`）与 `chat-page.css:18` 仍取 `--ant-box-shadow` / `--ant-box-shadow-tertiary`，这两个 token 在暗色实测就是白 α（`rgba(255,255,255,.016)…`），与 §2.3「投影必须用黑」相冲，但属顶栏/聊天页 chrome，不在本轮面内；③ react 无浅色 token（§2.2 开头"react 半 ✓"那条），本轮新亮的边框实测落 `#D9D9D9`、副标题落 `rgba(0,0,0,.65)`，与 §2.2 的 `#E4E4E7` / `#676E7C` 仍有差，属既有缺口非本轮引入。
+
+
+2026-10-16 同日第三批（react「太过于生硬」一轮，用户口径是先评估归因、随后授权 ①–④ 全落）：**归因结论是感受成立，且主因不是骨架屏**。骨架覆盖面与另两端同级（react 42 页 `ListTable/TableSkeleton` + `LOADING_DELAY 250`，ele 41、vben 42），差的只是 shimmer 与骨架→内容的交接，撑不起整体评价；真正的量级在两处——**浅色没有层级系统** 与 **三个反馈通道被关掉/没接**。
+① **新增 `core/preferences/config/lightTheme.ts`**（§2.2 的浅色 token，本文件此前不存在，`ThemeProvider` 的浅色分支一直是"保持 antd 默认"）。落 `colorBgLayout #F1F3F6` / `colorBgContainer #FFF` / `colorBorderSecondary #E4E4E7` / `borderRadiusLG 12`，另在 `styles/global.css` 补浅色卡片静止 `0 1px 2px rgba(0,0,0,.05)`、悬浮 `0 4px 12px rgba(0,0,0,.08)` 与 `transition: border-color, box-shadow .2s`。判据现量：改前白卡压 `#F5F5F5` 分离 **1.049**、卡片描边 `#F0F0F0` 对白底 **1.045**（≈隐形）且投影 `none`，即浅色全靠一条看不见的线撑层次；改后画布 `#F1F3F6`(1.062)、描边 `#E4E4E7`(1.269) + 1px 贴身投影。antd 不给"带边框卡片静止投影"任何可覆写 token（`es/card/style/index.js` 只把 `boxShadowTertiary` 给 `:not(-bordered)`、`boxShadowCard` 只服务 hoverable 的 hover，且 `boxShadowCard` 不在 `AliasToken` 上，写进 `ThemeConfig.token` 被 TS 挡回 TS2561），所以两档只能落 CSS——这一点也订正了 `global.css` 原注释里"亮色卡片自带边框层次无需加"的错误假设。
+② **连带白捡一条既有缺口**：`es/theme/util/alias.js:51` 的 `colorSplit = getAlphaColor(colorBorderSecondary, colorBgContainer)`，于是抬 `colorBorderSecondary` 同时把浅色分隔线从 `rgba(5,5,5,.06)`（合成 `#F0F0F0`，1.140）抬到 `rgba(10,10,37,.11)`（合成 `#E4E4E7`，**1.269**）——上一轮抽屉那节"未动、需点头"的第 ① 条（浅色抽屉两条线只有 1.140、低于权威 1.269）就此按权威档解决，无需单独裁决。
+③ **重新打开点击波纹**：`ThemeProvider` 原带 `wave={{ disabled: true }}`（注释写"提升 Admin 操作手感"），三端里只有 react 关它。删除后实测 `MutationObserver` 抓到 `DIV.ant-wave` 随点击入树。⚠️ 排障坑：改 `ConfigProvider` 的这层 props 后 **HMR 不会重建 provider**，量具会在 `waveNodes=0` 上连续假阴性——必须整页 reload 再测。
+④ **接上路由入场动效**：`MainLayout` 此前是裸 `<Outlet key={refreshTrigger}/>`，实测内容区 `transition: all/0s`、切页 opacity 恒 1 ⇒ 硬切；而 `preferences.transition.{enable,name}`（四档 fade/fade-down/fade-slide/fade-up + 偏好面板里的选择器）在路由层**从未被消费**，只有错误页 `Fallback` 读它——UI 上是个显示"已生效"的死开关。现按 key 挪到包裹 div 上（保住 `flex:1 + min-height:0` 高度链，列表页表格依赖它）、按 `transition.name` 挂 `.transition-*`、`enable=false` 挂 `.transition-disabled`，并加 `@media (prefers-reduced-motion: reduce)`（§2.7 无障碍那条要求）。规格按 §2.7 取 240ms `ease-in-out`、位移 **8px**（预览卡片里的 `-20px` 是 36px 小方块的尺度，整屏用会像滚动跳帧）；**只做起不做落**——ProLayout 的 Outlet 没有可挂的退出相位。验证走 `document.getAnimations()`：切页后读到 `gowind-page-fade-slide` 且 `playState=finished, currentTime=240`，加 `.transition-disabled` 后 `animationName` 转 `none`。
+⑤ **一条自我订正**：上一轮报给用户的"表格行 hover 硬切（`.ant-table-row` transition `all/0s`）"**不成立**——行 hover 底色画在 `td` 上（`pro-components-dark.css:22-24` 的 `> tr:hover > td`），而 `td` 自带 `transition: background-color, border-color / 0.2s`（两态实测一致），`tr` 上量错了元素。遗留的小不一致：固定列的高亮叠在 `background-image` 渐变上（为防 sticky 底下透字而设计），渐变不可插值 ⇒ 固定列仍瞬变，主体行 0.2s 渐显，本轮不动。
+两态复测：浅色 `/dashboard/workspace` 卡片实读 `shadow rgba(0,0,0,.05) 0 1px 2px`、`border 0.667px #E4E4E7`、`radius 12px`，`--ant-color-bg-layout #F1F3F6`、根背景同值（原 `ThemeProvider` 里硬编码的 `#f5f5f5` 已改读 `LIGHT_PALETTE.bgLayout`）；暗色零回归（画布 `#0B0F19`、卡片 L1 `#111827`、边框/split 8% 白、投影 `none`、圆角 12、placeholder `#6E7681`）。门禁 `npm run typecheck` 0 错误。
+**已知不一致，未动**：浅色列表页的搜索卡片是 `.ant-pro-card`，它自带 `0 4px 6px -1px rgba(0,0,0,.1)` + 边框 `#E5E7EB`（Tailwind `shadow-md`/`gray-200` 档），与 §2.2 的卡片档（`0 1px 2px`/`#E4E4E7`）并存——两套卡片系统两种投影，ProTable 系页面看着比 dashboard 更"高"，是否统一到 §2.2 待裁决。
+
+2026-10-16 同日第四批 + 第五批（第四批用户报"搜索栏有立体阴影、下面列表 card 是平的"；第五批用户口径"能处理的，都处理了"）：**第四批**判定感受成立——搜索卡 `.ant-pro-table-search` 吃 Tailwind `shadow-md`、列表侧一条投影都没有，两块之间还空 24px，没有叠放关系却读出"搜索卡压在列表上面"；按方案 1 把两块统一到 §2.2 静止档（暗色那条 `shadow-xl` 压在 `#0B0F19` 上不显形，属"写了不生效"，删），描边两处越界值回 `--ant-color-border-secondary`。**本节末原来那句"是否统一到 §2.2 待裁决"到此关闭。**
+**第五批**把上一版留下的错处与全部可客观判定的待办一次清掉：
+① **盒子载体上移**（订正 §2.2 新注里"打在 `.ant-table` 上"那句）：`.ant-table` 坐在 `.ant-pro-card-body`（出厂 `padding: 0 24px`）里，描边画在它身上就比搜索卡**窄 48px**；宿主 `.ant-pro-card` 实测与搜索卡同 x 同宽、面也已是 L1/白，只是 `border-width: 0`——它是"没画出来的那块卡片"。现在 border/radius/box-shadow 全归宿主，表格只留 antd 自己的网格线，卡片体内缩 24→20（四边同一档 p-5），ProTable 写死在宿主 inline 上的 `padding-block-start: 0` 用 `!important` 收回、工具条补的 8px `padding-top` 同步归零。两态复测 `/opm/users`：亮 `x=240 w=1120` / 暗 `x=240 w=1120`，两块逐位相等，四边留白 20/20/20/20。
+② **侧栏折叠收成一条时钟**（判据与数值见 §2.7 新注）；站名从"随折叠条件卸载"改为常驻淡出。
+③ **死规则清完了，但顺带证伪了一条旧判断**：`.custom-scrollbar`、`.ant-pro-menu-item`、`.ant-pro-menu-item-selected`、`.ant-pro-sider`、`.ant-pro-top-nav-header` 五组选择器现数命中 0 且全仓无引用（`BasicLayout` → 自定义 `AuthenticatedLayout`，ProLayout 从不挂载），已删——这也把上一批"未动②"里 `.ant-pro-top-nav-header` 取白投影的那半条一并解决（`chat-page.css:18` 的 `--ant-box-shadow-tertiary` 仍在）。但**上一批记的"`.ant-select-selection-item` 同属 v5 死类名"不成立**：`antd/es/select/style/index.js:26` 与 `select-input-multiple.js:71` 至今仍在生成它，命中 0 只是那次量测的页面上没有选中值 ⇒ 该规则保留。教训：类名"命中 0"只有在**该控件处于会渲染它的那个状态**时才等于死亡。
+④ **暗色文字/描边越界值回单一真相**：`.ant-menu-dark` 的 `#f0f6fc`、`#fff`、`rgba(230,237,243,.72)`（GitHub 侧三档，都不在 §2.3 色板上）→ `var(--ant-color-text)` 与 `rgba(248,250,252,.72)`；`DARK_PALETTE.borderCard` 从 5% 白（§2.3 点名"糊成一片"那档、且与 token 实际生效值不一致）订正为 8% 白并让 `colorBorderSecondary` 直接引用它，同时删掉无人引用、与 §2.3 又差一档的 `borderLine: 6%`；表头分隔线 `#E5E7EB` → token。另删一条从未生效的 `.ant-pro-table .ant-table-tbody > tr > td { border-bottom: 1px solid }`——亮/暗两态实测行分隔线一直是 antd colorSplit（亮 `#F0F0F0`、暗 6% 白），这条 shorthand 被 antd 同权重且更晚注入的规则整体压过。
+两态实测零回归（暗：卡片 8% 白描边 + 投影 `none` + 表头 `#1F2937`；亮：静止投影 + `#E4E4E7` + 表头 `#FAFAFA`）。门禁 react `npm run typecheck` 0 错误。**仍留给用户点头**：暗色主色实底按钮与分页选中项用 antd 派生 `#035EC7` 还是品牌 `#006BE6`；`tabsbar.css` 标着"暗色模式适配"的死嵌套块是否清理；ele/vben 的暗色 placeholder、分页间距与本轮动效差异属跨端同步债。
