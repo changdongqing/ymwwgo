@@ -369,8 +369,11 @@ html[data-theme='dark'] .ant-form .ant-input:not(.ant-input-affix-wrapper .ant-i
 }
 
 /* ========== 搜索表单 / 工具条 / 表格之间垂直呼吸感 ========== */
+/* 搜索卡 → 列表卡的间距 16px：与 §2.6 已有的两个 16（内容边距、表格→分页）同族。
+   原先 24px 是"对齐设计稿 mb-6"的字面搬运，但设计稿那版没有卡片描边——描边一画，
+   24px 的空档就比卡内 20px 内缩还宽，两块读起来像互不相干的段落。 */
 .ant-pro-table .ant-pro-table-search {
-  margin-bottom: 24px; /* 对齐设计稿 mb-6 */
+  margin-bottom: 16px;
 }
 .ant-pro-table .ant-pro-table-list-toolbar-container {
   margin-bottom: 16px;
@@ -397,7 +400,19 @@ html[data-theme='dark'] .ant-form .ant-input:not(.ant-input-affix-wrapper .ant-i
 .ant-pro-table-search {
   border: 1px solid;
   border-radius: 12px;
-  padding: 20px 20px 4px;
+  padding: 20px;
+}
+/* 搜索卡的内缩只留上面那一条：pro-components 自己给查询表单写了 `padding: 24px`
+   （选择器 `.ant-pro-query-filter.ant-pro-query-filter`，用双类提权），和我们的卡 padding
+   叠起来后，单行搜索 44px 的内容被 20+24 / 24+4 的空白包着 → 卡高 117px（62% 是空白），
+   且内容左缘落在 45px，而列表卡工具条/表格单元格在 21px——两块卡片的边缘对齐了，内容却没对齐。
+   归零后实测（暗色 /permission/menus，单行搜索）：卡高 85px、左右内缩 21px，
+   与工具条、表头单元格同一条竖线（三者都 21px）。
+   选择器必须同样写双类：pro 那条权重 0,2,0，单类只有 0,1,0。实测在页面末尾追加一条
+   `.ant-pro-query-filter{padding:33px}` 仍压不住它（computed 依旧 0px）——输在特异度，
+   与构建期/运行时的注入顺序无关。 */
+.ant-pro-query-filter.ant-pro-query-filter {
+  padding: 0;
 }
 .ant-pro-table > .ant-pro-card:not(.ant-pro-table-search) {
   border: 1px solid;

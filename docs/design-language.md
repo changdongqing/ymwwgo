@@ -228,6 +228,21 @@ Tailwind 灰阶（`slate-400` 在白底 2.60、在 `#F5F5F5` 上 2.38，`zinc-50
 | 页签栏高度 | **38px** | vben `config.ts:78`；ele `core/preferences/config/default.ts:80`；react `core/preferences/config/default.ts:80`（chrome 形态） |
 | 内容边距 | **16px** | 由各端页面容器统一施加；ele `src/styles/_layouts.scss:9-10` `.app-container { padding: 16px }` |
 | 表格 → 分页器 | **16px** | react `src/styles/pro-components-dark.css` 的 `.ant-pro-table .ant-pagination { margin: 16px 0 0 }`（2026-10-16 起；**antd 自带的 `margin: 16px 0` 在本项目落不了地**，见下方分页器条注）；分页器下方 16px 由卡片 body 的 `padding-bottom` 提供，上下对称。**ele/vben 尚未对齐（同步债，见下条）** |
+| 搜索卡内缩 | **20px 四边，且只有一个来源** | react `src/styles/pro-components-dark.css`：`.ant-pro-table-search { padding: 20px }` 配上把 pro-components 自带的查询表单 `padding: 24px` 归零（2026-10-17 起，机制见下方"搜索卡打薄"条） |
+| 搜索卡 → 列表卡间距 | **16px** | 同文件的 `.ant-pro-table .ant-pro-table-search { margin-bottom: 16px }`（2026-10-17 起；与"内容边距 16""表格→分页 16"同族） |
+
+> **搜索卡打薄：内缩只能有一条来源**（2026-10-17 定稿，react 已落；ele/vben 本轮未实测，按同步债跟）。
+> 现象是"搜索栏和列表卡之间太空、搜索栏自己太厚"。实测拆开两处账：
+>
+> - **厚度**：pro-components 给查询表单写了 `.ant-pro-query-filter.ant-pro-query-filter { padding: 24px }`
+>   （双类提权），与我们的卡 padding 叠成上 20+24 / 下 24+4；单行搜索真正的内容只有 44px，卡高却到 117px
+>   （62% 是空白）。归零后 85px（暗色与亮色在 `/permission/menus` 同值），双行展开的 `/permission/roles` 141px。
+> - **内容没对齐**：上一轮把两块卡片的**边缘**对齐后，边缘齐、内容仍劈叉——搜索标签落在 45px，
+>   而列表卡工具条与表头单元格在 21px。归零 24px 后三处一并变成 21px（含 1px 描边）。
+>
+> 那条归零规则的**选择器必须同样写双类**，这与"构建期 CSS vs 运行时注入 `<style>`"的顺序无关：
+> 实测在页面末尾追加单类 `.ant-pro-query-filter{padding:33px}` 仍压不过 pro 的双类（computed 依旧 0px）——
+> 输的是特异度（0,1,0 < 0,2,0）。凡覆盖 pro/antd 自带样式，先读它自己的选择器有几个类，别照抄单类。
 
 > **ele 那两个 SCSS 常量别当布局尺寸读**：`src/styles/_variables.scss:14-15` 的
 > `$sidebar-width: 210px` / `$sidebar-width-collapsed: 54px` 只服务 logo 与菜单项图标对齐；
