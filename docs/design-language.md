@@ -175,8 +175,20 @@ Tailwind 灰阶（`slate-400` 在白底 2.60、在 `#F5F5F5` 上 2.38，`zinc-50
 > `--gowind-card-shadow` / `--gowind-card-border`（定义在 `_element-plus.scss` 的 `:root` 与 `html.dark` 两块里，
 > 与 `--gowind-*-text` 同族：base.css 无同名项，不需要 `!important`）——亮 `0 1px 2px rgba(0,0,0,.05)` + `#E4E4E7`、
 > 暗 `0 1px 2px rgba(0,0,0,.36)` + 8% 白。三条支撑：
-> ① **不复用 `--el-box-shadow-light`**：改完之后它剩下的 7 处使用者全是浮层（下拉 / 通知 / 页签 / hover 展开的侧栏
-> 覆盖层 / 聊天页 / `.el-card`），浮层要的就是那圈 12px 晕。
+> ① **不复用 `--el-box-shadow-light`**：改完之后它剩下的使用者**并非"全是浮层"——本条原稿把聊天页和 `.el-card`
+> 一起算成浮层，是错的**（2026-10-18 纠正）。逐处核过（读的是选择器与所在规则的上下文，不是量像素）：真浮层五处保持那圈 12px 晕不动
+> （`.el-select-dropdown` 与 `.el-popper.is-light` `_element-plus.scss:380`、`.el-notification` `:422`、
+> `NoticeDropdown/index.vue:165`、
+> `LayoutTagsView.vue:1128` 右键菜单、`LeftLayout.vue:118` hover 展开的侧栏覆盖层）；**页面卡两处**——
+> `pages/app/ai/chat/index.vue` 的 `.chat-card` 与 `_element-plus.scss:282` 的 `.el-card`。
+> **`.chat-card` 已于 2026-10-18 改走 `--gowind-card-shadow` / `--gowind-card-border`**（明暗两态实测：
+> 亮 `0 1px 2px .05` + `#E4E4E7`、暗 `0 1px 2px .36` + 8% 白）。它原先暗色实测是 `0 0 12px rgba(0,0,0,.72)`
+> （EP 暗色把 `--el-box-shadow-light` 覆成 `#000000b8`），正是 ②里 `.el-card` 那一版点名"会在窄间距卡片间叠出黑缝"
+> 的同一档，而会话列表卡与对话卡之间正是窄间距。**`.el-card` 亮色仍是那圈 12px 晕**（暗色已被 `_dark-mode.scss:110`
+> 覆成静止档 ⇒ 同一组件两态不同档），属已知待决、本轮未批不动。
+> **另记一条工序教训**：react 的聊天卡在 2026-10-17 就由 `b903f8515` 落到静止档，而本端同一轮只覆盖了四张 Pro 卡，
+> 于是"文档说聊天页是浮层、react 代码把它当静止卡"这对矛盾当天就产生了、没人发现。**判"某处属于哪一档"要看那个元素
+> 是不是页面容器，不能看它吃的是哪个变量**——按变量名归类，等于把"谁还在用旧值"当成"谁该用旧值"。
 > ② **暗色那一档不是新发明**：`_dark-mode.scss:110` 的 `.el-card` 早已采用同一条值，注释原话是 EP 暗色
 > `--el-box-shadow` 为 72% 黑晕、会在窄间距卡片间叠出"黑缝"——那一版已经判过它不对，只是 Pro 卡没跟。
 > ③ **描边抬一档**：`--el-border-color-lighter` 亮 `#EBEEF5`、暗 6% 白，各比权威淡一档，暗侧那 6% 正落在

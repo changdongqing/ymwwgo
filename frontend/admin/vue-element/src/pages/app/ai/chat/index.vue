@@ -474,9 +474,13 @@ function handleNewConversation() {
   min-height: 0;
   overflow: hidden;
   background: var(--el-bg-color);
-  border: 1px solid var(--el-border-color-lighter);
+  // 与四张 Pro 卡同取 §2.2 的卡片静止档（变量定义见 styles/vendors/_element-plus.scss 的
+  // :root / html.dark 两块）。原先吃 --el-box-shadow-light：亮色 0 0 12px 12% 黑，
+  // 暗色实测 0 0 12px 72% 黑 —— 正是 _dark-mode.scss 给 .el-card 定档时点名"会在窄间距卡片间
+  // 叠出黑缝"的那一档，而会话列表卡与对话卡之间的缝就是窄间距。
+  border: 1px solid var(--gowind-card-border);
   border-radius: 12px;
-  box-shadow: var(--el-box-shadow-light);
+  box-shadow: var(--gowind-card-shadow);
 }
 
 // ── 面板头部 ────────────────────────────────────────────────────────
