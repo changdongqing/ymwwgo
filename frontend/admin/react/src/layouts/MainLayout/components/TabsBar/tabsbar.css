@@ -38,18 +38,6 @@
       display: none;
     }
   }
-  
-  /* 暗色模式适配 */
-  .ant-tabs-tab {
-    &:hover {
-      background: rgba(255, 255, 255, 0.05);
-    }
-    
-    &.ant-tabs-tab-active {
-      background: rgba(255, 255, 255, 0.08);
-      border-color: rgba(255, 255, 255, 0.1);
-    }
-  }
 }
 
 /* ========== Card 风格 ========== */
@@ -81,22 +69,12 @@
       display: none;
     }
   }
-  
-  /* 暗色模式适配 */
-  .ant-tabs-tab {
-    background: rgba(255, 255, 255, 0.04);
-    border-color: rgba(255, 255, 255, 0.06);
-    
-    &:hover {
-      background: rgba(255, 255, 255, 0.06);
-    }
-    
-    &.ant-tabs-tab-active {
-      background: rgba(255, 255, 255, 0.08);
-      border-color: rgba(255, 255, 255, 0.12);
-    }
-  }
 }
+
+/* 暗色不在这两个风格块里各写一份"适配"：那些未挂 `[data-theme='dark']` 的嵌套规则
+   权重低于同名的 `.ant-tabs-nav .ant-tabs-tab` 基础规则，实测两态都不生效
+   （card 风格未选中页签 computed 仍是 `rgba(128,128,128,.06)`，不是那里的 4% 白），
+   纯属空规则。暗色的页签配色统一在文件下方 `[data-theme='dark']` 一节里做。 */
 
 /* ========== Brisk 风格 ========== */
 /* 轻快风格，底部线条指示 */

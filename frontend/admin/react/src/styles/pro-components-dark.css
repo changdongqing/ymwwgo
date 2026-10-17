@@ -453,7 +453,7 @@ html[data-theme='dark'] .ant-form .ant-input:not(.ant-input-affix-wrapper .ant-i
 
 /* 搜索卡原先挂在通用条上的 Tailwind shadow-md
    （`0 4px 6px -1px rgba(0,0,0,.1), 0 2px 4px -2px rgba(0,0,0,.1)`）已删，两块统一到 §2.2 卡片静止档：
-   搜索卡与列表容器是同一层级的并列容器（中间还隔 24px 空隙、没有叠放关系），
+   搜索卡与列表容器是同一层级的并列容器（中间只隔 16px 空隙、没有叠放关系），
    一档浮、一档贴地会被读成"搜索卡压在列表上面"。投影跟着描边走，现在两者都在卡片层。 */
 [data-theme='light'] .ant-pro-table-search,
 [data-theme='light'] .ant-pro-table > .ant-pro-card:not(.ant-pro-table-search) {
