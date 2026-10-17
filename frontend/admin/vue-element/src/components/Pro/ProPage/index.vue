@@ -584,7 +584,9 @@ defineExpose({
     padding: 20px;
     background: var(--el-bg-color);
     border: 1px solid var(--el-border-color-lighter);
-    border-radius: 8px;
+    /* 卡片圆角 12（§2.4 大容器用 LG）：与 ProSearch 同档，见那里的注；
+       内层表格面仍按 proTableConfig 的 6px（外 > 内），骨架卡 .ts-table-card 是这里的镜像。 */
+    border-radius: 12px;
     box-shadow: var(--el-box-shadow-light);
   }
 
