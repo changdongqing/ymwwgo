@@ -583,11 +583,13 @@ defineExpose({
        分页器下方留白也由这一条提供（上下不再各写一份）。 */
     padding: 20px;
     background: var(--el-bg-color);
-    border: 1px solid var(--el-border-color-lighter);
+    /* 描边与投影走 §2.2/§2.3 的卡片档（`--gowind-card-*`，定义见 _element-plus.scss）：
+     * `--el-box-shadow-light` 是浮层的 12px 全向晕，静止卡片只要 1px/2px 浅落影。 */
+    border: 1px solid var(--gowind-card-border);
     /* 卡片圆角 12（§2.4 大容器用 LG）：与 ProSearch 同档，见那里的注；
        内层表格面仍按 proTableConfig 的 6px（外 > 内），骨架卡 .ts-table-card 是这里的镜像。 */
     border-radius: 12px;
-    box-shadow: var(--el-box-shadow-light);
+    box-shadow: var(--gowind-card-shadow);
   }
 
   &__error {

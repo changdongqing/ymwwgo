@@ -527,6 +527,21 @@ body,
 
   /* 实底语义色上的前景 = §2.1 规定的暗色 L0（白字在 #FF3860 上只有 3.51:1） */
   --gowind-solid-ink: #0b0f19;
+
+  /* 卡片静止档（§2.2 定稿：投影只表达层级，卡片静止 = `0 1px 2px rgba(0,0,0,.05)`，
+   * 悬浮才是 `0 4px 12px rgba(0,0,0,.08)`）。原先 Pro 卡/骨架卡直接吃 `--el-box-shadow-light`，
+   * 运行时实测是出厂值 `0 0 12px rgba(0,0,0,.12)`——比本端的**悬浮档还重**（.12 > .08），
+   * 且没有 Y 偏移（全向扩散），静止态读起来像"发一圈灰光飘着"，层级语言是反的。
+   * 不复用 `--el-box-shadow-light`：改完之后它剩下的 7 处使用者全是浮层（下拉/通知面板/页签/
+   * hover 展开的侧栏覆盖层/聊天页/`.el-card`），浮层要的就是那圈 12px 晕。
+   * 描边同理走 `--gowind-card-border`（§2.2 = #E4E4E7）：EP 的 `--el-border-color-lighter`
+   * 运行时实测是出厂 #EBEEF5，比权威淡一档；本文件顶部 `@forward ... with (...)` 那张 map
+   * 里的 `#E4E4E7` 到不了运行时（机制同下面那段"页面画布"注释——bootstrap.ts:4 引的是预编译 dist/index.css，
+   * 连 `$table: ("border-color")` 也没落地：预编译 el-table.css 里写的是
+   * `--el-table-border-color: var(--el-border-color-lighter)`，实测仍是 #EBEEF5）。
+   * 这两条与 `--gowind-*-text` 同族（自建变量，base.css 里没有同名项，不需要 !important）。 */
+  --gowind-card-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --gowind-card-border: #e4e4e7;
 }
 
 /* 页面画布（§2.2 定稿 #F1F3F6）：本文件 :34 的 Sass map `$bg-color: ("page": #F1F3F6)`
@@ -543,6 +558,13 @@ html.dark {
   --gowind-success-text: color-mix(in srgb, var(--el-color-success) 90%, #ffffff);
   --gowind-warning-text: color-mix(in srgb, var(--el-color-warning) 90%, #ffffff);
   --gowind-danger-text: color-mix(in srgb, var(--el-color-danger) 90%, #ffffff);
+
+  /* 卡片暗色档：投影取本端 .el-card 早已采用的 `0 1px 2px rgba(0,0,0,.36)`（_dark-mode.scss:110
+   * 的注释原话：EP 暗色的 `--el-box-shadow` 是 72% 黑晕，"窄间距卡片间叠出黑缝"——那一版已经
+   * 认定它不对，只是 Pro 卡没跟）。描边落 §2.3 的分隔线档 8% 白：原先走 `--el-border-color-lighter`
+   * 的暗色值，实测 6% 白，低于该条自己写的下限"5% 时卡片与大底糊成一片"。 */
+  --gowind-card-shadow: 0 1px 2px rgba(0, 0, 0, 0.36);
+  --gowind-card-border: rgba(255, 255, 255, 0.08);
 }
 
 /* ---------- link / text 按钮：前景走文字档 ---------- */

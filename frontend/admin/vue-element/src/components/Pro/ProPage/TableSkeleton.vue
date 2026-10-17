@@ -324,8 +324,8 @@ function stagger(delay: number) {
   padding: 20px;
   background: var(--el-bg-color);
   border-radius: 12px;
-  border: 1px solid var(--el-border-color-lighter);
-  box-shadow: var(--el-box-shadow-light);
+  border: 1px solid var(--gowind-card-border);
+  box-shadow: var(--gowind-card-shadow);
 }
 
 .ts-field {
@@ -363,9 +363,9 @@ function stagger(delay: number) {
 .ts-table-card {
   background: var(--el-bg-color);
   border-radius: 12px;
-  border: 1px solid var(--el-border-color-lighter);
+  border: 1px solid var(--gowind-card-border);
   overflow: hidden;
-  box-shadow: var(--el-box-shadow-light);
+  box-shadow: var(--gowind-card-shadow);
   flex: 1;
 }
 

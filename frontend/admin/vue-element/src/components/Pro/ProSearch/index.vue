@@ -295,12 +295,15 @@ defineExpose({
      原 `16px 20px` 上下比左右浅 4px，字段行贴卡片上下边、却与列表内容左右对齐，读起来不一致。 */
   padding: 20px;
   background: var(--el-bg-color);
-  border: 1px solid var(--el-border-color-lighter);
+  /* 描边与投影走 §2.2/§2.3 的卡片档（`--gowind-card-*`，定义见 _element-plus.scss 的
+   * :root 与 html.dark）：不走 `--el-box-shadow-light`，那是浮层用的 12px 全向晕，
+   * 比本端悬浮档还重；静止卡片只需要 1px/2px 的浅落影。骨架卡 .ts-search 是这里的镜像。 */
+  border: 1px solid var(--gowind-card-border);
   /* 卡片圆角 12（§2.4 大容器用 LG）：原先 8 与 .el-input__wrapper 的 8 同档，
      卡片不比它装的内容更圆；react/vben 的列表卡实测都是 12/控件 8，本端对齐到同一档。
      骨架卡的 .ts-search 是这里的镜像，两处必须一起改。 */
   border-radius: 12px;
-  box-shadow: var(--el-box-shadow-light);
+  box-shadow: var(--gowind-card-shadow);
 }
 
 // === Grid 布局模式（参考 Vben） ===
