@@ -1,7 +1,7 @@
 import {useMemo, useState, useEffect} from 'react';
 import {theme as antdTheme, type ThemeConfig, type MappingAlgorithm} from 'antd';
 
-import {darkThemeComponents, darkThemeTokens} from '../config';
+import {darkThemeComponents, darkThemeTokens, lightThemeComponents} from '../config';
 import {SECONDARY_TEXT_DARK, SECONDARY_TEXT_LIGHT} from '../config/constants';
 import {mixColor} from '@/utils/color';
 import {usePreferencesStore} from '../store';
@@ -53,7 +53,7 @@ export const useThemeConfig = (): ThemeConfig => {
         return {
             algorithm: algorithms.length > 0 ? algorithms : antdTheme.defaultAlgorithm,
             token: tokens,
-            components: effectiveIsDark ? darkThemeComponents : undefined,
+            components: effectiveIsDark ? darkThemeComponents : lightThemeComponents,
         };
     }, [effectiveIsDark, theme, app]);
 };

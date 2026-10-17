@@ -269,7 +269,7 @@ Tailwind 灰阶（`slate-400` 在白底 2.60、在 `#F5F5F5` 上 2.38，`zinc-50
 | 内容边距 | **16px** | 由各端页面容器统一施加；ele `src/styles/_layouts.scss:9-10` `.app-container { padding: 16px }` |
 | 表格 → 分页器 | **16px** | react `src/styles/pro-components-dark.css` 的 `.ant-pro-table .ant-pagination { margin: 16px 0 0 }`（2026-10-16 起；**antd 自带的 `margin: 16px 0` 在本项目落不了地**，见下方分页器条注）；ele `ProPagination/index.vue` 的 `padding: 16px 0 0`（暗色在 `_dark-mode.scss` 有一条同名 `!important` 覆写，两处必须一起改）；vben `framework/effects/plugins/vxe-table/style.css` 新增 `.vxe-grid--pager-wrapper { padding-top: 16px }`。**分页器到卡片底边不另写一份**：由该卡自己的内缩唯一提供（react/ele 20px、vben 8px 密度的 `p-2`），所以"上下对称"从来不是目标——上 16 是同级块间距、下 20 是卡片内缩 |
 | 搜索卡内缩 | **20px 四边，且只有一个来源** | react `src/styles/pro-components-dark.css`：`.ant-pro-table-search { padding: 20px }` 配上把 pro-components 自带的查询表单 `padding: 24px` 归零（2026-10-17 起，机制见下方"搜索卡打薄"条）；ele `ProSearch/index.vue` 的 `.pro-search { padding: 20px }`（EP 的 `ElForm` 自身不带 padding，本端只有一个内缩来源、无需归零）+ `ProPage/index.vue` 的 `.pro-page__content { padding: 20px }`；**vben 没有独立搜索卡**（搜索表单在 vxe-grid 的 `#form` 插槽里，与表格同处一张卡），这一档对它只意味着"内容与表格文字同一条竖线"，见同条注 |
-| 搜索卡 → 列表卡间距 | **16px** | react 同文件的 `.ant-pro-table .ant-pro-table-search { margin-bottom: 16px }`；ele `ProPage/index.vue` 的 `.pro-page { gap: 16px }`；vben 结构上不存在这一对卡片（卡内表单块用 `pb-4` = 16px，本来就同值） |
+| 搜索卡 → 列表卡间距 | **16px**（ele 已知分叉 12px，见右） | react 同文件的 `.ant-pro-table .ant-pro-table-search { margin-bottom: 16px }`；vben 结构上不存在这一对卡片（卡内表单块用 `pb-4` = 16px，本来就同值）；**ele `ProPage/index.vue` 现为 `gap: 12px`**——2026-10-17 用户实测反馈"16px 让两块离得太远、压缩列表数据显示空间"，先收到 8px 又判"两块贴一块"，落 12px。**这一档 ele 目前不满足本表**：是否把 12px 反向同步到 react/vben（或把 ele 收回 16px）属待决，改之前先修本行 |
 
 > **结案一条：`sidebar.collapsedShowTitle` 在 react/ele 不实现，48px 这条宽度也不改（2026-10-17 决定）**。
 > 先纠正一句早前的误记：**vben 并没有为这个开关加宽轨道**——它的折叠轨仍是 48
@@ -509,6 +509,18 @@ Tailwind 灰阶（`slate-400` 在白底 2.60、在 `#F5F5F5` 上 2.38，`zinc-50
 - **页签栏**：chrome 形态、38px。选中页签走"温和配方"（2026-09-16 修订，基准 = vben）：暗色 = 中性灰底（fill ≈ 白 10%）+ 正常亮文字，浅色 = 主色 15% 底 + 主色文字；**禁用主色描边 / 发光阴影 / 底部指示线 / 字重加粗**（形状本身即指示）；悬停 = 中性微底，关闭按钮跟随文字色不用主色。
 - **默认头像**（2026-09-16 统一）：三端统一使用橘猫插画 `default-avatar.png`（react/ele public 同文件，vben 经 `src/preferences.ts` 覆盖框架默认的 webp——带 Vben 品牌字样已弃用）；用于导航栏当前用户、通知、锁屏等无头像兜底；用户列表/详情的"姓名首字 + 底色"兜底保留（承载身份信息）。
 - **侧边栏菜单交互态（2026-09-16 定稿，基准 = react antd Menu）**：悬停 = 中性灰遮罩（浅 `#F5F7FA` 系 / 暗 `rgba(255,255,255,.05~.08)`，8px 圆角）；选中 = 主色实底 + 白字（`--primary-foreground`）+ 8px 圆角药丸，不得用左侧竖条 / 淡色底 / 字重加粗来区分选中（vben 旧"选中与悬停同灰"、ele 旧"inset 蓝条 + light-9 淡底"均废弃）；父级展开链路只做文字/图标提亮，不铺底色。折叠后的弹出子菜单选中态同规则。横向顶部菜单暂不约束。
+- **"展开子菜单不铺底色"的落点（2026-10-18 补齐，此前只有 react 违规）**：react 侧栏曾由 `styles/pro-layout-overrides.css` 给
+  `[data-theme='dark'] .ant-menu-sub.ant-menu-inline` 铺 `rgba(0,0,0,.22)` + 8px 圆角 + `padding:4px 0`（2026-08-24 暗色色板那一轮写的，
+  早于上一条定稿、之后没回头对齐）。实测合成 `#0D131E` vs 侧栏 `#111827` = **1.049:1**——小到起不到分组作用、又足够被眼看成"不一致"；
+  且它只命中暗色、只命中展开态（折叠弹层是 `.ant-menu-vertical`，压根没进选择器），三端里 ele/vben 的子菜单都与侧栏同色。已删该规则。
+  **收平必须走 token，不能只删 CSS**：antd 出厂 `darkSubMenuItemBg: '#000c17'`（`es/menu/style/index.js:449`）比原规则更黑，
+  规则一撤就露出藏青井（实测删规则未改 token 时 `.ant-menu-sub` = `rgb(0,12,23)`）。落点 = `config/darkTheme.ts` 的
+  `Menu: { darkSubMenuItemBg, subMenuItemBg }` + `config/lightTheme.ts` 的 `Menu: { subMenuItemBg }`，两态均 `transparent`。
+  **两个键不是冗余**：cssVar 模式下它们喂不同变量——`.ant-menu-dark`（侧栏暗色走这个，`SiderMenu/index.tsx` 的 `theme=isDark?'dark':'light'`）
+  读 `--ant-menu-dark-sub-menu-item-bg` ← `darkSubMenuItemBg`；`.ant-menu-light` 读 `--ant-menu-sub-menu-item-bg` ← `subMenuItemBg`。
+  只写后者时暗色侧栏纹丝不动（实测 `--ant-menu-dark-sub-menu-item-bg` 仍 `#000c17`）。
+  另记两条**同族出厂档尚未接管**（本轮未动，待决）：`darkItemBg`/`darkPopupBg` 仍是 `#001529`——根 UL 靠 `SiderMenu/index.tsx:229` 的 inline
+  `background:'transparent'` 盖住了，但**折叠态弹出的子菜单浮层**没有这层保护，是否真渲染成藏青需实测。
 - **实底主色标"位置"，不标"次级动作"（2026-09-29 定稿，基准 = react）**：实底主色块留给状态标识（上一条的导航选中、列表/分页的当前选中）与页面级主行动（提交、发送）；
   **列表面板里的"新建 X"这类次级动作按钮一律中性描边**——它和导航选中同色同形时，用户分不清哪个是菜单高亮、哪个是按钮。
   踩坑实测（ele `/ai/chat` 左栏）：`<ElButton type="primary" plain>` 浅色下是淡底 `#E6F0FD` + 文字档 `#0162D2`（4.96 ✓），
