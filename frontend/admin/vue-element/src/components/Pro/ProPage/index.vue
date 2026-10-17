@@ -568,8 +568,9 @@ defineExpose({
 .pro-page {
   display: flex;
   flex-direction: column;
-  /* 搜索卡 → 列表卡 16px：与 §2.6「内容边距 16」「表格→分页 16」同族（react 端 2026-10-17 定稿同一档） */
-  gap: 16px;
+  /* 搜索卡 → 列表卡 8px：用户反馈 16px 让两块"离得太远"，且压缩了列表数据显示空间。
+     改小后两块视觉上更紧凑，同时保留一条细缝区分它们是两张独立的卡片（不是同一张）。 */
+  gap: 8px;
   height: 100%;
 
   &__content {
