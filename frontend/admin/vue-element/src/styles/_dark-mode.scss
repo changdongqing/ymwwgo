@@ -760,7 +760,7 @@ html.dark {
   .pagination-container {
     background-color: var(--dark-bg-table) !important; // 和表格容器统一，避免模块割裂
     border-top-color: var(--dark-border) !important;
-    padding: 12px 0 !important;
+    padding: 16px 0 0 !important;
   }
 
   .el-pagination {

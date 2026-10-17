@@ -568,7 +568,8 @@ defineExpose({
 .pro-page {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  /* 搜索卡 → 列表卡 16px：与 §2.6「内容边距 16」「表格→分页 16」同族（react 端 2026-10-17 定稿同一档） */
+  gap: 16px;
   height: 100%;
 
   &__content {
@@ -577,7 +578,10 @@ defineExpose({
     flex-direction: column;
     min-height: 0;
     overflow: hidden;
-    padding: 12px;
+    /* 卡片内缩 20px（§2.2 p-5）：原先 12px 让列表内容（工具条/表头）落在 13px，
+       而搜索卡字段在 21px——盒子对齐了、内容没对齐。改成 20 后两块内容同一条竖线，
+       分页器下方留白也由这一条提供（上下不再各写一份）。 */
+    padding: 20px;
     background: var(--el-bg-color);
     border: 1px solid var(--el-border-color-lighter);
     border-radius: 8px;

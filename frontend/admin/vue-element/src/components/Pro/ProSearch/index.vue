@@ -290,7 +290,10 @@ defineExpose({
 
 <style lang="scss" scoped>
 .pro-search {
-  padding: 16px 20px;
+  /* 四边 20px（§2.2 p-5），与列表卡同一档内缩：EP 的 ElForm 自身不带 padding，
+     所以这里只有一个内缩来源（react 端要额外归零 ProComponents 的 24px，本端无此问题）。
+     原 `16px 20px` 上下比左右浅 4px，字段行贴卡片上下边、却与列表内容左右对齐，读起来不一致。 */
+  padding: 20px;
   background: var(--el-bg-color);
   border: 1px solid var(--el-border-color-lighter);
   border-radius: 8px;
