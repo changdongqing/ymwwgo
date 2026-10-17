@@ -519,6 +519,16 @@ Tailwind 灰阶（`slate-400` 在白底 2.60、在 `#F5F5F5` 上 2.38，`zinc-50
   **边界**：`is-loading` ≠ `is-disabled`（EP 只把 loading 记进 `ariaDisabled`/`disabled` 属性，类名不带 `is-disabled`），实测发送中按钮仍是 `#006BE6` 实底 + spinner，"去实底"不会把加载态一起画灰；`is-plain/is-text/is-link` 的禁用态走 EP 自己的淡档（light-9 底 + light-5 字，是显式声明不是变量），本次未接管（全仓仅 1 处 `plain` 按钮：`system/script/script-log-dialog.vue:37`）。
 - **认证页（登录/注册）**：画布深底 + 实底表面卡（24px 大圆角、主色柔影）；品牌插画带 vben 同款 float 动效（`translateY 0→-20px→0`，5s 循环，尊重 `prefers-reduced-motion`）。
 - **页签栏**：chrome 形态、38px。选中页签走"温和配方"（2026-09-16 修订，基准 = vben）：暗色 = 中性灰底（fill ≈ 白 10%）+ 正常亮文字，浅色 = 主色 15% 底 + 主色文字；**禁用主色描边 / 发光阴影 / 底部指示线 / 字重加粗**（形状本身即指示）；悬停 = 中性微底，关闭按钮跟随文字色不用主色。
+  - **浅色这一档 react 曾长期写成中性灰（2026-10-18 收口）**：`tabsbar.css` 的 chrome/card 选中底是
+    `rgba(128,128,128,.12)`，压白栏合成 **#F0F0F0**——与页面画布 #F1F3F6 只差 **1.008:1**（读出"白栏被抠了个洞"而不是
+    "这页被选中"），且与 hover 的 `.08`（#F5F5F5）同色相、只差 α，选中与悬停糊成一片。ele 早已按本条走 `color-mix`
+    （`LayoutTagsView.vue:1004`，注释还解释过为什么不能用 `primary-light-N`），react 是唯一偏离端。现浅色改吃
+    `color-mix(in srgb, var(--ant-color-primary) 15%, var(--ant-color-bg-container))` → 实测 **#D9E9FB**、对栏
+    **1.24**（原 1.14）；描边退回 `transparent`（底色已是标记通道，灰圈压淡蓝底只会再叠一层脏）；card 的字重 500 一并收平
+    （暗色那档早已覆成 400，留着会让同一风格两态字重不同，且本条明令禁用字重加粗）。**暗色零改动**：文件下方那组
+    `[data-theme='dark']` 的 `!important` 仍胜出，实测 #262D3A + 8% 白描边 + 字重 400 逐值与改前一致。
+    **一条要记住的代价**：淡蓝底把主色文字档 `--gowind-primary-text` 从灰底上的 5.00:1 压到 **4.63:1**——仍过 §2.1 的
+    4.5 底线，但只剩 0.13 余量 ⇒ **别再往上调淡底的比例**（20% 即破线）；要更强的标记，走文字/图标档，不要走底。
 - **默认头像**（2026-09-16 统一）：三端统一使用橘猫插画 `default-avatar.png`（react/ele public 同文件，vben 经 `src/preferences.ts` 覆盖框架默认的 webp——带 Vben 品牌字样已弃用）；用于导航栏当前用户、通知、锁屏等无头像兜底；用户列表/详情的"姓名首字 + 底色"兜底保留（承载身份信息）。
 - **侧边栏菜单交互态（2026-09-16 定稿，基准 = react antd Menu）**：悬停 = 中性灰遮罩（浅 `#F5F7FA` 系 / 暗 `rgba(255,255,255,.05~.08)`，8px 圆角）；选中 = 主色实底 + 白字（`--primary-foreground`）+ 8px 圆角药丸，不得用左侧竖条 / 淡色底 / 字重加粗来区分选中（vben 旧"选中与悬停同灰"、ele 旧"inset 蓝条 + light-9 淡底"均废弃）；父级展开链路只做文字/图标提亮，不铺底色。折叠后的弹出子菜单选中态同规则。横向顶部菜单暂不约束。
 - **"展开子菜单不铺底色"的落点（2026-10-18 补齐，此前只有 react 违规）**：react 侧栏曾由 `styles/pro-layout-overrides.css` 给
