@@ -724,12 +724,8 @@ github.com/tx7do/go-scripts v0.0.9 h1:QCLmyGAgj/QKECcLEsqgAwKQy2STNUuGlwk//EZfw9
 github.com/tx7do/go-scripts v0.0.9/go.mod h1:OxJCiXouVGS36CZd29UvDClyEQfOCTxHPJ2jSlMf/GI=
 github.com/tx7do/go-scripts/hostmodule v0.0.1 h1:J9Q5kwlfSsKHuo4CXnNVFRk6beIXe82RVLrzeZaa23E=
 github.com/tx7do/go-scripts/hostmodule v0.0.1/go.mod h1:3vJVGrao7raQC/pIIRNIGrxwefUzu8Bjw1LAqKv3c5c=
-github.com/tx7do/go-scripts/javascript v0.0.9 h1:j9Ks8DLdk0GGtmPBPmSQB20lGACLyQzcuyveD9HIGUg=
-github.com/tx7do/go-scripts/javascript v0.0.9/go.mod h1:2yIMSwuF+hksX62dYK0LNuSIovI0ilRkuo4qABt/MSw=
 github.com/tx7do/go-scripts/javascript v0.0.10 h1:90zplK+5ej/kteTy5gOsyybc92jeAC+W47WKSCRjzqc=
 github.com/tx7do/go-scripts/javascript v0.0.10/go.mod h1:2yIMSwuF+hksX62dYK0LNuSIovI0ilRkuo4qABt/MSw=
-github.com/tx7do/go-scripts/lua v0.0.10 h1:galNmIrijTMk9yROtspJWoXZ5d2pHkv9LSaBu/Q2jM4=
-github.com/tx7do/go-scripts/lua v0.0.10/go.mod h1:qPya0g9RIHtfvo18Cv64yFTKV1hpPRvIOf71SMfd22U=
 github.com/tx7do/go-scripts/lua v0.0.12 h1:SDzvyigTIzXg5FAZQ/eZfrZTUhoFA2oy2XOt+5wid1o=
 github.com/tx7do/go-scripts/lua v0.0.12/go.mod h1:qPya0g9RIHtfvo18Cv64yFTKV1hpPRvIOf71SMfd22U=
 github.com/tx7do/go-utils v1.1.42 h1:/k4bF5B0kQAIO2MwY1e1g19obvJ/anRMjon1uXCW30I=
