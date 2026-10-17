@@ -82,6 +82,17 @@ vben 任务页"启动全部任务"= `#FAFAFA` on `#57D188` **1.85:1**；react �
 
 **色阶派生规则**：由基准色程序化生成 -50 ～ -900 阶梯（vben / vue-element 已有 `generatorColorVariables`；react 端由 antd `defaultAlgorithm/darkAlgorithm` 自动派生 hover/active）。交互态规则：**hover 取亮一阶、active 取暗一阶，禁止手工挑色**。EP 侧 `light-3/5/7/8/9`、`dark-2` 一律由脚本生成，不手写。
 
+> **结案一条旧开放项（2026-10-17）：暗色实心主按钮保持派生档 `#035EC7`，不钉回品牌 `#006BE6`。**
+> 实测 react 暗色 `/permission/roles`：`.ant-btn-primary` 与 `.ant-pagination-item-active` 的 bg 都是
+> `rgb(3,94,199)` = `hsl(212 97% 40%)`，即 `darkAlgorithm` 从品牌 `hsl(212 100% 45%)` 派生下来的一档
+> （**不是仓里硬编码**，全仓搜 `035EC7` 只有注释）。算给它看：白字 6.12:1 → 钉品牌后 4.95:1，
+> 分页那处 `#F8FAFC` 文字 5.85 → 4.73（仍过 AA 但贴线）；填充对 L1 `#111827` 反倒从 2.90 升到 3.59。
+> 决定性理由是上面第 1 条已经确立的分工：**实底吃派生深档、文字另走反解提亮档**
+> （`ThemeProvider/index.tsx:71-77` 把 `colorLink` 混到 `#4D97EE` 才有 5.89:1，`semantic-text.css:149` 同理）。
+> 只钉按钮 + 分页两处，等于在同一套暗色里开两条"这里不吃派生色"的例外。
+> 若日后确有"品牌色必须原样出现在暗色"的需求，**正确做法是抬暗色的 `colorPrimary` 输入本身**
+> （明度 45%→50%，让派生填充正好落回品牌档），一处改动全暗色一致，代价是链接/选中/菜单/波纹要重测一批。
+
 ### 2.2 中性色 · 浅色模式
 
 > **落地状态按端不同**（2026-09-25 复核，2026-09-29 补文字档一层，**2026-10-14 再订**）：vue-element ✓（页面画布**不是**由 `_element-plus.scss:34` 的 Sass map `$bg-color: ("page": #F1F3F6)` 落地的——它到不了运行时，实测 `--el-bg-color-page` 读回出厂值 `#F2F3F5`；生效档在该文件末尾的 `html:not(.dark)` 块里带 `!important`，同块补上浅色文字-主/常规两档 `#1F2937`/`#374151`；边框 `#E4E4E7` 那条本轮未复测，原记行号 `:31`/`:52` 均已漂）、vue-vben ✓（`framework/base/design/design-tokens/default.css:10`
@@ -196,6 +207,16 @@ Tailwind 灰阶（`slate-400` 在白底 2.60、在 `#F5F5F5` 上 2.38，`zinc-50
 | 登录/注册等认证面板 | **24px** | vben 基准 `rounded-3xl`（独立大面板，区别于页内卡片） |
 | 胶囊 | 999px | Tag、开关类 |
 
+> **卡片那一档的三端落点（2026-10-17 实测）**：react `borderRadiusLG: 12` → 搜索卡/列表卡实测 12；
+> vben `.vxe-grid` 实测 12（控件走 `--radius: .5rem` = 8）；**ele 原先是 8**，与它自己的
+> `.el-input__wrapper`（8）同档——卡片不比装的内容更圆，这是"显方"的真因，已抬到 12
+> （`ProSearch/index.vue`、`ProPage/index.vue` 的 `__content`）。
+> **骨架卡是真卡的镜像**：`ProPage/TableSkeleton.vue` 的 `.ts-search` / `.ts-table-card` 必须与真卡同值，
+> 否则骨架→真实切换时圆角与内缩都会跳（本轮顺带把它那条漏改的 `padding: 16px 20px` 一起归到 20）。
+> 内层表格面按 `proTableConfig.ts:13` 的 6px 保留，**外 > 内**这条阶梯不能反。
+> 暗色 `_dark-mode.scss` 里那两条 `border-radius: 8px !important` 只作用于抽屉/弹窗内的
+> `.el-input__wrapper` / `.el-textarea__inner`（`:340`、`:374`），不涉及卡片——所以卡片圆角没有暗色副本要跟。
+
 ### 2.5 字体
 
 **字体栈按端实测记录，本节不再挂"权威栈"**（2026-09-25 复核：原先列在此处的
@@ -222,14 +243,27 @@ Tailwind 灰阶（`slate-400` 在白底 2.60、在 `#F5F5F5` 上 2.38，`zinc-50
 
 | 项 | 值 | 三端落点（现值 = 规范值） |
 |---|---|---|
-| 侧栏宽度 | **224px** | vben `framework/core/preferences/config.ts:73`；ele `src/core/preferences/config/default.ts:75`（消费点 `src/layouts/LeftLayout.vue:93`）；react `src/layouts/MainLayout/components/SiderMenu/index.tsx:99` 的 224 兜底 |
-| 侧栏折叠 | **48px** | react 同文件 `:99`（`isCollapsed ? 48 : …`）；ele `src/layouts/LeftLayout.vue:57` 与 `src/layouts/MixLayout.vue:123` 的 `SIDEBAR_COLLAPSED_WIDTH = 48`；vben 48 ✓ |
-| 顶栏高度 | **50px** | react `src/layouts/MainLayout/index.tsx:300`；ele `src/styles/_variables.scss:16` `$navbar-height: 50px`；vben 50 ✓ |
+| 侧栏宽度 | **224px** | vben `framework/core/preferences/config.ts:73`；ele `src/core/preferences/config/default.ts:75`（消费点 `src/layouts/LeftLayout.vue:93`）；react `src/layouts/MainLayout/components/SiderMenu/index.tsx:115` 的 224 兜底 |
+| 侧栏折叠 | **48px** | react 同文件 `:115`（`isCollapsed ? 48 : …`）；ele `src/layouts/LeftLayout.vue:57` 与 `src/layouts/MixLayout.vue:123` 的 `SIDEBAR_COLLAPSED_WIDTH = 48`；vben `layout-sidebar.vue:88` 的 `collapseWidth: 48` ✓ |
+| 顶栏高度 | **50px** | react `src/layouts/MainLayout/index.tsx:301`；ele `src/styles/_variables.scss:16` `$navbar-height: 50px`；vben 50 ✓ |
 | 页签栏高度 | **38px** | vben `config.ts:78`；ele `core/preferences/config/default.ts:80`；react `core/preferences/config/default.ts:80`（chrome 形态） |
 | 内容边距 | **16px** | 由各端页面容器统一施加；ele `src/styles/_layouts.scss:9-10` `.app-container { padding: 16px }` |
 | 表格 → 分页器 | **16px** | react `src/styles/pro-components-dark.css` 的 `.ant-pro-table .ant-pagination { margin: 16px 0 0 }`（2026-10-16 起；**antd 自带的 `margin: 16px 0` 在本项目落不了地**，见下方分页器条注）；ele `ProPagination/index.vue` 的 `padding: 16px 0 0`（暗色在 `_dark-mode.scss` 有一条同名 `!important` 覆写，两处必须一起改）；vben `framework/effects/plugins/vxe-table/style.css` 新增 `.vxe-grid--pager-wrapper { padding-top: 16px }`。**分页器到卡片底边不另写一份**：由该卡自己的内缩唯一提供（react/ele 20px、vben 8px 密度的 `p-2`），所以"上下对称"从来不是目标——上 16 是同级块间距、下 20 是卡片内缩 |
 | 搜索卡内缩 | **20px 四边，且只有一个来源** | react `src/styles/pro-components-dark.css`：`.ant-pro-table-search { padding: 20px }` 配上把 pro-components 自带的查询表单 `padding: 24px` 归零（2026-10-17 起，机制见下方"搜索卡打薄"条）；ele `ProSearch/index.vue` 的 `.pro-search { padding: 20px }`（EP 的 `ElForm` 自身不带 padding，本端只有一个内缩来源、无需归零）+ `ProPage/index.vue` 的 `.pro-page__content { padding: 20px }`；**vben 没有独立搜索卡**（搜索表单在 vxe-grid 的 `#form` 插槽里，与表格同处一张卡），这一档对它只意味着"内容与表格文字同一条竖线"，见同条注 |
 | 搜索卡 → 列表卡间距 | **16px** | react 同文件的 `.ant-pro-table .ant-pro-table-search { margin-bottom: 16px }`；ele `ProPage/index.vue` 的 `.pro-page { gap: 16px }`；vben 结构上不存在这一对卡片（卡内表单块用 `pb-4` = 16px，本来就同值） |
+
+> **结案一条：`sidebar.collapsedShowTitle` 在 react/ele 不实现，48px 这条宽度也不改（2026-10-17 决定）**。
+> 先纠正一句早前的误记：**vben 并没有为这个开关加宽轨道**——它的折叠轨仍是 48
+> （`framework/ui-kit/layout-ui/components/layout-sidebar.vue:88` `collapseWidth: 48`），
+> 标题是靠把菜单项**竖排**塞进 48 的：`menu-ui/components/menu.vue:734-755`
+> （`.is-collapse-show-title { padding: 32px 0 }` + `__name` 12px 放在图标下），
+> 代价是单项高度从 ~40px 涨到 ~100px、一屏可见项数腰斩。
+> react/ele 这边是几何不可能：实测折叠态 antd 给 `.ant-menu-title-content` 的宽度是 **0**
+> （48 − 左右 pad 后不够放图标以外的任何东西），所以开关开了与没开一样。
+> 三条出路的代价都排在收益后面：竖排（要覆盖 antd 折叠菜单的硬约束，升级易坏 + 可见项腰斩）、
+> 加宽到 ~64（要把本条 48 拆成两档且三端跟）。**决定：48 保持原样，不引入竖排。**
+> 留在面板上那个在 48px 下永远不生效的开关属于已知瑕疵，**"在 react/ele 偏好面板里隐藏/置灰该项"这一条
+> 尚未获批、未动代码**——下一轮若要处理，那是唯一认可的修法。
 
 > **搜索卡打薄：内缩只能有一条来源**（2026-10-17 定稿；react 先落，同日跟到 ele，vben 按结构差异只跟"内容对齐"这一半，三端均已实测）。
 > 现象是"搜索栏和列表卡之间太空、搜索栏自己太厚"。实测拆开两处账：
@@ -397,6 +431,7 @@ Tailwind 灰阶（`slate-400` 在白底 2.60、在 `#F5F5F5` 上 2.38，`zinc-50
 | 顶栏 / 折叠 / 边距 2.6 | `_variables.scss:16`（50px）/ `src/layouts/LeftLayout.vue:57`、`src/layouts/MixLayout.vue:123`（48）/ `_layouts.scss:9-10`（16px） | 与 2.6 一致 |
 | 搜索卡内缩 / 卡间距 / 表格→分页 2.6（2026-10-17 跟齐 react） | `src/components/Pro/ProSearch/index.vue`（`padding: 20px`）、`Pro/ProPage/index.vue`（`gap: 16px` + `__content { padding: 20px }`）、`Pro/ProPagination/index.vue`（`padding: 16px 0 0`，暗色副本在 `_dark-mode.scss:763` 的 `!important`，两处必须一起改） | 实测字段/工具条/表头同落 21px；间距来源**还有一条藏在 JS**：`Pro/ProTable/index.vue` 的高度计算原先 `offsetHeight + 20` 与 CSS padding 叠成 36px，现只减 `offsetHeight`（详见 §2.6 该条注） |
 | vxe 暗色 | `styles/vendors/_vxe-table.scss:180,183,185,187` | 表头 `#1F2937`、表体/布局底 `#111827`、斑马纹 `rgba(255,255,255,.03)` |
+| 卡片圆角 2.4（2026-10-17 由 8 抬到 12，明暗两态实测） | `ProSearch/index.vue`、`ProPage/index.vue` 的 `__content`；骨架镜像 `ProPage/TableSkeleton.vue` 的 `.ts-search` / `.ts-table-card` | 12px（控件仍 8、内层表格面按 `proTableConfig.ts:13` 的 6px；实测外 12 > 输入 8 > 按钮 6 > 表格面 6） |
 | 语义色文字档 2.1 + 次要档 2.2 | `styles/vendors/_element-plus.scss` 的 `--gowind-*-text` 段 | 把 EP 的 `--el-button-text-color` / `--el-tag-text-color` 指到文字档（`.el-button--{type}` 的 `is-link/is-text/is-plain` 三变体 + `.el-tag--{type}`），带 `!important`——unplugin-element-plus 把组件 CSS 追加在本文件之后，不带就输；次要档 `--el-text-color-secondary: #676E7C` |
 
 **沿革（退役旧值）**：主色 `hsl(220 100% 55%)` / `#165DFF`、浅色 canvas `#F7F8FA`、浅色边框 `#E5E6EB`、
@@ -412,7 +447,7 @@ Tailwind 灰阶（`slate-400` 在白底 2.60、在 `#F5F5F5` 上 2.38，`zinc-50
 
 ## 4. 组件级视觉惯例（跨端一致）
 
-- **页面容器**：三端各自容器（react `PageContainer` / ele `ProPage` / vben `Page`），结构统一为：canvas 大底 → 搜索卡片（surface）→ 工具栏 → 表格卡片（surface + 阴影）。**两处口径本轮核准**：① 阴影按 §2.2 只在亮色铺卡片静止档，react 暗色实测 `none`（§2.3 暗色投影须黑 α，白 α 那条已从 `chat-page.css` 清掉）；② **卡片圆角三端并不一致**——react 用 `borderRadiusLG: 12`（§2.4 的大圆角档），ele 的 `ProSearch` / `ProPage__content` 写的是 base **8px**（`src/components/Pro/ProSearch/index.vue:299`、`ProPage/index.vue:587`）。这一档差异 2026-10-17 只登记、未动代码：改哪个端都等于改整端卡片观感，要单独定夺，别把它当成"规范就是 12px"来"顺手修 ele"。
+- **页面容器**：三端各自容器（react `PageContainer` / ele `ProPage` / vben `Page`），结构统一为：canvas 大底 → 搜索卡片（surface）→ 工具栏 → 表格卡片（surface + 阴影）。**两处口径本轮核准**：① 阴影按 §2.2 只在亮色铺卡片静止档，react 暗色实测 `none`（§2.3 暗色投影须黑 α，白 α 那条已从 `chat-page.css` 清掉）；② 卡片圆角曾是 ele 离群（它写 8、react/vben 写 12），**2026-10-17 已抬 ele 到 §2.4 的 12px 档并实测明暗两态**，落点与"骨架卡是真卡镜像"这条约束见 §2.4 注。
 - **表格**：无边框 + 斑马纹可选；表头独立色（浅 `#F0F2F5` 系 / 暗 `#1F2937`）；行 hover 用主色 8% α；行高紧凑（≤40px，ele 30px 现状可保留）。
 - **表格工具栏右侧图标钮（2026-10-08 定稿，react ProTable options 为基准 / ele 已对齐）**：无边框裸图标（hover 才铺 fill 底），颜色 = **主文本色阶**（react `colorText` / ele `--el-text-color-primary`，暗 `#F8FAFC` / 亮 `#1F2937`），不用 secondary——次级灰是为次要文字设计的，做图标唯一内容会显虚。**每枚图标必须带 Tooltip**（刷新/密度/列设置/全屏……）。图标名义 16px 是 antd 口径：antd 图标墨迹占 viewBox ≈90%，EP 图标仅 ≈75%，故 ele 的 EP 图标要放到 **18px** 补偿（等效墨迹 13.5px ≈ antd 16px），vben 若用 lucide 同理注意留白差异。
 - **列表加载态（2026-09-29 定稿，react 基准 / ele / vben 三端均已落地）**：三态分工按"形状是否已知 + 耗时是否够长"判，不是骨架/转圈二选一——**首屏**（一行数据都没有）= 表格形状骨架屏；**表内刷新/翻页**（已有数据）= Spin；**请求失败** = 错误态 + 重试入口。
