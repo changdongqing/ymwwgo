@@ -418,6 +418,13 @@ Tailwind 灰阶（`slate-400` 在白底 2.60、在 `#F5F5F5` 上 2.38，`zinc-50
 > 全局动效开关（`preferences.transition.enable`）与 `prefers-reduced-motion` 都把这条折叠降到 `none`；
 > `.transition-disabled` 只挂在内容区 `.page-transition` 上，侧栏是它的兄弟节点，所以开关状态由 SiderMenu 自己落到 wrapper（`.sider-motion-off`）。
 >
+> **帧级复验（2026-10-18，`/dashboard/analytics` 暗色，逐帧 rAF 采样 + 每一次 `transitionend` 的 `elapsedTime` 逐元素登记）**：
+> 折叠与展开各一次，取每个 (元素, 属性) 的最大 elapsed —— 容器 `width` **240ms**、Logo 区与分组标题
+> `padding-left`/`padding-right` **240ms**（×18 = 9 个菜单项 × 两向）、站名与标签 `opacity`/`margin-left` **240ms**、
+> 图标 `font-size` **240ms**、箭头 `opacity` **240ms**。**没有一个属性落在 100ms 或 300ms 上**，上表那四条时钟已合成一条。
+> 宽度逐帧序列 48 → 74.1 → 195.3 → 221.1 → 224（约 148ms 起、340ms 落定，单调、无平台段、无回弹）。
+> 首轮另见 `transform` 300ms 与 `height` 200ms 各一次，复跑两轮均为 0 次 ⇒ 不属折叠参与者（submenu 箭头/子容器挂载的一次性动画），不处理。
+>
 > 另：点击**展开分组**（submenu）本身没有横向位移——只有箭头 `transform` 与子容器 height 动画，子项挂载即
 > 是最终的 `padding-left: 48px`。所以"菜单项向右展开"的观感来自侧栏折叠，不是分组展开。
 
@@ -556,7 +563,15 @@ Tailwind 灰阶（`slate-400` 在白底 2.60、在 `#F5F5F5` 上 2.38，`zinc-50
   读 `--ant-menu-dark-sub-menu-item-bg` ← `darkSubMenuItemBg`；`.ant-menu-light` 读 `--ant-menu-sub-menu-item-bg` ← `subMenuItemBg`。
   只写后者时暗色侧栏纹丝不动（实测 `--ant-menu-dark-sub-menu-item-bg` 仍 `#000c17`）。
   另记两条**同族出厂档尚未接管**（本轮未动，待决）：`darkItemBg`/`darkPopupBg` 仍是 `#001529`——根 UL 靠 `SiderMenu/index.tsx:229` 的 inline
-  `background:'transparent'` 盖住了，但**折叠态弹出的子菜单浮层**没有这层保护，是否真渲染成藏青需实测。
+  `background:'transparent'` 盖住了，而**折叠态弹出的子菜单浮层没有这层保护**（2026-10-18 实测确认）：
+  让 Menu 真正进入 `ant-menu-inline-collapsed` 需要 `sidebar.expandOnHover=false` + `collapsed=true`（自动模式下点底部折叠按钮只改偏好，
+  宽度由 hover 决定——此前"点了没折叠"是这条，不是缺陷），此时 portal 里承载弹出的
+  `.ant-menu-submenu-popup > .ant-menu.ant-menu-sub.ant-menu-vertical` 计算底色 = **`rgb(0,21,41)` = 出厂藏青 `#001529`**，圆角 12、
+  投影 `rgba(0,0,0,.45) 0 6px 16px + rgba(0,0,0,.3) 0 3px 6px`（这条合 §2.3「投影必须用黑」，不动）。同层里的**选中项已合规**
+  （实测 `#035EC7` 实底 + `#F8FAFC` 字），所以露馅的只有浮层容器底一档。它与 §2.3 浮层档 `#1C2128` 的差不是可读性（`#F8FAFC` 在其上 17.61 vs 15.38）
+  而是**色系归属**：`#001529` 比本项目的暗色蓝黑系更暗、更偏蓝。修法是给 `config/darkTheme.ts` 的 `Menu` 段补 `darkPopupBg`（连带 `darkItemBg`）指到
+  `#1C2128`；**未批、代码未动**。可见态仍缺一环：内嵌面板 `visibilityState=hidden` 时那层 popup 停在 `ant-menu-submenu-hidden`（`display:none`），
+  合成 hover 与直调 fiber 的 `onMouseEnter` 都唤不开它，所以底色取自"antd 用来显示它的那个元素"的计算样式，而非截图。
 - **实底主色标"位置"，不标"次级动作"（2026-09-29 定稿，基准 = react）**：实底主色块留给状态标识（上一条的导航选中、列表/分页的当前选中）与页面级主行动（提交、发送）；
   **列表面板里的"新建 X"这类次级动作按钮一律中性描边**——它和导航选中同色同形时，用户分不清哪个是菜单高亮、哪个是按钮。
   踩坑实测（ele `/ai/chat` 左栏）：`<ElButton type="primary" plain>` 浅色下是淡底 `#E6F0FD` + 文字档 `#0162D2`（4.96 ✓），
