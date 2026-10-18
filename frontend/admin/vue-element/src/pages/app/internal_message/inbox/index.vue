@@ -446,6 +446,14 @@ async function handleMarkAllRead() {
 }
 
 .message-detail {
+  /* md-editor 暗色预览自带近黑底色（--md-bk-color），与抽屉表面冲突——
+     置透明融入抽屉，文字颜色继承主题 */
+  :deep(.md-editor-previewOnly),
+  :deep(.md-editor-previewWrapper),
+  :deep(.md-editor-preview) {
+    background-color: transparent;
+  }
+
   &__header {
     display: flex;
     align-items: center;

@@ -182,6 +182,14 @@ async function loadDetail() {
   word-break: break-word;
 }
 
+/* md-editor 暗色预览自带近黑底色（--md-bk-color），与抽屉表面冲突——
+   置透明融入抽屉，文字颜色继承主题 */
+.message-detail__content :deep(.md-editor-previewOnly),
+.message-detail__content :deep(.md-editor-previewWrapper),
+.message-detail__content :deep(.md-editor-preview) {
+  background-color: transparent;
+}
+
 .message-detail__content :deep(img) {
   max-width: 100%;
   height: auto;
