@@ -168,12 +168,14 @@ const gridOptions: VxeGridProps<InternalMessageRecipient> = {
       title: $t('page.internalMessage.title'),
       field: 'title',
       minWidth: 200,
+      align: 'left',
       slots: { default: 'title' },
     },
     {
       title: $t('page.internalMessage.status'),
       field: 'status',
       width: 120,
+      align: 'left',
       slots: { default: 'status' },
     },
     {
@@ -181,12 +183,14 @@ const gridOptions: VxeGridProps<InternalMessageRecipient> = {
       field: 'readAt',
       formatter: 'formatDateTime',
       width: 160,
+      align: 'left',
     },
     {
       title: $t('page.internalMessage.createdAt'),
       field: 'createdAt',
       formatter: 'formatDateTime',
       width: 160,
+      align: 'left',
     },
     {
       title: $t('ui.table.action'),
@@ -324,10 +328,10 @@ async function handleMarkAllRead() {
       </template>
 
       <template #title="{ row }">
-        <!-- 未读消息标题加粗，便于和已读区分 -->
+        <!-- 链接形态：常显主题色，悬停下划线；未读消息加粗，便于和已读区分 -->
         <span
           :class="{ 'font-semibold': row.status !== 'READ' }"
-          class="cursor-pointer hover:text-primary"
+          class="cursor-pointer text-primary hover:underline"
           @click="handleView(row)"
         >
           {{ row.title }}
