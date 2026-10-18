@@ -213,11 +213,12 @@
 
   /* 认证页的占位符**承担标签职责**（这几个字段没有 Form.Item label，提示语是字段的唯一
      可读名称），所以 §2.3 给 placeholder 定的三级灰在这里不适用——#6E7681 在 L1 面板上
-     只有 3.86，当注记够用、当标签不够用。这里只在右侧表单区把它提到次要档
-     （暗 #8B949E = 5.77 / 浅 #676E7C = 5.12），全站 token 与
-     styles/pro-components-dark.css 那条 !important 档都不动：本条比它多一级类名
-     （0-3-1 vs 0-2-1），不靠源码顺序取胜。字段名另由 aria-label 补，见登录页。 */
-  .user-layout-wrapper & {
+     只有 3.86，当注记够用、当标签不够用。这里只在右侧表单区、**且只在暗色**把它提到
+     次要档 #8B949E（实测 5.77）：浅色不在本轮诉求内，且 §2.2 明记 react 浅色 token 故意不含
+     colorTextPlaceholder（留 antd 更浅的 rgba(0,0,0,.25)），动它等于重开一条已关掉的决定。
+     全站 token 与 styles/pro-components-dark.css 那条 !important 档都不动：本条比它多两级
+     类名（0-4-1 vs 0-2-1），不靠源码顺序取胜。字段名另由 aria-label 补，见登录页。 */
+  .user-layout-wrapper:not(.light-mode) & {
     .ant-input::placeholder,
     .ant-input-affix-wrapper .ant-input::placeholder,
     .ant-input-affix-wrapper input::placeholder,
