@@ -1,7 +1,9 @@
 <script lang="ts" setup>
 import type { VxeGridProps } from '#/adapter/vxe-table';
 
-import { h } from 'vue';
+import { h, ref } from 'vue';
+
+import dayjs from 'dayjs';
 
 import { Page, useVbenDrawer, type VbenFormProps } from '@vben/common-ui';
 import { LucideCheck, LucideEye, LucideTrash2 } from '@vben/icons';
@@ -29,6 +31,10 @@ const userStore = useUserStore();
 const { mutateAsync: markNotificationAsRead } = useMarkNotificationAsRead();
 const { mutateAsync: deleteNotificationFromInbox } =
   useDeleteNotificationFromInbox();
+
+// 当前搜索条件（导出与 Grid proxy 查询同源——"导出的就是当前搜索看到的"，
+// 定式与审计日志页一致）
+const latestFormValuesRef = ref<Record<string, unknown>>({});
 
 const formOptions: VbenFormProps = {
   // 默认展开
@@ -59,6 +65,41 @@ const formOptions: VbenFormProps = {
         showSearch: true,
       },
     },
+    {
+      // 接收时间区间搜索（对齐 react/ele 端）：query 里映射为 go-crud 的
+      // created_at__gte/lte（操作符后缀表内，不会被误加 __contains）
+      component: 'RangePicker',
+      fieldName: 'createdAt',
+      label: $t('ui.table.createdAt'),
+      componentProps: {
+        showTime: true,
+        allowClear: true,
+        presets: [
+          {
+            label: $t('ui.dateRange.thisWeek'),
+            value: [dayjs().startOf('week'), dayjs().endOf('week')],
+          },
+          {
+            label: $t('ui.dateRange.lastWeek'),
+            value: [
+              dayjs().subtract(1, 'week').startOf('week'),
+              dayjs().subtract(1, 'week').endOf('week'),
+            ],
+          },
+          {
+            label: $t('ui.dateRange.thisMonth'),
+            value: [dayjs().startOf('month'), dayjs().endOf('month')],
+          },
+          {
+            label: $t('ui.dateRange.lastMonth'),
+            value: [
+              dayjs().subtract(1, 'month').startOf('month'),
+              dayjs().subtract(1, 'month').endOf('month'),
+            ],
+          },
+        ],
+      },
+    },
   ],
 };
 
@@ -84,17 +125,37 @@ const gridOptions: VxeGridProps<InternalMessageRecipient> = {
         const userId = userStore.userInfo?.id;
         if (!userId) return { items: [], total: 0 };
 
+        let startTime: string | undefined;
+        let endTime: string | undefined;
+        if (
+          Array.isArray(formValues.createdAt) &&
+          formValues.createdAt.length === 2
+        ) {
+          startTime = dayjs(formValues.createdAt[0]).format(
+            'YYYY-MM-DD HH:mm:ss',
+          );
+          endTime = dayjs(formValues.createdAt[1]).format(
+            'YYYY-MM-DD HH:mm:ss',
+          );
+        }
+
+        // 列表与导出共用同一份搜索条件
+        const conditions: Record<string, unknown> = {
+          recipient_user_id: userId.toString(),
+          title: formValues.title,
+          status: formValues.status,
+          created_at__gte: startTime,
+          created_at__lte: endTime,
+        };
+        latestFormValuesRef.value = conditions;
+
         return await fetchListUserInbox(
           new PaginationQuery({
             paging: {
               page: page.currentPage,
               pageSize: page.pageSize,
             },
-            formValues: {
-              recipient_user_id: userId.toString(),
-              title: formValues.title,
-              status: formValues.status,
-            },
+            formValues: conditions,
             orderBy: ['-created_at'],
           }),
         );
@@ -137,8 +198,22 @@ const gridOptions: VxeGridProps<InternalMessageRecipient> = {
   ],
 };
 
-const exportFetcher = (page: number, pageSize: number) =>
-  fetchListUserInbox(new PaginationQuery({ paging: { page, pageSize } }));
+// 导出与列表同源同一份条件；recipient_user_id 在调用时再强制注入一次——
+// 它是隐私闸门，缺失时 PaginationQuery 会静默剥掉该条件导致租户级越权，
+// 绝不能只依赖 latestFormValuesRef 的写入时序
+const exportFetcher = (page: number, pageSize: number) => {
+  const userId = userStore.userInfo?.id;
+  if (!userId) return Promise.resolve({ items: [], total: 0 });
+  return fetchListUserInbox(
+    new PaginationQuery({
+      paging: { page, pageSize },
+      formValues: {
+        ...latestFormValuesRef.value,
+        recipient_user_id: userId.toString(),
+      },
+    }),
+  );
+};
 
 const [Grid, gridApi] = useVbenVxeGrid({ gridOptions, formOptions });
 
@@ -209,7 +284,13 @@ async function handleDelete(row: any) {
   <Page auto-content-height>
     <Grid :table-title="$t('page.user.detail.tab.internalMessage')">
       <template #toolbar-tools>
-        <TableExportButton :fetcher="exportFetcher" :columns="gridOptions.columns" filename="export" />
+        <!-- userId 未就绪不提供导出入口（同 react 端口径）：隐私过滤无法注入时宁可不导 -->
+        <TableExportButton
+          v-if="userStore.userInfo?.id"
+          :fetcher="exportFetcher"
+          :columns="gridOptions.columns"
+          filename="export"
+        />
       </template>
 
       <template #title="{ row }">
