@@ -6,7 +6,7 @@ import { h, ref } from 'vue';
 import dayjs from 'dayjs';
 
 import { Page, useVbenDrawer, type VbenFormProps } from '@vben/common-ui';
-import { LucideCheck, LucideEye, LucideTrash2 } from '@vben/icons';
+import { LucideCheck, LucideTrash2 } from '@vben/icons';
 import { useUserStore } from '@vben/stores';
 
 import { notification } from 'ant-design-vue';
@@ -309,11 +309,6 @@ async function handleDelete(row: any) {
         </a-tag>
       </template>
       <template #action="{ row }">
-        <a-button
-          type="link"
-          :icon="h(LucideEye)"
-          @click="handleView(row)"
-        />
         <a-button
           v-if="row.status !== 'READ'"
           type="link"
