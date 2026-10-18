@@ -373,6 +373,12 @@ html[data-theme='dark'] .ant-form .ant-input:not(.ant-input-affix-wrapper .ant-i
   align-items: center;
   flex-wrap: nowrap;
 }
+/* v6 的 .ant-form-item-row 是上面水平 flex form-item 的子项，默认宽=内容宽：
+   不撑满 Col 的话，label+control 一起缩在列左侧，下方"控件撑满 Col"的
+   width:100% 全部落空（列宽参差、区间控件撑爆列宽把标签挤到上一行） */
+.ant-pro-table-search .ant-form-item-row.ant-form-item-row {
+  width: 100%;
+}
 .ant-pro-table-search .ant-form-item-label.ant-form-item-label {
   flex: 0 0 auto;
 }

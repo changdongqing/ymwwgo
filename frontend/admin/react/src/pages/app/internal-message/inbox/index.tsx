@@ -242,6 +242,9 @@ const InboxList = () => {
           search={{
             labelWidth: 'auto',
             defaultCollapsed: false,
+            // 三个搜索字段各占 8/24 等宽三等分（span 控行容量，仓库定式）：
+            // 不设 span 时 QueryFilter 按标签宽自适应，列宽参差且区间控件会把标签挤换行
+            span: 8,
           }}
           pagination={false}
           options={{
