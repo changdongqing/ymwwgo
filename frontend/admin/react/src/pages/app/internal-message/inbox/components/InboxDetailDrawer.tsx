@@ -2,6 +2,8 @@ import { Avatar, Divider, Drawer, Tag } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import DOMPurify from 'dompurify';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { useTranslation } from 'react-i18next';
 import type { internal_messageservicev1_InternalMessageRecipient as InboxItem } from '@/api/generated/admin/service/v1';
 import { useGetInternalMessage } from '@/api/hooks/internal-message';
@@ -37,6 +39,13 @@ export const InboxDetailDrawer = ({ open, record, onClose }: InboxDetailDrawerPr
   );
   const senderName = messageDetail?.senderName || (detailPending ? '-' : t('senderSystem'));
 
+  // 正文格式自适应（仿 cms ContentViewer）：
+  // - 富文本编辑器产出 → HTML 标签特征 → DOMPurify 净化渲染
+  // - 纯文本 / Markdown（AI 日报等）→ react-markdown（gfm 表格/列表，
+  //   v10 默认不渲染裸 HTML，路径本身安全；换行/段落由 markdown 语义保留）
+  const content = record?.content ? String(record.content) : '';
+  const isHtml = /<\/?[a-z][\s\S]*>/i.test(content);
+
   return (
     <Drawer title={record?.title || t('detailTitle')} open={open} onClose={onClose} size={640}>
       {record && (
@@ -68,11 +77,20 @@ export const InboxDetailDrawer = ({ open, record, onClose }: InboxDetailDrawerPr
 
           <Divider style={{ margin: '4px 0' }} />
 
-          {/* 消息正文是富文本编辑器产出的 HTML：DOMPurify 净化防存储型 XSS 后渲染，
-              样式上约束在内容块内避免外部样式溢出 */}
+          {/* 消息正文：富文本内容 DOMPurify 净化渲染；纯文本/Markdown 走 react-markdown
+              （gfm 表格/列表；v10 默认忽略裸 HTML，路径安全）。样式约束在内容块内
+              避免外部样式溢出 */}
           <div className="inbox-detail-content rounded-lg border border-[color:var(--ant-color-border-secondary)] bg-[color:var(--ant-color-bg-container)] p-4 text-sm leading-6 break-words">
-            {record.content ? (
-              <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(String(record.content)) }} />
+            {content ? (
+              isHtml ? (
+                <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(content) }} />
+              ) : (
+                // 纯文本的孤立换行在 markdown 语义里是软换行（会折叠）——
+                // 升格为段落换行，AI 多段报告不再挤成一坨
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                  {content.replace(/(?<!\n)\n(?!\n)/g, '\n\n')}
+                </ReactMarkdown>
+              )
             ) : (
               '-'
             )}
