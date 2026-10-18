@@ -275,5 +275,13 @@
     "serverXlsx": "Server-side full (XLSX)",
     "serverSuccess": "Export file generated",
     "serverFailed": "Server-side export failed"
+  },
+  "dateRange": {
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "thisWeek": "This Week",
+    "lastWeek": "Last Week",
+    "thisMonth": "This Month",
+    "lastMonth": "Last Month"
   }
 }

@@ -156,6 +156,33 @@ const InboxList = () => {
       },
       fieldProps: {
         showTime: true,
+        // 快捷区间（对齐 ele/vben）：今天/昨天/本周/上周/本月/上月
+        presets: [
+          {
+            label: t('common:dateRange.today'),
+            value: [dayjs().startOf('day'), dayjs().endOf('day')],
+          },
+          {
+            label: t('common:dateRange.yesterday'),
+            value: [dayjs().subtract(1, 'day').startOf('day'), dayjs().subtract(1, 'day').endOf('day')],
+          },
+          {
+            label: t('common:dateRange.thisWeek'),
+            value: [dayjs().startOf('week'), dayjs().endOf('week')],
+          },
+          {
+            label: t('common:dateRange.lastWeek'),
+            value: [dayjs().subtract(1, 'week').startOf('week'), dayjs().subtract(1, 'week').endOf('week')],
+          },
+          {
+            label: t('common:dateRange.thisMonth'),
+            value: [dayjs().startOf('month'), dayjs().endOf('month')],
+          },
+          {
+            label: t('common:dateRange.lastMonth'),
+            value: [dayjs().subtract(1, 'month').startOf('month'), dayjs().subtract(1, 'month').endOf('month')],
+          },
+        ],
       },
     },
     {

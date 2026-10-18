@@ -275,5 +275,13 @@
     "serverXlsx": "服务端全量 (XLSX)",
     "serverSuccess": "导出文件已生成",
     "serverFailed": "服务端导出失败"
+  },
+  "dateRange": {
+    "today": "今天",
+    "yesterday": "昨天",
+    "thisWeek": "本周",
+    "lastWeek": "上周",
+    "thisMonth": "本月",
+    "lastMonth": "上月"
   }
 }

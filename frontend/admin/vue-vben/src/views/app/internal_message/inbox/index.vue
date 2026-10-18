@@ -76,6 +76,17 @@ const formOptions: VbenFormProps = {
         allowClear: true,
         presets: [
           {
+            label: $t('ui.dateRange.today'),
+            value: [dayjs().startOf('day'), dayjs().endOf('day')],
+          },
+          {
+            label: $t('ui.dateRange.yesterday'),
+            value: [
+              dayjs().subtract(1, 'day').startOf('day'),
+              dayjs().subtract(1, 'day').endOf('day'),
+            ],
+          },
+          {
             label: $t('ui.dateRange.thisWeek'),
             value: [dayjs().startOf('week'), dayjs().endOf('week')],
           },
