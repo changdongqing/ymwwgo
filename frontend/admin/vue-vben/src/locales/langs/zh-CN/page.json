@@ -456,7 +456,8 @@
     "detail": "消息详情",
     "button": {
       "create": "发布消息",
-      "markAsRead": "标记为已读"
+      "markAsRead": "标记为已读",
+      "markAllRead": "全部已读"
     },
     "drawer": {
       "create": "发布消息",

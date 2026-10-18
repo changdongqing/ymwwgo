@@ -456,7 +456,8 @@
     "detail": "Message Detail",
     "button": {
       "create": "Publish Message",
-      "markAsRead": "Mark as Read"
+      "markAsRead": "Mark as Read",
+      "markAllRead": "Mark All Read"
     },
     "drawer": {
       "create": "Publish Message",

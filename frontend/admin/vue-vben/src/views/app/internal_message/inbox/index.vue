@@ -278,12 +278,42 @@ async function handleDelete(row: any) {
     });
   }
 }
+
+/* 全部已读（工具栏）：recipientIds 传空 = 标记该用户全部未读 */
+const markAllReadLoading = ref(false);
+async function handleMarkAllRead() {
+  const userId = userStore.userInfo?.id;
+  if (!userId) return;
+  markAllReadLoading.value = true;
+  try {
+    await markNotificationAsRead({ userId, recipientIds: [] });
+    notification.success({
+      message: $t('ui.notification.operation_success'),
+    });
+    await gridApi.reload();
+  } catch {
+    notification.error({
+      message: $t('ui.notification.operation_failed'),
+    });
+  } finally {
+    markAllReadLoading.value = false;
+  }
+}
 </script>
 
 <template>
   <Page auto-content-height>
     <Grid :table-title="$t('page.user.detail.tab.internalMessage')">
       <template #toolbar-tools>
+        <!-- 全部已读：recipientIds 传空 = 标记该用户全部未读 -->
+        <a-button
+          class="mr-2"
+          :loading="markAllReadLoading"
+          :disabled="!userStore.userInfo?.id"
+          @click="handleMarkAllRead"
+        >
+          {{ $t('page.internalMessage.button.markAllRead') }}
+        </a-button>
         <!-- userId 未就绪不提供导出入口（同 react 端口径）：隐私过滤无法注入时宁可不导 -->
         <TableExportButton
           v-if="userStore.userInfo?.id"

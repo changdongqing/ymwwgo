@@ -12,7 +12,8 @@
   "recipientUserInbox": "User Inbox",
   "button": {
     "create": "New Message",
-    "markAsRead": "Mark as Read"
+    "markAsRead": "Mark as Read",
+    "markAllRead": "Mark All Read"
   },
   "drawer": {
     "create": "New Message",

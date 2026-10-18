@@ -43,6 +43,19 @@
           </button>
         </ElTooltip>
       </template>
+
+      <!-- 全部已读（工具栏）：recipientIds 传空 = 标记该用户全部未读 -->
+      <template #toolbar-right>
+        <ElButton
+          type="primary"
+          plain
+          :loading="markAllReadLoading"
+          :disabled="!userStore.userInfo?.id"
+          @click="handleMarkAllRead"
+        >
+          {{ $t("pages.internal_message.button.markAllRead") }}
+        </ElButton>
+      </template>
     </ProPage>
 
     <!-- 消息详情抽屉 -->
@@ -93,6 +106,7 @@ import {
   ElMessageBox,
   ElLink,
   ElTooltip,
+  ElButton,
 } from "element-plus";
 import { UserFilled } from "@element-plus/icons-vue";
 import dayjs from "dayjs";
@@ -311,8 +325,7 @@ async function handleMarkRead(row: any) {
 }
 
 /* 删除（操作列） */
-async function handleDelete(row: any) {
-  try {
+async function handleDelete(row: any) {  try {
     await ElMessageBox.confirm(
       $t("common.text.do_you_want_delete", {
         moduleName: $t("pages.internal_message.moduleName"),
@@ -341,6 +354,23 @@ async function handleDelete(row: any) {
     pageRef.value?.refresh();
   } catch {
     ElMessage.error($t("common.notification.deleteFailed"));
+  }
+}
+
+/* 全部已读（工具栏）：recipientIds 传空 = 标记该用户全部未读 */
+const markAllReadLoading = ref(false);
+async function handleMarkAllRead() {
+  const userId = userStore.userInfo?.id;
+  if (!userId) return;
+  markAllReadLoading.value = true;
+  try {
+    await markNotificationAsRead({ userId, recipientIds: [] });
+    ElMessage.success($t("common.notice.markedRead"));
+    pageRef.value?.refresh();
+  } catch {
+    ElMessage.error($t("common.message.operationFailed"));
+  } finally {
+    markAllReadLoading.value = false;
   }
 }
 </script>

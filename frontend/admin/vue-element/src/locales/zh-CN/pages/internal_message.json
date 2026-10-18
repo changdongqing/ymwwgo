@@ -12,7 +12,8 @@
   "recipientUserInbox": "收件箱",
   "button": {
     "create": "新建消息",
-    "markAsRead": "标记已读"
+    "markAsRead": "标记已读",
+    "markAllRead": "全部已读"
   },
   "drawer": {
     "create": "新建消息",
