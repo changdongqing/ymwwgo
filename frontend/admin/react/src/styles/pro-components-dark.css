@@ -389,6 +389,13 @@ html[data-theme='dark'] .ant-form .ant-input:not(.ant-input-affix-wrapper .ant-i
   flex: 1 1 auto;
   min-width: 0;
 }
+/* 控件内容层是 flex:1 1 auto 但 min-width:auto——不放开收缩的话，宽控件
+   （showTime 的 RangePicker 双输入 max-content 大）会顶着不换行的最小内容宽
+   溢出列宽，把整行挤成「标签在上、控件独占一行」的伪垂直结构（实测 1660
+   展开侧栏：消息标题/状态正常 inline，仅接收时间塌陷） */
+.ant-pro-table-search .ant-form-item-control-input-content {
+  min-width: 0;
+}
 
 /* 查询/重置按钮组：紧凑排列、贴齐行尾 */
 .ant-pro-query-filter .ant-pro-query-filter-collapse,
