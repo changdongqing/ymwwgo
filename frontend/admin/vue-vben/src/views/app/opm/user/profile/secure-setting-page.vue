@@ -16,7 +16,7 @@ const emit = defineEmits<{ switchTab: [key: string] }>();
 </script>
 
 <template>
-  <Page :title="$t('page.user.profile.tab.securitySettings')">
+  <Page>
     <List>
       <ListItem>
         <ListItemMeta>

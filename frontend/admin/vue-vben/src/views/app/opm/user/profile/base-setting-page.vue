@@ -1,10 +1,11 @@
-﻿<script lang="ts" setup>
+<script lang="ts" setup>
 import type { identityservicev1_User as User } from '#/api';
 
 import { ref } from 'vue';
 
 import { Page } from '@vben/common-ui';
 import { $t } from '@vben/locales';
+import { formatDateTime } from '@vben/utils';
 
 import { Avatar, Col, notification, Row, Upload } from 'ant-design-vue';
 
@@ -16,12 +17,20 @@ import {
   useUpdateUserProfile,
   useUploadAvatar,
 } from '#/api';
+import { getRandomColor } from '#/utils/color';
 
 const { mutateAsync: updateUserProfile } = useUpdateUserProfile();
 const { mutateAsync: uploadAvatar } = useUploadAvatar();
 const { mutateAsync: deleteAvatar } = useDeleteAvatar();
 
 const data = ref<null | User>();
+const submitLoading = ref(false);
+
+// 偏好语言：事务性邮件（找回密码/换绑验证码）按此渲染，空值 = 跟随请求头
+const localeOptions = [
+  { label: '中文', value: 'zh-CN' },
+  { label: 'English', value: 'en-US' },
+];
 
 const [BaseForm, baseFormApi] = useVbenForm({
   showDefaultActions: false,
@@ -84,11 +93,20 @@ const [BaseForm, baseFormApi] = useVbenForm({
       component: 'Textarea',
       label: $t('page.user.table.description'),
     },
+    {
+      fieldName: 'locale',
+      component: 'Select',
+      label: $t('page.user.table.locale'),
+      componentProps: {
+        allowClear: true,
+        options: localeOptions,
+        placeholder: $t('ui.placeholder.select'),
+      },
+    },
   ],
 });
 
 async function handleSubmit() {
-
   // 校验输入的数据
   const validate = await baseFormApi.validate();
   if (!validate.valid) {
@@ -106,9 +124,10 @@ async function handleSubmit() {
     notification.success({
       message: $t('ui.notification.update_success'),
     });
-  } catch {
+  } catch (error: any) {
+    console.error('Failed to update profile:', error);
     notification.error({
-      message: $t('ui.notification.update_failed'),
+      message: error?.message || $t('ui.notification.update_failed'),
     });
   } finally {
     setLoading(false);
@@ -149,19 +168,25 @@ function handleUploadAvatar(options: any) {
       notification.success({
         message: $t('ui.notification.upload_success'),
       });
-    } catch (error) {
+    } catch (error: any) {
+      console.error('Failed to upload avatar:', error);
       try {
         onError?.(error, file);
-      } catch {}
+      } catch {
+        // onError 自身异常无需上报：此时上传失败的 notification 已带出原因
+      }
       notification.error({
-        message: $t('ui.notification.upload_failed'),
+        message: error?.message || $t('ui.notification.upload_failed'),
       });
     }
   });
   reader.addEventListener('error', () => {
+    console.error('Failed to read avatar file:', reader.error);
     try {
       onError?.(reader.error, file);
-    } catch {}
+    } catch {
+      // 同上：reader 失败原因已由 upload_failed 提示承载
+    }
     notification.error({
       message: $t('ui.notification.upload_failed'),
     });
@@ -179,14 +204,17 @@ async function handleDeleteAvatar() {
     notification.success({
       message: $t('ui.notification.delete_success'),
     });
-  } catch {
+  } catch (error: any) {
+    console.error('Failed to delete avatar:', error);
     notification.error({
-      message: $t('ui.notification.delete_failed'),
+      message: error?.message || $t('ui.notification.delete_failed'),
     });
   }
 }
 
-function setLoading(_loading: boolean) {}
+function setLoading(loading: boolean) {
+  submitLoading.value = loading;
+}
 
 /**
  * 重新加载用户信息
@@ -196,12 +224,11 @@ async function reload() {
   await baseFormApi.setValues(data.value || {});
 }
 
-reload();
+reload().catch((error) => console.error('Failed to load user data:', error));
 </script>
 
 <template>
   <Page
-    :title="$t('page.user.profile.tab.basicSettings')"
     :body-style="{ padding: 0 }"
     class="edge-card"
     style="margin: 0"
@@ -212,7 +239,11 @@ reload();
       </Col>
       <Col :span="10">
         <div class="mb-2">{{ $t('page.user.table.avatar') }}</div>
-        <Avatar :src="data?.avatar ?? ''" class="avatar-preview">
+        <Avatar
+          :src="data?.avatar || undefined"
+          :style="{ backgroundColor: data?.avatar ? undefined : 'hsl(var(--muted))' }"
+          class="avatar-preview"
+        >
           <span class="avatar-placeholder">
             {{ data?.username?.substring(0, 1) || '?' }}
           </span>
@@ -233,9 +264,66 @@ reload();
             {{ $t('page.user.button.deleteAvatar') }}
           </a-button>
         </div>
+
+        <!-- 账号归属信息（只读）：自助页里唯一能看到自己的角色/组织/岗位/租户的入口 -->
+        <a-descriptions
+          :column="1"
+          size="small"
+          class="account-info"
+          :label-style="{ width: '110px' }"
+        >
+          <a-descriptions-item :label="$t('page.user.profile.info.username')">
+            {{ data?.username || '-' }}
+          </a-descriptions-item>
+          <a-descriptions-item :label="$t('page.user.profile.info.roleNames')">
+            <a-tag
+              v-for="role in data?.roleNames"
+              :key="role"
+              :color="getRandomColor(role)"
+              class="info-tag"
+            >
+              {{ role }}
+            </a-tag>
+            <span v-if="!data?.roleNames?.length">-</span>
+          </a-descriptions-item>
+          <a-descriptions-item :label="$t('page.user.profile.info.orgUnitNames')">
+            <a-tag
+              v-for="orgUnit in data?.orgUnitNames"
+              :key="orgUnit"
+              :color="getRandomColor(orgUnit)"
+              class="info-tag"
+            >
+              {{ orgUnit }}
+            </a-tag>
+            <span v-if="!data?.orgUnitNames?.length">-</span>
+          </a-descriptions-item>
+          <a-descriptions-item :label="$t('page.user.profile.info.positionNames')">
+            <a-tag
+              v-for="position in data?.positionNames"
+              :key="position"
+              :color="getRandomColor(position)"
+              class="info-tag"
+            >
+              {{ position }}
+            </a-tag>
+            <span v-if="!data?.positionNames?.length">-</span>
+          </a-descriptions-item>
+          <a-descriptions-item :label="$t('page.user.profile.info.tenantName')">
+            {{ data?.tenantName || '-' }}
+          </a-descriptions-item>
+          <a-descriptions-item :label="$t('page.user.profile.info.lastLoginAt')">
+            {{ formatDateTime(data?.lastLoginAt ?? '') }}
+          </a-descriptions-item>
+          <a-descriptions-item :label="$t('page.user.profile.info.lastLoginIp')">
+            {{ data?.lastLoginIp || '-' }}
+          </a-descriptions-item>
+          <a-descriptions-item :label="$t('page.user.profile.info.createdAt')">
+            {{ formatDateTime(data?.createdAt ?? '') }}
+          </a-descriptions-item>
+        </a-descriptions>
       </Col>
     </Row>
-    <a-button type="primary" @click="handleSubmit">
+    <a-button type="primary" :loading="submitLoading" @click="handleSubmit">
       {{ $t('page.user.button.updateUserInfo') }}
     </a-button>
   </Page>
@@ -251,6 +339,16 @@ reload();
   // antd Avatar 无图时的默认底色是库内写死的 #ccc，配它自己的白字只有 1.60:1；
   // 占位字母要落到主题色上（与 detail/basic-info-page.vue 的 .avatar-placeholder 同规则）。
   background: hsl(var(--muted));
+
+  :deep(.ant-avatar-string) {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    height: 100% !important;
+    inset: 0 !important;
+    transform: none !important;
+  }
 }
 
 .avatar-placeholder {
@@ -270,6 +368,14 @@ reload();
   display: flex;
   gap: 8px;
   margin-top: 12px;
+}
+
+.account-info {
+  margin-top: 24px;
+}
+
+.info-tag {
+  margin: 0 4px 4px 0;
 }
 
 .edge-card {

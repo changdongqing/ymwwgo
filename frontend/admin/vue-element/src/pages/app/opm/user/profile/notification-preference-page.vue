@@ -134,6 +134,7 @@ async function handleSave() {
     });
     ElMessage.success($t("pages.user.profile.notification.saveSuccess"));
   } catch (error: any) {
+    console.error("Failed to save notification preferences:", error);
     ElMessage.error(error?.message || $t("pages.user.profile.notification.saveFailed"));
   } finally {
     saving.value = false;
@@ -186,9 +187,8 @@ async function handleSave() {
 
     :deep(.el-checkbox-group) {
       display: flex;
-      flex-direction: column;
-      gap: 8px;
-      align-items: flex-start;
+      flex-wrap: wrap;
+      gap: 8px 16px;
     }
   }
 }

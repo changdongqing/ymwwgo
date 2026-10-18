@@ -71,6 +71,7 @@
       "address": "住址",
       "region": "国家地区",
       "description": "个人描述",
+      "locale": "偏好语言",
       "lastLoginAt": "最后登录时间",
       "lastLoginIp": "最后登录IP",
       "roleId": "角色",
@@ -96,7 +97,8 @@
         "editPassword": "修改密码",
         "accountBind": "账号绑定",
         "activeSessions": "活跃会话",
-        "notification": "通知偏好"
+        "notification": "通知偏好",
+        "tenantUsage": "套餐用量"
       },
       "security": {
         "password": "登录密码",
@@ -143,6 +145,27 @@
         "transactionalNote": "验证码等事务性邮件不受本页配置影响，始终照常发送。",
         "startTime": "开始时间",
         "endTime": "结束时间"
+      },
+      "info": {
+        "username": "用户名",
+        "roleNames": "角色",
+        "orgUnitNames": "所属组织",
+        "positionNames": "所属岗位",
+        "tenantName": "所属租户",
+        "lastLoginAt": "最后登录时间",
+        "lastLoginIp": "最后登录IP",
+        "createdAt": "创建时间"
+      },
+      "usage": {
+        "plan": "当前套餐：",
+        "noPlan": "未订阅套餐",
+        "empty": "当前账号无套餐用量数据。",
+        "loading": "加载中…",
+        "reached": "已达上限",
+        "USER_LIMIT": "用户数",
+        "STORAGE": "存储空间 (MB)",
+        "API_CALL": "API 调用次数",
+        "AI_TOKENS": "AI Token 用量"
       }
     },
     "detail": {

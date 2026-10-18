@@ -164,9 +164,20 @@
   },
   "navbar": {
     "profile": "Profile",
+    "inbox": "Inbox",
+    "lockScreen": "Lock Screen",
     "logout": "Logout",
     "logoutConfirmTitle": "Notice",
     "logoutConfirmMessage": "Are you sure you want to logout and exit the system?"
+  },
+  "lockScreen": {
+    "title": "Lock Screen",
+    "placeholder": "Please enter password",
+    "lock": "Locking",
+    "unlock": "Click to unlock",
+    "entry": "Enter the system",
+    "backToLogin": "Back to login",
+    "errorTip": "Password error, please re-enter"
   },
   "sidebar": {
     "collapseMenu": "Collapse menu",

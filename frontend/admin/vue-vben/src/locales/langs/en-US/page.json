@@ -71,6 +71,7 @@
       "address": "Address",
       "region": "Region",
       "description": "Description",
+      "locale": "Preferred Language",
       "lastLoginAt": "Last Login At",
       "lastLoginIp": "Last Login IP",
       "roleId": "Role",
@@ -96,7 +97,8 @@
         "editPassword": "Change Password",
         "accountBind": "Account Bindings",
         "activeSessions": "Active Sessions",
-        "notification": "Notifications"
+        "notification": "Notifications",
+        "tenantUsage": "Plan Usage"
       },
       "security": {
         "password": "Login Password",
@@ -143,6 +145,27 @@
         "transactionalNote": "Transactional emails such as verification codes are not affected by this page and are always sent.",
         "startTime": "Start",
         "endTime": "End"
+      },
+      "info": {
+        "username": "Username",
+        "roleNames": "Roles",
+        "orgUnitNames": "Organizations",
+        "positionNames": "Positions",
+        "tenantName": "Tenant",
+        "lastLoginAt": "Last Login At",
+        "lastLoginIp": "Last Login IP",
+        "createdAt": "Created At"
+      },
+      "usage": {
+        "plan": "Current plan: ",
+        "noPlan": "No plan subscribed",
+        "empty": "This account has no plan usage data.",
+        "loading": "Loading…",
+        "reached": "Limit reached",
+        "USER_LIMIT": "Users",
+        "STORAGE": "Storage (MB)",
+        "API_CALL": "API Calls",
+        "AI_TOKENS": "AI Token Usage"
       }
     },
     "detail": {

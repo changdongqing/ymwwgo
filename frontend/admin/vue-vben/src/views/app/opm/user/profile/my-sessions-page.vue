@@ -41,6 +41,7 @@ async function handleRevoke(row: OnlineSession) {
     await revoke({ clientType: row.clientType, jti: row.jti });
     message.success($t('page.onlineSession.revokeSuccess'));
   } catch (error: any) {
+    console.error('Failed to revoke session:', error);
     message.error(error?.message || $t('page.onlineSession.revokeFailed'));
   } finally {
     submitting.value = false;
@@ -49,7 +50,7 @@ async function handleRevoke(row: OnlineSession) {
 </script>
 
 <template>
-  <Page auto-content-height>
+  <Page>
     <div class="my-sessions-page">
       <div class="page-hint">{{ $t('page.onlineSession.mySessionsHint') }}</div>
       <a-table

@@ -1,41 +1,30 @@
 <template>
   <div class="app-container h-full flex flex-1">
     <ElCard :bordered="false" class="profile-card">
-      <div class="profile-layout">
-        <!-- 左侧导航菜单 -->
-        <div class="profile-sidebar">
-          <div
-            v-for="item in settingList"
-            :key="item.key"
-            class="sidebar-item"
-            :class="{ active: activeTab === item.key }"
-            @click="activeTab = item.key"
-          >
-            {{ item.name }}
-          </div>
-        </div>
-
-        <!-- 右侧内容区域 -->
-        <div class="profile-content">
+      <ElTabs v-model="activeTab" tab-position="left" class="profile-tabs">
+        <ElTabPane
+          v-for="item in settingList"
+          :key="item.key"
+          :name="item.key"
+          :label="item.name"
+          lazy
+        >
           <div class="content-header">
-            <h2 class="content-title">
-              {{ settingList.find((item) => item.key === activeTab)?.name }}
-            </h2>
+            <h2 class="content-title">{{ item.name }}</h2>
           </div>
           <div class="content-body">
-            <component
-              :is="settingList.find((item) => item.key === activeTab)?.component"
-              @switch-tab="handleSwitchTab"
-            />
+            <component :is="item.component" @switch-tab="handleSwitchTab" />
           </div>
-        </div>
-      </div>
+        </ElTabPane>
+      </ElTabs>
     </ElCard>
   </div>
 </template>
 
 <script lang="ts" setup>
 import { ref } from "vue";
+
+import { ElCard, ElTabPane, ElTabs } from "element-plus";
 
 import BaseSettingPage from "./base-setting-page.vue";
 import EditPasswordPage from "./edit-password-page.vue";
@@ -44,7 +33,6 @@ import SecureSettingPage from "./secure-setting-page.vue";
 import MySessionsPage from "./my-sessions-page.vue";
 import NotificationPreferencePage from "./notification-preference-page.vue";
 import TenantUsagePanel from "./tenant-usage-panel.vue";
-import { useMyTenantUsage } from "@/api/composables";
 import { useAppUserStore } from "@/stores";
 
 import { $t } from "@/core/i18n";
@@ -111,63 +99,42 @@ const settingList = [
 .profile-card {
   height: 100%;
   flex: 1;
-}
-
-.profile-layout {
-  display: flex;
-  height: 100%;
-}
-
-// 左侧导航菜单
-.profile-sidebar {
-  width: 180px;
-  flex-shrink: 0;
-  border-right: 1px solid var(--el-border-color-lighter);
-  padding: 16px 0;
-
-  .sidebar-item {
-    padding: 12px 20px;
-    cursor: pointer;
-    font-size: 14px;
-    color: var(--el-text-color-regular);
-    transition: all 0.3s;
-    position: relative;
-
-    &:hover {
-      background-color: var(--el-fill-color-light);
-      color: var(--gowind-primary-text);
-    }
-
-    &.active {
-      color: var(--gowind-primary-text);
-      font-weight: 500;
-
-      &::after {
-        content: "";
-        position: absolute;
-        right: 0;
-        top: 50%;
-        transform: translateY(-50%);
-        width: 3px;
-        height: 24px;
-        background-color: var(--el-color-primary);
-        border-radius: 2px;
-      }
-    }
+  :deep(.el-card__body) {
+    height: 100%;
+    display: flex;
   }
 }
 
-// 右侧内容区域
-.profile-content {
+.profile-tabs {
+  height: 100%;
   flex: 1;
-  overflow-y: auto;
-  padding: 20px 24px;
+  display: flex;
+
+  // 左页签栏宽度对齐另两端（vben 与 react 均为 220px）
+  :deep(.el-tabs__header.is-left) {
+    width: 220px;
+    margin-right: 0;
+  }
+
+  :deep(.el-tabs__nav-wrap) {
+    padding-right: 16px;
+  }
+
+  :deep(.el-tabs__content) {
+    flex: 1;
+    padding: 8px 24px 0 0;
+    overflow: hidden;
+  }
+
+  :deep(.el-tab-pane) {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
 }
 
 .content-header {
   margin-bottom: 24px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid var(--el-border-color-lighter);
 
   .content-title {
     margin: 0;
@@ -179,5 +146,6 @@ const settingList = [
 
 .content-body {
   min-height: 400px;
+  overflow-y: auto;
 }
 </style>

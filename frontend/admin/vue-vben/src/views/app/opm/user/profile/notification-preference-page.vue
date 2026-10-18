@@ -97,6 +97,7 @@ async function handleSave() {
     });
     message.success($t('page.user.profile.notification.saveSuccess'));
   } catch (error: any) {
+    console.error('Failed to save notification preferences:', error);
     message.error(error?.message || $t('page.user.profile.notification.saveFailed'));
   } finally {
     saving.value = false;
@@ -105,7 +106,7 @@ async function handleSave() {
 </script>
 
 <template>
-  <Page auto-content-height>
+  <Page>
     <div class="notification-preference-page">
       <h3 class="section-title">{{ $t('page.user.profile.notification.quietTitle') }}</h3>
       <div class="section-hint">
@@ -218,9 +219,8 @@ async function handleSave() {
 
     .category-list {
       display: flex;
-      flex-direction: column;
-      gap: 8px;
-      align-items: flex-start;
+      flex-wrap: wrap;
+      gap: 8px 16px;
     }
   }
 }

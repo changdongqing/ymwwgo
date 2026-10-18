@@ -54,36 +54,13 @@
 
       <!-- 用户头像下拉 -->
       <div class="navbar-action navbar-action--profile">
-        <el-dropdown trigger="click">
-          <div class="user-profile">
-            <img
-              :src="userStore.userInfo?.avatar || '/default-avatar.png'"
-              class="user-profile__avatar"
-            />
-            <span class="user-profile__name">{{ userStore.userInfo?.username || "" }}</span>
-          </div>
-          <template #dropdown>
-            <el-dropdown-menu>
-              <el-dropdown-item @click="handleProfileClick">
-                {{ t("common.navbar.profile") }}
-              </el-dropdown-item>
-              <el-dropdown-item divided @click="logout">
-                {{ t("common.navbar.logout") }}
-              </el-dropdown-item>
-            </el-dropdown-menu>
-          </template>
-        </el-dropdown>
+        <UserDropdown />
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { useI18n } from "vue-i18n";
-import { useRoute, useRouter } from "vue-router";
-
-import { useAppUserStore } from "@/stores";
-import { useAuth } from "@/composables/use-auth";
 import { preferences, preferencesManager } from "@/core/preferences";
 import SvgIcon from "@/components/SvgIcon/index.vue";
 
@@ -93,12 +70,7 @@ import ThemeSwitch from "@/components/ThemeSwitch/index.vue";
 import LangSelect from "@/components/LangSelect/index.vue";
 import LayoutFullscreen from "./LayoutFullscreen.vue";
 import NoticeDropdown from "@/components/NoticeDropdown/index.vue";
-
-const { t } = useI18n();
-const route = useRoute();
-const router = useRouter();
-const userStore = useAppUserStore();
-const authStore = useAuth();
+import UserDropdown from "./UserDropdown.vue";
 
 // 偏好设置引用
 const widget = computed(() => preferences.widget);
@@ -132,29 +104,6 @@ function handleRefresh() {
   contentRefreshKey.value++;
   nextTick(() => {
     contentRefreshing.value = false;
-  });
-}
-
-/** 打开个人中心 */
-function handleProfileClick() {
-  router.push({ name: "UserProfile" });
-}
-
-/** 退出登录 */
-function logout() {
-  ElMessageBox.confirm(
-    t("common.navbar.logoutConfirmMessage"),
-    t("common.navbar.logoutConfirmTitle"),
-    {
-      confirmButtonText: t("common.button.confirm"),
-      cancelButtonText: t("common.button.cancel"),
-      type: "warning",
-      lockScroll: false,
-    }
-  ).then(() => {
-    authStore.logout().then(() => {
-      router.push(`/login?redirect=${route.fullPath}`);
-    });
   });
 }
 
@@ -255,9 +204,11 @@ function handleSettingsClick() {
   }
 
   // 用户头像区域：不放大，仅显示柔和背景
+  // 文字色在此设定，UserDropdown 内部用 currentColor 继承（子组件拿不到本文件的 scoped 类）
   &--profile {
     min-width: auto;
     padding: 0 4px;
+    color: var(--el-text-color-regular);
     transform: none !important;
 
     &:hover {
@@ -296,6 +247,12 @@ function handleSettingsClick() {
     }
   }
 
+  // 深色顶栏两种语境下，头像旁的用户名跟着提亮
+  html.dark &--profile,
+  html.semi-dark-header &--profile {
+    color: rgba(255, 255, 255, 0.85);
+  }
+
   // 折叠按钮激活状态
   .svg-local-icon--collapse {
     transition: transform 0.2s ease;
@@ -312,50 +269,6 @@ function handleSettingsClick() {
 
     &.is-spin {
       animation: spin 0.6s linear;
-    }
-  }
-}
-
-// ==================== 用户头像 ====================
-.user-profile {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 40px;
-  padding: 0 4px;
-  cursor: pointer;
-  border-radius: 8px;
-  transition: background-color 0.2s ease;
-
-  &__avatar {
-    flex-shrink: 0;
-    width: 28px;
-    height: 28px;
-    overflow: hidden;
-    border-radius: 50%;
-    object-fit: cover;
-    object-position: center;
-  }
-
-  &__name {
-    margin-left: 8px;
-    font-size: 14px;
-    color: var(--el-text-color-regular);
-    white-space: nowrap;
-    transition: color 0.2s ease;
-  }
-
-  // 暗黑模式
-  html.dark & {
-    &__name {
-      color: rgba(255, 255, 255, 0.85);
-    }
-  }
-
-  // 半深色顶栏
-  html.semi-dark-header & {
-    &__name {
-      color: rgba(255, 255, 255, 0.85);
     }
   }
 }

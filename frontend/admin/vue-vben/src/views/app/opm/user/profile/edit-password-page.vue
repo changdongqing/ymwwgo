@@ -90,9 +90,10 @@ async function handleSubmit() {
       message: $t('ui.notification.password_changed'),
     });
     authStore.forceLogout();
-  } catch {
+  } catch (error: any) {
+    console.error('Failed to change password:', error);
     notification.error({
-      message: $t('ui.notification.update_failed'),
+      message: error?.message || $t('ui.notification.update_failed'),
     });
   } finally {
     setLoading(false);
@@ -117,7 +118,7 @@ reload();
 </script>
 
 <template>
-  <Page :title="$t('page.user.profile.tab.editPassword')">
+  <Page>
     <BaseForm />
     <a-button type="primary" :loading="submitLoading" @click="handleSubmit">
       {{ $t('page.user.button.updatePassword') }}

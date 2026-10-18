@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Button, Checkbox, DatePicker, Spin, Switch, Typography, App } from 'antd';
+import { Button, Checkbox, TimePicker, Spin, Switch, Typography, App } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '@/api/client';
@@ -14,6 +14,9 @@ const { Text, Title } = Typography;
  *  - 静音时段只抑制 SSE 实时推送（桌面通知/角标即时性），收件行照常落库；
  *  - 分类退订只约束全员广播，点对点定向发送不受影响。
  * 验证码等事务性出站邮件不经偏好层，不受本页任何配置影响。
+ *
+ * 静音时段使用两个独立的时间选择器（而非 RangePicker），以支持跨零点窗口（如 22:00 至 08:00）。
+ * RangePicker 会强制 start < end，无法表达合法的跨天区间。
  */
 
 const minutesToDayjs = (minutes: number) => dayjs().startOf('day').add(minutes, 'minute');
@@ -38,26 +41,22 @@ const NotificationPreference = () => {
   });
 
   const [quietEnabled, setQuietEnabled] = useState<boolean>(false);
-  const [quietRange, setQuietRange] = useState<[Dayjs | undefined, Dayjs | undefined]>([
-    minutesToDayjs(1320),
-    minutesToDayjs(480),
-  ]);
+  const [quietStart, setQuietStart] = useState<Dayjs | undefined>(minutesToDayjs(1320));
+  const [quietEnd, setQuietEnd] = useState<Dayjs | undefined>(minutesToDayjs(480));
   const [mutedCategoryIds, setMutedCategoryIds] = useState<number[]>([]);
 
   useEffect(() => {
     const pref = prefQuery.data;
     if (!pref) return;
     setQuietEnabled(!!pref.quietEnabled);
-    setQuietRange([
-      minutesToDayjs(pref.quietStartMinute ?? 1320),
-      minutesToDayjs(pref.quietEndMinute ?? 480),
-    ]);
+    setQuietStart(minutesToDayjs(pref.quietStartMinute ?? 1320));
+    setQuietEnd(minutesToDayjs(pref.quietEndMinute ?? 480));
     setMutedCategoryIds(pref.mutedCategoryIds ?? []);
   }, [prefQuery.data]);
 
   const handleSave = useCallback(async () => {
-    const startMinute = dayjsToMinutes(quietRange[0]);
-    const endMinute = dayjsToMinutes(quietRange[1]);
+    const startMinute = dayjsToMinutes(quietStart);
+    const endMinute = dayjsToMinutes(quietEnd);
     if (quietEnabled && (startMinute === undefined || endMinute === undefined)) {
       message.warning(t('notification.quietTimeRequired'));
       return;
@@ -78,11 +77,12 @@ const NotificationPreference = () => {
       message.success(t('notification.saveSuccess'));
       prefQuery.refetch();
     } catch (error: any) {
+      console.error('Failed to save notification preferences:', error);
       message.error(error.message || t('notification.saveFailed'));
     } finally {
       setSaving(false);
     }
-  }, [quietEnabled, quietRange, mutedCategoryIds, prefQuery, message, t]);
+  }, [quietEnabled, quietStart, quietEnd, mutedCategoryIds, prefQuery, message, t]);
 
   if (prefQuery.isLoading) {
     return <Spin style={{ display: 'block', margin: '48px auto' }} />;
@@ -111,16 +111,28 @@ const NotificationPreference = () => {
           <Text type="secondary" style={{ display: 'block', marginBottom: 8 }}>
             {t('notification.quietTimeRange')}
           </Text>
-          {/* antd6 的 TimePicker.RangePicker 类型面已移除，时间范围走 DatePicker.RangePicker + picker="time" */}
-          <DatePicker.RangePicker
-            picker="time"
-            value={quietRange}
-            onChange={(values) => setQuietRange([values?.[0] ?? undefined, values?.[1] ?? undefined])}
-            format="HH:mm"
-            minuteStep={5}
-            allowClear={false}
-            style={{ width: 260 }}
-          />
+          {/* 两个独立的时间选择器，支持跨零点窗口（如 22:00 至 08:00） */}
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <TimePicker
+              value={quietStart}
+              onChange={(value) => setQuietStart(value ?? undefined)}
+              format="HH:mm"
+              minuteStep={5}
+              allowClear={false}
+              placeholder={t('notification.startTime')}
+              style={{ width: 130 }}
+            />
+            <span>-</span>
+            <TimePicker
+              value={quietEnd}
+              onChange={(value) => setQuietEnd(value ?? undefined)}
+              format="HH:mm"
+              minuteStep={5}
+              allowClear={false}
+              placeholder={t('notification.endTime')}
+              style={{ width: 130 }}
+            />
+          </div>
         </div>
       )}
 
@@ -132,7 +144,7 @@ const NotificationPreference = () => {
             options={categoryOptions}
             value={mutedCategoryIds}
             onChange={(values) => setMutedCategoryIds(values as number[])}
-            style={{ display: 'flex', flexDirection: 'column', gap: 8 }}
+            style={{ display: 'flex', flexWrap: 'wrap', gap: '8px 16px' }}
           />
         ) : (
           <Text type="secondary">{t('notification.noCategories')}</Text>

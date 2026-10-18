@@ -87,8 +87,9 @@ async function handleSendCode() {
   try {
     await apiClient.userProfileService.BindContact({ email: { email } });
     codeSent.value = true;
-    message.success($t('page.user.profile.bind.vcodeSent'));
+    message.success($t('page.user.profile.bind.codeSent'));
   } catch (error: any) {
+    console.error('Failed to send bind code:', error);
     message.error(error?.message || $t('page.user.profile.bind.vcodeSendFailed'));
   } finally {
     sending.value = false;
@@ -111,6 +112,7 @@ async function handleVerify() {
     // 刷新用户信息以更新绑定状态展示
     queryClient.invalidateQueries({ queryKey: ['getMe'] });
   } catch (error: any) {
+    console.error('Failed to verify bind code:', error);
     message.error(error?.message || $t('page.user.profile.bind.bindFailed'));
   } finally {
     verifying.value = false;
@@ -120,7 +122,7 @@ async function handleVerify() {
 </script>
 
 <template>
-  <Page :title="$t('page.user.profile.tab.accountBind')">
+  <Page>
     <List>
       <template v-for="item in bindList" :key="item.key">
         <ListItem>
