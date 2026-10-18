@@ -118,7 +118,7 @@ const pageConfig = computed<ProPageConfig>(() => ({
       },
       {
         type: "date-picker",
-        label: $t("common.table.createdAt"),
+        label: $t("pages.internal_message.createdAt"),
         field: "createdAt",
         attrs: {
           type: "datetimerange",
@@ -223,7 +223,7 @@ const pageConfig = computed<ProPageConfig>(() => ({
       },
       {
         prop: "createdAt",
-        label: $t("common.table.createdAt"),
+        label: $t("pages.internal_message.createdAt"),
         width: 160,
         cellType: "date",
         dateFormat: "YYYY-MM-DD HH:mm:ss",

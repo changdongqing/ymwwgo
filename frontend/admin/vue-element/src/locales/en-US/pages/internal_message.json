@@ -1,5 +1,5 @@
 {
-  "moduleName": "Internal Message",
+  "moduleName": "Message",
   "title": "Title",
   "status": "Status",
   "type": "Type",
@@ -7,7 +7,7 @@
   "categoryName": "Category Name",
   "content": "Content",
   "senderName": "Sender",
-  "createdAt": "Created At",
+  "createdAt": "Received At",
   "readAt": "Read At",
   "recipientUserInbox": "User Inbox",
   "button": {

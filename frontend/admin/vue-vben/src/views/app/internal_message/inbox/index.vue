@@ -70,7 +70,7 @@ const formOptions: VbenFormProps = {
       // created_at__gte/lte（操作符后缀表内，不会被误加 __contains）
       component: 'RangePicker',
       fieldName: 'createdAt',
-      label: $t('ui.table.createdAt'),
+      label: $t('page.internalMessage.createdAt'),
       componentProps: {
         showTime: true,
         allowClear: true,
@@ -183,7 +183,7 @@ const gridOptions: VxeGridProps<InternalMessageRecipient> = {
       width: 160,
     },
     {
-      title: $t('ui.table.createdAt'),
+      title: $t('page.internalMessage.createdAt'),
       field: 'createdAt',
       formatter: 'formatDateTime',
       width: 160,

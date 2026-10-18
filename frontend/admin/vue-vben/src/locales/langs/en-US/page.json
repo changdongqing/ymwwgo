@@ -443,14 +443,15 @@
     }
   },
   "internalMessage": {
-    "moduleName": "Message Management",
-    "title": "Message Subject",
+    "moduleName": "Message",
+    "title": "Title",
     "content": "Message Content",
     "type": "Message Type",
-    "status": "Message Status",
+    "status": "Status",
     "categoryName": "Category",
     "senderName": "Sender",
     "categoryId": "Category",
+    "createdAt": "Received At",
     "readAt": "Read At",
     "detail": "Message Detail",
     "button": {
