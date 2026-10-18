@@ -453,7 +453,7 @@ Tailwind 灰阶（`slate-400` 在白底 2.60、在 `#F5F5F5` 上 2.38，`zinc-50
 |---|---|---|
 | 主色 / 语义色 2.1 | `src/core/preferences/config/default.ts:91`（success `:92`、warning `:93`、destructive `:90`） | `colorPrimary: "hsl(212 100% 45%)"` |
 | 圆角 2.4 | 同上 `:95`；大圆角在 `config/darkTheme.ts:72` | `radius: "8"`、`borderRadiusLG: 12` |
-| 暗色分层 2.3 | `config/darkTheme.ts:41,42,44,46` | `colorBgBase/colorBgLayout: '#0B0F19'`、`colorBgContainer: '#111827'`、`colorBgElevated: '#1C2128'` |
+| 暗色分层 2.3 | `config/darkTheme.ts:41,42,44,46`；折叠弹层另补 `:129` | `colorBgBase/colorBgLayout: '#0B0F19'`、`colorBgContainer: '#111827'`、`colorBgElevated: '#1C2128'`、`Menu.darkPopupBg: '#1C2128'`（antd 出厂 `#001529` 藏青，见 §4「侧边栏菜单交互态」末注） |
 | 主色 α（暗色） | `config/darkTheme.ts:91,107,108,109` | `activeShadow …0.12`、`rowHoverBg …0.08`、`rowSelectedBg …0.15`、`rowSelectedHoverBg …0.2`，全为 `rgba(0, 107, 230, …)` |
 | 顶栏 50 | `src/layouts/MainLayout/index.tsx:301` | `height: 50` |
 | 折叠 48 / 展开 224 | `src/layouts/MainLayout/components/SiderMenu/index.tsx:115` | `isCollapsed ? 48 : (sidebarConfig?.width ?? 224)` |
@@ -562,16 +562,18 @@ Tailwind 灰阶（`slate-400` 在白底 2.60、在 `#F5F5F5` 上 2.38，`zinc-50
   **两个键不是冗余**：cssVar 模式下它们喂不同变量——`.ant-menu-dark`（侧栏暗色走这个，`SiderMenu/index.tsx` 的 `theme=isDark?'dark':'light'`）
   读 `--ant-menu-dark-sub-menu-item-bg` ← `darkSubMenuItemBg`；`.ant-menu-light` 读 `--ant-menu-sub-menu-item-bg` ← `subMenuItemBg`。
   只写后者时暗色侧栏纹丝不动（实测 `--ant-menu-dark-sub-menu-item-bg` 仍 `#000c17`）。
-  另记两条**同族出厂档尚未接管**（本轮未动，待决）：`darkItemBg`/`darkPopupBg` 仍是 `#001529`——根 UL 靠 `SiderMenu/index.tsx:229` 的 inline
-  `background:'transparent'` 盖住了，而**折叠态弹出的子菜单浮层没有这层保护**（2026-10-18 实测确认）：
-  让 Menu 真正进入 `ant-menu-inline-collapsed` 需要 `sidebar.expandOnHover=false` + `collapsed=true`（自动模式下点底部折叠按钮只改偏好，
-  宽度由 hover 决定——此前"点了没折叠"是这条，不是缺陷），此时 portal 里承载弹出的
-  `.ant-menu-submenu-popup > .ant-menu.ant-menu-sub.ant-menu-vertical` 计算底色 = **`rgb(0,21,41)` = 出厂藏青 `#001529`**，圆角 12、
-  投影 `rgba(0,0,0,.45) 0 6px 16px + rgba(0,0,0,.3) 0 3px 6px`（这条合 §2.3「投影必须用黑」，不动）。同层里的**选中项已合规**
-  （实测 `#035EC7` 实底 + `#F8FAFC` 字），所以露馅的只有浮层容器底一档。它与 §2.3 浮层档 `#1C2128` 的差不是可读性（`#F8FAFC` 在其上 17.61 vs 15.38）
-  而是**色系归属**：`#001529` 比本项目的暗色蓝黑系更暗、更偏蓝。修法是给 `config/darkTheme.ts` 的 `Menu` 段补 `darkPopupBg`（连带 `darkItemBg`）指到
-  `#1C2128`；**未批、代码未动**。可见态仍缺一环：内嵌面板 `visibilityState=hidden` 时那层 popup 停在 `ant-menu-submenu-hidden`（`display:none`），
-  合成 hover 与直调 fiber 的 `onMouseEnter` 都唤不开它，所以底色取自"antd 用来显示它的那个元素"的计算样式，而非截图。
+  同族的 `darkItemBg`/`darkPopupBg` 出厂都是 `#001529`（藏青）。根 UL 靠 `SiderMenu/index.tsx:229` 的 inline `background:'transparent'` 盖住了，
+  而**折叠态弹出的子菜单浮层没有这层保护**（2026-10-18 实测确认后已修）：让 Menu 真正进入 `ant-menu-inline-collapsed` 需要
+  `sidebar.expandOnHover=false` + `collapsed=true`（自动模式下点底部折叠按钮只改偏好，宽度由 hover 决定——此前"点了没折叠"是这条，不是缺陷），
+  此时 portal 里承载弹出的 `.ant-menu-submenu-popup > .ant-menu.ant-menu-sub.ant-menu-vertical` 计算底色 = `rgb(0,21,41)` = 出厂藏青；
+  它的圆角 12 与投影 `rgba(0,0,0,.45) 0 6px 16px + rgba(0,0,0,.3) 0 3px 6px` 本就分别合 §2.4 与 §2.3「投影必须用黑」，同层选中项也已是
+  `#035EC7` 实底 + `#F8FAFC` 字 ⇒ **露馅的只有浮层容器底一档**。这一档与 §2.3 浮层 `#1C2128` 的差不是可读性（`#F8FAFC` 在其上 17.61 vs 15.38）
+  而是**色系归属**：藏青比本项目的暗色蓝黑系更暗、更偏蓝，和抽屉/下拉摆在一起会分出"两套黑"。
+  **落点（2026-10-18，react）**= `config/darkTheme.ts` 的 `Menu.darkPopupBg: '#1C2128'` 一行；`darkItemBg` 未动——查过 antd 源码，
+  `darkPopupBg → popupBg`、`darkItemBg → itemBg` 是两个键，绘制弹层的那条规则现读
+  `:where(…).ant-menu-dark.ant-menu-submenu-popup > .ant-menu { background-color: var(--ant-menu-dark-popup-bg) }`，只由前者驱动。
+  仍缺的一环：可见态没有截图——内嵌面板 `visibilityState=hidden` 时那层 popup 停在 `ant-menu-submenu-hidden`（`display:none`），
+  合成 hover 与直调 fiber 的 `onMouseEnter` 都唤不开它，所以改前底色取自"antd 用来显示它的那个元素"的计算样式、改后由那条 var 与规则双向对上。
 - **实底主色标"位置"，不标"次级动作"（2026-09-29 定稿，基准 = react）**：实底主色块留给状态标识（上一条的导航选中、列表/分页的当前选中）与页面级主行动（提交、发送）；
   **列表面板里的"新建 X"这类次级动作按钮一律中性描边**——它和导航选中同色同形时，用户分不清哪个是菜单高亮、哪个是按钮。
   踩坑实测（ele `/ai/chat` 左栏）：`<ElButton type="primary" plain>` 浅色下是淡底 `#E6F0FD` + 文字档 `#0162D2`（4.96 ✓），

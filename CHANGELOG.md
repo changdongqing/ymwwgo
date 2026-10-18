@@ -56,6 +56,11 @@
   现只在认证表单作用域、且只在暗色提到次要档 `#8B949E`（实测 5.77:1），全站 token 与暗色那条 `!important`
   规则不动；浅色按用户判断保持原值（§2.2 本就记着 react 浅色 token 故意不含 `colorTextPlaceholder`）。
   四个字段加 MFA 输入框同时补上 `aria-label`，让字段名不再只靠颜色传达。
+- 暗色折叠后弹出的子菜单浮层不再露出厂藏青（react）：那一层是浮层，按 §2.3 该吃 `#1C2128`，实测却是
+  antd 出厂 `darkPopupBg` = `#001529`——比本项目的暗色蓝黑系更暗、更偏蓝，和抽屉/下拉摆在一起能一眼分出
+  "两套黑"（不是可读性问题：`#F8FAFC` 在其上 17.61:1）。现给 `darkTheme.ts` 的 `Menu` 段补
+  `darkPopupBg: '#1C2128'`；`darkItemBg` 保持出厂未动，它只喂根 UL，而那层早已被 `SiderMenu` 的
+  inline `background: 'transparent'` 盖住。弹层的圆角 12 与黑 α 投影本就合规，逐值未改。
 
 ## [1.4.0] - 2026-10-15
 

@@ -122,5 +122,10 @@ export const darkThemeComponents: ThemeConfig['components'] = {
     // 只改后者时暗色侧栏纹丝不动（#000c17 依旧），这就是本条注释存在的理由。
     darkSubMenuItemBg: 'transparent',
     subMenuItemBg: 'transparent',
+    // 折叠后弹出的子菜单浮层是「浮层」，取 §2.3 的 #1C2128，不是 antd 出厂藏青 #001529。
+    // 根 UL 有 SiderMenu/index.tsx:229 的 inline background:'transparent' 兜着，portal 里这一层没有。
+    // 只补这一个键：实测弹层容器底读 --ant-menu-dark-popup-bg ← darkPopupBg；
+    // darkItemBg → itemBg 只喂根 UL（已被 inline 盖住），动它属无据扩面。
+    darkPopupBg: '#1C2128',
   },
 };
