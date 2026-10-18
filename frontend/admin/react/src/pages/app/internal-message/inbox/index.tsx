@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 import type { ProColumns, ActionType } from '@ant-design/pro-components';
+import dayjs, { type Dayjs } from 'dayjs';
 import TableExportButton from '@/components/common/TableExportButton';
 import ListTable from '@/components/common/ListTable';
 import { Button, Popconfirm, Tag, App } from 'antd';
@@ -135,6 +136,27 @@ const InboxList = () => {
       width: 180,
       valueType: 'dateTime',
       hideInSearch: true,
+    },
+    {
+      // 创建时间区间搜索：只进搜索表单不进表格；transform 映射为 go-crud 的时间范围
+      // 操作符（__gte/__lte 在 PaginationQuery 的操作符后缀表里，不会被误加 __contains）
+      title: t('createdAt'),
+      dataIndex: 'createdAt',
+      valueType: 'dateTimeRange',
+      hideInTable: true,
+      search: {
+        transform: (values?: Array<string | Dayjs>) => {
+          const fmt = (v?: string | Dayjs) =>
+            typeof v === 'string' ? v : v ? dayjs(v).format('YYYY-MM-DD HH:mm:ss') : undefined;
+          return {
+            created_at__gte: fmt(values?.[0]),
+            created_at__lte: fmt(values?.[1]),
+          };
+        },
+      },
+      fieldProps: {
+        showTime: true,
+      },
     },
     {
       title: t('action'),
