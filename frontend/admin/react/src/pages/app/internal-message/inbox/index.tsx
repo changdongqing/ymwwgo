@@ -103,6 +103,12 @@ const InboxList = () => {
       title: t('title'),
       dataIndex: 'title',
       ellipsis: true,
+      // 字段级宽度 = span(8) × colSize：标题 8 / 状态 5 / 接收时间 11
+      colSize: 1,
+      // 搜索输入框撑满列宽（三等分中的一份）
+      fieldProps: {
+        style: { width: '100%' },
+      },
       render: (_, record) => (
         <a onClick={() => openDetail(record)} style={{ cursor: 'pointer' }}>
           {record.title || '-'}
@@ -113,6 +119,7 @@ const InboxList = () => {
       title: t('status'),
       dataIndex: 'status',
       valueType: 'select',
+      colSize: 0.625,
       fieldProps: {
         options: getRecipientStatusOptions(t),
       },
@@ -139,10 +146,13 @@ const InboxList = () => {
     },
     {
       // 创建时间区间搜索：只进搜索表单不进表格；transform 映射为 go-crud 的时间范围
-      // 操作符（__gte/__lte 在 PaginationQuery 的操作符后缀表里，不会被误加 __contains）
+      // 操作符（__gte/__lte 在 PaginationQuery 的操作符后缀表里，不会被误加 __contains）。
+      // span 11/24：showTime 双输入 RangePicker 内容固有宽约 390px，span 8 的列
+      // （侧栏展开 1650px 视口约 420px）放不下「标签+控件」，整列会塌陷
       title: t('createdAt'),
       dataIndex: 'createdAt',
       valueType: 'dateTimeRange',
+      colSize: 1.375,
       hideInTable: true,
       search: {
         transform: (values?: Array<string | Dayjs>) => {
@@ -269,8 +279,9 @@ const InboxList = () => {
           search={{
             labelWidth: 'auto',
             defaultCollapsed: false,
-            // 三个搜索字段各占 8/24 等宽三等分（span 控行容量，仓库定式）：
-            // 不设 span 时 QueryFilter 按标签宽自适应，列宽参差且区间控件会把标签挤换行
+            // 全局 span 8，各字段再乘自己的 colSize（标题 1 / 状态 0.625 / 接收时间
+            // 1.375）= 8/5/11 共 24 一行放下：状态列最窄（标签短、下拉瘦），
+            // 让宽给内容固有宽约 390px 的双输入区间控件
             span: 8,
           }}
           pagination={false}
