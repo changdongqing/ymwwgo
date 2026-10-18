@@ -450,6 +450,7 @@
     "status": "状态",
     "categoryName": "消息分类",
     "senderName": "发送人",
+    "senderSystem": "系统",
     "categoryId": "消息分类",
     "createdAt": "接收时间",
     "readAt": "已读时间",

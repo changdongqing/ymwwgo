@@ -450,6 +450,7 @@
     "status": "Status",
     "categoryName": "Category",
     "senderName": "Sender",
+    "senderSystem": "System",
     "categoryId": "Category",
     "createdAt": "Received At",
     "readAt": "Read At",
