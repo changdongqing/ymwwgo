@@ -78,8 +78,11 @@ const gridOptions: VxeGridProps<InternalMessageRecipient> = {
   proxyConfig: {
     ajax: {
       query: async ({ page }, formValues) => {
-        // 收件箱按当前登录用户过滤
+        // 收件箱按当前登录用户过滤。userId 未就绪（会话静默恢复期 profile 拉取失败等）
+        // 必须空返回而不是省略过滤——PaginationQuery 会剥掉 undefined 条目，请求变成
+        // 无 recipient 过滤，按租户列出其他用户的收件记录（静默越权）。
         const userId = userStore.userInfo?.id;
+        if (!userId) return { items: [], total: 0 };
 
         return await fetchListUserInbox(
           new PaginationQuery({
@@ -88,7 +91,7 @@ const gridOptions: VxeGridProps<InternalMessageRecipient> = {
               pageSize: page.pageSize,
             },
             formValues: {
-              recipient_user_id: userId?.toString(),
+              recipient_user_id: userId.toString(),
               title: formValues.title,
               status: formValues.status,
             },

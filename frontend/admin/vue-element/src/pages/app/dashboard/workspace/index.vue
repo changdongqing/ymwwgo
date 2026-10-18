@@ -195,7 +195,10 @@ const todayText = computed(() => {
   return $t("pages.dashboard.workspace.today", { date });
 });
 
-// 站内信未读数与最近消息：queryKey 与收件箱页共用（PaginationQuery 结构相同），缓存天然共享
+// 站内信未读数与最近消息：queryKey 与收件箱页共用（PaginationQuery 结构相同），缓存天然共享。
+// userInfo 未就绪时禁用查询：空串/undefined 会被 PaginationQuery 剥掉，
+// 请求变成无 recipient 过滤的租户级查询，列出其他用户的收件记录。
+const hasUserId = computed(() => !!userStore.userInfo?.id);
 const unreadQuery = useListUserInbox(
   new PaginationQuery({
     paging: { page: 1, pageSize: 1 },
@@ -203,7 +206,8 @@ const unreadQuery = useListUserInbox(
       recipient_user_id: String(userStore.userInfo?.id ?? ""),
       status: "RECEIVED",
     },
-  })
+  }),
+  { enabled: hasUserId }
 );
 const unreadCount = computed(() => unreadQuery.data.value?.total ?? 0);
 
@@ -211,7 +215,8 @@ const inboxRecentQuery = useListUserInbox(
   new PaginationQuery({
     paging: { page: 1, pageSize: 5 },
     formValues: { recipient_user_id: String(userStore.userInfo?.id ?? "") },
-  })
+  }),
+  { enabled: hasUserId }
 );
 const inboxItems = computed(() => inboxRecentQuery.data.value?.items ?? []);
 
