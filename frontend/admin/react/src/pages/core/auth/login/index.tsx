@@ -16,12 +16,14 @@ import { fetchTenantBranding } from '@/api/hooks/tenant-branding';
 const CaptchaField: React.FC<{
   value?: string;
   onChange?: (...event: any[]) => void;
+  label?: string;
   placeholder?: string;
   imageEl?: React.ReactNode;
-}> = ({ value, onChange, placeholder, imageEl }) => (
+}> = ({ value, onChange, label, placeholder, imageEl }) => (
   <div className="flex items-center gap-2">
     <Input
       prefix={<SafetyOutlined />}
+      aria-label={label}
       placeholder={placeholder}
       autoComplete="off"
       value={value}
@@ -224,6 +226,7 @@ const Login: React.FC = () => {
           <Form.Item name="tenant_code" className="login-form-item">
             <Input
               prefix={<UserOutlined />}
+              aria-label={t('tenantCodeLabel')}
               placeholder={t('tenantCodePlaceholder')}
               autoComplete="off"
               onBlur={(e: React.FocusEvent<HTMLInputElement>) => {
@@ -244,6 +247,7 @@ const Login: React.FC = () => {
           >
             <Input
               prefix={<UserOutlined />}
+              aria-label={t('usernameLabel')}
               placeholder={t('usernamePlaceholder')}
               autoComplete="username"
             />
@@ -261,6 +265,7 @@ const Login: React.FC = () => {
           >
             <Input.Password
               prefix={<LockOutlined />}
+              aria-label={t('passwordLabel')}
               placeholder={t('passwordPlaceholder')}
               autoComplete="current-password"
             />
@@ -279,6 +284,7 @@ const Login: React.FC = () => {
             className="login-form-item"
           >
             <CaptchaField
+              label={t('captchaLabel')}
               placeholder={t('captchaPlaceholder')}
               imageEl={captchaImageEl}
             />
