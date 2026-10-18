@@ -77,7 +77,8 @@ const ai: RouteRecordRaw[] = [
         path: 'providers',
         name: 'AiProviderManagement',
         meta: {
-          order: 2,
+          // 与 react 基准一致：1-5 连号，配置类 providers 收尾（原误标 2 与 query 撞号）
+          order: 6,
           icon: 'lucide:cpu',
           title: $t('menu.ai.providers'),
           authority: ['sys:platform_admin'],

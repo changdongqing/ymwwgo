@@ -33,7 +33,7 @@ const permission: RouteRecordRaw[] = [
         path: 'menus',
         name: 'MenuManagement',
         meta: {
-          order: 1,
+          order: 2,
           icon: 'lucide:square-menu',
           title: $t('menu.permission.menu'),
           authority: ['sys:platform_admin'],
@@ -45,7 +45,7 @@ const permission: RouteRecordRaw[] = [
         path: 'apis',
         name: 'APIManagement',
         meta: {
-          order: 2,
+          order: 3,
           icon: 'lucide:route',
           title: $t('menu.permission.api'),
           authority: ['sys:platform_admin'],
@@ -57,7 +57,7 @@ const permission: RouteRecordRaw[] = [
         path: 'roles',
         name: 'RoleManagement',
         meta: {
-          order: 2,
+          order: 4,
           icon: 'lucide:shield-user',
           title: $t('menu.permission.role'),
           authority: ['sys:platform_admin', 'sys:tenant_manager'],

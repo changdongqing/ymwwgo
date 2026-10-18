@@ -328,7 +328,7 @@ var DefaultMenus = []*permissionV1.Menu{
 		Status:    permissionV1.Menu_ON.Enum(),
 		CreatedAt: timeutil.TimeToTimestamppb(trans.Ptr(time.Now())),
 		Meta: &permissionV1.MenuMeta{
-			Order:     trans.Ptr(int32(-1)),
+			Order:     trans.Ptr(int32(1)),
 			Title:     trans.Ptr("page.dashboard.title"),
 			Icon:      trans.Ptr("lucide:layout-dashboard"),
 			Authority: []string{"sys:platform_admin", "sys:tenant_manager"},
@@ -343,7 +343,7 @@ var DefaultMenus = []*permissionV1.Menu{
 		Component: trans.Ptr("dashboard/analytics/index.vue"),
 		CreatedAt: timeutil.TimeToTimestamppb(trans.Ptr(time.Now())),
 		Meta: &permissionV1.MenuMeta{
-			Order:     trans.Ptr(int32(-1)),
+			Order:     trans.Ptr(int32(1)),
 			Title:     trans.Ptr("page.dashboard.analytics"),
 			Icon:      trans.Ptr("lucide:area-chart"),
 			Authority: []string{"sys:platform_admin", "sys:tenant_manager"},
@@ -359,7 +359,7 @@ var DefaultMenus = []*permissionV1.Menu{
 		Component: trans.Ptr("dashboard/workspace/index.vue"),
 		CreatedAt: timeutil.TimeToTimestamppb(trans.Ptr(time.Now())),
 		Meta: &permissionV1.MenuMeta{
-			Order:     trans.Ptr(int32(-1)),
+			Order:     trans.Ptr(int32(2)),
 			Title:     trans.Ptr("page.dashboard.workspace"),
 			Icon:      trans.Ptr("lucide:armchair"),
 			Authority: []string{"sys:platform_admin", "sys:tenant_manager"},
@@ -590,7 +590,7 @@ var DefaultMenus = []*permissionV1.Menu{
 		Meta: &permissionV1.MenuMeta{
 			Title:     trans.Ptr("menu.permission.role"),
 			Icon:      trans.Ptr("lucide:shield-user"),
-			Order:     trans.Ptr(int32(2)),
+			Order:     trans.Ptr(int32(4)),
 			Authority: []string{"sys:platform_admin", "sys:tenant_manager"},
 		},
 	},
@@ -605,7 +605,7 @@ var DefaultMenus = []*permissionV1.Menu{
 		Meta: &permissionV1.MenuMeta{
 			Title:     trans.Ptr("menu.permission.menu"),
 			Icon:      trans.Ptr("lucide:square-menu"),
-			Order:     trans.Ptr(int32(1)),
+			Order:     trans.Ptr(int32(2)),
 			Authority: []string{"sys:platform_admin"},
 		},
 	},
@@ -620,7 +620,7 @@ var DefaultMenus = []*permissionV1.Menu{
 		Meta: &permissionV1.MenuMeta{
 			Title:     trans.Ptr("menu.permission.api"),
 			Icon:      trans.Ptr("lucide:route"),
-			Order:     trans.Ptr(int32(2)),
+			Order:     trans.Ptr(int32(3)),
 			Authority: []string{"sys:platform_admin"},
 		},
 	},
@@ -824,7 +824,7 @@ var DefaultMenus = []*permissionV1.Menu{
 		Meta: &permissionV1.MenuMeta{
 			Title:     trans.Ptr("menu.system.dict"),
 			Icon:      trans.Ptr("lucide:library-big"),
-			Order:     trans.Ptr(int32(3)),
+			Order:     trans.Ptr(int32(1)),
 			Authority: []string{"sys:platform_admin"},
 		},
 	},
@@ -839,7 +839,7 @@ var DefaultMenus = []*permissionV1.Menu{
 		Meta: &permissionV1.MenuMeta{
 			Title:     trans.Ptr("menu.system.file"),
 			Icon:      trans.Ptr("lucide:file-search"),
-			Order:     trans.Ptr(int32(4)),
+			Order:     trans.Ptr(int32(2)),
 			Authority: []string{"sys:platform_admin", "sys:tenant_manager"},
 		},
 	},
@@ -854,7 +854,7 @@ var DefaultMenus = []*permissionV1.Menu{
 		Meta: &permissionV1.MenuMeta{
 			Title:     trans.Ptr("menu.system.task"),
 			Icon:      trans.Ptr("lucide:list-todo"),
-			Order:     trans.Ptr(int32(5)),
+			Order:     trans.Ptr(int32(3)),
 			Authority: []string{"sys:platform_admin", "sys:tenant_manager"},
 		},
 	},
@@ -869,7 +869,7 @@ var DefaultMenus = []*permissionV1.Menu{
 		Meta: &permissionV1.MenuMeta{
 			Title:     trans.Ptr("menu.system.loginPolicy"),
 			Icon:      trans.Ptr("lucide:shield-x"),
-			Order:     trans.Ptr(int32(6)),
+			Order:     trans.Ptr(int32(4)),
 			Authority: []string{"sys:platform_admin"},
 		},
 	},
@@ -884,7 +884,7 @@ var DefaultMenus = []*permissionV1.Menu{
 		Meta: &permissionV1.MenuMeta{
 			Title:     trans.Ptr("menu.system.language"),
 			Icon:      trans.Ptr("lucide:globe"),
-			Order:     trans.Ptr(int32(7)),
+			Order:     trans.Ptr(int32(5)),
 			Authority: []string{"sys:platform_admin"},
 		},
 	},
@@ -899,7 +899,7 @@ var DefaultMenus = []*permissionV1.Menu{
 		Meta: &permissionV1.MenuMeta{
 			Title:     trans.Ptr("menu.system.accessKeys"),
 			Icon:      trans.Ptr("lucide:key-round"),
-			Order:     trans.Ptr(int32(9)),
+			Order:     trans.Ptr(int32(11)),
 			Authority: []string{"sys:platform_admin"},
 		},
 	},
@@ -914,7 +914,7 @@ var DefaultMenus = []*permissionV1.Menu{
 		Meta: &permissionV1.MenuMeta{
 			Title:     trans.Ptr("menu.system.config"),
 			Icon:      trans.Ptr("lucide:sliders-horizontal"),
-			Order:     trans.Ptr(int32(8)),
+			Order:     trans.Ptr(int32(10)),
 			Authority: []string{"sys:platform_admin"},
 		},
 	},
@@ -929,7 +929,7 @@ var DefaultMenus = []*permissionV1.Menu{
 		Meta: &permissionV1.MenuMeta{
 			Title:     trans.Ptr("menu.system.scripts"),
 			Icon:      trans.Ptr("lucide:file-code-2"),
-			Order:     trans.Ptr(int32(11)),
+			Order:     trans.Ptr(int32(9)),
 			Authority: []string{"sys:platform_admin"},
 		},
 	},
@@ -944,7 +944,7 @@ var DefaultMenus = []*permissionV1.Menu{
 		Meta: &permissionV1.MenuMeta{
 			Title:     trans.Ptr("menu.system.onlineSessions"),
 			Icon:      trans.Ptr("lucide:monitor"),
-			Order:     trans.Ptr(int32(8)),
+			Order:     trans.Ptr(int32(6)),
 			Authority: []string{"sys:platform_admin"},
 		},
 	},
@@ -959,7 +959,7 @@ var DefaultMenus = []*permissionV1.Menu{
 		Meta: &permissionV1.MenuMeta{
 			Title:     trans.Ptr("menu.system.serverMonitor"),
 			Icon:      trans.Ptr("lucide:activity"),
-			Order:     trans.Ptr(int32(9)),
+			Order:     trans.Ptr(int32(7)),
 			Authority: []string{"sys:platform_admin"},
 		},
 	},
@@ -1060,7 +1060,7 @@ var DefaultMenus = []*permissionV1.Menu{
 		Meta: &permissionV1.MenuMeta{
 			Title:     trans.Ptr("menu.system.monitorAlerts"),
 			Icon:      trans.Ptr("lucide:bell-plus"),
-			Order:     trans.Ptr(int32(10)),
+			Order:     trans.Ptr(int32(8)),
 			Authority: []string{"sys:platform_admin"},
 		},
 	},
@@ -1109,7 +1109,7 @@ var DefaultMenus = []*permissionV1.Menu{
 		Meta: &permissionV1.MenuMeta{
 			Title: trans.Ptr("menu.ai.query"),
 			Icon:  trans.Ptr("lucide:search-code"),
-			Order: trans.Ptr(int32(3)),
+			Order: trans.Ptr(int32(2)),
 		},
 	},
 	{
@@ -1123,7 +1123,7 @@ var DefaultMenus = []*permissionV1.Menu{
 		Meta: &permissionV1.MenuMeta{
 			Title:     trans.Ptr("menu.ai.providers"),
 			Icon:      trans.Ptr("lucide:cpu"),
-			Order:     trans.Ptr(int32(2)),
+			Order:     trans.Ptr(int32(6)),
 			Authority: []string{"sys:platform_admin"},
 		},
 	},
@@ -1139,7 +1139,7 @@ var DefaultMenus = []*permissionV1.Menu{
 		Meta: &permissionV1.MenuMeta{
 			Title:     trans.Ptr("menu.ai.knowledge"),
 			Icon:      trans.Ptr("lucide:book-open"),
-			Order:     trans.Ptr(int32(4)),
+			Order:     trans.Ptr(int32(3)),
 			KeepAlive: trans.Ptr(true),
 		},
 	},
@@ -1155,7 +1155,7 @@ var DefaultMenus = []*permissionV1.Menu{
 		Meta: &permissionV1.MenuMeta{
 			Title:     trans.Ptr("menu.ai.agents"),
 			Icon:      trans.Ptr("lucide:workflow"),
-			Order:     trans.Ptr(int32(6)),
+			Order:     trans.Ptr(int32(5)),
 			KeepAlive: trans.Ptr(true),
 		},
 	},
@@ -1171,7 +1171,7 @@ var DefaultMenus = []*permissionV1.Menu{
 		Meta: &permissionV1.MenuMeta{
 			Title: trans.Ptr("menu.ai.usage"),
 			Icon:  trans.Ptr("lucide:bar-chart-3"),
-			Order: trans.Ptr(int32(5)),
+			Order: trans.Ptr(int32(4)),
 		},
 	},
 }
