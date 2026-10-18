@@ -74,23 +74,38 @@
               <el-icon :size="20"><UserFilled /></el-icon>
             </ElAvatar>
             <div class="message-detail__info">
-              <div class="message-detail__sender">{{ detail.publisherName }}</div>
-              <div class="message-detail__time">{{ detail.publishTime }}</div>
+              <div class="message-detail__sender">{{ senderShown }}</div>
+              <div class="message-detail__time">
+                {{ $t("pages.internal_message.createdAt") }} {{ receivedTimeText }}
+              </div>
+              <div v-if="readTimeText" class="message-detail__time">
+                {{ $t("pages.internal_message.readAt") }} {{ readTimeText }}
+              </div>
             </div>
           </div>
           <ElTag
             size="small"
             round
-            :type="internalMessageRecipientStatusToType(detail.status)"
+            :type="internalMessageRecipientStatusToType(detailStatus)"
           >
-            {{ internalMessageRecipientStatusLabel(detail.status) }}
+            {{ internalMessageRecipientStatusLabel(detailStatus) }}
           </ElTag>
         </div>
 
         <ElDivider />
 
-        <!-- eslint-disable-next-line vue/no-v-html -- 已由 DOMPurify 净化（见 sanitizedContent） -->
-        <div class="message-detail__content" v-html="sanitizedContent"></div>
+        <!-- 正文格式自适应：富文本 HTML 净化渲染；纯文本/Markdown 走 MdPreview -->
+        <div class="message-detail__content">
+          <MdPreview
+            v-if="!isHtmlContent"
+            :model-value="rawContent"
+            :theme="isDark ? 'dark' : 'light'"
+            preview-theme="default"
+            :sanitize="sanitizeHtml"
+          />
+          <!-- eslint-disable-next-line vue/no-v-html -- 已由 DOMPurify 净化（见 sanitizedContent） -->
+          <div v-else class="message-detail__html" v-html="sanitizedContent"></div>
+        </div>
       </div>
     </ProModal>
   </div>
@@ -111,10 +126,13 @@ import {
 import { UserFilled } from "@element-plus/icons-vue";
 import dayjs from "dayjs";
 import DOMPurify from "dompurify";
+import { MdPreview } from "md-editor-v3";
+import "md-editor-v3/lib/preview.css";
 
 import ProPage from "@/components/Pro/ProPage/index.vue";
 import ProModal from "@/components/Pro/ProModal/index.vue";
 import SvgIcon from "@/components/SvgIcon/index.vue";
+import { isDarkMode } from "@/components/Editor/src/utils";
 import type { ProPageConfig } from "@/components/Pro/ProPage/types";
 
 import { $t } from "@/core/i18n";
@@ -139,12 +157,37 @@ const userStore = useAppUserStore();
 const pageRef = ref();
 const detailDialogVisible = ref(false);
 const detail = ref<any | null>(null);
+// 收件行的已读时间与状态（readAt/status 在 recipient 行上，消息详情里没有）
+const detailReadAt = ref<string>("");
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- 行数据来自表格 dynamic row
+const detailStatus = ref<any>("");
+const detailReceivedAt = ref<string>("");
 
 // 对消息正文进行 XSS 净化，防止富文本内容中注入脚本（存储型 XSS）
 const sanitizedContent = computed(() => {
   const raw = detail.value?.content;
   return raw ? DOMPurify.sanitize(String(raw)) : "";
 });
+
+// 正文格式自适应（对齐 react 抽屉）：富文本 HTML 净化渲染，
+// 纯文本/Markdown（AI 日报等）走 MdPreview
+const rawContent = computed(() => (detail.value?.content ? String(detail.value.content) : ""));
+const isHtmlContent = computed(() => /<\/?[a-z][\s\S]*>/i.test(rawContent.value));
+const isDark = computed(() => isDarkMode());
+const sanitizeHtml = (html: string) => DOMPurify.sanitize(html);
+
+// 发送人：sender_id=0 的系统消息（AI 日报等）senderName 为空，显示"系统"而非占位符
+const senderShown = computed(
+  () => detail.value?.senderName || $t("pages.internal_message.senderSystem"),
+);
+const receivedTimeText = computed(() =>
+  detailReceivedAt.value
+    ? dayjs(detailReceivedAt.value).format("YYYY-MM-DD HH:mm:ss")
+    : "-",
+);
+const readTimeText = computed(() =>
+  detailReadAt.value ? dayjs(detailReadAt.value).format("YYYY-MM-DD HH:mm:ss") : "",
+);
 
 const pageConfig = computed<ProPageConfig>(() => ({
   skeleton: true,
@@ -310,6 +353,9 @@ const pageConfig = computed<ProPageConfig>(() => ({
 async function handleView(row: any) {
   try {
     const messageId = Number(row.messageId);
+    detailReadAt.value = row.readAt ? String(row.readAt) : "";
+    detailReceivedAt.value = row.receivedAt || row.createdAt || "";
+    detailStatus.value = row.status || "";
     detail.value = await fetchGetInternalMessage({ id: messageId });
     detailDialogVisible.value = true;
 

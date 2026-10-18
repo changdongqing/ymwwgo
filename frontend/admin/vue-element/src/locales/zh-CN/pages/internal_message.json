@@ -23,5 +23,6 @@
   "sendScopeAll": "全员",
   "sendScopeUsers": "指定用户",
   "targetUsers": "接收用户",
-  "requiredTargetUsers": "请选择接收用户"
+  "requiredTargetUsers": "请选择接收用户",
+  "senderSystem": "系统"
 }

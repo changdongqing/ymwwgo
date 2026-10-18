@@ -10,7 +10,9 @@ import { useVbenDrawer } from '@vben/common-ui';
 import { dateUtil } from '@vben/utils';
 
 import DOMPurify from 'dompurify';
-import { Spin } from 'ant-design-vue';
+import { MdPreview } from 'md-editor-v3';
+import 'md-editor-v3/lib/preview.css';
+import { Avatar, Spin } from 'ant-design-vue';
 
 import {
   fetchGetInternalMessage,
@@ -18,7 +20,9 @@ import {
   internalMessageRecipientStatusLabel,
   useMarkNotificationAsRead,
 } from '#/api';
+import { isDarkMode } from '#/adapter/component/Editor/src/utils';
 import { $t } from '#/locales';
+import { preferences } from '@vben/preferences';
 import { useUserStore } from '@vben/stores';
 import { notification } from 'ant-design-vue';
 
@@ -42,17 +46,34 @@ const sanitizedContent = computed(() => {
   return raw ? DOMPurify.sanitize(String(raw)) : '';
 });
 
-const publishTime = computed(() =>
-  detail.value?.createdAt
-    ? dateUtil(detail.value.createdAt as string).format('YYYY-MM-DD HH:mm:ss')
-    : '',
-);
-
 const readTime = computed(() =>
   row.value?.readAt
     ? dateUtil(row.value.readAt as string).format('YYYY-MM-DD HH:mm:ss')
     : '',
 );
+
+// 接收时间取收件行（消息详情接口的 createdAt 为空）
+const receivedTime = computed(() => {
+  const v = row.value?.receivedAt || row.value?.createdAt;
+  return v ? dateUtil(v as string).format('YYYY-MM-DD HH:mm:ss') : '';
+});
+
+// 主题（MdPreview 跟随；isDarkMode 读响应式 preferences）
+const isDark = computed(() => isDarkMode());
+
+// 正文格式自适应（对齐 react 抽屉）：富文本 HTML 净化渲染，
+// 纯文本/Markdown（AI 日报等）走 MdPreview
+const rawContent = computed(() =>
+  String(detail.value?.content ?? row.value?.content ?? ''),
+);
+const isHtmlContent = computed(() => /<\/?[a-z][\s\S]*>/i.test(rawContent.value));
+const sanitizeHtml = (html: string) => DOMPurify.sanitize(html);
+
+// sender_id=0 的系统消息（AI 日报等）senderName 为空，显示"系统"而非占位符
+const senderShown = computed(() => {
+  if (detail.value?.senderName) return detail.value.senderName;
+  return loading.value ? '-' : $t('page.internalMessage.senderSystem');
+});
 
 const [Drawer, drawerApi] = useVbenDrawer({
   footer: false,
@@ -107,33 +128,25 @@ async function loadDetail() {
 </script>
 
 <template>
-  <Drawer :title="getTitle" class="w-full max-w-[800px]">
-    <Spin :spinning="loading" class="min-h-[200px] w-full">
-      <div class="message-detail mx-4 py-2">
-        <!-- 头部信息 -->
-        <div class="message-detail__header mb-4">
-          <h2 class="mb-2 text-lg font-semibold">
-            {{ detail?.title ?? row?.title }}
-          </h2>
-          <div class="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
-            <span>
-              <span class="text-muted-foreground">
-                {{ $t('page.internalMessage.senderName') }}:
-              </span>
-              {{ detail?.senderName || '-' }}
-            </span>
-            <span>
-              <span class="text-muted-foreground">
-                {{ $t('ui.table.createdAt') }}:
-              </span>
-              {{ publishTime || '-' }}
-            </span>
-            <span>
-              <span class="text-muted-foreground">
-                {{ $t('page.internalMessage.readAt') }}:
-              </span>
-              {{ readTime || '-' }}
-            </span>
+    <Drawer :title="getTitle" class="w-full max-w-[800px]">
+      <Spin :spinning="loading" class="min-h-[200px] w-full">
+        <div class="message-detail mx-4 py-2">
+          <!-- 发送人元信息头：头像 + 发送人/时间，状态 Tag 右置（对齐 react 抽屉） -->
+          <div class="mb-4 flex items-center justify-between gap-3">
+            <div class="flex min-w-0 items-center gap-3">
+              <Avatar :size="40" :src="preferences.app.defaultAvatar" />
+              <div class="flex min-w-0 flex-col gap-1">
+                <div class="truncate text-sm font-semibold">
+                  {{ senderShown }}
+                </div>
+                <div class="text-xs text-muted-foreground">
+                  {{ $t('page.internalMessage.createdAt') }} {{ receivedTime || '-' }}
+                </div>
+                <div v-if="readTime" class="text-xs text-muted-foreground">
+                  {{ $t('page.internalMessage.readAt') }} {{ readTime }}
+                </div>
+              </div>
+            </div>
             <a-tag
               v-if="row?.status"
               :color="internalMessageRecipientStatusColor(row.status)"
@@ -141,16 +154,26 @@ async function loadDetail() {
               {{ internalMessageRecipientStatusLabel(row.status) }}
             </a-tag>
           </div>
+
+          <div class="border-t border-border my-4" />
+
+          <!-- 正文：富文本 HTML 净化渲染；纯文本/Markdown 走 MdPreview -->
+          <div
+            class="message-detail__content rounded-lg border border-border bg-background p-4"
+          >
+            <MdPreview
+              v-if="!isHtmlContent"
+              :model-value="rawContent"
+              :theme="isDark ? 'dark' : 'light'"
+              preview-theme="default"
+              :sanitize="sanitizeHtml"
+            />
+            <!-- eslint-disable-next-line vue/no-v-html -->
+            <div v-else v-html="sanitizedContent" />
+          </div>
         </div>
-
-        <div class="border-t border-border my-4" />
-
-        <!-- 正文（富文本，已净化） -->
-        <!-- eslint-disable-next-line vue/no-v-html -->
-        <div class="message-detail__content" v-html="sanitizedContent" />
-      </div>
-    </Spin>
-  </Drawer>
+      </Spin>
+    </Drawer>
 </template>
 
 <style scoped>

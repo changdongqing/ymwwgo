@@ -23,5 +23,6 @@
   "sendScopeAll": "All Users",
   "sendScopeUsers": "Selected Users",
   "targetUsers": "Recipients",
-  "requiredTargetUsers": "Please select recipients"
+  "requiredTargetUsers": "Please select recipients",
+  "senderSystem": "System"
 }
