@@ -391,7 +391,9 @@
     "notification": {
       "tenant_code_exists": "租户编码已存在，请更换后重新创建！",
       "user_username_exists": "管理员用户名已存在，请更换后重新创建！"
-    }
+    },
+    "quotaType": "配额类型",
+    "tenant_code_exists": "租户编码已存在"
   },
   "file": {
     "moduleName": "文件",
@@ -440,7 +442,29 @@
       "do_you_want_start_task": "您确定要启动该任务吗？",
       "do_you_want_restart_task": "您确定要重启该任务吗？",
       "do_you_want_stop_task": "您确定要停止该任务吗？"
-    }
+    },
+    "sysTasksButton": "系统级任务",
+    "sysTasksTitle": "系统级常驻任务",
+    "sysTaskType": "任务类型",
+    "sysTaskCron": "调度计划",
+    "sysTaskNext": "下次执行",
+    "sysTaskPrev": "上次执行",
+    "sysTaskNeverRun": "从未运行",
+    "sysTaskSchedules": "调度计划",
+    "sysTaskStates": "运行状态",
+    "sysTaskFailures": "最近失败",
+    "sysTaskQueueHint": "队列 {queue}（只读 asynq，每 5 分钟自动评估的任务在此可见）",
+    "sysTaskActive": "执行中",
+    "sysTaskPending": "待执行",
+    "sysTaskRetry": "重试",
+    "sysTaskArchived": "已归档",
+    "sysTaskState": "状态",
+    "sysTaskLastError": "最后错误",
+    "sysTaskFailedAt": "失败时间",
+    "sysTaskRetried": "已试/上限",
+    "sysTaskNoFailures": "没有失败记录。",
+    "sysTaskLoading": "读取中…",
+    "sysTaskLoadFailed": "读取失败"
   },
   "internalMessage": {
     "moduleName": "站内信",

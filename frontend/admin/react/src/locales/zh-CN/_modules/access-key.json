@@ -30,5 +30,6 @@
   "secretCopied": "密钥已复制",
   "resetSecret": "重置密钥",
   "resetSuccess": "密钥已重置",
-  "resetFailed": "重置失败"
+  "resetFailed": "重置失败",
+  "resetSecretFor": "重置对象"
 }

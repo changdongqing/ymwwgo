@@ -390,7 +390,7 @@ async function createTenantWithAdminUser(values: any) {
   // 检查密码和确认密码是否一致
   if (values.password !== values.passwordConfirm) {
     notification.error({
-      message: $t('page.notification.password_mismatch'),
+      message: $t('ui.notification.password_mismatch'),
     });
     setLoading(false);
     return;

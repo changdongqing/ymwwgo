@@ -59,5 +59,6 @@
   "channelMap": {
     "EMAIL": "邮件",
     "WEBHOOK": "Webhook"
-  }
+  },
+  "delete": "删除"
 }

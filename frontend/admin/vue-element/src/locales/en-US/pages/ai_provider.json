@@ -30,5 +30,6 @@
   "endpoint": "Endpoint",
   "apiKeyHintLabel": "Current key",
   "enabledOn": "On",
-  "enabledOff": "Off"
+  "enabledOff": "Off",
+  "notSet": "Not set"
 }

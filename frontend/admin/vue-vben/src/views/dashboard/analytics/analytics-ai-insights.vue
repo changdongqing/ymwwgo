@@ -8,6 +8,7 @@ import type {
 import { computed, ref } from 'vue';
 
 import { $t } from '@vben/locales';
+import { preferences } from '@vben/preferences';
 
 import { message } from 'ant-design-vue';
 
@@ -118,7 +119,8 @@ function renderTemplate(alert: AiInsightAlert): string {
 async function handleScan() {
   insightsLoading.value = true;
   try {
-    const lang = $t('page.aiInsights.lang') || 'zh-CN';
+    // LLM 总评按界面语言生成（对齐 react 的 i18n.language 取法）
+    const lang = preferences.app.locale || 'zh-CN';
     insights.value = await apiClient.dashboardService.GetAiInsights({
       lang,
     } as any);

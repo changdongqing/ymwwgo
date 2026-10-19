@@ -391,7 +391,9 @@
     "notification": {
       "tenant_code_exists": "Tenant code already exists, please change and try again!",
       "user_username_exists": "Admin username already exists, please change and try again!"
-    }
+    },
+    "quotaType": "Quota Type",
+    "tenant_code_exists": "Tenant code already exists"
   },
   "file": {
     "moduleName": "File",
@@ -440,7 +442,29 @@
       "do_you_want_start_task": "Are you sure you want to start this task?",
       "do_you_want_restart_task": "Are you sure you want to restart this task?",
       "do_you_want_stop_task": "Are you sure you want to stop this task?"
-    }
+    },
+    "sysTasksButton": "System Tasks",
+    "sysTasksTitle": "System Resident Tasks",
+    "sysTaskType": "Task Type",
+    "sysTaskCron": "Schedule",
+    "sysTaskNext": "Next Run",
+    "sysTaskPrev": "Last Run",
+    "sysTaskNeverRun": "never run",
+    "sysTaskSchedules": "Schedules",
+    "sysTaskStates": "States",
+    "sysTaskFailures": "Recent Failures",
+    "sysTaskQueueHint": "queue {queue} (read-only asynq; tasks evaluated every 5 min show up here)",
+    "sysTaskActive": "Active",
+    "sysTaskPending": "Pending",
+    "sysTaskRetry": "Retry",
+    "sysTaskArchived": "Archived",
+    "sysTaskState": "State",
+    "sysTaskLastError": "Last Error",
+    "sysTaskFailedAt": "Failed At",
+    "sysTaskRetried": "Tried/Max",
+    "sysTaskNoFailures": "No failures recorded.",
+    "sysTaskLoading": "Loading…",
+    "sysTaskLoadFailed": "Load failed"
   },
   "internalMessage": {
     "moduleName": "Message",
@@ -1307,6 +1331,18 @@
       "addVar": "Add Input Variable",
       "remove": "Remove",
       "configAutoSaved": "Edits write into the canvas immediately; click \"Save Canvas\" to persist"
+    }
+  },
+  "language": {
+    "moduleName": "Language Management",
+    "languageName": "Language Name",
+    "languageCode": "Language Code",
+    "nativeName": "Native Name",
+    "isEnabled": "Enabled",
+    "isDefault": "Default",
+    "button": {
+      "create": "Create Language",
+      "update": "Update Language"
     }
   }
 }

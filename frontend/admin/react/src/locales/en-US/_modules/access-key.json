@@ -30,5 +30,6 @@
   "secretCopied": "Secret copied",
   "resetSecret": "Reset Secret",
   "resetSuccess": "Secret reset",
-  "resetFailed": "Reset failed"
+  "resetFailed": "Reset failed",
+  "resetSecretFor": "Reset Target"
 }

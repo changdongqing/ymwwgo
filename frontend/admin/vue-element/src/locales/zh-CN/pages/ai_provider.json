@@ -30,5 +30,6 @@
   "endpoint": "端点",
   "apiKeyHintLabel": "当前 Key",
   "enabledOn": "启用",
-  "enabledOff": "禁用"
+  "enabledOff": "禁用",
+  "notSet": "未设置"
 }
