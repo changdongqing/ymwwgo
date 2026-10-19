@@ -248,7 +248,7 @@ function normalizeAuthority(authority: unknown): string[] {
           :title="$t('page.menu.text.do_you_want_sync_menus')"
           @confirm="handleSyncMenus"
         >
-          <a-button class="mr-2" danger :loading="isSyncing">
+          <a-button class="mr-2" type="primary" danger :loading="isSyncing">
             {{ $t('page.menu.button.sync') }}
           </a-button>
         </a-popconfirm>

@@ -350,7 +350,7 @@ const MenuManagement = () => {
                 okText={t('common:button.ok')}
                 cancelText={t('common:button.cancel')}
               >
-                <Button icon={<SyncOutlined />} loading={syncing || syncMutation.isPending}>
+                <Button type="primary" danger icon={<SyncOutlined />} loading={syncing || syncMutation.isPending}>
                   {t('sync')}
                 </Button>
               </Popconfirm>,
