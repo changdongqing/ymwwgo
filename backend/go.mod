@@ -25,8 +25,8 @@ require (
 	github.com/sashabaranov/go-openai v1.41.2
 	github.com/stretchr/testify v1.12.1
 	github.com/tx7do/go-crud/api v0.0.7
-	github.com/tx7do/go-crud/entgo v0.0.55
-	github.com/tx7do/go-crud/gorm v0.0.24
+	github.com/tx7do/go-crud/entgo v0.0.57
+	github.com/tx7do/go-crud/gorm v0.0.26
 	github.com/tx7do/go-crud/pagination v0.0.16
 	github.com/tx7do/go-crud/viewer v0.0.8
 	github.com/tx7do/go-scripts v0.0.9
@@ -81,6 +81,7 @@ require (
 )
 
 require (
+	github.com/tx7do/go-crud/vector v0.0.1 // indirect
 	github.com/tx7do/kratos-authz/engine/casbin v1.1.12 // indirect
 	github.com/tx7do/kratos-authz/engine/opa v1.1.15 // indirect
 )

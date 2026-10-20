@@ -33,6 +33,37 @@ import MenuDrawer from './menu-drawer.vue';
 const { mutateAsync: deleteMenu } = useDeleteMenu();
 const { mutateAsync: syncMenus, isPending: isSyncing } = useSyncMenus();
 
+/**
+ * 菜单标题关键词的前端过滤。
+ * 标题没法在服务端搜：库里 meta.title 存的是 i18n key 或源语言文本，用户看到的
+ * 译文只有前端知道；且后端 go-crud 对 meta.* JSONB 路径的过滤条件值绑定有缺陷
+ * （值被丢成空串，CONTAINS 恒真/EQ 恒假）。因此按「所见即所搜」在前端匹配：
+ * 译文 + 库里原文 + 路由名三路 contains；命中行连同祖先链一起保留，
+ * vxe 的 treeConfig.transform 才能还原树形。
+ */
+function filterMenusByTitle(items: Menu[], keyword?: string): Menu[] {
+  const kw = (keyword ?? '').trim().toLowerCase();
+  if (!kw) return items;
+  const byId = new Map<number, Menu>(
+    items.map((item) => [item.id as number, item]),
+  );
+  const keep = new Set<number>();
+  for (const item of items) {
+    const title = item.meta?.title ?? '';
+    const haystack = [$t(title), title, item.name ?? '']
+      .join('\n')
+      .toLowerCase();
+    if (!haystack.includes(kw)) continue;
+    keep.add(item.id as number);
+    let parentId = item.parentId;
+    while (parentId != null && !keep.has(parentId)) {
+      keep.add(parentId);
+      parentId = byId.get(parentId)?.parentId;
+    }
+  }
+  return items.filter((item) => keep.has(item.id as number));
+}
+
 const formOptions: VbenFormProps = {
   // 默认展开
   collapsed: false,
@@ -94,17 +125,19 @@ const gridOptions: VxeGridProps<Menu> = {
   proxyConfig: {
     ajax: {
       query: async ({ page }, formValues) => {
-
-        return await fetchListMenus(
+        // 标题走前端过滤（见 filterMenusByTitle），服务端只收 status；
+        // pageSize 拉满确保全量行都在前端过滤范围内
+        const resp = await fetchListMenus(
           new PaginationQuery({
-            paging: { page: page.currentPage, pageSize: page.pageSize },
+            paging: { page: page.currentPage, pageSize: 1000 },
             formValues: {
-              'meta.title': formValues.name,
               status: formValues.status,
             },
             orderBy: ['id'],
           }),
         );
+        const items = filterMenusByTitle(resp.items ?? [], formValues.name);
+        return { ...resp, items, total: items.length };
       },
     },
   },

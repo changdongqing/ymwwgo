@@ -30,12 +30,46 @@ import {
 import MenuDrawer from './components/MenuDrawer';
 
 /**
+ * 菜单标题关键词的前端过滤。
+ * 标题没法在服务端搜：库里 meta.title 存的是 i18n key 或源语言文本，用户看到的
+ * 译文只有前端知道；且后端 go-crud 对 meta.* JSONB 路径的过滤条件值绑定有缺陷
+ * （值被丢成空串，CONTAINS 恒真/EQ 恒假）。因此按「所见即所搜」在前端匹配：
+ * 译文 + 库里原文 + 路由名三路 contains；命中行连同祖先链一起保留，
+ * 才能还原完整树形。
+ */
+function filterMenusByTitle(
+  items: Menu[],
+  keyword: string | undefined,
+  translate: (title: string) => string,
+): Menu[] {
+  const kw = (keyword ?? '').trim().toLowerCase();
+  if (!kw) return items;
+  const byId = new Map<number, Menu>(items.map((item) => [item.id as number, item]));
+  const keep = new Set<number>();
+  for (const item of items) {
+    const title = (item.meta?.title as string) ?? '';
+    const haystack = [translate(title), title, item.name ?? ''].join('\n').toLowerCase();
+    if (!haystack.includes(kw)) continue;
+    keep.add(item.id as number);
+    let parentId = item.parentId;
+    while (parentId != null && !keep.has(parentId)) {
+      keep.add(parentId);
+      parentId = byId.get(parentId)?.parentId;
+    }
+  }
+  return items.filter((item) => keep.has(item.id as number));
+}
+
+/**
  * 菜单管理页面
  *
  * 树形表格展示菜单层级结构，支持搜索、CRUD 操作
  */
 const MenuManagement = () => {
   const { t } = useTranslation('menu');
+  // routes 命名空间：后端菜单 meta.title 用 vue 端种子键位（menu.* / page.*），
+  // 翻译兜底走 routes.json 的 menu/page 段（与侧边栏 translateLabel 同一套）
+  const { t: tRoutes } = useTranslation('routes');
   const actionRef = useRef<ActionType>(null);
   const queryClient = useQueryClient();
   const { message } = App.useApp();
@@ -53,6 +87,17 @@ const MenuManagement = () => {
 
   const menuTypeMap = getMenuTypeMap(t);
   const statusMap = getStatusMap(t);
+
+  /**
+   * 翻译菜单标题：i18n 直查 → routes 命名空间兜底 → 原文兜底。
+   * 与侧边栏 translateLabel 同语义，让菜单管理页展示的也是用户看到的译文。
+   */
+  const translateMenuTitle = (label: string | undefined): string => {
+    if (!label) return '';
+    const commonHit = t(label);
+    if (commonHit !== label) return commonHit;
+    return tRoutes(label, { defaultValue: label });
+  };
 
   // 删除操作
   const deleteMutation = useDeleteMenu({
@@ -149,14 +194,24 @@ const MenuManagement = () => {
   // 列配置
   const columns: ProColumns<Menu>[] = [
     {
+      // 搜索专用列：标题列的 dataIndex 是 meta.title（ProTable 会把值嵌进
+      // params.meta.title），独立出 menuName 扁平键让 request 能直接取到
+      title: t('menuName'),
+      dataIndex: 'menuName',
+      hideInTable: true,
+    },
+    {
       title: t('menuName'),
       dataIndex: 'meta.title',
       width: 220,
       fixed: 'left',
+      hideInSearch: true,
       render: (_, record) => {
         const meta = (record as any).meta || {};
+        // 译文展示（对齐 vben/ele 的 $t）：库里的 key / 源语言文本翻成当前语言；
         // meta 缺失（如直接 API 创建的菜单）时回退展示 name，避免整列显示 "-"
-        const titleText = meta.title || (record as any).name || '-';
+        const titleText =
+          translateMenuTitle(meta.title) || (record as any).name || '-';
         return (
           <Space>
             <span>{titleText}</span>
@@ -286,20 +341,25 @@ const MenuManagement = () => {
             actionRef={actionRef}
             columns={columns}
             request={async (params, _sorter, _filter) => {
+              // 标题走前端过滤（见 filterMenusByTitle），服务端只收 status；
+              // pageSize 拉满确保全量行都在前端过滤范围内
               const query = new PaginationQuery({
                 paging: {
                   page: 1,
                   pageSize: 1000,
                 },
                 formValues: {
-                  'meta.title': params.menuName,
                   status: params.status,
                 },
               });
 
               const response = await fetchListMenus(query);
-              const items = response.items || [];
-              const treeData = buildMenuTree(items as Menu[]);
+              const items = filterMenusByTitle(
+                (response.items || []) as Menu[],
+                params.menuName,
+                translateMenuTitle,
+              );
+              const treeData = buildMenuTree(items);
               setTreeData(treeData);
 
               return {
