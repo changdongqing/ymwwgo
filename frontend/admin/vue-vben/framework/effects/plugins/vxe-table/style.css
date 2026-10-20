@@ -117,6 +117,30 @@
   @apply justify-center md:justify-end;
 }
 
+/* 表格底部收口线：border:false 的全局形态下表区没有可见的闭合线——
+   vxe 外框元素（.vxe-table--border-line）虽有 ~1px 底边，但 grid 的裁切
+   容器（.vxe-grid--table-wrapper，overflow:hidden）高度与表体完全等高，
+   画在边界上的 border 恰好压在裁切线上被整行吃掉（用户实机像素级实测
+   白区到页底一条线都没有；ele border:true 外框底线/react 宿主卡片底线
+   在同一视觉位都有线）。用裁切容器自己的 ::after 覆盖层在可见区内部画线：
+   不参与布局、pointer-events none 不挡交互，颜色走
+   --vxe-ui-table-border-color（= --border token，亮暗自适配）。 */
+.vxe-grid--table-wrapper {
+  position: relative;
+}
+
+.vxe-grid--table-wrapper::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 1px;
+  z-index: 30;
+  pointer-events: none;
+  background-color: var(--vxe-ui-table-border-color);
+}
+
 /* 表格 → 分页器 16px（design-language.md §2.6，与 react/ele 同一档）。
    vxe 的 grid 不给 `.vxe-grid--pager-wrapper` 写任何间距（vxe-table/es/grid/src/grid.js:731
    只出这个 class，grid.scss 里没有对应规则），`.vxe-pager` 自身也只有高度相关声明，
