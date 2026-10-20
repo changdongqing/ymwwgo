@@ -4,47 +4,48 @@
 
 ## 仓库布局
 
-> **三端是"给不同技术栈团队的三个并列选项"，不是"同时要 React 和 Vue 的团队"的需求。**
-> 一个采用者 / 一次部署只取一套；本仓同时把三端都维护到可用，是**上游维护者的负担**，不是采用者的。
-> 对外表述统一按"三选一"口径（见 [docs/adopt-one-frontend.md](./docs/adopt-one-frontend.md)）——
+> **本仓只维护 react 一端（2026-10-20 起强制，见全仓铁律 5）**：`vue-element/` 与 `vue-vben/` 已冻结，仅作历史参照保留——不加功能、不修 bug、不升依赖。
+> 对外表述统一按"采用者取一套"口径（见 [docs/adopt-one-frontend.md](./docs/adopt-one-frontend.md)）——
 > 不要因为仓库里同时存在三个目录，就在文档 / 报错 / 提示里把"三端"当成使用者的义务。
 
 ```
 backend/                    Go + Kratos + Ent（DI 手写装配 wiring_*.go，已弃用 Wire；HTTP :7788，SSE 网关 :7789）
 frontend/admin/
-├── react/                  React 19 + antd 6 + ProComponents + TanStack Query + zustand
-├── vue-element/            Vue 3 + Element Plus + vxe-table + TanStack vue-query + Pinia
-└── vue-vben/               Vben Admin 5.x monorepo（apps/admin + packages/*）+ Ant Design Vue
+├── react/                  React 19 + antd 6 + ProComponents + TanStack Query + zustand  ← 唯一维护端
+├── vue-element/            Vue 3 + Element Plus + vxe-table + TanStack vue-query + Pinia（已冻结，仅参照）
+└── vue-vben/               Vben Admin 5.x monorepo（apps/admin + packages/*）+ Ant Design Vue（已冻结，仅参照）
 docs/                       文档体系（总入口 docs/README.md：教程层 docs/tutorial/ + 参考层专题文档）
 ```
 
-## 三端门禁（必须保持全绿）
+## 前端门禁（仅 react）
 
-> 这是**本仓维护者**的门禁：上游有义务让三端各自都能编译通过，好让任一团队的采用者拿到手都是可用的一端。采用者只跑自己那一端的门禁，贡献者只落一端（`CONTRIBUTING.md`）。
+> 2026-10-20 起只有 `frontend/admin/react` 继续维护（见全仓铁律 5），门禁只考 react；vue-element / vue-vben 已冻结，不再要求 typecheck 全绿。
 
-| 端 | 命令（在各自目录下） | dev 端口 |
-|---|---|---|
-| react | `npm run typecheck` | 15888 |
-| vue-element | `npx vue-tsc --noEmit`（或 `npm run type-check`） | 15777 |
-| vue-vben | `pnpm run typecheck` | 15666 |
+| 端 | 命令（在各自目录下） | dev 端口 | 状态 |
+|---|---|---|---|
+| react | `npm run typecheck` | 15888 | **必须保持全绿** |
+| vue-element | `npx vue-tsc --noEmit`（或 `npm run type-check`） | 15777 | 已冻结，仅参照 |
+| vue-vben | `pnpm run typecheck` | 15666 | 已冻结，仅参照 |
 
-2026-09-07 起三端 typecheck 全部 0 错误。**门禁出现任何新报错，一律当作自己引入的 bug 修复**，不存在"可忽略的既有错误"。改完代码先跑门禁再声称完成。
+**react 门禁出现任何新报错，一律当作自己引入的 bug 修复**，不存在"可忽略的既有错误"。改完 react 代码先跑门禁再声称完成。
 
 ## 全仓铁律
 
 1. **不吞错**：任何 catch 至少二选一——`console.error/warn` 带出**原始错误对象**，或重新抛出。用户可见的通知/Message ≠ 日志（只有翻译文案）。合法裸 catch 仅限纯本地 best-effort 兜底且注释写明原因。历史教训：认证链路静默吞错曾让 bug 排查耗时数日。
 2. **vue-vben 工具链版本已钉死**（catalog 精确版本 + packageManager 匹配本机 pnpm）：禁止改回 `^` 范围、禁止顺手升级 vue/typescript/vue-tsc/pnpm。原因与升级流程见 `frontend/admin/vue-vben/AGENTS.md`「工具链与已知坑」。
 3. **搜索条件一律 contains 而非 EQ**、ID 类字段不进模糊搜索；CRUD 请求体必须包 `{ data: {...} }`，但**仅限 CRUD**——`body: "*"` 的自定义 RPC（如 `internal-message/send`）收的是扁平请求体，多包一层 `data` 会被 protojson 当未知字段丢掉，接口照样 200、字段全为空。细节见 `docs/crud_module_guide/`。
+4. **关系型数据库只选 PostgreSQL**：本程序一切关系型存储（运行库、新模块、新服务、演示数据）只允许 PostgreSQL（含 pgvector）；禁止新增或启用 MySQL / SQLite 等其他关系型方言。`data.yaml` 的多方言切换项、go.mod 里的 mysql/sqlite 驱动、`*_sqlite_test.go` 内存库测试均属历史遗留，**不得扩展使用**；新代码一律按"只有 PostgreSQL"假设编写（迁移、DSN 示例、部署文档都是 postgres）。
+5. **前端只维护 react**：`frontend/admin/react` 是唯一继续维护的前端；`vue-element` 与 `vue-vben` 自 2026-10-20 起冻结——不加功能、不修 bug、不升级依赖、不移植新模块。react 的改动不再向两端移植，"三端镜像 parity"不再是要求；两端代码仅供行为对照时阅读，**不要修改**。
 
-## 开发策略：react 先行，其余移植
+## 开发策略：只做 react 端
 
-新功能/新模块以 **react 端为行为基准先实现**，验证通过后再移植到 vue-element / vue-vben。移植是"有参照的翻译"，远比三端并行首创便宜；vue-vben 框架变体语料薄，直接首创容易产出框架级错误（详见其 AGENTS.md）。
+新功能/新模块**只在 `frontend/admin/react` 实现**。此前"react 先行、验证通过后移植 vue-element / vue-vben"的工序随铁律 5（2026-10-20）废止：两端已冻结，移植环节取消。
 
-> 这条工序解释的是"为什么 react 端总是最新"，不是"你要维护三端"。对外要说的是：跟上游同步就选 react，选定一端后可把另两端删掉（[docs/adopt-one-frontend.md](./docs/adopt-one-frontend.md)）。
+> 对外要说的是：采用者直接选 react（[docs/adopt-one-frontend.md](./docs/adopt-one-frontend.md)）；偶尔需要对照历史行为时，只读冻结两端的代码，不要改。
 
 **CRUD 模块**：全流程手册在 `docs/crud_module_guide/`（后端 + 前端端到端流程）。
 
-**代码生成器**：配套工具 [go-wind-toolkit/gowind-uiapp](https://github.com/tx7do/go-wind-toolkit/tree/main/gowind-uiapp)（桌面 GUI + CLI，从数据库表/SQL 生成前后端代码，含简单表单）。CLI（`gowind-cli`）非交互、JSON 输出，适合 Agent 调用。工具产物仍须按本仓铁律与约定验收补齐（`{ data: {...} }` 包裹、contains 搜索、已部署实例的新端点走管理页「接口同步」登记进 Api 表、`make ts` 生成三端 TS 等）。
+**代码生成器**：配套工具 [go-wind-toolkit/gowind-uiapp](https://github.com/tx7do/go-wind-toolkit/tree/main/gowind-uiapp)（桌面 GUI + CLI，从数据库表/SQL 生成前后端代码，含简单表单）。CLI（`gowind-cli`）非交互、JSON 输出，适合 Agent 调用。工具产物仍须按本仓铁律与约定验收补齐（`{ data: {...} }` 包裹、contains 搜索、已部署实例的新端点走管理页「接口同步」登记进 Api 表、`make ts` 生成三端 TS（仅 react 端产物为必查项，vue 两端已冻结）等）。
 
 > 系统默认数据（admin 用户、角色、菜单、权限、语言等）由服务启动时在 Go 侧自动播种（`pkg/constants/default_data.go` + 各 service 的 count==0 守卫；Api 表仅在空表时于启动期自动同步，**已部署实例新增端点须在管理页「接口同步」手动触发全量重建**，否则租户闸门 fail-closed 403；「接口同步」重建读的是**打进二进制的** `backend/app/admin/service/cmd/server/assets/openapi.yaml`，所以新 proto 必须先 `make openapi` 再重启进程，否则同步"成功"而新端点依旧不在表里。新菜单同理：`count==0` 守卫意味着老库要靠各端「菜单同步」(MERGE) 才会多出这一行），**不要**找 SQL 种子脚本，`backend/sql/` 下只剩演示数据。
 
@@ -74,7 +75,7 @@ gow 未覆盖的任务（三端 TS 生成 `make ts`、OpenAPI `make openapi`、`
 ## 文档索引
 
 - **文档总入口（两层索引：教程层 + 参考层）**：`docs/README.md`；渐进教程系列（面向采用者的 10 章学习路径）在 `docs/tutorial/`
-- 各端规范：`frontend/admin/{react,vue-element,vue-vben}/AGENTS.md`
+- 各端规范：`frontend/admin/{react,vue-element,vue-vben}/AGENTS.md`（react 为唯一维护端；vue-element / vue-vben 已冻结，其 AGENTS.md 仅作参照）
 - 后端：`docs/backend_project_struct.md`、`docs/backend_deploy.md`、`docs/audit-log-producer-design.md`
 - 前端权限模型：`docs/frontend_authority.md`
 - 查询/分页规则：`docs/list_query_rule.md`

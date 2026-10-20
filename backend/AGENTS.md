@@ -14,7 +14,7 @@ Go 模块路径: `go-wind-admin`
 |--------|-------------------------------|
 | 框架     | go-kratos/kratos v2           |
 | ORM    | entgo.io/ent (Ent)            |
-| DB     | MySQL / PostgreSQL / SQLite   |
+| DB     | PostgreSQL（唯一允许的关系型数据库，见根 AGENTS.md 全仓铁律 4） |
 | 缓存     | Redis (go-redis/v9)           |
 | 对象存储   | MinIO                         |
 | API 定义 | Protocol Buffers 3 (buf 工具链)  |
@@ -25,6 +25,8 @@ Go 模块路径: `go-wind-admin`
 | 实时推送   | SSE                           |
 | 脚本引擎   | go-scripts (Lua + JavaScript) |
 | 可观测性   | OpenTelemetry                 |
+
+> **数据库铁律（2026-10-20 起）**：本程序的关系型数据库**只允许 PostgreSQL**（含 pgvector）。禁止新增或启用 MySQL / SQLite 等其他关系型方言；现存的多方言配置项、go.mod 里的 mysql/sqlite 驱动、`*_sqlite_test.go` 内存库测试均属历史遗留，不得扩展使用。
 
 ## 项目目录结构
 
@@ -360,7 +362,7 @@ gow run        # 无需先构建
 | `gow api`                                                                                     | 生成所有服务的 Protobuf & API 代码 (自动遍历所有 buf 配置) |
 | `gow ent` / `gow ent admin`                                                                   | 生成所有 / 指定服务的 Ent 代码                      |
 | `gow run` / `gow run admin`                                                                   | 运行当前 / 指定服务                              |
-| `gow generate --dsn "mysql://..." --service admin --orm ent`                                  | 从数据库一键生成完整 CRUD 代码                       |
+| `gow generate --dsn "postgres://user:pass@localhost:5432/gwa?sslmode=disable" --service admin --orm ent` | 从数据库一键生成完整 CRUD 代码（DSN 只用 postgres） |
 | `gow extract admin user -o role[,permission] [--keep-source]`                                 | 微服务演进：从 admin 提取模块到目标服务                 |
 
 **Make 命令 (需在 `backend/` 根目录执行):**

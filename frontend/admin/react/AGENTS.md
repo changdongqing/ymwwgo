@@ -1,5 +1,7 @@
 # AGENTS.md - GoWind React Admin 脚手架开发指南
 
+> **本端是 go-wind-admin monorepo 唯一继续维护的前端**（2026-10-20 起，见根 AGENTS.md 全仓铁律 5）：新功能与修复只落在本端；vue-element / vue-vben 已冻结，仅供行为对照。
+
 > 本文件面向二开人员，帮助 AI 助手理解项目架构并遵循开发规范。
 
 ## 项目概述
