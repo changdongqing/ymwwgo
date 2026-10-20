@@ -94,7 +94,6 @@ const pageConfig = computed<ProPageConfig>(() => ({
     tableAttrs: { border: true, stripe: true },
     emptyActionText: "common.button.add",
     columns: [
-      { type: "index", label: t("common.table.seq"), width: 60 },
       { prop: "name", label: t("pages.access_key.name"), minWidth: 160 },
       { prop: "accessKey", label: t("pages.access_key.accessKey"), minWidth: 220 },
       {
