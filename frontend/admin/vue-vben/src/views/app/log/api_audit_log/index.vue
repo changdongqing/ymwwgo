@@ -1,9 +1,10 @@
 ﻿<script lang="ts" setup>
 import type { VxeGridProps } from '#/adapter/vxe-table';
 
-import { ref } from 'vue';
+import { h, ref } from 'vue';
 
-import { Page, type VbenFormProps } from '@vben/common-ui';
+import { Page, useVbenDrawer, type VbenFormProps } from '@vben/common-ui';
+import { LucideEye } from '@vben/icons';
 
 import dayjs from 'dayjs';
 
@@ -22,6 +23,8 @@ import {
 import { type auditservicev1_ApiAuditLog as ApiAuditLog } from '#/api';
 import { $t } from '#/locales';
 import { downloadTableFile } from '#/utils/csv';
+
+import ApiAuditLogDetailDrawer from './api-audit-log-detail-drawer.vue';
 
 const formOptions: VbenFormProps = {
   // 默认展开
@@ -224,6 +227,13 @@ const gridOptions: VxeGridProps<ApiAuditLog> = {
       field: 'ipAddress',
       width: 140,
     },
+    {
+      title: $t('ui.table.action'),
+      field: 'action',
+      fixed: 'right',
+      slots: { default: 'action' },
+      width: 80,
+    },
   ],
 };
 
@@ -231,6 +241,15 @@ const gridOptions: VxeGridProps<ApiAuditLog> = {
 const latestFormValuesRef = ref<Record<string, unknown>>({});
 
 const [Grid] = useVbenVxeGrid({ gridOptions, formOptions });
+
+const [Drawer, drawerApi] = useVbenDrawer({
+  connectedComponent: ApiAuditLogDetailDrawer,
+});
+
+function handleView(row: any) {
+  drawerApi.setData({ row });
+  drawerApi.open();
+}
 
 // 导出全部：按当前条件聚合拉取（上限 1 万行）生成 CSV
 async function handleServerExport() {
@@ -301,6 +320,14 @@ async function handleExportAll(info: { key: string | number }) {
       <template #platform="{ row }">
         {{ row.deviceInfo?.osName }} {{ row.deviceInfo?.browserName }}
       </template>
+      <template #action="{ row }">
+        <a-button
+          type="link"
+          :icon="h(LucideEye)"
+          @click="handleView(row)"
+        />
+      </template>
     </Grid>
+    <Drawer />
   </Page>
 </template>

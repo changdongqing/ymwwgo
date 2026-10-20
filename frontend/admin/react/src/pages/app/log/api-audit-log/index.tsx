@@ -1,8 +1,8 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import type { ProColumns, ActionType } from '@ant-design/pro-components';
 import dayjs, { type Dayjs } from 'dayjs';
 import ListTable from '@/components/common/ListTable';
-import { DownloadOutlined } from '@ant-design/icons';
+import { DownloadOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import { Button, Dropdown, Tag, App } from 'antd';
 import { useTranslation } from 'react-i18next';
 import type { auditservicev1_ApiAuditLog as ApiAuditLog } from '@/api/generated/admin/service/v1';
@@ -13,6 +13,7 @@ import { exportAuditLogs, type AuditExportFormat } from '@/utils/csv';
 import { exportAuditLogsServer } from '@/api/hooks/audit-export';
 import { useProTableScrollY } from '@/hooks/useProTableScrollY';
 import ContentContainer from '@/layouts/components/PageContainer/ContentContainer';
+import ApiAuditLogDetailDrawer from './DetailDrawer';
 
 /**
  * 成功状态列表
@@ -46,6 +47,8 @@ function successToName(t: (key: string) => string, success: boolean | undefined,
 const ApiAuditLog = () => {
   const { t } = useTranslation('api-audit-log');
   const actionRef = useRef<ActionType>(null);
+  // 详情抽屉当前行（只读，行数据自足不回源 Get）
+  const [detailRecord, setDetailRecord] = useState<ApiAuditLog | null>(null);
   // 最近一次列表查询参数：导出 CSV 时沿用当前搜索/排序条件
   const latestParamsRef = useRef<Record<string, any>>({});
   const { message } = App.useApp();
@@ -217,6 +220,20 @@ const ApiAuditLog = () => {
       dataIndex: 'ipAddress',
       width: 140,
     },
+    {
+      title: t('action'),
+      valueType: 'option',
+      width: 80,
+      render: (_, record) => [
+        <a
+          key="detail"
+          title={t('detail')}
+          onClick={() => setDetailRecord(record)}
+        >
+          <InfoCircleOutlined />
+        </a>,
+      ],
+    },
   ];
 
         // 按当前搜索条件导出 CSV（客户端分页聚合，上限 1 万行；全量归档走后端 JSONL 任务）
@@ -263,87 +280,95 @@ const ApiAuditLog = () => {
     }
   };
   return (
-    <ContentContainer heightMode="fixed" padding="16px" bottomMargin={0}>
-      <div ref={containerRef} className="page-container-content">
-        <ListTable<ApiAuditLog>
-          actionRef={actionRef}
-          columns={columns}
-          request={async (params, sorter) => {
-            latestParamsRef.current = params;
-            const query = new PaginationQuery({
-              paging: {
-                page: params.current || 1,
-                pageSize: params.pageSize || 20,
-              },
-              formValues: Object.fromEntries(
-                Object.entries(params).filter(
-                  ([key]) => !['current', 'pageSize'].includes(key),
-                ),
-              ),
-              orderBy:
-                sorter && Object.keys(sorter).length > 0
-                  ? Object.entries(sorter).map(([key, value]) =>
-                      value === 'ascend' ? key : `-${key}`,
-                    )
-                  : undefined,
-            });
-
-            const response = await fetchListApiAuditLogs(query);
-
-            return {
-              data: response.items || [],
-              total: response.total || 0,
-              success: true,
-            };
-          }}
-          rowKey="id"
-          search={{
-            labelWidth: 'auto',
-            defaultCollapsed: false,
-          }}
-          pagination={{
-            defaultPageSize: TABLE.DEFAULT_PAGE_SIZE,
-            showSizeChanger: true,
-            showQuickJumper: true,
-          }}
-          toolBarRender={() => [
-            <Dropdown
-              key="export"
-              menu={{
-                items: [
-                  { key: 'csv', label: t('exportCsv') },
-                  { key: 'xlsx', label: t('exportXlsx') },
-                  { key: 'server-xlsx', label: t('exportServerXlsx') },
-                ],
-                onClick: ({ key }) => {
-                  if (key === 'server-xlsx') {
-                    handleServerExport();
-                    return;
-                  }
-                  handleExport(key as AuditExportFormat);
+    <>
+      <ContentContainer heightMode="fixed" padding="16px" bottomMargin={0}>
+        <div ref={containerRef} className="page-container-content">
+          <ListTable<ApiAuditLog>
+            actionRef={actionRef}
+            columns={columns}
+            request={async (params, sorter) => {
+              latestParamsRef.current = params;
+              const query = new PaginationQuery({
+                paging: {
+                  page: params.current || 1,
+                  pageSize: params.pageSize || 20,
                 },
-              }}
-            >
-              <Button icon={<DownloadOutlined />}>{t('export')}</Button>
-            </Dropdown>,
-          ]}
+                formValues: Object.fromEntries(
+                  Object.entries(params).filter(
+                    ([key]) => !['current', 'pageSize'].includes(key),
+                  ),
+                ),
+                orderBy:
+                  sorter && Object.keys(sorter).length > 0
+                    ? Object.entries(sorter).map(([key, value]) =>
+                        value === 'ascend' ? key : `-${key}`,
+                      )
+                    : undefined,
+              });
 
-          options={{
-            density: true,
-            fullScreen: true,
-            setting: true,
-            reload: true,
-          }}
-          size="middle"
-          bordered
-          cardBordered={false}
-          scroll={{
-            y: tableScrollY,
-            x: 1400,
-          }}
-        />
-      </div>
-    </ContentContainer>
+              const response = await fetchListApiAuditLogs(query);
+
+              return {
+                data: response.items || [],
+                total: response.total || 0,
+                success: true,
+              };
+            }}
+            rowKey="id"
+            search={{
+              labelWidth: 'auto',
+              defaultCollapsed: false,
+            }}
+            pagination={{
+              defaultPageSize: TABLE.DEFAULT_PAGE_SIZE,
+              showSizeChanger: true,
+              showQuickJumper: true,
+            }}
+            toolBarRender={() => [
+              <Dropdown
+                key="export"
+                menu={{
+                  items: [
+                    { key: 'csv', label: t('exportCsv') },
+                    { key: 'xlsx', label: t('exportXlsx') },
+                    { key: 'server-xlsx', label: t('exportServerXlsx') },
+                  ],
+                  onClick: ({ key }) => {
+                    if (key === 'server-xlsx') {
+                      handleServerExport();
+                      return;
+                    }
+                    handleExport(key as AuditExportFormat);
+                  },
+                }}
+              >
+                <Button icon={<DownloadOutlined />}>{t('export')}</Button>
+              </Dropdown>,
+            ]}
+
+            options={{
+              density: true,
+              fullScreen: true,
+              setting: true,
+              reload: true,
+            }}
+            size="middle"
+            bordered
+            cardBordered={false}
+            scroll={{
+              y: tableScrollY,
+              x: 1400,
+            }}
+          />
+        </div>
+      </ContentContainer>
+
+      <ApiAuditLogDetailDrawer
+        open={detailRecord !== null}
+        data={detailRecord}
+        onClose={() => setDetailRecord(null)}
+      />
+    </>
   );
 };
 
