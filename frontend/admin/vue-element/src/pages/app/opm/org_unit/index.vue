@@ -123,7 +123,6 @@ const pageConfig = computed<ProPageConfig>(() => ({
       },
     },
     columns: [
-      { type: "index", label: $t("common.table.seq"), width: 60 },
       { prop: "name", label: $t("pages.org_unit.name"), minWidth: 150, treeNode: true },
       { prop: "code", label: $t("pages.org_unit.code"), minWidth: 120 },
       {
