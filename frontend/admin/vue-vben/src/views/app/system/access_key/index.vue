@@ -51,6 +51,7 @@ const formOptions: VbenFormProps = {
 };
 
 const gridOptions: VxeGridProps = {
+  height: 'auto',
   columns: [
     { title: $t('page.accessKey.name'), field: 'name', minWidth: 160 },
     {
