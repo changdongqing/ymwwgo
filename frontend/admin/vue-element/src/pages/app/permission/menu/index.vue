@@ -195,7 +195,6 @@ const pageConfig = computed<ProPageConfig>(() => ({
       },
     },
     columns: [
-      { type: "index", label: $t("common.table.seq"), width: 60 },
       {
         prop: "meta.title",
         label: $t("pages.menu.name"),
