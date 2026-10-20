@@ -127,6 +127,12 @@
    --vxe-ui-table-border-color（= --border token，亮暗自适配）。 */
 .vxe-grid--table-wrapper {
   position: relative;
+
+  /* 表区圆角对齐 ele（ele .vxe-table 6px）：vben grid 虽配置了 round:true，
+     但 vxe 的 is--round 圆角在滚动状态矩阵下不落地（计算值 0），表区四角
+     一直是直角。裁切容器本身 overflow:hidden，圆角会同时裁掉表头底色、
+     表体与底部收口线（::after 线端随圆角内收）。 */
+  border-radius: 6px;
 }
 
 .vxe-grid--table-wrapper::after {
