@@ -165,7 +165,7 @@ async function handleDelete(row: any) {
 <template>
   <Grid :table-title="$t('page.dict.dictTypeList')">
     <template #toolbar-tools>
-      <a-button type="primary" @click="handleCreate">
+      <a-button type="primary" class="mr-2" @click="handleCreate">
         {{ $t('page.dict.button.create') }}
       </a-button>
           <TableExportButton :fetcher="exportFetcher" :columns="gridOptions.columns" filename="export" />

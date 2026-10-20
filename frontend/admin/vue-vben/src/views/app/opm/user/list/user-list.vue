@@ -356,7 +356,7 @@ watch(
 <template>
   <Grid :table-title="$t('menu.opm.user')">
     <template #toolbar-tools>
-      <a-button type="primary" @click="handleCreate">
+      <a-button type="primary" class="mr-2" @click="handleCreate">
         {{ $t('page.user.button.create') }}
       </a-button>
           <TableExportButton :fetcher="exportFetcher" :columns="gridOptions.columns" filename="export" />
