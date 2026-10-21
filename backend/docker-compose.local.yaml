@@ -1,0 +1,67 @@
+# 本地调试专用编排（不进 git）：宿主端口错开为 25432 / 26379 / 29000-29001，
+# 避免与本机已被占用的 5432 / 6379 / 9000-9001（1Panel 等其他项目容器）冲突。
+# 用法：docker compose -p ymwwgo-local -f backend/docker-compose.local.yaml up -d
+# postgres 用 pgvector 版镜像：启动期 ai_vector_migrate 需要 CREATE EXTENSION vector（AI 知识库）。
+# 配套的应用侧覆盖配置见 backend/app/admin/service/configs.local/（启动时 -c 指定）。
+name: ymwwgo-local
+
+services:
+  postgres:
+    image: docker.io/pgvector/pgvector:pg16
+    container_name: ymwwgo-postgres
+    restart: unless-stopped
+    ports:
+      - "25432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: "*Abcd123456"
+      POSTGRES_DB: gwa
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d gwa"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+
+  redis:
+    image: docker.io/library/redis:8-alpine
+    container_name: ymwwgo-redis
+    restart: unless-stopped
+    ports:
+      - "26379:6379"
+    command: ["redis-server", "--requirepass", "*Abcd123456", "--appendonly", "no"]
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a '*Abcd123456' ping | grep PONG"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+
+  minio:
+    image: docker.io/minio/minio:latest
+    container_name: ymwwgo-minio
+    restart: unless-stopped
+    ports:
+      - "29000:9000"
+      - "29001:9001"
+    environment:
+      MINIO_ROOT_USER: root
+      MINIO_ROOT_PASSWORD: "*Abcd123456"
+    command: server /data --console-address ':9001'
+    volumes:
+      - miniodata:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+
+volumes:
+  pgdata:
+    name: ymwwgo-local_pgdata
+  redisdata:
+    name: ymwwgo-local_redisdata
+  miniodata:
+    name: ymwwgo-local_miniodata
