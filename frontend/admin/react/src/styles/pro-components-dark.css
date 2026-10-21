@@ -359,6 +359,14 @@ html[data-theme='dark'] .ant-form .ant-input:not(.ant-input-affix-wrapper .ant-i
    退化为 block（标签堆到输入框上方）。现已全部拆除，只保留
    以下保护性规则，布局交给 antd 默认（col-span 栅格 + 水平 form-item）。 */
 
+/* 行距 8px（2026-10-21 紧凑档）：QueryFilter 的 searchGutter 默认 24 且横竖两轴共用，
+   竖轴对多行条件太奢侈（3 行条件的搜索区吃掉视口 ~38%）。只收竖轴，横轴 gutter 24 保留。
+   必须用 !important：antd 把 gutter 写成行内 gap。选择器用 -row 精确类，
+   不用 .ant-row —— 那会连 form-item-row 一起命中，标签/控件一旦折行会被再垫 8px。 */
+.ant-pro-table-search .ant-pro-query-filter-row {
+  row-gap: 8px !important;
+}
+
 /* 输入类控件撑满所属 Col；min-width 保证"请输入/请选择"有呼吸空间 */
 .ant-pro-table-search .ant-picker,
 .ant-pro-table-search .ant-select,
@@ -434,11 +442,11 @@ html[data-theme='dark'] .ant-form .ant-input:not(.ant-input-affix-wrapper .ant-i
 }
 
 /* ========== 搜索表单 / 工具条 / 表格之间垂直呼吸感 ========== */
-/* 搜索卡 → 列表卡的间距 16px：与 §2.6 已有的两个 16（内容边距、表格→分页）同族。
-   原先 24px 是"对齐设计稿 mb-6"的字面搬运，但设计稿那版没有卡片描边——描边一画，
-   24px 的空档就比卡内 20px 内缩还宽，两块读起来像互不相干的段落。 */
+/* 搜索卡 → 列表卡的间距 12px（2026-10-21 紧凑档，与 ele 端 2026-10-17 落的 12px 汇合，
+   §2.6 该行悬了半年的"是否反向同步 12px 到 react"待决就此关闭）。
+   原先 24px 是"对齐设计稿 mb-6"的字面搬运，16px 仍压得多行条件的搜索区过高。 */
 .ant-pro-table .ant-pro-table-search {
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 .ant-pro-table .ant-pro-table-list-toolbar-container {
   margin-bottom: 16px;
@@ -458,14 +466,15 @@ html[data-theme='dark'] .ant-form .ant-input:not(.ant-input-affix-wrapper .ant-i
 /* 暗黑页面背景走 --ant-color-bg-layout（= 画布 #0B0F19），无需再覆写 */
 
 /* 卡片边框/圆角/内边距 —— 通用（亮暗一致，高度不变）
-   圆角与留白对齐设计稿：rounded-xl(12px) + p-5(20px)；投影按主题分档，见下方。
+   圆角 12px 对齐设计稿 rounded-xl；内边距 2026-10-21 起走紧凑档：上下 12 / 左右 16
+   （原 p-5 四边 20px，多行条件的搜索区把表格数据空间压得过小，§2.6 有账）。
    列表侧的盒子画在宿主 .ant-pro-card 上，而不是 .ant-table 上：实测两者本来就和搜索卡
    同起点同宽（x=528 / w=824），而 `.ant-table` 坐在带 24px 左右内缩的卡片体里。
    描边画在表格层 = 可见盒子比搜索卡窄 48px，正是"列表 card 比搜索栏窄一截"的来源。 */
 .ant-pro-table-search {
   border: 1px solid;
   border-radius: 12px;
-  padding: 20px;
+  padding: 12px 16px;
 }
 /* 搜索卡的内缩只留上面那一条：pro-components 自己给查询表单写了 `padding: 24px`
    （选择器 `.ant-pro-query-filter.ant-pro-query-filter`，用双类提权），和我们的卡 padding

@@ -294,8 +294,9 @@ Tailwind 灰阶（`slate-400` 在白底 2.60、在 `#F5F5F5` 上 2.38，`zinc-50
 | 页签栏高度 | **38px** | vben `config.ts:78`；ele `core/preferences/config/default.ts:80`；react `core/preferences/config/default.ts:80`（chrome 形态） |
 | 内容边距 | **16px** | 由各端页面容器统一施加；ele `src/styles/_layouts.scss:9-10` `.app-container { padding: 16px }` |
 | 表格 → 分页器 | **16px** | react `src/styles/pro-components-dark.css` 的 `.ant-pro-table .ant-pagination { margin: 16px 0 0 }`（2026-10-16 起；**antd 自带的 `margin: 16px 0` 在本项目落不了地**，见下方分页器条注）；ele `ProPagination/index.vue` 的 `padding: 16px 0 0`（暗色在 `_dark-mode.scss` 有一条同名 `!important` 覆写，两处必须一起改）；vben `framework/effects/plugins/vxe-table/style.css` 新增 `.vxe-grid--pager-wrapper { padding-top: 16px }`。**分页器到卡片底边不另写一份**：由该卡自己的内缩唯一提供（react/ele 20px、vben 8px 密度的 `p-2`），所以"上下对称"从来不是目标——上 16 是同级块间距、下 20 是卡片内缩 |
-| 搜索卡内缩 | **20px 四边，且只有一个来源** | react `src/styles/pro-components-dark.css`：`.ant-pro-table-search { padding: 20px }` 配上把 pro-components 自带的查询表单 `padding: 24px` 归零（2026-10-17 起，机制见下方"搜索卡打薄"条）；ele `ProSearch/index.vue` 的 `.pro-search { padding: 20px }`（EP 的 `ElForm` 自身不带 padding，本端只有一个内缩来源、无需归零）+ `ProPage/index.vue` 的 `.pro-page__content { padding: 20px }`；**vben 没有独立搜索卡**（搜索表单在 vxe-grid 的 `#form` 插槽里，与表格同处一张卡），这一档对它只意味着"内容与表格文字同一条竖线"，见同条注 |
-| 搜索卡 → 列表卡间距 | **16px**（ele 已知分叉 12px，见右） | react 同文件的 `.ant-pro-table .ant-pro-table-search { margin-bottom: 16px }`；vben 结构上不存在这一对卡片（卡内表单块用 `pb-4` = 16px，本来就同值）；**ele `ProPage/index.vue` 现为 `gap: 12px`**——2026-10-17 用户实测反馈"16px 让两块离得太远、压缩列表数据显示空间"，先收到 8px 又判"两块贴一块"，落 12px。**这一档 ele 目前不满足本表**：是否把 12px 反向同步到 react/vben（或把 ele 收回 16px）属待决，改之前先修本行 |
+| 搜索卡内缩 | **react：上下 12 / 左右 16（2026-10-21 紧凑档）；ele：20px 四边（冻结）** | react `src/styles/pro-components-dark.css`：`.ant-pro-table-search { padding: 12px 16px }` 配上把 pro-components 自带的查询表单 `padding: 24px` 归零（2026-10-17 起，机制见下方"搜索卡打薄"条；2026-10-21 由四边 20px 收紧为上下 12/左右 16——多行条件的搜索区把表格数据空间压得过小，见下方 2026-10-21 紧凑化条）；ele `ProSearch/index.vue` 的 `.pro-search { padding: 20px }`（EP 的 `ElForm` 自身不带 padding，本端只有一个内缩来源、无需归零）+ `ProPage/index.vue` 的 `.pro-page__content { padding: 20px }`（ele 已冻结，不再跟 react 的新档）；**vben 没有独立搜索卡**（搜索表单在 vxe-grid 的 `#form` 插槽里，与表格同处一张卡），这一档对它只意味着"内容与表格文字同一条竖线"，见同条注 |
+| 搜索卡 → 列表卡间距 | **12px（react/ele 已汇合；vben 结构上无此对卡）** | react 同文件的 `.ant-pro-table .ant-pro-table-search { margin-bottom: 12px }`（2026-10-21 由 16px 落 12）；**ele `ProPage/index.vue` 现为 `gap: 12px`**——2026-10-17 用户实测反馈"16px 让两块离得太远、压缩列表数据显示空间"，先收到 8px 又判"两块贴一块"，落 12px。此前"这一档 ele 不满足本表、12px 是否反向同步到 react"属待决，2026-10-21 react 因同一诉求（多行条件积压数据空间）跟到 12px，**分叉闭合、待决关闭** |
+| 搜索条件行距 | **8px（2026-10-21 紧凑档，react）** | react 同文件 `.ant-pro-table-search .ant-pro-query-filter-row { row-gap: 8px !important }`——来源是 QueryFilter 的 `searchGutter` **默认 24 且横竖两轴共用**（antd 写成行内 gap，故须 `!important`）；只收竖轴，横轴列距 24 由 col 内边距承担、未动。行高 32 + 行距 8 = 每行 40px 节奏；ele/vben 的表单行距走各自栅格，未跟 |
 
 > **结案一条：`sidebar.collapsedShowTitle` 在 react/ele 不实现，48px 这条宽度也不改（2026-10-17 决定）**。
 > 先纠正一句早前的误记：**vben 并没有为这个开关加宽轨道**——它的折叠轨仍是 48
@@ -335,6 +336,13 @@ Tailwind 灰阶（`slate-400` 在白底 2.60、在 `#F5F5F5` 上 2.38，`zinc-50
 >   `src/adapter/vxe-table.ts:33`），实测表单在 8px、单元格文字在 14px；给表单容器补 `px-1.5`(6px) 后
 >   两者同到 224（页面绝对 x）。**vben 的密度没有跟着改成 20px**：它整站是 8px 尺度的紧凑卡，
 >   把 react/ele 的卡片内缩搬过去等于重排它的信息密度，那一档要单独定夺。
+
+> **紧凑化一轮：搜索区为数据让位**（2026-10-21，react；诉求原话"多行条件时占用空间太大，把有效的数据空间积压的很小"）：
+>
+> - **按钮齐平**：搜索按钮去掉 2026-08-10 引入的 `height: 2.75rem`（其"与输入框等高"的理由依赖的 flex 拉伸 hack 已被拆除，44px 成了孤立值），回归 antd 默认 32px，与输入框/工具栏按钮齐平（亮暗两态浏览器实测）。
+> - **三档收紧**：条件行距 24→**8**（QueryFilter `searchGutter` 默认 24 横竖共用，CSS 只收竖轴）、搜索卡内缩 20→**上下 12 / 左右 16**、搜索卡→列表卡 16→**12**（与 ele 的 12 汇合，§2.6 表内待决关闭）。行节奏 32+8=40px。
+> - **实测**（/opm/users，6 条件 3 行，1280×720）：搜索区 234px→170px，表格顶上移 52px（≈多看 1.6 行数据）；搜索区占视口内容区 38%→27%。
+> - **遗留**：第一行（用户名/真实姓名）在该页存在"标签被竖排"怪象（行高 64px）——已排除断点表（行宽 742 落 ≥1062 档=横排、spanSize 全体一致），form-item 计算样式与正常行逐项相同，疑点收窄到收起态/内层 row 状态耦合，未钉死；待"固定宽度布局"方案（同日分析）落地时一并消灭。
 
 > **ele 那两个 SCSS 常量别当布局尺寸读**：`src/styles/_variables.scss:14-15` 的
 > `$sidebar-width: 210px` / `$sidebar-width-collapsed: 54px` 只服务 logo 与菜单项图标对齐；
