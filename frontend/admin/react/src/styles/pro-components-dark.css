@@ -353,11 +353,6 @@ html[data-theme='dark'] .ant-form .ant-input:not(.ant-input-affix-wrapper .ant-i
   box-shadow: 0 0 0 3px rgba(0, 107, 230, 0.12) !important;
 }
 
-/* ========== 搜索按钮与输入框等高（通用） ========== */
-.ant-pro-table-search .ant-btn {
-  height: 2.75rem;
-}
-
 /* ========== 搜索表单布局：回归 antd v6 原生栅格 ==========
    历史版本在此叠过 flex:1 0 auto / gap:0 / align-items 等 hack，
    与 v6 栅格打架导致 Col 塌缩（Select 缩成一条线）、form-item
