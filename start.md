@@ -2,11 +2,11 @@
 
 > 本机（共享开发机）的 5432 / 6379 / 9000-9001 端口已被 1Panel 等其他项目容器占用，
 > 仓库自带的 `backend/docker-compose.yaml` 不能原样使用。本文档描述的是**错端口的本地方案**，
-> 配套文件（均未入库）：`backend/docker-compose.local.yaml`、`backend/app/admin/service/configs.local/`、`backend/.air.toml`。
+> 配套文件：`backend/docker-compose.local.yaml`、`backend/app/admin/service/configs.local/`、`backend/.air.toml`（均已入库）。
 
 ## 0. 前置条件（只装一次）
 
-- Go 1.27+、Node 24 + npm、Docker（含 compose v2）
+- Go 1.27+、Node 24、**pnpm >= 9.12.0**（react/vue-element/vue-vben 三端统一用 pnpm，本机 12.14 实测可用）、Docker（含 compose v2）
 - gow 与 air（装在 `~/go/bin`，默认不在 PATH，先 `export PATH=$PATH:~/go/bin` 或用全路径）：
 
 ```bash
@@ -47,13 +47,13 @@ air
 
 ```bash
 cd frontend/admin/react
-npm install --legacy-peer-deps                     # 首次 / 依赖变更后
-npm i rc-field-form --no-save --legacy-peer-deps   # 补缺失 peer，重装依赖后需重跑
-npm run dev                                        # http://localhost:15888
+pnpm install      # 首次 / 依赖变更后
+pnpm dev          # http://localhost:15888
 ```
 
-> 两个参数的原因：antd 6 与 @ant-design/pro-components 2.8.10 的 peer 声明冲突，必须 `--legacy-peer-deps`；
-> 而 `rc-field-form` 是 pro-form 的 peer 依赖，antd 5 由 antd 传递提供、antd 6 不再提供，仓库又未提交 lockfile，故需手动补装。
+> 三端统一用 **pnpm**（以 README 和已提交的 pnpm-lock.yaml 为准）。pnpm 会自动安装缺失的 peer 依赖
+> （如 rc-field-form），并应用 `pnpm-workspace.yaml` 里对 @ant-design/pro-form 的 antd6 兼容补丁。
+> **切勿改用 npm 安装**：npm 应用不了补丁、不会补 peer，还会生成第二份 package-lock.json 与 pnpm-lock.yaml 漂移。
 
 ## 4. 登录
 
