@@ -205,10 +205,6 @@ const PositionManagement = () => {
               };
             }}
             rowKey="id"
-            search={{
-              labelWidth: 'auto',
-              defaultCollapsed: false,
-            }}
             pagination={{
               defaultPageSize: 20,
               showSizeChanger: true,

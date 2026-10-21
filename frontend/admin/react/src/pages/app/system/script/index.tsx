@@ -234,10 +234,6 @@ const ScriptManagement = () => {
               };
             }}
             rowKey="id"
-            search={{
-              labelWidth: 'auto',
-              defaultCollapsed: false,
-            }}
             pagination={{
               defaultPageSize: TABLE.DEFAULT_PAGE_SIZE,
               showSizeChanger: true,

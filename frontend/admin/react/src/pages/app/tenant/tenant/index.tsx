@@ -236,8 +236,6 @@ const TenantList = () => {
             }}
             rowKey="id"
             search={{
-              labelWidth: 'auto',
-              defaultCollapsed: false,
               span: 4,
             }}
             pagination={{

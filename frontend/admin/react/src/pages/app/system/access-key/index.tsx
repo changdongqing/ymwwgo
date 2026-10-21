@@ -153,7 +153,6 @@ export default function AccessKeyPage() {
           actionRef={actionRef}
           columns={columns}
           rowKey="id"
-          search={{ labelWidth: 'auto', defaultCollapsed: false }}
           scroll={{ y: tableScrollY }}
           pagination={{
             defaultPageSize: 20,

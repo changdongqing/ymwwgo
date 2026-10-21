@@ -127,7 +127,6 @@ export default function AiProviderPage() {
       <ListTable<AiProvider>
         actionRef={actionRef}
         rowKey="id"
-        search={{ labelWidth: 'auto', defaultCollapsed: false }}
         scroll={{ y: tableScrollY, x: 1000 }}
         request={async (params) => {
           const { current, pageSize, ...rest } = params;

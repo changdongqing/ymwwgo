@@ -359,21 +359,73 @@ html[data-theme='dark'] .ant-form .ant-input:not(.ant-input-affix-wrapper .ant-i
    退化为 block（标签堆到输入框上方）。现已全部拆除，只保留
    以下保护性规则，布局交给 antd 默认（col-span 栅格 + 水平 form-item）。 */
 
-/* 行距 8px（2026-10-21 紧凑档）：QueryFilter 的 searchGutter 默认 24 且横竖两轴共用，
-   竖轴对多行条件太奢侈（3 行条件的搜索区吃掉视口 ~38%）。只收竖轴，横轴 gutter 24 保留。
-   必须用 !important：antd 把 gutter 写成行内 gap。选择器用 -row 精确类，
-   不用 .ant-row —— 那会连 form-item-row 一起命中，标签/控件一旦折行会被再垫 8px。 */
+/* ===== 固定宽度查询区（2026-10-21 定稿，规则与实测见 §2.6）=====
+   条件组定宽不折行：label 70px（ListTable 侧 labelWidth，antd 默认右对齐）+
+   控件 164px（下方规则），每组恒 234px；组间 24px。一行放不下整体横向滚动
+   （设计明确允许滚动条），重置/查询钉在条件区的可视左下角。
+   实现走 grid：QueryFilter 的 Row 原生是 flex+wrap 的容器宽度响应式栅格，这里
+   改成 grid-auto-flow:column 单行轨道——字段列 max-content 定宽、永不折行；
+   按钮 Col 显式落到第 2 行，sticky 钉在滚动可视区左缘，滚动时按钮不动。
+   行距 8px：QueryFilter 的 searchGutter 默认 24 且横竖两轴共用，antd 写成行内
+   gap，故须 !important；横轴间距改由 column-gap 提供。 */
 .ant-pro-table-search .ant-pro-query-filter-row {
+  display: grid !important;
+  grid-auto-flow: column;
+  grid-template-rows: max-content;
+  grid-auto-columns: max-content;
+  column-gap: 24px;
   row-gap: 8px !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  overflow-x: auto;
+}
+/* 条件组列显式定宽 242 = label 70 + 间距 8 + 控件 164。不用 max-content 轨道：
+   pro-form 给控件的行内 width:100% 会把 grid 内在尺寸解析搅成循环依赖
+   （实测轨道塌到 78px、标签全部堆叠），显式宽度才算真正"固定"。
+   区间选择器组 406 = 70 + 8 + 328。 */
+.ant-pro-table-search .ant-pro-query-filter-row > .ant-col {
+  max-width: none !important;  /* antd col-N 自带 max-width:33.33%,会把定宽列按轨道再夹回去 */
+  margin-left: 0 !important;   /* 抵消 submitter 的 offset 百分比边距 */
+  padding-left: 0 !important;
+  padding-right: 0 !important; /* gutter 间距改由 column-gap 提供 */
+}
+.ant-pro-table-search .ant-pro-query-filter-row > .ant-col:not(:has(.ant-pro-query-filter-actions)) {
+  grid-row: 1;                 /* 必须：auto-flow column 先向下填列，按钮占走第 2 行后
+                                  后续字段会蛇形下坠（实测昵称/手机号掉到第 2 行），
+                                  显式钉在 row 1 才是真正的单行轨道 */
+  width: 242px !important;     /* 抵消 span 百分比宽 */
+}
+.ant-pro-table-search .ant-pro-query-filter-row > .ant-col:has(.ant-picker-range) {
+  width: 406px !important;
+}
+/* 重置/查询：独占第 2 行、贴左；sticky 让横向滚动时按钮始终可见 */
+.ant-pro-table-search .ant-pro-query-filter-row > .ant-col:has(.ant-pro-query-filter-actions) {
+  grid-row: 2;
+  grid-column: 1;
+  justify-self: start;
+  position: sticky;
+  left: 0;
+  text-align: left !important; /* 压 QueryFilter 写在 Col 上的 inline text-align:end */
+}
+/* 按钮组 form-item 的占位空 label（渲染为一个空格）不吃 70px 定宽，按钮才真正贴左下角 */
+.ant-pro-table-search .ant-pro-query-filter-actions .ant-form-item-label {
+  display: none !important;
 }
 
-/* 输入类控件撑满所属 Col；min-width 保证"请输入/请选择"有呼吸空间 */
+/* 输入类控件定宽 164px：文本区 140 = 10 个汉字（14px/字），余 24 为左右内距与边框。
+   与 70px 定宽 label 合成 234px 等宽条件组；不再撑满列（列宽在 grid 下由内容决定）。
+   !important 必须：pro-form 的 grid 模式给控件写行内 width:100%，非 important 压不过。
+   裸 .ant-input 只取 control-content 的直接子级——affix-wrapper 内层的 input 若被
+   定宽会顶着 164 的 wrapper 溢出 24px（wrapper 自身有内距），必须保持 100%。 */
 .ant-pro-table-search .ant-picker,
 .ant-pro-table-search .ant-select,
 .ant-pro-table-search .ant-input-affix-wrapper,
-.ant-pro-table-search .ant-input {
-  width: 100%;
-  min-width: 160px;
+.ant-pro-table-search .ant-form-item-control-input-content > .ant-input {
+  width: 164px !important;
+}
+/* 区间选择器内含两个输入框，按 2 倍定宽 */
+.ant-pro-table-search .ant-picker-range {
+  width: 328px !important;
 }
 
 /* Label 不换行，与控件保持水平同行。
@@ -408,16 +460,9 @@ html[data-theme='dark'] .ant-form .ant-input:not(.ant-input-affix-wrapper .ant-i
   min-width: 0;
 }
 
-/* 查询/重置按钮组：紧凑排列、贴齐行尾 */
-.ant-pro-query-filter .ant-pro-query-filter-collapse,
-.ant-pro-table-search .ant-form-item:last-child {
-  flex: 0 0 auto;
-  margin-left: auto;
-}
-.ant-pro-query-filter .ant-pro-query-filter-collapse {
-  display: flex;
-  gap: 8px;
-}
+/* （2026-10-21 原"按钮组贴齐行尾"的 flex hack 已随固定宽度查询区 grid 布局撤销：
+   按钮位置改由上方 .ant-col:has(.ant-pro-query-filter-actions) 规则接管——
+   独占第 2 行、贴左、sticky。） */
 
 /* ========== 窄容器响应式：搜索表单优雅降级为上下结构 ==========
    Col 在窄屏下不足以水平容纳 label + 160px 输入框（antd v6 form-item

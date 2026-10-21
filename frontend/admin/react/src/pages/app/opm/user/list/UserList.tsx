@@ -290,10 +290,6 @@ const UserList: React.FC<UserListProps> = ({ tenantId, orgUnitId }) => {
             };
           }}
           rowKey="id"
-          search={{
-            labelWidth: 'auto',
-            defaultCollapsed: true,
-          }}
           pagination={{
             defaultPageSize: TABLE.DEFAULT_PAGE_SIZE,
             showSizeChanger: true,

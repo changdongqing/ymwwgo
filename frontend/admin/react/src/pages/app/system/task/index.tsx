@@ -301,10 +301,6 @@ const [sysTasksOpen, setSysTasksOpen] = useState(false);
               };
             }}
             rowKey="id"
-            search={{
-              labelWidth: 'auto',
-              defaultCollapsed: false,
-            }}
             pagination={false}
             toolBarRender={() => [
               <TableExportButton key="export" fetcher={fetchListTasks} columns={columns} filename="tasks" />,

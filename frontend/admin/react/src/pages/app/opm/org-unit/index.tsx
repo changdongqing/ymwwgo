@@ -221,10 +221,6 @@ const OrgUnitManagement = () => {
               };
             }}
             rowKey="id"
-            search={{
-              labelWidth: 'auto',
-              defaultCollapsed: false,
-            }}
             pagination={false}
             toolBarRender={() => [
               <TableExportButton key="export" fetcher={fetchListOrgUnits} columns={columns} filename="org-units" />,

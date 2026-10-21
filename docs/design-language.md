@@ -297,6 +297,8 @@ Tailwind 灰阶（`slate-400` 在白底 2.60、在 `#F5F5F5` 上 2.38，`zinc-50
 | 搜索卡内缩 | **react：上下 12 / 左右 16（2026-10-21 紧凑档）；ele：20px 四边（冻结）** | react `src/styles/pro-components-dark.css`：`.ant-pro-table-search { padding: 12px 16px }` 配上把 pro-components 自带的查询表单 `padding: 24px` 归零（2026-10-17 起，机制见下方"搜索卡打薄"条；2026-10-21 由四边 20px 收紧为上下 12/左右 16——多行条件的搜索区把表格数据空间压得过小，见下方 2026-10-21 紧凑化条）；ele `ProSearch/index.vue` 的 `.pro-search { padding: 20px }`（EP 的 `ElForm` 自身不带 padding，本端只有一个内缩来源、无需归零）+ `ProPage/index.vue` 的 `.pro-page__content { padding: 20px }`（ele 已冻结，不再跟 react 的新档）；**vben 没有独立搜索卡**（搜索表单在 vxe-grid 的 `#form` 插槽里，与表格同处一张卡），这一档对它只意味着"内容与表格文字同一条竖线"，见同条注 |
 | 搜索卡 → 列表卡间距 | **12px（react/ele 已汇合；vben 结构上无此对卡）** | react 同文件的 `.ant-pro-table .ant-pro-table-search { margin-bottom: 12px }`（2026-10-21 由 16px 落 12）；**ele `ProPage/index.vue` 现为 `gap: 12px`**——2026-10-17 用户实测反馈"16px 让两块离得太远、压缩列表数据显示空间"，先收到 8px 又判"两块贴一块"，落 12px。此前"这一档 ele 不满足本表、12px 是否反向同步到 react"属待决，2026-10-21 react 因同一诉求（多行条件积压数据空间）跟到 12px，**分叉闭合、待决关闭** |
 | 搜索条件行距 | **8px（2026-10-21 紧凑档，react）** | react 同文件 `.ant-pro-table-search .ant-pro-query-filter-row { row-gap: 8px !important }`——来源是 QueryFilter 的 `searchGutter` **默认 24 且横竖两轴共用**（antd 写成行内 gap，故须 `!important`）；只收竖轴，横轴列距 24 由 col 内边距承担、未动。行高 32 + 行距 8 = 每行 40px 节奏；ele/vben 的表单行距走各自栅格，未跟 |
+| 查询条件组宽度 | **定宽 242px/组，不响应、不折行（2026-10-21，react）** | 组成 = label 70px（4 个汉字+冒号，`labelWidth: 70` 由 ListTable 全局注入 search，antd 默认右对齐）+ 控件 164px（文本区 140 = 10 个汉字 + 内距边框 24；CSS `.ant-picker/.ant-select/.ant-input-affix-wrapper … { width: 164px !important }`——必须 important，pro-form grid 模式给控件写行内 `width: 100%`）；区间选择器组 406px。列宽在 grid 下显式定宽，**不能用 max-content 轨道**（行内 100% 会把内在尺寸解析搅成循环依赖，实测轨道塌到 78px）；antd `col-N` 自带 `max-width: 33.33%`，还须 `max-width: none` 压住 |
+| 查询区溢出与按钮 | **单行横向滚动；重置/查询钉在可视左下角（2026-10-21，react）** | QueryFilter 的 Row 改 `grid-auto-flow: column` 单行轨道 + `overflow-x: auto`——放不下整行横滚，**永不折行**（用户明确接受滚动条代价）；字段列显式 `grid-row: 1`（auto-flow column 先向下填列，按钮占走第 2 行后字段会蛇形下坠，实测踩中）；按钮 Col `grid-row: 2; grid-column: 1; position: sticky; left: 0` 钉在滚动可视区左下，顺序保持 [重置][查询]。全局入口：ListTable 给 `search` 强制注入 `span: 8`（数字短路 QueryFilter 的容器宽度断点表，列数/标签方向不再随容器变化）+ `defaultCollapsed: false` + `collapseRender: false`（单行滚动布局下收起/展开已无意义），38 处页面级 `labelWidth: 'auto'`/`defaultCollapsed` 已清 |
 
 > **结案一条：`sidebar.collapsedShowTitle` 在 react/ele 不实现，48px 这条宽度也不改（2026-10-17 决定）**。
 > 先纠正一句早前的误记：**vben 并没有为这个开关加宽轨道**——它的折叠轨仍是 48
@@ -342,7 +344,7 @@ Tailwind 灰阶（`slate-400` 在白底 2.60、在 `#F5F5F5` 上 2.38，`zinc-50
 > - **按钮齐平**：搜索按钮去掉 2026-08-10 引入的 `height: 2.75rem`（其"与输入框等高"的理由依赖的 flex 拉伸 hack 已被拆除，44px 成了孤立值），回归 antd 默认 32px，与输入框/工具栏按钮齐平（亮暗两态浏览器实测）。
 > - **三档收紧**：条件行距 24→**8**（QueryFilter `searchGutter` 默认 24 横竖共用，CSS 只收竖轴）、搜索卡内缩 20→**上下 12 / 左右 16**、搜索卡→列表卡 16→**12**（与 ele 的 12 汇合，§2.6 表内待决关闭）。行节奏 32+8=40px。
 > - **实测**（/opm/users，6 条件 3 行，1280×720）：搜索区 234px→170px，表格顶上移 52px（≈多看 1.6 行数据）；搜索区占视口内容区 38%→27%。
-> - **遗留**：第一行（用户名/真实姓名）在该页存在"标签被竖排"怪象（行高 64px）——已排除断点表（行宽 742 落 ≥1062 档=横排、spanSize 全体一致），form-item 计算样式与正常行逐项相同，疑点收窄到收起态/内层 row 状态耦合，未钉死；待"固定宽度布局"方案（同日分析）落地时一并消灭。
+> - **遗留→已结**：第一行（用户名/真实姓名）的"标签被竖排"怪象（行高 64px）——当时排除了断点表但未钉死根因；同日稍晚的**固定宽度查询区**改造（见 §2.6 值表"查询条件组宽度"行）把响应式断点与列宽挤压一并移除，怪象随之消失（6 字段全部 32px 单行实测）。
 
 > **ele 那两个 SCSS 常量别当布局尺寸读**：`src/styles/_variables.scss:14-15` 的
 > `$sidebar-width: 210px` / `$sidebar-width-collapsed: 54px` 只服务 logo 与菜单项图标对齐；

@@ -156,10 +156,6 @@ const InternalMessageList = () => {
               };
             }}
             rowKey="id"
-            search={{
-              labelWidth: 'auto',
-              defaultCollapsed: false,
-            }}
             pagination={false}
             toolBarRender={() => [
               <TableExportButton key="export" fetcher={fetchListInternalMessages} columns={columns} filename="im-messages" />,

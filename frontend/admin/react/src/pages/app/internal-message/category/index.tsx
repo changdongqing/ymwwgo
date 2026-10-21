@@ -139,10 +139,6 @@ const InternalMessageCategoryManagement = () => {
               };
             }}
             rowKey="id"
-            search={{
-              labelWidth: 'auto',
-              defaultCollapsed: false,
-            }}
             pagination={false}
             toolBarRender={() => [
               <TableExportButton key="export" fetcher={fetchListMessageCategories} columns={columns} filename="im-categories" />,

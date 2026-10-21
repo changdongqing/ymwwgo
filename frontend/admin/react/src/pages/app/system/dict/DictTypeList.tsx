@@ -135,8 +135,6 @@ const DictTypeList: React.FC<DictTypeListProps> = ({ currentTypeId, onTypeSelect
           }}
           rowKey="id"
           search={{
-            labelWidth: 'auto',
-            defaultCollapsed: false,
             span: 12,
           }}
           pagination={{

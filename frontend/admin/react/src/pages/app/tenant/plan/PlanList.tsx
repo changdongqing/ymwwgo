@@ -181,8 +181,6 @@ const PlanList: React.FC<PlanListProps> = ({ currentPlanId, onPlanSelect }) => {
           }}
           rowKey="id"
           search={{
-            labelWidth: 'auto',
-            defaultCollapsed: false,
             span: 12,
           }}
           pagination={{

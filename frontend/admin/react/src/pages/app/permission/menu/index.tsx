@@ -369,10 +369,6 @@ const MenuManagement = () => {
               };
             }}
             rowKey="id"
-            search={{
-              labelWidth: 'auto',
-              defaultCollapsed: false,
-            }}
             pagination={false}
             toolBarRender={() => [
               <TableExportButton key="export" fetcher={fetchListMenus} columns={columns} filename="menus" />,
