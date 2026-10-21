@@ -1182,28 +1182,28 @@ var DefaultMenus = []*permissionV1.Menu{
 var DefaultConfigs = []*configV1.Config{
 	{
 		Key:       trans.Ptr(ConfigKeyLoginCaptchaEnabled),
-		Name:      trans.Ptr("Login captcha enabled"),
+		Name:      trans.Ptr("登录验证码开关"),
 		Value:     trans.Ptr(strconv.FormatBool(DefaultLoginCaptchaEnabled)),
 		ValueType: configV1.Config_BOOL.Enum(),
 		IsBuiltIn: trans.Ptr(true),
 	},
 	{
 		Key:       trans.Ptr(ConfigKeyPasswordMinLen),
-		Name:      trans.Ptr("Password minimum length"),
+		Name:      trans.Ptr("口令最小长度"),
 		Value:     trans.Ptr(strconv.Itoa(DefaultPasswordMinLen)),
 		ValueType: configV1.Config_INT.Enum(),
 		IsBuiltIn: trans.Ptr(true),
 	},
 	{
 		Key:       trans.Ptr(ConfigKeyPasswordMaxAgeDays),
-		Name:      trans.Ptr("Password maximum age in days (0 disables expiry)"),
+		Name:      trans.Ptr("口令有效期天数（0 表示不启用）"),
 		Value:     trans.Ptr(strconv.Itoa(DefaultPasswordMaxAgeDays)),
 		ValueType: configV1.Config_INT.Enum(),
 		IsBuiltIn: trans.Ptr(true),
 	},
 	{
 		Key:       trans.Ptr(ConfigKeyPasswordHistoryCount),
-		Name:      trans.Ptr("Password history retention count (0 disables history check)"),
+		Name:      trans.Ptr("历史口令保留条数（0 表示不启用检查）"),
 		Value:     trans.Ptr(strconv.Itoa(DefaultPasswordHistoryCount)),
 		ValueType: configV1.Config_INT.Enum(),
 		IsBuiltIn: trans.Ptr(true),
