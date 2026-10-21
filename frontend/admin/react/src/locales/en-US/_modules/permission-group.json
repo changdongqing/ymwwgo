@@ -1,5 +1,6 @@
 {
   "pageTitle": "Permission Group Management",
+  "listTitle": "Permission Group List",
   "moduleName": "Permission Group",
   "name": "Group Name",
   "namePlaceholder": "Enter group name",

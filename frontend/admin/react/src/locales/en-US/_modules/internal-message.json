@@ -1,5 +1,6 @@
 {
   "pageTitle": "Internal Message Management",
+  "listTitle": "Internal Message List",
   "moduleName": "Internal Message",
   "title": "Message Title",
   "titlePlaceholder": "Enter message title",

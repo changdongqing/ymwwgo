@@ -1,5 +1,6 @@
 {
   "title": "API Audit Log",
+  "listTitle": "API Audit Log List",
   "serial": "#",
   "username": "Username",
   "usernamePlaceholder": "Enter username",

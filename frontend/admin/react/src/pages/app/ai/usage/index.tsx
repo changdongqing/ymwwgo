@@ -120,20 +120,6 @@ export default function AiUsagePage() {
             showSizeChanger: true,
             showQuickJumper: true,
           }}
-          toolBarRender={() => [
-            // 导出：客户端聚合（小数据量快速路径）+ 服务端全量（本页无搜索条件，
-            // 查询恒为空；租户用户由后端 viewer 语义收窄到本租户）
-            <TableExportButton
-              key="export"
-              fetcher={fetchListAiUsageLogs}
-              columns={columns}
-              filename="ai-usage-logs"
-              serverExport={{
-                url: 'admin/v1/ai/usage-logs:export',
-                buildQuery: () => new PaginationQuery({}),
-              }}
-            />,
-          ]}
           scroll={{ y: tableScrollY, x: 800 }}
           request={async (params) => {
             const { current, pageSize } = params;
@@ -144,6 +130,22 @@ export default function AiUsagePage() {
             return { data: res.items || [], total: res.total || 0, success: true };
           }}
           columns={columns}
+          title={t('listTitle')}
+          actions={
+            <>
+              {/* 导出：客户端聚合（小数据量快速路径）+ 服务端全量（本页无搜索条件，
+                  查询恒为空；租户用户由后端 viewer 语义收窄到本租户） */}
+              <TableExportButton
+                fetcher={fetchListAiUsageLogs}
+                columns={columns}
+                filename="ai-usage-logs"
+                serverExport={{
+                  url: 'admin/v1/ai/usage-logs:export',
+                  buildQuery: () => new PaginationQuery({}),
+                }}
+              />
+            </>
+          }
         />
       </div>
     </ContentContainer>

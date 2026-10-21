@@ -1,5 +1,6 @@
 {
   "title": "Notification Channels",
+  "listTitle": "Notification Channel List",
   "name": "Name",
   "type": "Type",
   "typeEmail": "Email (SMTP)",

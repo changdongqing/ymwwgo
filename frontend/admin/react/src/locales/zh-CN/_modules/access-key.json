@@ -1,5 +1,6 @@
 {
   "pageTitle": "OpenAPI 凭证管理",
+  "listTitle": "访问凭证列表",
   "moduleName": "访问凭证",
   "name": "凭证名称",
   "namePlaceholder": "请输入凭证名称（用途说明）",

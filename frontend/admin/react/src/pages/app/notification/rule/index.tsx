@@ -273,6 +273,20 @@ const NotificationRulePage = () => {
         <ListTable<NotificationRule>
           actionRef={actionRef}
           columns={columns}
+          title={t('listTitle')}
+          actions={
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={() => {
+                setFormMode('create');
+                setSelected(undefined);
+                setFormOpen(true);
+              }}
+            >
+              {t('create')}
+            </Button>
+          }
           request={async (params) => {
             const query = new PaginationQuery({
               paging: { page: params.current || 1, pageSize: params.pageSize || 20 },
@@ -289,20 +303,6 @@ const NotificationRulePage = () => {
             showSizeChanger: true,
           }}
           options={{ density: true, fullScreen: true, setting: true, reload: true }}
-          toolBarRender={() => [
-            <Button
-              key="create"
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={() => {
-                setFormMode('create');
-                setSelected(undefined);
-                setFormOpen(true);
-              }}
-            >
-              {t('create')}
-            </Button>,
-          ]}
           size="middle"
           bordered
           scroll={{ y: tableScrollY, x: 1100 }}

@@ -119,7 +119,7 @@ const PlanQuotaList: React.FC<PlanQuotaListProps> = ({ planId }) => {
           <ListTable<any>
             actionRef={actionRef}
             columns={columns}
-            headerTitle={false}
+            title={t('quotaListTitle')}
             params={{ planId }}
             request={async (params, sorter) => {
               const orderBy: string[] = [];
@@ -158,22 +158,23 @@ const PlanQuotaList: React.FC<PlanQuotaListProps> = ({ planId }) => {
               showSizeChanger: true,
               showQuickJumper: true,
             }}
-            toolBarRender={() => [
-              <TableExportButton key="export" fetcher={fetchListPlanQuotas} columns={columns} filename="plan-quotas" />,
-              <Button
-                key="create"
-                type="primary"
-                icon={<PlusOutlined />}
-                size="small"
-                onClick={() => {
-                  setEditingQuota(null);
-                  setDrawerMode('create');
-                  setDrawerOpen(true);
-                }}
-              >
-                {t('quotaCreate')}
-              </Button>,
-            ]}
+            actions={
+              <>
+                <TableExportButton fetcher={fetchListPlanQuotas} columns={columns} filename="plan-quotas" />
+                <Button
+                  type="primary"
+                  icon={<PlusOutlined />}
+                  size="small"
+                  onClick={() => {
+                    setEditingQuota(null);
+                    setDrawerMode('create');
+                    setDrawerOpen(true);
+                  }}
+                >
+                  {t('quotaCreate')}
+                </Button>
+              </>
+            }
             options={{
               density: true,
               fullScreen: true,

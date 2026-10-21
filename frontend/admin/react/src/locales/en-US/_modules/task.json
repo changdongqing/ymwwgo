@@ -1,5 +1,6 @@
 {
   "pageTitle": "Task Management",
+  "listTitle": "Task List",
   "moduleName": "Task",
   "serial": "#",
   "type": "Task Type",

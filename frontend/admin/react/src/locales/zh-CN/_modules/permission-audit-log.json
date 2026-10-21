@@ -1,5 +1,6 @@
 {
   "title": "权限审计日志",
+  "listTitle": "权限审计日志列表",
   "serial": "序号",
   "targetType": "目标类型",
   "targetTypePlaceholder": "请输入目标类型",

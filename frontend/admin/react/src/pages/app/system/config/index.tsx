@@ -144,6 +144,23 @@ const ConfigManagement = () => {
           <ListTable<Config>
             actionRef={actionRef}
             columns={columns}
+            title={t('listTitle')}
+            actions={
+              <>
+                <TableExportButton fetcher={fetchListConfigs} columns={columns} filename="configs" />
+                <Button
+                  type="primary"
+                  icon={<PlusOutlined />}
+                  onClick={() => {
+                    setDrawerMode('create');
+                    setSelectedConfig(undefined);
+                    setDrawerOpen(true);
+                  }}
+                >
+                  {t('create')}
+                </Button>
+              </>
+            }
             request={async (params, sorter, _filter) => {
               const query = new PaginationQuery({
                 paging: {
@@ -177,21 +194,6 @@ const ConfigManagement = () => {
               showSizeChanger: true,
               showQuickJumper: true,
             }}
-            toolBarRender={() => [
-              <TableExportButton key="export" fetcher={fetchListConfigs} columns={columns} filename="configs" />,
-              <Button
-                key="create"
-                type="primary"
-                icon={<PlusOutlined />}
-                onClick={() => {
-                  setDrawerMode('create');
-                  setSelectedConfig(undefined);
-                  setDrawerOpen(true);
-                }}
-              >
-                {t('create')}
-              </Button>,
-            ]}
             options={{
               density: true,
               fullScreen: true,

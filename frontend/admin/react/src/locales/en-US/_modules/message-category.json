@@ -1,5 +1,6 @@
 {
   "pageTitle": "Message Category Management",
+  "listTitle": "Message Category List",
   "moduleName": "Message Category",
   "name": "Category Name",
   "namePlaceholder": "Enter category name",

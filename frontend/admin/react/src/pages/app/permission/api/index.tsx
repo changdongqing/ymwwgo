@@ -152,6 +152,34 @@ const ApiManagement = () => {
           <ListTable<Api>
             actionRef={actionRef}
             columns={columns}
+            title={t('listTitle')}
+            actions={
+              <>
+                <TableExportButton fetcher={fetchListApis} columns={columns} filename="apis" />
+                <Button
+                  type="primary"
+                  icon={<PlusOutlined />}
+                  onClick={() => {
+                    setDrawerMode('create');
+                    setSelectedApi(undefined);
+                    setDrawerOpen(true);
+                  }}
+                >
+                  {t('create')}
+                </Button>
+                <Popconfirm
+                  title={t('syncConfirmTitle')}
+                  description={t('syncConfirmDesc')}
+                  onConfirm={handleSync}
+                  okText={t('common:button.ok')}
+                  cancelText={t('common:button.cancel')}
+                >
+                  <Button type="primary" danger icon={<SyncOutlined />}>
+                    {t('sync')}
+                  </Button>
+                </Popconfirm>
+              </>
+            }
             request={async (params, sorter, _filter) => {
               // 构建查询对象
               const query = new PaginationQuery({
@@ -186,33 +214,6 @@ const ApiManagement = () => {
               showSizeChanger: true,
               showQuickJumper: true,
             }}
-            toolBarRender={() => [
-              <TableExportButton key="export" fetcher={fetchListApis} columns={columns} filename="apis" />,
-              <Button
-                key="create"
-                type="primary"
-                icon={<PlusOutlined />}
-                onClick={() => {
-                  setDrawerMode('create');
-                  setSelectedApi(undefined);
-                  setDrawerOpen(true);
-                }}
-              >
-                {t('create')}
-              </Button>,
-              <Popconfirm
-                key="sync"
-                title={t('syncConfirmTitle')}
-                description={t('syncConfirmDesc')}
-                onConfirm={handleSync}
-                okText={t('common:button.ok')}
-                cancelText={t('common:button.cancel')}
-              >
-                <Button type="primary" danger icon={<SyncOutlined />}>
-                  {t('sync')}
-                </Button>
-              </Popconfirm>,
-            ]}
             options={{
               density: true,
               fullScreen: true,

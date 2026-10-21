@@ -111,7 +111,7 @@ const DictTypeList: React.FC<DictTypeListProps> = ({ currentTypeId, onTypeSelect
         <ListTable<any>
           actionRef={actionRef}
           columns={columns}
-          headerTitle={t('dictTypeList')}
+          title={t('listTitle')}
           request={async (params) => {
             const query = new PaginationQuery({
               paging: {
@@ -142,22 +142,23 @@ const DictTypeList: React.FC<DictTypeListProps> = ({ currentTypeId, onTypeSelect
             showSizeChanger: true,
             showQuickJumper: true,
           }}
-          toolBarRender={() => [
-            <TableExportButton key="export" fetcher={fetchListDictTypes} columns={columns} filename="dict-types" />,
-            <Button
-              key="create"
-              type="primary"
-              icon={<PlusOutlined />}
-              size="small"
-              onClick={() => {
-                setEditingType(null);
-                setDrawerMode('create');
-                setDrawerOpen(true);
-              }}
-            >
-              {t('create')}
-            </Button>,
-          ]}
+          actions={
+            <>
+              <TableExportButton fetcher={fetchListDictTypes} columns={columns} filename="dict-types" />
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                size="small"
+                onClick={() => {
+                  setEditingType(null);
+                  setDrawerMode('create');
+                  setDrawerOpen(true);
+                }}
+              >
+                {t('create')}
+              </Button>
+            </>
+          }
           options={{
             density: false,
             fullScreen: false,

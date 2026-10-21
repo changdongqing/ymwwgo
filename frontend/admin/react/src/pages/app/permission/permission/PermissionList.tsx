@@ -117,7 +117,24 @@ const PermissionList: React.FC<PermissionListProps> = ({ groupId }) => {
           <ListTable<any>
             actionRef={actionRef}
             columns={columns}
-            headerTitle={false}
+            title={t('listTitle')}
+            actions={
+              <>
+                <TableExportButton fetcher={fetchListPermissions} columns={columns} filename="permissions" />
+                <Button
+                  type="primary"
+                  icon={<PlusOutlined />}
+                  size="small"
+                  onClick={() => {
+                    setEditingPermission(null);
+                    setDrawerMode('create');
+                    setDrawerOpen(true);
+                  }}
+                >
+                  {t('create')}
+                </Button>
+              </>
+            }
             params={{ groupId }}
             request={async (params) => {
               const query = new PaginationQuery({
@@ -149,22 +166,6 @@ const PermissionList: React.FC<PermissionListProps> = ({ groupId }) => {
               showSizeChanger: true,
               showQuickJumper: true,
             }}
-            toolBarRender={() => [
-              <TableExportButton key="export" fetcher={fetchListPermissions} columns={columns} filename="permissions" />,
-              <Button
-                key="create"
-                type="primary"
-                icon={<PlusOutlined />}
-                size="small"
-                onClick={() => {
-                  setEditingPermission(null);
-                  setDrawerMode('create');
-                  setDrawerOpen(true);
-                }}
-              >
-                {t('create')}
-              </Button>,
-            ]}
             options={{
               density: true,
               fullScreen: true,

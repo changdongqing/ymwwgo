@@ -152,6 +152,22 @@ const OnlineSessionPage = () => {
         <ListTable<OnlineSession>
           actionRef={actionRef}
           columns={columns}
+          title={t('listTitle')}
+          actions={
+            <>
+              <TableExportButton
+                fetcher={(q) =>
+                  fetchListOnlineSessions({
+                    page: Number(q.paging?.page) || 1,
+                    pageSize: Number(q.paging?.pageSize) || 1000,
+                    keyword: (q.formValues?.keyword as string) || undefined,
+                  })
+                }
+                columns={columns}
+                filename="online-sessions"
+              />
+            </>
+          }
           request={async (params) => {
             const response = await fetchListOnlineSessions({
               page: params.current || 1,
@@ -164,20 +180,6 @@ const OnlineSessionPage = () => {
               success: true,
             };
           }}
-          toolBarRender={() => [
-            <TableExportButton
-              key="export"
-              fetcher={(q) =>
-                fetchListOnlineSessions({
-                  page: Number(q.paging?.page) || 1,
-                  pageSize: Number(q.paging?.pageSize) || 1000,
-                  keyword: (q.formValues?.keyword as string) || undefined,
-                })
-              }
-              columns={columns}
-              filename="online-sessions"
-            />,
-          ]}
           rowKey={(record) => `${record.clientType}-${record.userId}-${record.jti}`}
           polling={30}
           pagination={{

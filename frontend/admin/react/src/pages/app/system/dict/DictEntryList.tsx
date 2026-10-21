@@ -132,7 +132,7 @@ const DictEntryList: React.FC<DictEntryListProps> = ({ typeId }) => {
           <ListTable<any>
             actionRef={actionRef}
             columns={columns}
-            headerTitle={false}
+            title={t('listTitle')}
             params={{ typeId }}
             request={async (params) => {
               const query = new PaginationQuery({
@@ -164,22 +164,23 @@ const DictEntryList: React.FC<DictEntryListProps> = ({ typeId }) => {
               showSizeChanger: true,
               showQuickJumper: true,
             }}
-            toolBarRender={() => [
-              <TableExportButton key="export" fetcher={fetchListDictEntries} columns={columns} filename="dict-entries" />,
-              <Button
-                key="create"
-                type="primary"
-                icon={<PlusOutlined />}
-                size="small"
-                onClick={() => {
-                  setEditingEntry(null);
-                  setDrawerMode('create');
-                  setDrawerOpen(true);
-                }}
-              >
-                {t('create')}
-              </Button>,
-            ]}
+            actions={
+              <>
+                <TableExportButton fetcher={fetchListDictEntries} columns={columns} filename="dict-entries" />
+                <Button
+                  type="primary"
+                  icon={<PlusOutlined />}
+                  size="small"
+                  onClick={() => {
+                    setEditingEntry(null);
+                    setDrawerMode('create');
+                    setDrawerOpen(true);
+                  }}
+                >
+                  {t('create')}
+                </Button>
+              </>
+            }
             options={{
               density: true,
               fullScreen: true,

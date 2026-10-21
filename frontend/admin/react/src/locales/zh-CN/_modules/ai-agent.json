@@ -1,5 +1,6 @@
 {
   "moduleName": "Agent 编排",
+  "listTitle": "Agent 列表",
   "name": "应用名称",
   "description": "描述",
   "enabled": "启用",

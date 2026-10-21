@@ -1,5 +1,6 @@
 {
   "pageTitle": "内部消息管理",
+  "listTitle": "内部消息列表",
   "moduleName": "内部消息",
   "title": "消息标题",
   "titlePlaceholder": "请输入消息标题",

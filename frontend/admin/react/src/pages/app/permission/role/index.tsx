@@ -151,6 +151,23 @@ const RoleManagement = () => {
           <ListTable<Role>
             actionRef={actionRef}
             columns={columns}
+            title={t('listTitle')}
+            actions={
+              <>
+                <TableExportButton fetcher={fetchListRoles} columns={columns} filename="roles" />
+                <Button
+                  type="primary"
+                  icon={<PlusOutlined />}
+                  onClick={() => {
+                    setDrawerMode('create');
+                    setSelectedRole(undefined);
+                    setDrawerOpen(true);
+                  }}
+                >
+                  {t('create')}
+                </Button>
+              </>
+            }
             request={async (params, _sorter, _filter) => {
               const query = new PaginationQuery({
                 paging: {
@@ -178,21 +195,6 @@ const RoleManagement = () => {
               showSizeChanger: true,
               showQuickJumper: true,
             }}
-            toolBarRender={() => [
-              <TableExportButton key="export" fetcher={fetchListRoles} columns={columns} filename="roles" />,
-              <Button
-                key="create"
-                type="primary"
-                icon={<PlusOutlined />}
-                onClick={() => {
-                  setDrawerMode('create');
-                  setSelectedRole(undefined);
-                  setDrawerOpen(true);
-                }}
-              >
-                {t('create')}
-              </Button>,
-            ]}
             options={{
               density: true,
               fullScreen: true,

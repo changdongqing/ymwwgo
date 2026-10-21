@@ -279,6 +279,76 @@ const [sysTasksOpen, setSysTasksOpen] = useState(false);
           <ListTable<Task>
             actionRef={actionRef}
             columns={columns}
+            title={t('listTitle')}
+            actions={
+              <>
+                <TableExportButton fetcher={fetchListTasks} columns={columns} filename="tasks" />
+                <Button
+                  icon={<CloudServerOutlined />}
+                  onClick={() => setSysTasksOpen(true)}
+                >
+                  {t('sysTasksButton')}
+                </Button>
+                <Button
+                  type="primary"
+                  icon={<PlusOutlined />}
+                  onClick={() => {
+                    setDrawerMode('create');
+                    setSelectedTask(undefined);
+                    setDrawerOpen(true);
+                  }}
+                >
+                  {t('create')}
+                </Button>
+                <Popconfirm
+                  title={t('startAllConfirmTitle')}
+                  description={t('startAllConfirmDesc', { moduleName: t('moduleName') })}
+                  onConfirm={() => startAllMutation.mutate()}
+                  okText={t('common:button.ok')}
+                  cancelText={t('common:button.cancel')}
+                >
+                  <Button
+                    // type="primary" 是必需的：styles/pro-components-dark.css:499 的暗色兜底规则
+                    // 命中 `.ant-btn:not(.ant-btn-primary)…` 并带 !important，会把这颗按钮整个覆盖成
+                    // 中性灰底——绿色"启动"语义在暗色下从未生效（实测 bg #1c2128）。
+                    // 前景取 §2.3 暗色 L0 #0B0F19 而非白色：语义色实底（success #4db577/#57D188，
+                    // 亮度 0.36–0.49）配近白前景实测只有 1.85:1（vben 同按钮）～2.56:1，深色墨在同一底上 ≥6.4:1。
+                    type="primary"
+                    style={{
+                      backgroundColor: 'var(--ant-color-success)',
+                      borderColor: 'var(--ant-color-success)',
+                      color: '#0b0f19',
+                    }}
+                    icon={<CaretRightOutlined />}
+                    loading={startAllMutation.isPending}
+                  >
+                    {t('startAll')}
+                  </Button>
+                </Popconfirm>
+                <Popconfirm
+                  title={t('stopAllConfirmTitle')}
+                  description={t('stopAllConfirmDesc', { moduleName: t('moduleName') })}
+                  onConfirm={() => stopAllMutation.mutate()}
+                  okText={t('common:button.ok')}
+                  cancelText={t('common:button.cancel')}
+                >
+                  <Button danger icon={<PauseOutlined />} loading={stopAllMutation.isPending}>
+                    {t('stopAll')}
+                  </Button>
+                </Popconfirm>
+                <Popconfirm
+                  title={t('restartAllConfirmTitle')}
+                  description={t('restartAllConfirmDesc', { moduleName: t('moduleName') })}
+                  onConfirm={() => restartAllMutation.mutate()}
+                  okText={t('common:button.ok')}
+                  cancelText={t('common:button.cancel')}
+                >
+                  <Button icon={<ReloadOutlined />} loading={restartAllMutation.isPending}>
+                    {t('restartAll')}
+                  </Button>
+                </Popconfirm>
+              </>
+            }
             request={async (params, _sorter, _filter) => {
               const query = new PaginationQuery({
                 paging: {
@@ -302,78 +372,6 @@ const [sysTasksOpen, setSysTasksOpen] = useState(false);
             }}
             rowKey="id"
             pagination={false}
-            toolBarRender={() => [
-              <TableExportButton key="export" fetcher={fetchListTasks} columns={columns} filename="tasks" />,
-              <Button
-                key="sysTasks"
-                icon={<CloudServerOutlined />}
-                onClick={() => setSysTasksOpen(true)}
-              >
-                {t('sysTasksButton')}
-              </Button>,
-              <Button
-                key="create"
-                type="primary"
-                icon={<PlusOutlined />}
-                onClick={() => {
-                  setDrawerMode('create');
-                  setSelectedTask(undefined);
-                  setDrawerOpen(true);
-                }}
-              >
-                {t('create')}
-              </Button>,
-              <Popconfirm
-                key="startAll"
-                title={t('startAllConfirmTitle')}
-                description={t('startAllConfirmDesc', { moduleName: t('moduleName') })}
-                onConfirm={() => startAllMutation.mutate()}
-                okText={t('common:button.ok')}
-                cancelText={t('common:button.cancel')}
-              >
-                <Button
-                  // type="primary" 是必需的：styles/pro-components-dark.css:499 的暗色兜底规则
-                  // 命中 `.ant-btn:not(.ant-btn-primary)…` 并带 !important，会把这颗按钮整个覆盖成
-                  // 中性灰底——绿色"启动"语义在暗色下从未生效（实测 bg #1c2128）。
-                  // 前景取 §2.3 暗色 L0 #0B0F19 而非白色：语义色实底（success #4db577/#57D188，
-                  // 亮度 0.36–0.49）配近白前景实测只有 1.85:1（vben 同按钮）～2.56:1，深色墨在同一底上 ≥6.4:1。
-                  type="primary"
-                  style={{
-                    backgroundColor: 'var(--ant-color-success)',
-                    borderColor: 'var(--ant-color-success)',
-                    color: '#0b0f19',
-                  }}
-                  icon={<CaretRightOutlined />}
-                  loading={startAllMutation.isPending}
-                >
-                  {t('startAll')}
-                </Button>
-              </Popconfirm>,
-              <Popconfirm
-                key="stopAll"
-                title={t('stopAllConfirmTitle')}
-                description={t('stopAllConfirmDesc', { moduleName: t('moduleName') })}
-                onConfirm={() => stopAllMutation.mutate()}
-                okText={t('common:button.ok')}
-                cancelText={t('common:button.cancel')}
-              >
-                <Button danger icon={<PauseOutlined />} loading={stopAllMutation.isPending}>
-                  {t('stopAll')}
-                </Button>
-              </Popconfirm>,
-              <Popconfirm
-                key="restartAll"
-                title={t('restartAllConfirmTitle')}
-                description={t('restartAllConfirmDesc', { moduleName: t('moduleName') })}
-                onConfirm={() => restartAllMutation.mutate()}
-                okText={t('common:button.ok')}
-                cancelText={t('common:button.cancel')}
-              >
-                <Button icon={<ReloadOutlined />} loading={restartAllMutation.isPending}>
-                  {t('restartAll')}
-                </Button>
-              </Popconfirm>,
-            ]}
             options={{
               density: true,
               fullScreen: true,

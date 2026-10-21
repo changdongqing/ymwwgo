@@ -340,6 +340,46 @@ const MenuManagement = () => {
           <ListTable<Menu>
             actionRef={actionRef}
             columns={columns}
+            title={t('listTitle')}
+            actions={
+              <>
+                <TableExportButton fetcher={fetchListMenus} columns={columns} filename="menus" />
+                <Button
+                  type="primary"
+                  icon={<PlusOutlined />}
+                  onClick={() => {
+                    setDrawerMode('create');
+                    setSelectedMenu(undefined);
+                    setDrawerOpen(true);
+                  }}
+                >
+                  {t('create')}
+                </Button>
+                <Button
+                  icon={<NodeExpandOutlined />}
+                  onClick={() => handleExpandAll(treeData)}
+                >
+                  {t('expandAll')}
+                </Button>
+                <Button
+                  icon={<NodeCollapseOutlined />}
+                  onClick={handleCollapseAll}
+                >
+                  {t('collapseAll')}
+                </Button>
+                <Popconfirm
+                  title={t('syncConfirmTitle')}
+                  description={t('syncConfirmDesc')}
+                  onConfirm={handleSyncMenus}
+                  okText={t('common:button.ok')}
+                  cancelText={t('common:button.cancel')}
+                >
+                  <Button type="primary" danger icon={<SyncOutlined />} loading={syncing || syncMutation.isPending}>
+                    {t('sync')}
+                  </Button>
+                </Popconfirm>
+              </>
+            }
             request={async (params, _sorter, _filter) => {
               // 标题走前端过滤（见 filterMenusByTitle），服务端只收 status；
               // pageSize 拉满确保全量行都在前端过滤范围内
@@ -370,47 +410,6 @@ const MenuManagement = () => {
             }}
             rowKey="id"
             pagination={false}
-            toolBarRender={() => [
-              <TableExportButton key="export" fetcher={fetchListMenus} columns={columns} filename="menus" />,
-              <Button
-                key="create"
-                type="primary"
-                icon={<PlusOutlined />}
-                onClick={() => {
-                  setDrawerMode('create');
-                  setSelectedMenu(undefined);
-                  setDrawerOpen(true);
-                }}
-              >
-                {t('create')}
-              </Button>,
-              <Button
-                key="expandAll"
-                icon={<NodeExpandOutlined />}
-                onClick={() => handleExpandAll(treeData)}
-              >
-                {t('expandAll')}
-              </Button>,
-              <Button
-                key="collapseAll"
-                icon={<NodeCollapseOutlined />}
-                onClick={handleCollapseAll}
-              >
-                {t('collapseAll')}
-              </Button>,
-              <Popconfirm
-                key="syncMenus"
-                title={t('syncConfirmTitle')}
-                description={t('syncConfirmDesc')}
-                onConfirm={handleSyncMenus}
-                okText={t('common:button.ok')}
-                cancelText={t('common:button.cancel')}
-              >
-                <Button type="primary" danger icon={<SyncOutlined />} loading={syncing || syncMutation.isPending}>
-                  {t('sync')}
-                </Button>
-              </Popconfirm>,
-            ]}
             options={{
               density: true,
               fullScreen: true,

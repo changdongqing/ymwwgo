@@ -1,5 +1,6 @@
 {
   "pageTitle": "Knowledge Bases",
+  "listTitle": "Knowledge Base List",
   "moduleName": "knowledge base",
   "name": "Name",
   "namePlaceholder": "Enter knowledge base name",

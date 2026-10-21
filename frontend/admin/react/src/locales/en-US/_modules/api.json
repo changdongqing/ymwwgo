@@ -1,5 +1,6 @@
 {
   "title": "API Management",
+  "listTitle": "API List",
   "serial": "#",
   "description": "Description",
   "descriptionPlaceholder": "Enter API description",

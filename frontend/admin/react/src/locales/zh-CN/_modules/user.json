@@ -1,5 +1,6 @@
 {
   "pageTitle": "用户管理",
+  "listTitle": "用户列表",
   "moduleName": "用户",
   "username": "用户名",
   "usernamePlaceholder": "请输入用户名",

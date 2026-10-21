@@ -1,5 +1,6 @@
 {
   "title": "登录审计日志",
+  "listTitle": "登录审计日志列表",
   "serial": "序号",
   "username": "用户名",
   "usernamePlaceholder": "请输入用户名",

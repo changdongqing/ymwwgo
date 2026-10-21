@@ -1,5 +1,6 @@
 {
   "pageTitle": "权限点管理",
+  "listTitle": "权限点列表",
   "moduleName": "权限点",
   "name": "权限名称",
   "namePlaceholder": "请输入权限名称",

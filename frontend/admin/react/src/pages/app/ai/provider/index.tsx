@@ -137,23 +137,26 @@ export default function AiProviderPage() {
           const res = await fetchListAiProviders(query);
           return { data: res.items || [], total: res.total || 0, success: true };
         }}
-        toolBarRender={() => [
-          <Tooltip key="create-tip" title={t('isDefaultTooltip')}>
-            <Button
-              key="create"
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={() => {
-                setSelected(undefined);
-                setDrawerMode('create');
-                setDrawerOpen(true);
-              }}
-            >
-              {t('create')}
-            </Button>
-          </Tooltip>,
-        ]}
         columns={columns}
+        title={t('listTitle')}
+        actions={
+          <>
+            <Tooltip title={t('isDefaultTooltip')}>
+              <Button
+                key="create"
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={() => {
+                  setSelected(undefined);
+                  setDrawerMode('create');
+                  setDrawerOpen(true);
+                }}
+              >
+                {t('create')}
+              </Button>
+            </Tooltip>
+          </>
+        }
       />
       <AiProviderDrawer
         open={drawerOpen}

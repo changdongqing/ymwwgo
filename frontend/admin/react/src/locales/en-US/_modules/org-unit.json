@@ -1,5 +1,6 @@
 {
   "pageTitle": "Organization Management",
+  "listTitle": "Organization List",
   "moduleName": "Organization",
   "name": "Org Name",
   "namePlaceholder": "Enter organization name",

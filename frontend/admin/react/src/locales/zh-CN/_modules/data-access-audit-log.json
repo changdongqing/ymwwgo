@@ -1,5 +1,6 @@
 {
   "title": "数据访问审计日志",
+  "listTitle": "数据访问审计日志列表",
   "serial": "序号",
   "username": "用户名",
   "usernamePlaceholder": "请输入用户名",

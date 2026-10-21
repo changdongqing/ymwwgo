@@ -1,5 +1,6 @@
 {
   "pageTitle": "Login Policy Management",
+  "listTitle": "Login Policy List",
   "moduleName": "Login Policy",
   "serial": "#",
   "targetId": "Target ID",

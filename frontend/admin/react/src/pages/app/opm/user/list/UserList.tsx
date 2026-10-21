@@ -255,7 +255,24 @@ const UserList: React.FC<UserListProps> = ({ tenantId, orgUnitId }) => {
         <ListTable<any>
           actionRef={actionRef}
           columns={columns}
-          headerTitle={false}
+          title={t('listTitle')}
+          actions={
+            <>
+              <TableExportButton fetcher={fetchListUsers} columns={columns} filename="users" />
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                size="small"
+                onClick={() => {
+                  setEditingUser(null);
+                  setDrawerMode('create');
+                  setDrawerOpen(true);
+                }}
+              >
+                {t('create')}
+              </Button>
+            </>
+          }
           params={{ tenantId, orgUnitId }}
           request={async (params) => {
             const formValues: Record<string, any> = {
@@ -295,22 +312,6 @@ const UserList: React.FC<UserListProps> = ({ tenantId, orgUnitId }) => {
             showSizeChanger: true,
             showQuickJumper: true,
           }}
-          toolBarRender={() => [
-            <TableExportButton key="export" fetcher={fetchListUsers} columns={columns} filename="users" />,
-            <Button
-              key="create"
-              type="primary"
-              icon={<PlusOutlined />}
-              size="small"
-              onClick={() => {
-                setEditingUser(null);
-                setDrawerMode('create');
-                setDrawerOpen(true);
-              }}
-            >
-              {t('create')}
-            </Button>,
-          ]}
           options={{
             density: true,
             fullScreen: true,

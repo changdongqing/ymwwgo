@@ -107,21 +107,23 @@ export default function AiKnowledgePage() {
             const res = await fetchListAiKnowledgeBases(query);
             return { data: res.items || [], total: res.total || 0, success: true };
           }}
-          toolBarRender={() => [
-            <Button
-              key="create"
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={() => {
-                setSelected(undefined);
-                setDrawerMode('create');
-                setDrawerOpen(true);
-              }}
-            >
-              {t('create')}
-            </Button>,
-          ]}
           columns={columns}
+          title={t('listTitle')}
+          actions={
+            <>
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={() => {
+                  setSelected(undefined);
+                  setDrawerMode('create');
+                  setDrawerOpen(true);
+                }}
+              >
+                {t('create')}
+              </Button>
+            </>
+          }
         />
         <KnowledgeDrawer
           open={drawerOpen}

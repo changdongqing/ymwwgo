@@ -1,5 +1,6 @@
 {
   "title": "租户管理",
+  "listTitle": "租户列表",
   "serial": "序号",
   "name": "租户名称",
   "namePlaceholder": "请输入租户名称",

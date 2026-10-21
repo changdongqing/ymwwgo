@@ -1,5 +1,6 @@
 {
   "pageTitle": "Permission Management",
+  "listTitle": "Permission List",
   "moduleName": "Permission",
   "name": "Permission Name",
   "namePlaceholder": "Enter permission name",

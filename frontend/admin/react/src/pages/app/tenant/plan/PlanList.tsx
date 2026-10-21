@@ -150,7 +150,7 @@ const PlanList: React.FC<PlanListProps> = ({ currentPlanId, onPlanSelect }) => {
         <ListTable<any>
           actionRef={actionRef}
           columns={columns}
-          headerTitle={t('planList')}
+          title={t('listTitle')}
           request={async (params, sorter) => {
             const orderBy: string[] = [];
             if (sorter && Object.keys(sorter).length > 0) {
@@ -188,22 +188,23 @@ const PlanList: React.FC<PlanListProps> = ({ currentPlanId, onPlanSelect }) => {
             showSizeChanger: true,
             showQuickJumper: true,
           }}
-          toolBarRender={() => [
-            <TableExportButton key="export" fetcher={fetchListPlans} columns={columns} filename="plans" />,
-            <Button
-              key="create"
-              type="primary"
-              icon={<PlusOutlined />}
-              size="small"
-              onClick={() => {
-                setEditingPlan(null);
-                setDrawerMode('create');
-                setDrawerOpen(true);
-              }}
-            >
-              {t('create')}
-            </Button>,
-          ]}
+          actions={
+            <>
+              <TableExportButton fetcher={fetchListPlans} columns={columns} filename="plans" />
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                size="small"
+                onClick={() => {
+                  setEditingPlan(null);
+                  setDrawerMode('create');
+                  setDrawerOpen(true);
+                }}
+              >
+                {t('create')}
+              </Button>
+            </>
+          }
           options={{
             density: false,
             fullScreen: false,

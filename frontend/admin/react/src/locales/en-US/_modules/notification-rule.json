@@ -1,5 +1,6 @@
 {
   "title": "Notification Routing Rules",
+  "listTitle": "Notification Routing Rule List",
   "eventType": "Event",
   "channel": "Channel",
   "isAsync": "Dispatch mode",

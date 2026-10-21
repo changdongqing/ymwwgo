@@ -204,6 +204,23 @@ const TenantList = () => {
           <ListTable<identityservicev1_Tenant>
             actionRef={actionRef}
             columns={columns}
+            title={t('listTitle')}
+            actions={
+              <>
+                <TableExportButton fetcher={fetchListTenants} columns={columns} filename="tenants" />
+                <Button
+                  type="primary"
+                  icon={<PlusOutlined />}
+                  onClick={() => {
+                    setDrawerMode('create');
+                    setSelectedTenant(undefined);
+                    setDrawerOpen(true);
+                  }}
+                >
+                  {t('create')}
+                </Button>
+              </>
+            }
             request={async (params, sorter, _filter) => {
               // 构建查询对象
               const query = new PaginationQuery({
@@ -243,21 +260,6 @@ const TenantList = () => {
               showSizeChanger: true,
               showQuickJumper: true,
             }}
-            toolBarRender={() => [
-              <TableExportButton key="export" fetcher={fetchListTenants} columns={columns} filename="tenants" />,
-              <Button
-                key="create"
-                type="primary"
-                icon={<PlusOutlined />}
-                onClick={() => {
-                  setDrawerMode('create');
-                  setSelectedTenant(undefined);
-                  setDrawerOpen(true);
-                }}
-              >
-                {t('create')}
-              </Button>,
-            ]}
             options={{
               density: true,
               fullScreen: true,

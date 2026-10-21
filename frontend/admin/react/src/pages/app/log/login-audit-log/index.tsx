@@ -259,6 +259,27 @@ const LoginAuditLogPage = () => {
           <ListTable<LoginAuditLog>
             actionRef={actionRef}
             columns={columns}
+            title={t('listTitle')}
+            actions={
+              <Dropdown
+                menu={{
+                  items: [
+                    { key: 'csv', label: t('exportCsv') },
+                    { key: 'xlsx', label: t('exportXlsx') },
+                    { key: 'server-xlsx', label: t('exportServerXlsx') },
+                  ],
+                  onClick: ({ key }) => {
+                    if (key === 'server-xlsx') {
+                      handleServerExport();
+                      return;
+                    }
+                    handleExport(key as AuditExportFormat);
+                  },
+                }}
+              >
+                <Button icon={<DownloadOutlined />}>{t('export')}</Button>
+              </Dropdown>
+            }
             request={async (params, sorter) => {
               latestParamsRef.current = params;
               const query = new PaginationQuery({
@@ -293,28 +314,6 @@ const LoginAuditLogPage = () => {
               showSizeChanger: true,
               showQuickJumper: true,
             }}
-            toolBarRender={() => [
-              <Dropdown
-                key="export"
-                menu={{
-                  items: [
-                    { key: 'csv', label: t('exportCsv') },
-                    { key: 'xlsx', label: t('exportXlsx') },
-                    { key: 'server-xlsx', label: t('exportServerXlsx') },
-                  ],
-                  onClick: ({ key }) => {
-                    if (key === 'server-xlsx') {
-                      handleServerExport();
-                      return;
-                    }
-                    handleExport(key as AuditExportFormat);
-                  },
-                }}
-              >
-                <Button icon={<DownloadOutlined />}>{t('export')}</Button>
-              </Dropdown>,
-            ]}
-
             options={{
               density: true,
               fullScreen: true,

@@ -204,6 +204,20 @@ const NotificationDeliveryPage = () => {
         <ListTable<NotificationDelivery>
           actionRef={actionRef}
           columns={columns}
+          title={t('listTitle')}
+          actions={
+            // 导出：客户端聚合（小数据量快速路径）+ 服务端全量（当前搜索条件透传，
+            // 与列表同源；本页与台账读接口同为平台管理员专属，闸在后端）
+            <TableExportButton
+              fetcher={fetchListNotificationDeliveries}
+              columns={columns}
+              filename="notification-deliveries"
+              serverExport={{
+                url: 'admin/v1/notification-deliveries:export',
+                buildQuery: () => new PaginationQuery({ formValues: latestFormValuesRef.current }),
+              }}
+            />
+          }
           request={async (params, sorter) => {
             const formValues = Object.fromEntries(
               Object.entries(params).filter(
@@ -239,20 +253,6 @@ const NotificationDeliveryPage = () => {
             showSizeChanger: true,
             showQuickJumper: true,
           }}
-          toolBarRender={() => [
-            // 导出：客户端聚合（小数据量快速路径）+ 服务端全量（当前搜索条件透传，
-            // 与列表同源；本页与台账读接口同为平台管理员专属，闸在后端）
-            <TableExportButton
-              key="export"
-              fetcher={fetchListNotificationDeliveries}
-              columns={columns}
-              filename="notification-deliveries"
-              serverExport={{
-                url: 'admin/v1/notification-deliveries:export',
-                buildQuery: () => new PaginationQuery({ formValues: latestFormValuesRef.current }),
-              }}
-            />,
-          ]}
           options={{
             density: true,
             fullScreen: true,

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { MutableRefObject } from 'react';
+import type { MutableRefObject, ReactNode } from 'react';
 import { ProTable } from '@ant-design/pro-components';
 import type { ActionType, ProTableProps } from '@ant-design/pro-components';
 import { Alert, Button, Empty } from 'antd';
@@ -21,7 +21,16 @@ const FALLBACK_SKELETON_ROWS = 10;
 type ListTableProps<
   RecordType extends Record<string, any>,
   Params extends Record<string, any> = Record<string, any>,
-> = ProTableProps<RecordType, Params>;
+> = Omit<ProTableProps<RecordType, Params>, 'title'> & {
+  /**
+   * 表格名称：渲染在工具栏左区行首（如「语言列表」），规格见 docs/design-language.md §4「表格工具栏三区」。
+   * 不传 = 无表名（用户详情 Tab、抽屉等嵌入式表格），此时 headerTitle 原样透传。
+   * 注意本 prop 会摘走不透传：antd Table 原生同名的 title（表体上方标题）在列表页无使用场景。
+   */
+  title?: ReactNode;
+  /** 数据操作按钮组（导入导出/新增等）：紧随表名右侧渲染；可独立于 title 使用 */
+  actions?: ReactNode;
+};
 
 type LoadPhase = 'initial' | 'ready' | 'failed';
 
@@ -47,6 +56,9 @@ export function ListTable<
     rowClassName,
     striped = true,
     search,
+    headerTitle,
+    title,
+    actions,
     ...restProps
   } = props;
   const { t } = useI18n('common');
@@ -209,17 +221,31 @@ export function ListTable<
     [phase, showSkeleton, errorReason, retry, columns, skeletonRows, size, bordered, scrollX, scrollY, pagination, t],
   );
 
+  // 工具栏三区（docs/design-language.md §4「表格工具栏三区」）：title/actions 合成进 headerTitle
+  // 的左区节点。ProTable 的 toolBarRender 恒渲染在右区（与 options 图标同容器、CSS 无法搬进左区），
+  // 「操作按钮紧随表名」只能借 headerTitle 承载。页面同时传 headerTitle 与 title/actions 时后者胜出。
+  const composedHeaderTitle = useMemo(() => {
+    if (title === undefined && actions === undefined) return headerTitle;
+    return (
+      <div className="listtable-toolbar-main">
+        {title !== undefined && <span className="listtable-toolbar-name">{title}</span>}
+        {actions !== undefined && <div className="listtable-toolbar-ops">{actions}</div>}
+      </div>
+    );
+  }, [headerTitle, title, actions]);
+
   return (
     <ProTable<RecordType, Params>
       {...restProps}
       columns={columns}
-      // 这四个 prop 上面为了喂骨架/算骨架行数而被解构出来，解构即从 restProps 里摘走，
+      // 这五个 prop 上面为了喂骨架/算骨架行数/合成左区而被解构出来，解构即从 restProps 里摘走，
       // 不在此显式转交就会被 ProTable 静默丢掉（scroll.y 丢 → 无粘性表头与限高 body，
-      // scroll.x 丢 → 列被压到容器宽度，pagination 丢 → 页面关不掉分页器）。
+      // scroll.x 丢 → 列被压到容器宽度，pagination 丢 → 页面关不掉分页器，headerTitle 丢 → 左区表名丢失）。
       pagination={pagination}
       size={size}
       bordered={bordered}
       scroll={scroll}
+      headerTitle={composedHeaderTitle}
       actionRef={ownActionRef}
       request={wrappedRequest}
       rowClassName={composedRowClassName}

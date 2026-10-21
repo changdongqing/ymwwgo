@@ -1,4 +1,5 @@
 {
+  "listTitle": "AI Usage List",
   "model": "Model",
   "promptTokens": "Prompt tokens",
   "completionTokens": "Completion tokens",

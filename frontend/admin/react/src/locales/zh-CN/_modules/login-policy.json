@@ -1,5 +1,6 @@
 {
   "pageTitle": "登录策略管理",
+  "listTitle": "登录策略列表",
   "moduleName": "登录策略",
   "serial": "序号",
   "targetId": "目标标识",

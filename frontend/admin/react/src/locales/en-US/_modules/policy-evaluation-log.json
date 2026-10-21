@@ -1,5 +1,6 @@
 {
   "title": "Policy Evaluation Log",
+  "listTitle": "Policy Evaluation Log List",
   "serial": "#",
   "result": "Result",
   "resultPlaceholder": "Select result",

@@ -212,6 +212,58 @@ const ScriptManagement = () => {
           <ListTable<Script>
             actionRef={actionRef}
             columns={columns}
+            title={t('listTitle')}
+            actions={
+              <>
+                <TableExportButton fetcher={fetchListScripts} columns={columns} filename="scripts" />
+                <Popover
+                  title={t('hookPointsTitle')}
+                  trigger="click"
+                  onOpenChange={(visible) => visible && hookPointsQuery.refetch()}
+                  content={
+                    <div style={{ maxWidth: 360 }}>
+                      <p style={{ marginBottom: 8 }}>
+                        <span style={{ opacity: 0.65 }}>{t('languages')}: </span>
+                        {(hookPointsQuery.data?.languages || []).join(', ') || '-'}
+                      </p>
+                      {(hookPointsQuery.data?.items?.length || 0) === 0 ? (
+                        <span style={{ opacity: 0.65 }}>{t('hookPointsEmpty')}</span>
+                      ) : (
+                        <ul style={{ margin: 0, paddingLeft: 18 }}>
+                          {(hookPointsQuery.data?.items || []).map((hp) => (
+                            <li key={hp.name} style={{ marginBottom: 4 }}>
+                              <Tag icon={<ApiOutlined />} color="geekblue">
+                                {hp.name}
+                              </Tag>
+                              {hp.description && (
+                                <span style={{ opacity: 0.65, marginRight: 8 }}>{hp.description}</span>
+                              )}
+                              <span>{t('hookPointScriptCount', { count: hp.scriptCount ?? 0 })}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  }
+                >
+                  <Button icon={<CodeOutlined />}>{t('hookPoints')}</Button>
+                </Popover>
+                <Button icon={<FileTextOutlined />} onClick={() => setLogOpen(true)}>
+                  {t('logTitle')}
+                </Button>
+                <Button
+                  type="primary"
+                  icon={<PlusOutlined />}
+                  onClick={() => {
+                    setDrawerMode('create');
+                    setSelectedScript(undefined);
+                    setDrawerOpen(true);
+                  }}
+                >
+                  {t('create')}
+                </Button>
+              </>
+            }
             request={async (params, _sorter, _filter) => {
               const query = new PaginationQuery({
                 paging: {
@@ -239,57 +291,6 @@ const ScriptManagement = () => {
               showSizeChanger: true,
               showQuickJumper: true,
             }}
-            toolBarRender={() => [
-              <TableExportButton key="export" fetcher={fetchListScripts} columns={columns} filename="scripts" />,
-              <Popover
-                key="hookPoints"
-                title={t('hookPointsTitle')}
-                trigger="click"
-                onOpenChange={(visible) => visible && hookPointsQuery.refetch()}
-                content={
-                  <div style={{ maxWidth: 360 }}>
-                    <p style={{ marginBottom: 8 }}>
-                      <span style={{ opacity: 0.65 }}>{t('languages')}: </span>
-                      {(hookPointsQuery.data?.languages || []).join(', ') || '-'}
-                    </p>
-                    {(hookPointsQuery.data?.items?.length || 0) === 0 ? (
-                      <span style={{ opacity: 0.65 }}>{t('hookPointsEmpty')}</span>
-                    ) : (
-                      <ul style={{ margin: 0, paddingLeft: 18 }}>
-                        {(hookPointsQuery.data?.items || []).map((hp) => (
-                          <li key={hp.name} style={{ marginBottom: 4 }}>
-                            <Tag icon={<ApiOutlined />} color="geekblue">
-                              {hp.name}
-                            </Tag>
-                            {hp.description && (
-                              <span style={{ opacity: 0.65, marginRight: 8 }}>{hp.description}</span>
-                            )}
-                            <span>{t('hookPointScriptCount', { count: hp.scriptCount ?? 0 })}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </div>
-                }
-              >
-                <Button icon={<CodeOutlined />}>{t('hookPoints')}</Button>
-              </Popover>,
-              <Button key="logs" icon={<FileTextOutlined />} onClick={() => setLogOpen(true)}>
-                {t('logTitle')}
-              </Button>,
-              <Button
-                key="create"
-                type="primary"
-                icon={<PlusOutlined />}
-                onClick={() => {
-                  setDrawerMode('create');
-                  setSelectedScript(undefined);
-                  setDrawerOpen(true);
-                }}
-              >
-                {t('create')}
-              </Button>,
-            ]}
             options={{
               density: true,
               fullScreen: true,

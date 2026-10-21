@@ -1,5 +1,6 @@
 {
   "title": "通知路由规则",
+  "listTitle": "通知路由规则列表",
   "eventType": "业务事件",
   "channel": "投递渠道",
   "isAsync": "派发方式",

@@ -1,4 +1,3 @@
-
 {
   "pageTitle": "Language Management",
   "moduleName": "Language",
@@ -29,5 +28,6 @@
   "requiredLanguageCode": "Please enter language code",
   "requiredNativeName": "Please enter native name",
   "yes": "Yes",
-  "no": "No"
+  "no": "No",
+  "listTitle": "Language List"
 }

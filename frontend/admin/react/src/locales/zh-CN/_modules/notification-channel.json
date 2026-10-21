@@ -1,5 +1,6 @@
 {
   "title": "通知渠道",
+  "listTitle": "通知渠道列表",
   "name": "渠道名称",
   "type": "渠道类型",
   "typeEmail": "邮件 (SMTP)",

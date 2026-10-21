@@ -170,6 +170,25 @@ const FileManagement = () => {
           <ListTable<FileItem>
             actionRef={actionRef}
             columns={columns}
+            title={t('listTitle')}
+            actions={
+              <>
+                <TableExportButton fetcher={fetchListFiles} columns={columns} filename="files" />
+                <Upload
+                  showUploadList={false}
+                  beforeUpload={handleUpload}
+                  accept="*"
+                >
+                  <Button
+                    type="primary"
+                    icon={<UploadOutlined />}
+                    loading={uploadMutation.isPending}
+                  >
+                    {t('upload')}
+                  </Button>
+                </Upload>
+              </>
+            }
             request={async (params, sorter, _filter) => {
               const query = new PaginationQuery({
                 paging: {
@@ -199,23 +218,6 @@ const FileManagement = () => {
             }}
             rowKey="id"
             pagination={false}
-            toolBarRender={() => [
-              <TableExportButton key="export" fetcher={fetchListFiles} columns={columns} filename="files" />,
-              <Upload
-                key="upload"
-                showUploadList={false}
-                beforeUpload={handleUpload}
-                accept="*"
-              >
-                <Button
-                  type="primary"
-                  icon={<UploadOutlined />}
-                  loading={uploadMutation.isPending}
-                >
-                  {t('upload')}
-                </Button>
-              </Upload>,
-            ]}
             options={{
               density: true,
               fullScreen: true,

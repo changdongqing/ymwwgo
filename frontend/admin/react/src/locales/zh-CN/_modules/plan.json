@@ -1,5 +1,4 @@
 {
-  "planList": "套餐目录",
   "moduleName": "套餐",
   "name": "套餐名称",
   "namePlaceholder": "请输入套餐名称",
@@ -67,5 +66,7 @@
     "INTERNAL_MESSAGE": "站内消息",
     "FILE": "文件管理",
     "TASK": "任务调度"
-  }
+  },
+  "listTitle": "套餐列表",
+  "quotaListTitle": "套餐配额列表"
 }

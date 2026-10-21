@@ -522,6 +522,16 @@ Tailwind 灰阶（`slate-400` 在白底 2.60、在 `#F5F5F5` 上 2.38，`zinc-50
 - **页面容器**：三端各自容器（react `PageContainer` / ele `ProPage` / vben `Page`），结构统一为：canvas 大底 → 搜索卡片（surface）→ 工具栏 → 表格卡片（surface + 阴影）。**两处口径本轮核准**：① 阴影按 §2.2 只在亮色铺卡片静止档，react 暗色实测 `none`（§2.3 暗色投影须黑 α，白 α 那条已从 `chat-page.css` 清掉）；ele 2026-10-17 起四张卡同取该档、暗色沿用本端 `.el-card` 的黑 α 轻投影——**暗色一端 `none`、一端有轻投影，是两端各自内部一致造成的差异，不是漂移**，理由见 §2.2 末注；② 卡片圆角曾是 ele 离群（它写 8、react/vben 写 12），**2026-10-17 已抬 ele 到 §2.4 的 12px 档并实测明暗两态**，落点与"骨架卡是真卡镜像"这条约束见 §2.4 注。
 - **表格**：无边框 + 斑马纹可选；表头独立色（浅 `#F0F2F5` 系 / 暗 `#1F2937`）；行 hover 用主色 8% α；行高紧凑（≤40px，ele 30px 现状可保留）。**斑马纹值表（2026-10-18 定稿，明暗两态实测）**：ele/vben 的 vxe 全局默认开（ele `proTableConfig.ts:12` `stripe: true` 是共享 ProTable 默认值），react 原先全端唯一没条纹的一端，同日起 `ListTable` 加 `striped` **默认开**（`rowClassName` 挂 `ant-table-row-striped`，页面可显式关）。色值：亮 `var(--ant-color-fill-quaternary)`（≈`#FAFAFA`，与 vxe 亮档 `#F8F8F9` 同档，token 优先）；暗 `rgba(255,255,255,.03)` = §3 vxe 暗色斑马纹既有权威值——antd 同名 token 暗色是 `.06`、重一倍，故暗色显式落规范值不走 token。占位行（暂无数据）不吃条纹；固定列（sticky）的半透明条纹会透出压在下层的文字，与行 hover 透字同一处理：容器底色打底 + 条纹色走 `background-image`，hover 时 `background-image: none` 清掉（react 落点 `pro-components-dark.css`）。
 - **表格工具栏右侧图标钮（2026-10-08 定稿，react ProTable options 为基准 / ele 已对齐）**：无边框裸图标（hover 才铺 fill 底），颜色 = **主文本色阶**（react `colorText` / ele `--el-text-color-primary`，暗 `#F8FAFC` / 亮 `#1F2937`），不用 secondary——次级灰是为次要文字设计的，做图标唯一内容会显虚。**每枚图标必须带 Tooltip**（刷新/密度/列设置/全屏……）。图标名义 16px 是 antd 口径：antd 图标墨迹占 viewBox ≈90%，EP 图标仅 ≈75%，故 ele 的 EP 图标要放到 **18px** 补偿（等效墨迹 13.5px ≈ antd 16px），vben 若用 lucide 同理注意留白差异。
+- **表格工具栏三区（2026-10-21 定稿，react-only；ele/vben 已冻结不随动）**：工具栏一行固定分两区——
+  **左区 = 表名 + 数据操作按钮组**，**右区 = options 四件套图标（刷新/密度/列设置/全屏）**（上一条的裸图标规格不变）。
+  动机：操作按钮（导入导出/增删）与配置图标此前混排在右侧，操作入口离表名（语境）太远；表名本身也让多表同屏的
+  主从分栏页（字典/权限/套餐）两栏可辨。规格：表名统一走各命名空间 i18n key **`listTitle`**（后缀统一「列表」，
+  英文「Xxx List」），16px/600 = §2.5 卡片标题档，色 `--ant-color-text-heading`；表名↔按钮组间距 12
+  （`--ant-margin-sm`）、按钮间 8（`--ant-margin-xs`）；窄面板下表名先省略号截断、按钮组不缩。
+  落点：`ListTable` 新增 `title`/`actions` props，内部合成 `headerTitle` 左区节点（CSS 类
+  `listtable-toolbar-main/name/ops`，样式在 `pro-components-dark.css`）；`toolBarRender` 在标准列表页退役
+  （ProTable 把它恒渲染在右区、与 options 同容器，CSS 搬不进左区，故借 `headerTitle` 承载）。
+  **豁免**：无表名的嵌入式表格（用户详情 Tab 子表、脚本日志抽屉）不迁移，维持 `toolBarRender`/无工具栏现状。
 - **列表加载态（2026-09-29 定稿，react 基准 / ele / vben 三端均已落地）**：三态分工按"形状是否已知 + 耗时是否够长"判，不是骨架/转圈二选一——**首屏**（一行数据都没有）= 表格形状骨架屏；**表内刷新/翻页**（已有数据）= Spin；**请求失败** = 错误态 + 重试入口。
   - 出场阈值统一 **250ms**（骨架与 Spin 共用一个常量）：本地接口常在 100~200ms 返回，早于阈值出现的加载态比"什么都不显示"更闪。实测 201ms 自然加载：骨架 0 帧、Spin 0 帧。
   - 骨架行数（react 口径）= 该页 `pagination.defaultPageSize`；`pagination={false}` 的树表/抽屉没有 pageSize 可依，取常量 10。**另两端的实际口径见下面「以可见区为准」条**。

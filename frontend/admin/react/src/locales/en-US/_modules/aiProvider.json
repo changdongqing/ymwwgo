@@ -1,5 +1,6 @@
 {
   "pageTitle": "AI Providers",
+  "listTitle": "AI Provider List",
   "moduleName": "AI provider",
   "name": "Name",
   "namePlaceholder": "Enter provider name",

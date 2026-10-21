@@ -1,5 +1,6 @@
 {
   "moduleName": "Agent Apps",
+  "listTitle": "Agent List",
   "name": "Name",
   "description": "Description",
   "enabled": "Enabled",

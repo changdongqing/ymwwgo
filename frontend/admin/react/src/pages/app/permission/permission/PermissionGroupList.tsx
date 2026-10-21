@@ -156,7 +156,38 @@ const PermissionGroupList: React.FC<PermissionGroupListProps> = ({
         <ListTable<any>
           actionRef={actionRef}
           columns={columns}
-          headerTitle={false}
+          title={t('listTitle')}
+          actions={
+            <>
+              <TableExportButton fetcher={fetchListPermissionGroups} columns={columns} filename="permission-groups" />
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                size="small"
+                onClick={() => {
+                  setEditingGroup(null);
+                  setDrawerMode('create');
+                  setDrawerOpen(true);
+                }}
+              >
+                {t('create')}
+              </Button>
+              <Button
+                icon={<NodeExpandOutlined />}
+                size="small"
+                onClick={() => handleExpandAll(treeData)}
+              >
+                {t('expandAll')}
+              </Button>
+              <Button
+                icon={<NodeCollapseOutlined />}
+                size="small"
+                onClick={handleCollapseAll}
+              >
+                {t('collapseAll')}
+              </Button>
+            </>
+          }
           request={async (params) => {
             const query = new PaginationQuery({
               formValues: Object.fromEntries(
@@ -194,38 +225,6 @@ const PermissionGroupList: React.FC<PermissionGroupListProps> = ({
             span: 12,
           }}
           pagination={false}
-          toolBarRender={() => [
-            <TableExportButton key="export" fetcher={fetchListPermissionGroups} columns={columns} filename="permission-groups" />,
-            <Button
-              key="create"
-              type="primary"
-              icon={<PlusOutlined />}
-              size="small"
-              onClick={() => {
-                setEditingGroup(null);
-                setDrawerMode('create');
-                setDrawerOpen(true);
-              }}
-            >
-              {t('create')}
-            </Button>,
-            <Button
-              key="expandAll"
-              icon={<NodeExpandOutlined />}
-              size="small"
-              onClick={() => handleExpandAll(treeData)}
-            >
-              {t('expandAll')}
-            </Button>,
-            <Button
-              key="collapseAll"
-              icon={<NodeCollapseOutlined />}
-              size="small"
-              onClick={handleCollapseAll}
-            >
-              {t('collapseAll')}
-            </Button>,
-          ]}
           options={{
             density: false,
             fullScreen: false,

@@ -1,5 +1,6 @@
 {
   "title": "Login Audit Log",
+  "listTitle": "Login Audit Log List",
   "serial": "No.",
   "username": "Username",
   "usernamePlaceholder": "Enter username",

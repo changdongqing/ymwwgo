@@ -244,6 +244,7 @@ const InboxList = () => {
         <ListTable<InboxItem>
           actionRef={actionRef}
           columns={columns}
+          title={t('listTitle')}
           params={{ userId }}
           request={async (params, _sorter, _filter) => {
             // 收件箱只看自己的：不传 recipient_user_id 会按租户过滤，列出其他用户的收件记录。
@@ -289,30 +290,31 @@ const InboxList = () => {
             setting: true,
             reload: true,
           }}
-          toolBarRender={() => [
-            // 导出走 TableExportButton 自己的聚合查询，不经过表格 request 闭包，
-            // recipient_user_id 必须在这里再注一次，否则导出会拉到同租户其他用户的收件记录
-            ...(userId
-              ? [
-                  <TableExportButton
-                    key="export"
-                    fetcher={fetchListUserInbox}
-                    columns={columns}
-                    filename="im-inbox"
-                    params={{ recipient_user_id: String(userId) }}
-                  />,
-                ]
-              : []),
-            <Button
-              key="mark-all-read"
-              icon={<CheckOutlined />}
-              disabled={!userId}
-              loading={markAllReadMutation.isPending}
-              onClick={() => markAllReadMutation.mutate({ userId, recipientIds: [] })}
-            >
-              {t('markAllRead')}
-            </Button>,
-          ]}
+          actions={
+            <>
+              {/* 导出走 TableExportButton 自己的聚合查询，不经过表格 request 闭包，
+                  recipient_user_id 必须在这里再注一次，否则导出会拉到同租户其他用户的收件记录 */}
+              {userId
+                ? [
+                    <TableExportButton
+                      key="export"
+                      fetcher={fetchListUserInbox}
+                      columns={columns}
+                      filename="im-inbox"
+                      params={{ recipient_user_id: String(userId) }}
+                    />,
+                  ]
+                : []}
+              <Button
+                icon={<CheckOutlined />}
+                disabled={!userId}
+                loading={markAllReadMutation.isPending}
+                onClick={() => markAllReadMutation.mutate({ userId, recipientIds: [] })}
+              >
+                {t('markAllRead')}
+              </Button>
+            </>
+          }
           size="middle"
           bordered
           cardBordered={false}

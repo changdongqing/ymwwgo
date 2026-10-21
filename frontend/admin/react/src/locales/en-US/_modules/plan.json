@@ -67,5 +67,7 @@
     "INTERNAL_MESSAGE": "Internal Message",
     "FILE": "File Management",
     "TASK": "Task Scheduler"
-  }
+  },
+  "listTitle": "Plan List",
+  "quotaListTitle": "Plan Quota List"
 }

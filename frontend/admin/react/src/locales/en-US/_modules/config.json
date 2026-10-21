@@ -1,5 +1,6 @@
 {
   "pageTitle": "Config Management",
+  "listTitle": "Parameter List",
   "moduleName": "config",
   "serial": "#",
   "name": "Name",

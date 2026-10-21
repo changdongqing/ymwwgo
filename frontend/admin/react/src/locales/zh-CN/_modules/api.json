@@ -1,5 +1,6 @@
 {
   "title": "API 管理",
+  "listTitle": "API 列表",
   "serial": "序号",
   "description": "API描述",
   "descriptionPlaceholder": "请输入API描述",

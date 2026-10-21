@@ -152,6 +152,22 @@ export default function AccessKeyPage() {
         <ListTable<AccessKey>
           actionRef={actionRef}
           columns={columns}
+          title={t('listTitle')}
+          actions={
+            <>
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={() => {
+                  setDrawerMode('create');
+                  setSelected(undefined);
+                  setDrawerOpen(true);
+                }}
+              >
+                {t('create')}
+              </Button>
+            </>
+          }
           rowKey="id"
           scroll={{ y: tableScrollY }}
           pagination={{
@@ -174,20 +190,6 @@ export default function AccessKeyPage() {
               success: true,
             };
           }}
-          toolBarRender={() => [
-            <Button
-              key="create"
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={() => {
-                setDrawerMode('create');
-                setSelected(undefined);
-                setDrawerOpen(true);
-              }}
-            >
-              {t('create')}
-            </Button>,
-          ]}
           size="middle"
           bordered
         />

@@ -23,9 +23,9 @@
   "updateFailed": "更新失败",
   "deleteFailed": "删除失败",
   "selectTypeFirst": "请先在左侧选择一个字典类型",
-  "dictTypeList": "字典类型列表",
   "statusMap": {
     "true": "启用",
     "false": "禁用"
-  }
+  },
+  "listTitle": "字典类型列表"
 }

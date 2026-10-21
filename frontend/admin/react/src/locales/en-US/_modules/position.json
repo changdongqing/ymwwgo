@@ -1,5 +1,6 @@
 {
   "pageTitle": "Position Management",
+  "listTitle": "Position List",
   "moduleName": "Position",
   "name": "Position Name",
   "namePlaceholder": "Enter position name",

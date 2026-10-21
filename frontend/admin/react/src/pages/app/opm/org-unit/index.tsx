@@ -199,6 +199,32 @@ const OrgUnitManagement = () => {
           <ListTable<OrgUnit>
             actionRef={actionRef}
             columns={columns}
+            title={t('listTitle')}
+            actions={
+              <>
+                <TableExportButton fetcher={fetchListOrgUnits} columns={columns} filename="org-units" />
+                <Button
+                  type="primary"
+                  icon={<PlusOutlined />}
+                  onClick={() => {
+                    setDrawerMode('create');
+                    setSelectedOrg(undefined);
+                    setDrawerOpen(true);
+                  }}
+                >
+                  {t('create')}
+                </Button>
+                <Button
+                  icon={<NodeExpandOutlined />}
+                  onClick={() => handleExpandAll(treeData)}
+                >
+                  {t('expandAll')}
+                </Button>
+                <Button icon={<NodeCollapseOutlined />} onClick={handleCollapseAll}>
+                  {t('collapseAll')}
+                </Button>
+              </>
+            }
             request={async (params, _sorter, _filter) => {
               const query = new PaginationQuery({
                 formValues: Object.fromEntries(
@@ -222,31 +248,6 @@ const OrgUnitManagement = () => {
             }}
             rowKey="id"
             pagination={false}
-            toolBarRender={() => [
-              <TableExportButton key="export" fetcher={fetchListOrgUnits} columns={columns} filename="org-units" />,
-              <Button
-                key="create"
-                type="primary"
-                icon={<PlusOutlined />}
-                onClick={() => {
-                  setDrawerMode('create');
-                  setSelectedOrg(undefined);
-                  setDrawerOpen(true);
-                }}
-              >
-                {t('create')}
-              </Button>,
-              <Button
-                key="expandAll"
-                icon={<NodeExpandOutlined />}
-                onClick={() => handleExpandAll(treeData)}
-              >
-                {t('expandAll')}
-              </Button>,
-              <Button key="collapseAll" icon={<NodeCollapseOutlined />} onClick={handleCollapseAll}>
-                {t('collapseAll')}
-              </Button>,
-            ]}
             options={{
               density: true,
               fullScreen: true,

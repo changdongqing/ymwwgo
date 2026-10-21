@@ -27,5 +27,6 @@
   "statusMap": {
     "true": "Active",
     "false": "Inactive"
-  }
+  },
+  "listTitle": "Dict Type List"
 }

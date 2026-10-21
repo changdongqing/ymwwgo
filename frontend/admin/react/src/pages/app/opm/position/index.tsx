@@ -183,6 +183,29 @@ const PositionManagement = () => {
           <ListTable<Position>
             actionRef={actionRef}
             columns={columns}
+            title={t('listTitle')}
+            actions={
+              <>
+                <TableExportButton fetcher={fetchListPositions} columns={columns} filename="positions" />
+                <Button
+                  type="primary"
+                  icon={<PlusOutlined />}
+                  onClick={() => {
+                    setDrawerMode('create');
+                    setSelectedPosition(undefined);
+                    setDrawerOpen(true);
+                  }}
+                >
+                  {t('create')}
+                </Button>
+                <Button
+                  icon={<UploadOutlined />}
+                  onClick={() => setImportOpen(true)}
+                >
+                  {t('common:import.title')}
+                </Button>
+              </>
+            }
             request={async (params, _sorter, _filter) => {
               const query = new PaginationQuery({
                 paging: {
@@ -210,28 +233,6 @@ const PositionManagement = () => {
               showSizeChanger: true,
               showQuickJumper: true,
             }}
-            toolBarRender={() => [
-              <TableExportButton key="export" fetcher={fetchListPositions} columns={columns} filename="positions" />,
-              <Button
-                key="create"
-                type="primary"
-                icon={<PlusOutlined />}
-                onClick={() => {
-                  setDrawerMode('create');
-                  setSelectedPosition(undefined);
-                  setDrawerOpen(true);
-                }}
-              >
-                {t('create')}
-              </Button>,
-              <Button
-                key="import"
-                icon={<UploadOutlined />}
-                onClick={() => setImportOpen(true)}
-              >
-                {t('common:import.title')}
-              </Button>,
-            ]}
             options={{
               density: true,
               fullScreen: true,

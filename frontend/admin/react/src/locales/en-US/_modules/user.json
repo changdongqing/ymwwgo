@@ -1,5 +1,6 @@
 {
   "pageTitle": "User Management",
+  "listTitle": "User List",
   "moduleName": "User",
   "username": "Username",
   "usernamePlaceholder": "Enter username",

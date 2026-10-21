@@ -28,5 +28,6 @@
   "requiredLanguageCode": "请输入语言编码",
   "requiredNativeName": "请输入本地名称",
   "yes": "是",
-  "no": "否"
+  "no": "否",
+  "listTitle": "语言列表"
 }

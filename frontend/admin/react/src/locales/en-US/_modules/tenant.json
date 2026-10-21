@@ -1,5 +1,6 @@
 {
   "title": "Tenant Management",
+  "listTitle": "Tenant List",
   "serial": "#",
   "name": "Tenant Name",
   "namePlaceholder": "Enter tenant name",

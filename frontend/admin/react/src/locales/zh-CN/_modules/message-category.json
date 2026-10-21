@@ -1,5 +1,6 @@
 {
   "pageTitle": "消息分类管理",
+  "listTitle": "消息分类列表",
   "moduleName": "消息分类",
   "name": "分类名称",
   "namePlaceholder": "请输入分类名称",

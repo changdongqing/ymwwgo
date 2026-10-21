@@ -714,3 +714,32 @@ html[data-theme='dark'] .ant-form .ant-input:not(.ant-input-affix-wrapper .ant-i
 [data-theme='dark'] .ant-form-item-label > label.ant-form-item-required::before {
   color: #f87171 !important;
 }
+
+/* ========== 表格工具栏三区（2026-10-21 定稿，规格见 docs/design-language.md §4 同名条） ==========
+   左区 = 表名（listtable-toolbar-name）+ 数据操作按钮组（listtable-toolbar-ops，ListTable 的
+   actions prop）；右区 = options 四件套（刷新/密度/列设置/全屏，ProTable 原生）。表名 16px/600
+   = §2.5 卡片标题档；间距 12/8 取 antd margin token，明暗两态自动成立。 */
+.listtable-toolbar-main {
+  display: flex;
+  align-items: center;
+  gap: var(--ant-margin-sm, 12px);
+  /* 主从分栏页的窄面板里让表名先截断，按钮组不被挤飞 */
+  min-width: 0;
+}
+
+.listtable-toolbar-name {
+  font-size: var(--ant-font-size-lg, 16px);
+  font-weight: 600;
+  line-height: 24px;
+  color: var(--ant-color-text-heading);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.listtable-toolbar-ops {
+  display: flex;
+  align-items: center;
+  flex: none;
+  gap: var(--ant-margin-xs, 8px);
+}

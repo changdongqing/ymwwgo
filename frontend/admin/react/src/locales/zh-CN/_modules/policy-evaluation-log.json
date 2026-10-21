@@ -1,5 +1,6 @@
 {
   "title": "策略评估日志",
+  "listTitle": "策略评估日志列表",
   "serial": "序号",
   "result": "评估结果",
   "resultPlaceholder": "请选择评估结果",

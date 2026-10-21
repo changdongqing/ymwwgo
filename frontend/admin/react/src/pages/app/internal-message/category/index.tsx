@@ -121,6 +121,7 @@ const InternalMessageCategoryManagement = () => {
           <ListTable<Category>
             actionRef={actionRef}
             columns={columns}
+            title={t('listTitle')}
             request={async (params, _sorter, _filter) => {
               const query = new PaginationQuery({
                 formValues: Object.fromEntries(
@@ -140,21 +141,22 @@ const InternalMessageCategoryManagement = () => {
             }}
             rowKey="id"
             pagination={false}
-            toolBarRender={() => [
-              <TableExportButton key="export" fetcher={fetchListMessageCategories} columns={columns} filename="im-categories" />,
-              <Button
-                key="create"
-                type="primary"
-                icon={<PlusOutlined />}
-                onClick={() => {
-                  setDrawerMode('create');
-                  setSelectedCategory(undefined);
-                  setDrawerOpen(true);
-                }}
-              >
-                {t('create')}
-              </Button>,
-            ]}
+            actions={
+              <>
+                <TableExportButton fetcher={fetchListMessageCategories} columns={columns} filename="im-categories" />
+                <Button
+                  type="primary"
+                  icon={<PlusOutlined />}
+                  onClick={() => {
+                    setDrawerMode('create');
+                    setSelectedCategory(undefined);
+                    setDrawerOpen(true);
+                  }}
+                >
+                  {t('create')}
+                </Button>
+              </>
+            }
             options={{
               density: true,
               fullScreen: true,

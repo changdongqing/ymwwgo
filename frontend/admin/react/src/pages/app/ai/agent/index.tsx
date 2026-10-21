@@ -163,6 +163,7 @@ const AiAgentAppManagement = () => {
         <ListTable<AiAgentApp>
           actionRef={actionRef}
           columns={columns}
+          title={t('listTitle')}
           request={async (params) => {
             const query = new PaginationQuery({
               paging: { page: params.current || 1, pageSize: params.pageSize || 20 },
@@ -177,19 +178,20 @@ const AiAgentAppManagement = () => {
           search={false}
           pagination={{ defaultPageSize: TABLE.DEFAULT_PAGE_SIZE, showSizeChanger: true }}
           options={{ density: true, fullScreen: true, setting: true, reload: true }}
-          toolBarRender={() => [
-            <Button
-              key="create"
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={() => {
-                setEditing(undefined);
-                setFormOpen(true);
-              }}
-            >
-              {t('create')}
-            </Button>,
-          ]}
+          actions={
+            <>
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={() => {
+                  setEditing(undefined);
+                  setFormOpen(true);
+                }}
+              >
+                {t('create')}
+              </Button>
+            </>
+          }
           size="middle"
           bordered
           scroll={{ y: tableScrollY }}

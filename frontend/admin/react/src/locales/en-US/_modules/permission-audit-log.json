@@ -1,5 +1,6 @@
 {
   "title": "Permission Audit Log",
+  "listTitle": "Permission Audit Log List",
   "serial": "No.",
   "targetType": "Target Type",
   "targetTypePlaceholder": "Enter target type",

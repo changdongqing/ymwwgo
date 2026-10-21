@@ -1,5 +1,6 @@
 {
   "title": "Notification Deliveries",
+  "listTitle": "Notification Delivery List",
   "createdAt": "Delivered at",
   "eventType": "Event",
   "channel": "Channel",

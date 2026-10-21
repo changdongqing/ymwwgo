@@ -1,4 +1,5 @@
 {
+  "listTitle": "用量流水列表",
   "model": "模型",
   "promptTokens": "输入 tokens",
   "completionTokens": "输出 tokens",

@@ -134,6 +134,7 @@ const InternalMessageList = () => {
           <ListTable<InternalMessage>
             actionRef={actionRef}
             columns={columns}
+            title={t('listTitle')}
             request={async (params, _sorter, _filter) => {
               const formValues: Record<string, any> = {};
               // 过滤搜索参数
@@ -157,21 +158,22 @@ const InternalMessageList = () => {
             }}
             rowKey="id"
             pagination={false}
-            toolBarRender={() => [
-              <TableExportButton key="export" fetcher={fetchListInternalMessages} columns={columns} filename="im-messages" />,
-              <Button
-                key="create"
-                type="primary"
-                icon={<PlusOutlined />}
-                onClick={() => {
-                  setDrawerMode('create');
-                  setSelectedMessage(undefined);
-                  setDrawerOpen(true);
-                }}
-              >
-                {t('create')}
-              </Button>,
-            ]}
+            actions={
+              <>
+                <TableExportButton fetcher={fetchListInternalMessages} columns={columns} filename="im-messages" />
+                <Button
+                  type="primary"
+                  icon={<PlusOutlined />}
+                  onClick={() => {
+                    setDrawerMode('create');
+                    setSelectedMessage(undefined);
+                    setDrawerOpen(true);
+                  }}
+                >
+                  {t('create')}
+                </Button>
+              </>
+            }
             options={{
               density: true,
               fullScreen: true,

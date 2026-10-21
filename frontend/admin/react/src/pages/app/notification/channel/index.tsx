@@ -421,6 +421,23 @@ const NotificationChannelManagement = () => {
         <ListTable<NotificationChannel>
           actionRef={actionRef}
           columns={columns}
+          title={t('listTitle')}
+          actions={
+            <>
+              <TableExportButton fetcher={fetchListNotificationChannels} columns={columns} filename="notification-channels" />
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={() => {
+                  setDrawerMode('create');
+                  setSelected(undefined);
+                  setDrawerOpen(true);
+                }}
+              >
+                {t('create')}
+              </Button>
+            </>
+          }
           request={async (params) => {
             const query = new PaginationQuery({
               paging: { page: params.current || 1, pageSize: params.pageSize || 20 },
@@ -438,21 +455,6 @@ const NotificationChannelManagement = () => {
             showSizeChanger: true,
           }}
           options={{ density: true, fullScreen: true, setting: true, reload: true }}
-          toolBarRender={() => [
-            <TableExportButton key="export" fetcher={fetchListNotificationChannels} columns={columns} filename="notification-channels" />,
-            <Button
-              key="create"
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={() => {
-                setDrawerMode('create');
-                setSelected(undefined);
-                setDrawerOpen(true);
-              }}
-            >
-              {t('create')}
-            </Button>,
-          ]}
           size="middle"
           bordered
           scroll={{ y: tableScrollY, x: 2110 }}

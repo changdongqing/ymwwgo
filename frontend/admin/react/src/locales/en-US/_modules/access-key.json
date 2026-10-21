@@ -1,5 +1,6 @@
 {
   "pageTitle": "OpenAPI Credential Management",
+  "listTitle": "Access Credential List",
   "moduleName": "credential",
   "name": "Credential Name",
   "namePlaceholder": "Enter credential name (purpose)",

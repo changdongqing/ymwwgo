@@ -1,5 +1,6 @@
 {
   "title": "通知投递记录",
+  "listTitle": "通知投递记录列表",
   "createdAt": "投递时间",
   "eventType": "业务事件",
   "channel": "渠道",
