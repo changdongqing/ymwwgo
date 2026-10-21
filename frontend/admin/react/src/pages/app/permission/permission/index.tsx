@@ -15,7 +15,7 @@ const PermissionPointManagement = () => {
   return (
     <ContentContainer heightMode="fixed" padding="16px" bottomMargin={0}>
       <Splitter style={{ height: '100%', flex: 1, minHeight: 0 }}>
-        <Splitter.Panel collapsible defaultSize="40%" min="25%" max="55%" style={{ display: 'flex', flexDirection: 'column' }}>
+        <Splitter.Panel collapsible defaultSize={408} min={280} max={560} style={{ display: 'flex', flexDirection: 'column' }}>
           <PermissionGroupList currentGroupId={currentGroupId} onGroupSelect={setCurrentGroupId} />
         </Splitter.Panel>
         <Splitter.Panel style={{ display: 'flex', flexDirection: 'column' }}>

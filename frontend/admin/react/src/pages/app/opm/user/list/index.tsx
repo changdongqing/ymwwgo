@@ -7,7 +7,8 @@ import UserList from './UserList';
 
 /**
  * 用户管理页面
- * 使用 Splitter 实现左右分栏布局：左侧组织树，右侧用户列表
+ * 使用 Splitter 实现左右分栏布局：左侧组织树（定宽 256px，可拖拽在 200–400 内调整），
+ * 右侧自动占满剩余宽度
  */
 const UserManagement = () => {
   const [currentTenantId, setCurrentTenantId] = useState<number | undefined>(undefined);
@@ -16,7 +17,7 @@ const UserManagement = () => {
   return (
     <ContentContainer heightMode="fixed" padding="16px" bottomMargin={0}>
       <Splitter style={{ height: '100%', flex: 1, minHeight: 0 }}>
-        <Splitter.Panel collapsible defaultSize="25%" min="15%" max="40%" style={{ display: 'flex', flexDirection: 'column' }}>
+        <Splitter.Panel collapsible defaultSize={256} min={200} max={400} style={{ display: 'flex', flexDirection: 'column' }}>
           <OrgList
             currentOrgUnitId={currentOrgUnitId}
             currentTenantId={currentTenantId}
