@@ -1176,10 +1176,17 @@ var DefaultMenus = []*permissionV1.Menu{
 	},
 }
 
-// DefaultConfigs 系统初始化内置平台参数（等保口令策略阈值）。
-// 键与默认值单�源定义于本包，保证种子行与 accessor 缺省回退一致；
+// DefaultConfigs 系统初始化内置平台参数（等保口令策略阈值 + 登录链路开关）。
+// 键与默认值单源定义于本包，保证种子行与 accessor 缺省回退一致；
 // 服务启动时按键缺一补一（键已存在、值已被管理员改过的行不覆盖），is_built_in 可改不可删。
 var DefaultConfigs = []*configV1.Config{
+	{
+		Key:       trans.Ptr(ConfigKeyLoginCaptchaEnabled),
+		Name:      trans.Ptr("Login captcha enabled"),
+		Value:     trans.Ptr(strconv.FormatBool(DefaultLoginCaptchaEnabled)),
+		ValueType: configV1.Config_BOOL.Enum(),
+		IsBuiltIn: trans.Ptr(true),
+	},
 	{
 		Key:       trans.Ptr(ConfigKeyPasswordMinLen),
 		Name:      trans.Ptr("Password minimum length"),

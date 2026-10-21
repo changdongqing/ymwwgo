@@ -190,8 +190,11 @@ SameSite=Lax 按站点判断——localhost 不同端口同站，dev 直连后�
   `gowind:captcha:<captchaId>`）——漏 Save 则 Verify 永远失败；
 - `Verify` 为 verify-and-delete（单次有效）；登录侧经 `X-Captcha-Id`/`X-Captcha-Value`
   Header 传递（避免改动 proto 与三端生成代码）；
-- `CaptchaEnabled` 常量当前 true；未配置 captchaClient 时 fail-open（可用性优先）。
-  自动化测试可直读 Redis 答案（根 AGENTS.md 的 e2e 做法）。
+- 开关由参数 **`sys.login.captchaEnabled`**（`sys_configs`，BOOL，默认 `true`）控制：
+  关闭后 `verifyLoginCaptcha` 直接放行，`GenerateCaptcha` 返回 `enabled=false` 且不生成、
+  不落 Redis；管理页改值经 ConfigRepo 缓存失效 + Redis 广播即时生效，无需重启。
+  未配置 captchaClient 时 fail-open（可用性优先）。
+  自动化测试可直读 Redis 答案（根 AGENTS.md 的 e2e 做法），或在管理页临时关闭该参数。
 
 ### 7.2 登录限流（`login_rate_limiter.go`）
 
@@ -261,7 +264,7 @@ SameSite=Lax 按站点判断——localhost 不同端口同站，dev 直连后�
 |---|---|
 | 生产密钥 | `GWA_AUTH_JWT_*` 环境变量注入（yaml 是开发密钥）；轮换=换钥+吊销全量（缓存核对保证即时失效） |
 | TTL 调整 | auth.yaml 两字段（Duration 串）；生效于新签发，存量按旧 TTL |
-| 自动化登录 | 直读 Redis `gowind:captcha:<captchaId>` 取答案（或临时置 CaptchaEnabled=false 后编译） |
+| 自动化登录 | 直读 Redis `gowind:captcha:<captchaId>` 取答案，或在参数管理页关闭 `sys.login.captchaEnabled` |
 | 限流排查 | Redis 双维度键计数；误锁清理直接删键 |
 | 策略调整 | 登录策略管理页（租户级）；匹配语义见 7.3，改动跑 login_policy_checker_test |
 | 审计 | 全部登录尝试落 `sys_login_audit_logs`（成败/原因/归属地），见 audit-log-producer-design |

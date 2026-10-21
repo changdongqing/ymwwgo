@@ -9607,7 +9607,9 @@ components:
                     type: string
                 userId:
                     type: integer
-                    description: "管理端重置：指定目标用户（不传=操作当前登录用户）。\r\n 仅平台管理员可指定他人，用于用户认证器丢失时的救援解绑（按 method 清空该用户全部因子）。"
+                    description: |-
+                        管理端重置：指定目标用户（不传=操作当前登录用户）。
+                         仅平台管理员可指定他人，用于用户认证器丢失时的救援解绑（按 method 清空该用户全部因子）。
                     format: uint32
             description: Disable / remove
         DistributionItem:
@@ -9858,6 +9860,9 @@ components:
                 imageBase64:
                     type: string
                     description: 验证码图片的Base64编码字符串，客户端可以解码并显示给用户
+                enabled:
+                    type: boolean
+                    description: 登录是否启用图形验证码；false 时客户端应隐藏验证码输入
         GenerateContentRequest:
             type: object
             properties:

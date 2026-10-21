@@ -44,6 +44,8 @@ const Login: React.FC = () => {
   const [captchaId, setCaptchaId] = useState<string>('');
   const [captchaImage, setCaptchaImage] = useState<string>('');
   const [captchaLoading, setCaptchaLoading] = useState(false);
+  // 验证码开关：默认开启，兼容不返回 enabled 的旧后端（滚动发布期间不能误判为关闭）
+  const [captchaEnabled, setCaptchaEnabled] = useState(true);
 
   // SSO 开关（后端未配置 OIDC 时按钮不渲染）
   const [ssoOn, setSsoOn] = useState(false);
@@ -66,19 +68,29 @@ const Login: React.FC = () => {
     }
   }, []);
 
-  // 获取验证码
+  // 应用验证码响应：enabled 缺省（旧后端）按开启处理；关闭时清空图片状态。
+  const applyCaptchaResponse = useCallback(
+    (resp: { captchaId?: string; imageBase64?: string; enabled?: boolean }) => {
+      const enabled = resp.enabled ?? true;
+      setCaptchaEnabled(enabled);
+      setCaptchaId(enabled ? (resp.captchaId ?? '') : '');
+      setCaptchaImage(enabled ? (resp.imageBase64 ?? '') : '');
+    },
+    [],
+  );
+
+  // 获取验证码（同时作为开关探测：开关关闭时后端返回 enabled=false）
   const refreshCaptcha = useCallback(async () => {
     setCaptchaLoading(true);
     try {
       const resp = await fetchGenerateCaptcha();
-      setCaptchaId(resp.captchaId ?? '');
-      setCaptchaImage(resp.imageBase64 ?? '');
+      applyCaptchaResponse(resp);
     } catch {
       // 验证码获取失败不阻断页面，登录时会再次校验
     } finally {
       setCaptchaLoading(false);
     }
-  }, []);
+  }, [applyCaptchaResponse]);
 
   useEffect(() => {
     // React 18 StrictMode 下 effect 会执行两次，导致两个并发的
@@ -92,8 +104,7 @@ const Login: React.FC = () => {
       try {
         const resp = await fetchGenerateCaptcha();
         if (cancelled) return;
-        setCaptchaId(resp.captchaId ?? '');
-        setCaptchaImage(resp.imageBase64 ?? '');
+        applyCaptchaResponse(resp);
       } catch {
         // 验证码获取失败不阻断页面，登录时会再次校验
       } finally {
@@ -104,7 +115,7 @@ const Login: React.FC = () => {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [applyCaptchaResponse]);
 
   // SSO 开关探测：失败/未配置都不显示按钮（非关键路径，静默降级）
   useEffect(() => {
@@ -144,7 +155,8 @@ const Login: React.FC = () => {
         // 若像旧实现那样 setTimeout 后用旧 router 实例 navigate，只剩一次无感知的
         // pushState——地址栏落在 redirect、页面却渲染 homePath，两边劈叉。
         () => navigate(resolveSafeRedirect()),
-        { id: captchaId, value: values.captcha ?? '' },
+        // 开关关闭时不传验证码旁路 Header（空对象是 truthy，会发出空 Header）
+        captchaEnabled ? { id: captchaId, value: values.captcha ?? '' } : undefined,
       );
 
       message.success(t('loginSuccess'));
@@ -272,23 +284,26 @@ const Login: React.FC = () => {
           </Form.Item>
 
           {/* 验证码 —— 输入框与图片盒组成单一受控组件（CaptchaField），
-              校验错误渲染在整行下方，图片盒与输入框始终保持等高对齐 */}
-          <Form.Item
-            name="captcha"
-            rules={[
-              {
-                required: true,
-                message: t('captchaRequired'),
-              },
-            ]}
-            className="login-form-item"
-          >
-            <CaptchaField
-              label={t('captchaLabel')}
-              placeholder={t('captchaPlaceholder')}
-              imageEl={captchaImageEl}
-            />
-          </Form.Item>
+              校验错误渲染在整行下方，图片盒与输入框始终保持等高对齐。
+              开关由参数 sys.login.captchaEnabled 控制，关闭时整项不渲染。 */}
+          {captchaEnabled && (
+            <Form.Item
+              name="captcha"
+              rules={[
+                {
+                  required: true,
+                  message: t('captchaRequired'),
+                },
+              ]}
+              className="login-form-item"
+            >
+              <CaptchaField
+                label={t('captchaLabel')}
+                placeholder={t('captchaPlaceholder')}
+                imageEl={captchaImageEl}
+              />
+            </Form.Item>
+          )}
 
           <Form.Item className="login-remember-item">
             <Form.Item name="remember" valuePropName="checked" noStyle>

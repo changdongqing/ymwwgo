@@ -3359,6 +3359,7 @@ export type authenticationservicev1_ResetPasswordByCodeRequest = {
 
 export type authenticationservicev1_GenerateCaptchaResponse = {
   captchaId: string | undefined;
+  enabled?: boolean;
   imageBase64: string | undefined;
 };
 

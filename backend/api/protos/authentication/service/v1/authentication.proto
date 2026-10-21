@@ -522,6 +522,14 @@ message GenerateCaptchaResponse {
       description: "验证码图片的Base64编码字符串，客户端可以解码并显示给用户"
     }
   ]; // 验证码图片的Base64编码字符串，客户端可以解码并显示给用户
+
+  // optional 保留字段存在性：旧服务端不返回该字段，客户端应按“开启”处理（兼容滚动发布）。
+  optional bool enabled = 3 [
+    json_name = "enabled",
+    (gnostic.openapi.v3.property) = {
+      description: "登录是否启用图形验证码；false 时客户端应隐藏验证码输入"
+    }
+  ]; // 登录是否启用图形验证码；false 时客户端应隐藏验证码输入
 }
 
 message VerifyCaptchaRequest {

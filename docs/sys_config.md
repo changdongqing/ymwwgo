@@ -70,15 +70,16 @@ maxAge := r.configRepo.GetConfigInt(ctx, passwordPolicy.ConfigKeyMaxAgeDays, pas
 - 键不存在 → 按默认值创建（缺一补一，管理员自建行不阻断补种）；
 - 键已存在 → 跳过，**绝不把管理员改过的值重置回默认**。
 
-种子定义在 `pkg/constants/default_data.go` 的 `DefaultConfigs`，键与默认值**单源自 `pkg/constants/password_policy.go` 的口令策略常量**——种子行与读取器缺省回退永远一致：
+种子定义在 `pkg/constants/default_data.go` 的 `DefaultConfigs`，键与默认值**单源自本包常量文件**（口令策略见 `pkg/constants/password_policy.go`，登录开关见 `pkg/constants/login.go`）——种子行与读取器缺省回退永远一致：
 
 | 键 | 默认 | 语义 |
 |---|---|---|
 | `sys.password.minLen` | 8 | 口令最小长度 |
 | `sys.password.maxAgeDays` | 90 | 口令有效期天数（≤0 停用有效期检查） |
 | `sys.password.historyCount` | 3 | 历史口令保留条数（≤0 停用历史检查） |
+| `sys.login.captchaEnabled` | true | 密码登录是否强制校验图形验证码；关闭后登录页隐藏验证码，限流与登录策略仍生效 |
 
-三条均为 `is_built_in = true`（禁删可改）。当前生产消费方：`user_credential_repo.go` / `user_credential_password_policy.go`（口令创建与改密时读阈值）。
+四条均为 `is_built_in = true`（禁删可改）。当前生产消费方：`user_credential_repo.go` / `user_credential_password_policy.go`（口令创建与改密时读阈值）、`authentication_service.go`（登录与生成验证码时读开关）。
 
 ## 5. 管理页与接口
 
@@ -98,7 +99,7 @@ maxAge := r.configRepo.GetConfigInt(ctx, passwordPolicy.ConfigKeyMaxAgeDays, pas
 - **写路径前提**：失效链路假设全部写路径都经 `ConfigRepo`——绕过 repo 直改表的写入不会触发本地失效与广播；新增写路径时必须走 repo。
 - 参数变更**不是**六类审计日志中的独立类别；管理页改动落操作日志。
 - 无变更历史/版本表，回滚靠管理员改回。
-- `sys.login.captchaEnabled` 一类键目前只出现在测试与注释示例里，**不是**已接线的生产消费方。
+- 登录验证码开关 `sys.login.captchaEnabled` 已是生产消费方（`authentication_service.go` 的 `isLoginCaptchaEnabled`）；关闭验证码后登录限流（5 次/15 分钟）与登录策略闸门仍生效，安全兜底不随之关闭。
 
 ## 8. 相关文件索引
 
@@ -109,5 +110,6 @@ maxAge := r.configRepo.GetConfigInt(ctx, passwordPolicy.ConfigKeyMaxAgeDays, pas
 | `backend/app/admin/service/internal/service/config_service.go` | BFF 服务实现 + 启动期播种触发点 |
 | `backend/api/protos/config/service/v1/config.proto` | domain proto（消息与领域服务） |
 | `backend/api/protos/admin/service/v1/i_config.proto` | BFF proto（`/admin/v1/configs` 路由） |
-| `backend/pkg/constants/default_data.go` | `DefaultConfigs` 内置参数种子（单源引用 `pkg/password` 常量） |
-| `backend/pkg/password/policy.go` | 口令策略阈值常量与消费示例（键清单的权威来源） |
+| `backend/pkg/constants/default_data.go` | `DefaultConfigs` 内置参数种子（单源引用本包常量） |
+| `backend/pkg/constants/password_policy.go` | 口令策略键名、默认值与消费示例 |
+| `backend/pkg/constants/login.go` | 登录链路开关键（`sys.login.captchaEnabled`）与默认值 |

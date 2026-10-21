@@ -216,7 +216,7 @@ func (x *LoginRequest) Redact() {
 	// Safe field: UserId
 
 	// Redacting field: Password
-	PasswordTmp := ``
+	PasswordTmp := ""
 	x.Password = &PasswordTmp
 
 	// Safe field: RefreshToken
@@ -448,6 +448,8 @@ func (x *GenerateCaptchaResponse) Redact() {
 	// Safe field: CaptchaId
 
 	// Safe field: ImageBase64
+
+	// Safe field: Enabled
 }
 
 // Ensure VerifyCaptchaRequest implements the Redactor interface at compile time.

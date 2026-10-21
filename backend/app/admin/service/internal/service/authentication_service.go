@@ -38,10 +38,6 @@ const (
 	headerCaptchaValue = "X-Captcha-Value"
 )
 
-// CaptchaEnabled 控制登录是否强制校验验证码。
-// 开发/无 Redis 等环境可改为 false 跳过验证码校验，避免登录被 400 invalid or missing captcha 阻断。
-const CaptchaEnabled = true
-
 // refresh token cookie 相关常量。
 // refresh token 以 HttpOnly Cookie 传输，Path 收窄到刷新端点，SameSite=Lax 阻断跨站 POST。
 // refresh_exp 为非 HttpOnly 的过期时间戳 cookie，供前端定时器读取以调度主动刷新。
@@ -176,6 +172,9 @@ type AuthenticationService struct {
 	authenticator *data.Authenticator
 	clientType    authenticationV1.ClientType
 
+	// configRepo 读取登录链路运行时参数（如 sys.login.captchaEnabled）。
+	// 为 nil 时各读取点回退内置默认值，白盒单测可直接构造。
+	configRepo    *data.ConfigRepo
 	captchaClient *captcha.Captcha
 	rateLimiter   *data.LoginRateLimiter
 
@@ -207,6 +206,7 @@ func NewAuthenticationService(
 	permissionRepo *data.PermissionRepo,
 	authenticator *data.Authenticator,
 	clientType authenticationV1.ClientType,
+	configRepo *data.ConfigRepo,
 	captchaClient *captcha.Captcha,
 	rateLimiter *data.LoginRateLimiter,
 	loginPolicyRepo *data.LoginPolicyRepo,
@@ -231,6 +231,7 @@ func NewAuthenticationService(
 		permissionRepo:          permissionRepo,
 		authenticator:           authenticator,
 		clientType:              clientType,
+		configRepo:              configRepo,
 		captchaClient:           captchaClient,
 		rateLimiter:             rateLimiter,
 		loginPolicyRepo:         loginPolicyRepo,
@@ -503,7 +504,8 @@ func (s *AuthenticationService) doGrantTypePassword(ctx context.Context, req *au
 		}
 	}
 
-	// ===== H5 闸门 2：强制验证码（始终启用；通过 HTTP Header 传递，避免改动 proto/前端生成代码）=====
+	// ===== H5 闸门 2：验证码（默认开启，可由参数 sys.login.captchaEnabled 关闭；=====
+	// ===== 通过 HTTP Header 传递，避免改动 proto/前端生成代码）=====
 	if !s.verifyLoginCaptcha(ctx) {
 		return nil, authenticationV1.ErrorBadRequest("invalid or missing captcha")
 	}
@@ -692,13 +694,22 @@ func fillAdminFlags(tokenPayload *authenticationV1.UserTokenPayload, roleCodes [
 	}
 }
 
+// isLoginCaptchaEnabled 读取登录验证码开关。
+// 参数缺失、类型不符或查库异常时由 ConfigRepo 回退默认值（开启），保证安全默认。
+func (s *AuthenticationService) isLoginCaptchaEnabled(ctx context.Context) bool {
+	if s.configRepo == nil {
+		return constants.DefaultLoginCaptchaEnabled
+	}
+	return s.configRepo.GetConfigBool(ctx, constants.ConfigKeyLoginCaptchaEnabled, constants.DefaultLoginCaptchaEnabled)
+}
+
 // verifyLoginCaptcha 校验登录请求携带的验证码。
 // 验证码 id/value 通过 HTTP Header（X-Captcha-Id / X-Captcha-Value）传递。
 // captchaClient.Verify 已是 verify-and-delete 单次有效语义。
 // 注意：refresh_token / client_credentials 等非密码授权不走此校验（仅 doGrantTypePassword 调用）。
 func (s *AuthenticationService) verifyLoginCaptcha(ctx context.Context) bool {
-	if !CaptchaEnabled {
-		// 验证码开关关闭，跳过校验
+	if !s.isLoginCaptchaEnabled(ctx) {
+		// 参数关闭验证码，跳过校验
 		return true
 	}
 	if s.captchaClient == nil {
@@ -858,6 +869,11 @@ func (s *AuthenticationService) WhoAmI(ctx context.Context, _ *emptypb.Empty) (*
 }
 
 func (s *AuthenticationService) GenerateCaptcha(ctx context.Context, _ *emptypb.Empty) (*authenticationV1.GenerateCaptchaResponse, error) {
+	// 开关关闭时不生成、不落 Redis：前端据 enabled=false 隐藏验证码输入。
+	if !s.isLoginCaptchaEnabled(ctx) {
+		return &authenticationV1.GenerateCaptchaResponse{Enabled: trans.Ptr(false)}, nil
+	}
+
 	captchaId, captchaImage, answer, err := s.captchaClient.Generate()
 	if err != nil {
 		s.log.Errorf(ctx, "generate captcha failed: %s", err.Error())
@@ -873,6 +889,7 @@ func (s *AuthenticationService) GenerateCaptcha(ctx context.Context, _ *emptypb.
 	return &authenticationV1.GenerateCaptchaResponse{
 		CaptchaId:   captchaId,
 		ImageBase64: captchaImage,
+		Enabled:     trans.Ptr(true),
 	}, nil
 }
 

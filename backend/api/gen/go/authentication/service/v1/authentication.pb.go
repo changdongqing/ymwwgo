@@ -1306,9 +1306,11 @@ func (x *RevokeTokenByIdRequest) GetUserId() uint32 {
 }
 
 type GenerateCaptchaResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	CaptchaId     string                 `protobuf:"bytes,1,opt,name=captcha_id,json=captchaId,proto3" json:"captcha_id,omitempty"`       // 验证码ID，客户端应在后续请求中提供该ID以验证用户输入的验证码
-	ImageBase64   string                 `protobuf:"bytes,2,opt,name=image_base64,json=imageBase64,proto3" json:"image_base64,omitempty"` // 验证码图片的Base64编码字符串，客户端可以解码并显示给用户
+	state       protoimpl.MessageState `protogen:"open.v1"`
+	CaptchaId   string                 `protobuf:"bytes,1,opt,name=captcha_id,json=captchaId,proto3" json:"captcha_id,omitempty"`       // 验证码ID，客户端应在后续请求中提供该ID以验证用户输入的验证码
+	ImageBase64 string                 `protobuf:"bytes,2,opt,name=image_base64,json=imageBase64,proto3" json:"image_base64,omitempty"` // 验证码图片的Base64编码字符串，客户端可以解码并显示给用户
+	// optional 保留字段存在性：旧服务端不返回该字段，客户端应按“开启”处理（兼容滚动发布）。
+	Enabled       *bool `protobuf:"varint,3,opt,name=enabled,proto3,oneof" json:"enabled,omitempty"` // 登录是否启用图形验证码；false 时客户端应隐藏验证码输入
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1355,6 +1357,13 @@ func (x *GenerateCaptchaResponse) GetImageBase64() string {
 		return x.ImageBase64
 	}
 	return ""
+}
+
+func (x *GenerateCaptchaResponse) GetEnabled() bool {
+	if x != nil && x.Enabled != nil {
+		return *x.Enabled
+	}
+	return false
 }
 
 type VerifyCaptchaRequest struct {
@@ -1587,11 +1596,14 @@ const file_authentication_service_v1_authentication_proto_rawDesc = "" +
 	"\auser_id\x18\x04 \x01(\rBY\xbaGV\x92\x02S可选：关联的用户ID，便于高效定位要撤销的令牌（向后兼容）H\x01R\x06userId\x88\x01\x01B\x0e\n" +
 	"\f_client_typeB\n" +
 	"\n" +
-	"\b_user_id\"\x94\x02\n" +
+	"\b_user_id\"\x95\x03\n" +
 	"\x17GenerateCaptchaResponse\x12}\n" +
 	"\n" +
 	"captcha_id\x18\x01 \x01(\tB^\xbaG[\x92\x02X验证码ID，客户端应在后续请求中提供该ID以验证用户输入的验证码R\tcaptchaId\x12z\n" +
-	"\fimage_base64\x18\x02 \x01(\tBW\xbaGT\x92\x02Q验证码图片的Base64编码字符串，客户端可以解码并显示给用户R\vimageBase64\"\xbc\x01\n" +
+	"\fimage_base64\x18\x02 \x01(\tBW\xbaGT\x92\x02Q验证码图片的Base64编码字符串，客户端可以解码并显示给用户R\vimageBase64\x12s\n" +
+	"\aenabled\x18\x03 \x01(\bBT\xbaGQ\x92\x02N登录是否启用图形验证码；false 时客户端应隐藏验证码输入H\x00R\aenabled\x88\x01\x01B\n" +
+	"\n" +
+	"\b_enabled\"\xbc\x01\n" +
 	"\x14VerifyCaptchaRequest\x12X\n" +
 	"\n" +
 	"captcha_id\x18\x01 \x01(\tB9\xfaB\x05r\x03\x18\x80\x01\xbaG.\x92\x02+验证码ID，来自 GenerateCaptcha 响应R\tcaptchaId\x12J\n" +
@@ -1749,6 +1761,7 @@ func file_authentication_service_v1_authentication_proto_init() {
 		(*UnblockTokenRequest_Jti)(nil),
 	}
 	file_authentication_service_v1_authentication_proto_msgTypes[13].OneofWrappers = []any{}
+	file_authentication_service_v1_authentication_proto_msgTypes[14].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

@@ -24,8 +24,8 @@
 //   - resolveCookieSecure 与 setRefreshCookies / clearRefreshCookies 的写头段：
 //     需具体 *khttp.Transport（kratos 内部类型、字段全私有无导出构造器），
 //     接口桩无法命中其具体类型断言，只测守卫段；
-//   - 各仓储/redis 的故障分支（DB/Redis 故障不可注入）、CaptchaEnabled 关闭分支
-//     （编译期常量 true）。
+//   - 各仓储/redis 的故障分支（DB/Redis 故障不可注入）。验证码开关已改为
+//     参数（sys.login.captchaEnabled）驱动，关闭分支由 TestAuthSvcSqlite_CaptchaSwitch 覆盖。
 package service
 
 import (
@@ -54,6 +54,7 @@ import (
 
 	conf "github.com/tx7do/kratos-bootstrap/api/gen/go/conf/v1"
 	authenticationV1 "go-wind-admin/api/gen/go/authentication/service/v1"
+	configV1 "go-wind-admin/api/gen/go/config/service/v1"
 	identityV1 "go-wind-admin/api/gen/go/identity/service/v1"
 	permissionV1 "go-wind-admin/api/gen/go/permission/service/v1"
 
@@ -209,6 +210,7 @@ func newAuthenticationServiceForTest(t *testing.T) *authSvcEnv {
 		permissionRepo:          data.NewPermissionRepoForTest(entClient),
 		authenticator:           authenticator,
 		clientType:              authenticationV1.ClientType_admin,
+		configRepo:              configRepo,
 		captchaClient:           captchaClient,
 		rateLimiter:             data.NewLoginRateLimiterForTest(rdb),
 		loginPolicyRepo:         data.NewLoginPolicyRepoForTest(entClient),
@@ -437,6 +439,50 @@ func TestAuthSvcSqlite_LoginCaptchaGate(t *testing.T) {
 	require.Error(t, err)
 	require.True(t, authenticationV1.IsInvalidPassword(err), "凭证未命中应归一化为 INVALID_PASSWORD")
 	require.Nil(t, resp)
+}
+
+// TestAuthSvcSqlite_CaptchaSwitch 验证验证码开关由参数 sys.login.captchaEnabled 驱动：
+// 缺省开启 → 生成验证码并强制校验；参数关闭 → 生成接口短路、登录跳过闸门。
+func TestAuthSvcSqlite_CaptchaSwitch(t *testing.T) {
+	e := newAuthenticationServiceForTest(t)
+	base := context.Background()
+
+	// 参数未播种：默认开启，正常生成验证码。
+	genResp, err := e.svc.GenerateCaptcha(base, &emptypb.Empty{})
+	require.NoError(t, err)
+	require.True(t, genResp.GetEnabled(), "缺省应视为开启")
+	require.NotEmpty(t, genResp.GetCaptchaId(), "开启时应返回验证码 ID")
+	require.NotEmpty(t, genResp.GetImageBase64(), "开启时应返回验证码图片")
+
+	// 播种关闭参数（Create 会失效该键的缓存条目，立即生效）。
+	require.NoError(t, e.svc.configRepo.Create(base, &configV1.CreateConfigRequest{
+		Data: &configV1.Config{
+			Name:      trans.Ptr("Login captcha enabled"),
+			Key:       trans.Ptr(constants.ConfigKeyLoginCaptchaEnabled),
+			Value:     trans.Ptr("false"),
+			ValueType: configV1.Config_BOOL.Enum(),
+		},
+	}))
+
+	// 生成接口短路：不生成、不落 Redis。
+	genResp, err = e.svc.GenerateCaptcha(base, &emptypb.Empty{})
+	require.NoError(t, err)
+	require.False(t, genResp.GetEnabled(), "参数关闭后应返回 enabled=false")
+	require.Empty(t, genResp.GetCaptchaId(), "关闭时不应生成验证码")
+	require.Empty(t, genResp.GetImageBase64(), "关闭时不应生成图片")
+
+	// 关闭状态下的密码登录：无验证码头也能越过闸门（推进到凭证校验 → INVALID_PASSWORD）。
+	req := loginReq("authsvc-nobody", encryptLoginPassword(t, constants.DefaultUserPassword))
+	resp, err := e.svc.Login(base, req)
+	require.Error(t, err)
+	require.True(t, authenticationV1.IsInvalidPassword(err), "关闭验证码后应进入凭证校验而非被闸门拦截")
+	require.Nil(t, resp)
+}
+
+// TestAuthSvc_CaptchaSwitchNilConfigRepo 白盒构造（configRepo 为 nil）时回退安全默认值：开启。
+func TestAuthSvc_CaptchaSwitchNilConfigRepo(t *testing.T) {
+	svc := &AuthenticationService{}
+	require.True(t, svc.isLoginCaptchaEnabled(context.Background()))
 }
 
 // TestAuthSvcSqlite_LoginTenantResolution 验证租户解析：
