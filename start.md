@@ -7,7 +7,7 @@
 ## 0. 前置条件（只装一次）
 
 - Go 1.27+、Node 24、**pnpm >= 9.12.0**（react/vue-element/vue-vben 三端统一用 pnpm，本机 12.14 实测可用）、Docker（含 compose v2）
-- gow 与 air（装在 `~/go/bin`，默认不在 PATH，先 `export PATH=$PATH:~/go/bin` 或用全路径）：
+- gow 与 air（`go install` 装在 `~/go/bin`；本机 `~/.bashrc` 已永久加入该目录——旧开的终端先 `source ~/.bashrc`，新终端直接可用）：
 
 ```bash
 go install github.com/tx7do/go-wind-toolkit/gowind/cmd/gow@latest
