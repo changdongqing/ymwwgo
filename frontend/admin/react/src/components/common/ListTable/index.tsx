@@ -136,10 +136,11 @@ export function ListTable<
 
   /**
    * 查询区全局规格（2026-10-21 定稿，规则见 docs/design-language.md §2.6）：
-   * - span 用数字传给 QueryFilter 会短路它的容器宽度断点表（列数/标签横竖排不再随容器变化）；
+   * - span 用数字传给 QueryFilter 会短路它的容器宽度断点表（列数/标签横竖排不再随容器变化，
+   *   布局由 CSS 固定：每行最多 4 组、定宽 242px、溢出横滚，见 pro-components-dark.css
+   *   的"固定宽度查询区"块）；
    * - labelWidth 70 = 4 个汉字 + 冒号的定宽（antd 默认右对齐），控件定宽 164px 在 CSS 侧；
-   * - 不收起、无"展开/收起"开关：条件区单行定宽横向滚动，重置/查询钉在左下角
-   *   （布局落在 pro-components-dark.css 的"固定宽度查询区"块）。
+   * - 不收起、无"展开/收起"开关：固定布局下收起已无意义。
    * 这四项是全局设计决定，写在展开侧强制生效，页面 search 只能补充其余配置。
    */
   const mergedSearch: ListTableProps<RecordType, Params>['search'] =

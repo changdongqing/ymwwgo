@@ -361,47 +361,44 @@ html[data-theme='dark'] .ant-form .ant-input:not(.ant-input-affix-wrapper .ant-i
 
 /* ===== 固定宽度查询区（2026-10-21 定稿，规则与实测见 §2.6）=====
    条件组定宽不折行：label 70px（ListTable 侧 labelWidth，antd 默认右对齐）+
-   控件 164px（下方规则），每组恒 234px；组间 24px。一行放不下整体横向滚动
-   （设计明确允许滚动条），重置/查询钉在条件区的可视左下角。
-   实现走 grid：QueryFilter 的 Row 原生是 flex+wrap 的容器宽度响应式栅格，这里
-   改成 grid-auto-flow:column 单行轨道——字段列 max-content 定宽、永不折行；
-   按钮 Col 显式落到第 2 行，sticky 钉在滚动可视区左缘，滚动时按钮不动。
+   控件 164px（下方规则），每组恒 242px；组间 24px。
+   每行固定 4 组（同日追加规则）：grid 固定 4 列模板，第 5 组起换行；
+   4 组总宽 1040px 超出容器时整行横向滚动（设计明确允许滚动条）。
+   重置/查询定列不定行——自动落到最后一行字段之下的下一行行首，
+   sticky 钉在滚动可视区左缘，滚动时按钮不动。
    行距 8px：QueryFilter 的 searchGutter 默认 24 且横竖两轴共用，antd 写成行内
    gap，故须 !important；横轴间距改由 column-gap 提供。 */
 .ant-pro-table-search .ant-pro-query-filter-row {
   display: grid !important;
-  grid-auto-flow: column;
-  grid-template-rows: max-content;
-  grid-auto-columns: max-content;
+  grid-template-columns: repeat(4, 242px);
+  grid-auto-columns: 242px; /* 区间组跨列越出第 4 列边界时，隐式列保持同宽 */
   column-gap: 24px;
   row-gap: 8px !important;
   margin-left: 0 !important;
   margin-right: 0 !important;
   overflow-x: auto;
 }
-/* 条件组列显式定宽 242 = label 70 + 间距 8 + 控件 164。不用 max-content 轨道：
-   pro-form 给控件的行内 width:100% 会把 grid 内在尺寸解析搅成循环依赖
-   （实测轨道塌到 78px、标签全部堆叠），显式宽度才算真正"固定"。
-   区间选择器组 406 = 70 + 8 + 328。 */
+/* 抵消响应式栅格的遗留：span 百分比宽/最大宽、submitter 的 offset 百分比边距、
+   gutter 的列内边距（间距已由 column-gap 承担） */
 .ant-pro-table-search .ant-pro-query-filter-row > .ant-col {
   max-width: none !important;  /* antd col-N 自带 max-width:33.33%,会把定宽列按轨道再夹回去 */
-  margin-left: 0 !important;   /* 抵消 submitter 的 offset 百分比边距 */
+  margin-left: 0 !important;
   padding-left: 0 !important;
-  padding-right: 0 !important; /* gutter 间距改由 column-gap 提供 */
+  padding-right: 0 !important;
 }
+/* 条件组：显式 242 定宽（列模板同为 242，此处是双保险），自动按每行 4 个排布 */
 .ant-pro-table-search .ant-pro-query-filter-row > .ant-col:not(:has(.ant-pro-query-filter-actions)) {
-  grid-row: 1;                 /* 必须：auto-flow column 先向下填列，按钮占走第 2 行后
-                                  后续字段会蛇形下坠（实测昵称/手机号掉到第 2 行），
-                                  显式钉在 row 1 才是真正的单行轨道 */
   width: 242px !important;     /* 抵消 span 百分比宽 */
 }
+/* 区间选择器组：跨两个槽位（仍计入"每行四个"的槽位账），宽度交给轨道 */
 .ant-pro-table-search .ant-pro-query-filter-row > .ant-col:has(.ant-picker-range) {
-  width: 406px !important;
+  grid-column: span 2 !important;
+  width: auto !important;
 }
-/* 重置/查询：独占第 2 行、贴左；sticky 让横向滚动时按钮始终可见 */
+/* 重置/查询：定列不定行——排在全部字段之后、下一行行首贴左；
+   sticky 让横向滚动时按钮始终可见 */
 .ant-pro-table-search .ant-pro-query-filter-row > .ant-col:has(.ant-pro-query-filter-actions) {
-  grid-row: 2;
-  grid-column: 1;
+  grid-column: 1 !important;
   justify-self: start;
   position: sticky;
   left: 0;
