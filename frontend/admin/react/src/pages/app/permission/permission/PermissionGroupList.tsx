@@ -2,7 +2,7 @@ import { useRef, useState } from 'react';
 import type { ProColumns, ActionType } from '@ant-design/pro-components';
 import TableExportButton from '@/components/common/TableExportButton';
 import ListTable from '@/components/common/ListTable';
-import { Button, Popconfirm, Tag, App } from 'antd';
+import { Button, Popconfirm, Tag, Tooltip, App } from 'antd';
 import {
   EditOutlined,
   DeleteOutlined,
@@ -172,20 +172,23 @@ const PermissionGroupList: React.FC<PermissionGroupListProps> = ({
               >
                 {t('create')}
               </Button>
-              <Button
-                icon={<NodeExpandOutlined />}
-                size="small"
-                onClick={() => handleExpandAll(treeData)}
-              >
-                {t('expandAll')}
-              </Button>
-              <Button
-                icon={<NodeCollapseOutlined />}
-                size="small"
-                onClick={handleCollapseAll}
-              >
-                {t('collapseAll')}
-              </Button>
+              {/* 左栏定宽面板放不下四枚文字按钮：展开/折叠全部收成图标钮，文字进 Tooltip（规格同 §4 图标钮须带 Tooltip） */}
+              <Tooltip title={t('expandAll')}>
+                <Button
+                  aria-label={t('expandAll')}
+                  icon={<NodeExpandOutlined />}
+                  size="small"
+                  onClick={() => handleExpandAll(treeData)}
+                />
+              </Tooltip>
+              <Tooltip title={t('collapseAll')}>
+                <Button
+                  aria-label={t('collapseAll')}
+                  icon={<NodeCollapseOutlined />}
+                  size="small"
+                  onClick={handleCollapseAll}
+                />
+              </Tooltip>
             </>
           }
           request={async (params) => {
