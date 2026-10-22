@@ -12,6 +12,7 @@ import (
 	dictV1 "go-wind-admin/api/gen/go/dict/service/v1"
 	identityV1 "go-wind-admin/api/gen/go/identity/service/v1"
 	notificationV1 "go-wind-admin/api/gen/go/notification/service/v1"
+	ontologyV1 "go-wind-admin/api/gen/go/ontology/service/v1"
 	permissionV1 "go-wind-admin/api/gen/go/permission/service/v1"
 )
 
@@ -281,6 +282,22 @@ var DefaultLanguages = []*dictV1.Language{
 	{LanguageCode: trans.Ptr("ko-KR"), LanguageName: trans.Ptr("韩语"), NativeName: trans.Ptr("한국어"), IsDefault: trans.Ptr(false), IsEnabled: trans.Ptr(true), SortOrder: trans.Uint32(100)},
 	{LanguageCode: trans.Ptr("es-ES"), LanguageName: trans.Ptr("西班牙语"), NativeName: trans.Ptr("Español"), IsDefault: trans.Ptr(false), IsEnabled: trans.Ptr(true), SortOrder: trans.Uint32(100)},
 	{LanguageCode: trans.Ptr("fr-FR"), LanguageName: trans.Ptr("法语"), NativeName: trans.Ptr("Français"), IsDefault: trans.Ptr(false), IsEnabled: trans.Ptr(true), SortOrder: trans.Uint32(100)},
+}
+
+// DefaultOntologies 系统初始化默认本体数据（本体建模阶段0）。
+// "有名万物"是本仓内置种子本体：ontology_iri 兼作实体命名空间（base_iri），
+// 实体 IRI = https://youmingwanwu.com/ontology/youmingwanwu#<局部名>。
+// 由 ontology_service 启动期 count==0 守卫播种（与 DefaultLanguages 同机制；
+// 老库删除该本体后重启会重新播种，partial unique index 排除软删行故无唯一冲突）。
+var DefaultOntologies = []*ontologyV1.Ontology{
+	{
+		OntologyName: trans.Ptr("有名万物"),
+		OntologyIri:  trans.Ptr("https://youmingwanwu.com/ontology/youmingwanwu#"),
+		BaseIri:      trans.Ptr("https://youmingwanwu.com/ontology/youmingwanwu#"),
+		Description:  trans.Ptr("内置种子本体：有名万物——万物皆有名，以名指物"),
+		IsEnabled:    trans.Ptr(true),
+		Version:      trans.Ptr(uint32(0)),
+	},
 }
 
 // ComponentToModule 根据前端组件路径前缀推断所属业务功能模块。

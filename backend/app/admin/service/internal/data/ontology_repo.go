@@ -105,6 +105,13 @@ func NormalizeBaseIRI(baseIRI string) (string, error) {
 	return trimmed, nil
 }
 
+// Count 未删本体行数（启动期 count==0 播种守卫用）
+func (r *OntologyRepo) Count(ctx context.Context) (int, error) {
+	return r.entClient.Client().OntOntology.Query().
+		Where(ontontology.DeletedAtIsNil()).
+		Count(ctx)
+}
+
 // List 分页查询（通用 filter DSL + 软删过滤）
 func (r *OntologyRepo) List(ctx context.Context, req *paginationV1.PagingRequest) (*ontologyV1.ListOntologiesResponse, error) {
 	if req == nil {

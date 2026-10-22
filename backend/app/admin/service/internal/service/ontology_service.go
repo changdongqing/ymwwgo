@@ -17,9 +17,12 @@ import (
 	adminV1 "go-wind-admin/api/gen/go/admin/service/v1"
 	ontologyV1 "go-wind-admin/api/gen/go/ontology/service/v1"
 
+	"github.com/tx7do/go-crud/viewer"
+
 	"go-wind-admin/app/admin/service/internal/data"
 	"go-wind-admin/app/admin/service/internal/data/ent"
 	"go-wind-admin/app/admin/service/internal/ontology"
+	"go-wind-admin/pkg/constants"
 	"go-wind-admin/pkg/middleware/auth"
 )
 
@@ -38,10 +41,33 @@ func NewOntologyService(
 	ctx *bootstrap.Context,
 	ontologyRepo *data.OntologyRepo,
 ) *OntologyService {
-	return &OntologyService{
+	s := &OntologyService{
 		log:          ctx.NewLoggerHelper("ontology/service/admin-service"),
 		ontologyRepo: ontologyRepo,
 	}
+
+	s.init()
+
+	return s
+}
+
+// init 启动期播种守卫：本体为空表时落 constants.DefaultOntologies（与 language/menu 同机制）。
+func (s *OntologyService) init() {
+	ctx := viewer.WithSystemContext(context.Background())
+	if count, _ := s.ontologyRepo.Count(ctx); count == 0 {
+		_ = s.createDefaultOntologies(ctx)
+	}
+}
+
+// createDefaultOntologies 播种默认本体（有名万物；createdBy=0 系统上下文）
+func (s *OntologyService) createDefaultOntologies(ctx context.Context) error {
+	for _, ont := range constants.DefaultOntologies {
+		if err := s.ontologyRepo.Create(ctx, ont, 0); err != nil {
+			s.log.Errorf(ctx, "create default ontology err: %v", err)
+			return err
+		}
+	}
+	return nil
 }
 
 // operatorUserID 操作人提取（auth.FromContext；系统上下文取 0，设计文档 §3.4 第 3 步）
