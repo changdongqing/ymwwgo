@@ -1,5 +1,10 @@
 # 通知域（Notification Domain）设计文档
 
+> **数据库结构变更机制变更提示（2026-10-21）**：本文历史记录里的"启动期 ent 自动迁移加列/索引、无需手写 DDL"
+> 均为旧机制（`Schema.Create`）时期的验收事实；自 2026-10-21 起表结构落库只走 goose 版本化迁移
+> （全仓铁律 6，见 [database/design/ent-goose-migrations.md](./database/design/ent-goose-migrations.md)），
+> 文中"自动迁移"字样读作历史记录即可，照抄为新流程会过不了 CI 漂移守卫。
+
 > **状态：P0 + P1 已落地（后端内聚 + 三端投递台账页 + 邮件文案 i18n + SSE 事件类型注册表，2026-09-19），
 > P2 已落地六块（见 §4：P2-1 站内信注册为 INTERNAL 渠道 + 定向发送改走缝 + 台账 `related_id`；
 > P2-2 收件行租户打标跟着受众走 + 修掉收件箱一处越权读；P2-3 异步投递 = 入队前同步预检 + asynq 派发 +

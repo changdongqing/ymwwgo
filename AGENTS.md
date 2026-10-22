@@ -36,6 +36,7 @@ docs/                       文档体系（总入口 docs/README.md：教程层 
 3. **搜索条件一律 contains 而非 EQ**、ID 类字段不进模糊搜索；CRUD 请求体必须包 `{ data: {...} }`，但**仅限 CRUD**——`body: "*"` 的自定义 RPC（如 `internal-message/send`）收的是扁平请求体，多包一层 `data` 会被 protojson 当未知字段丢掉，接口照样 200、字段全为空。细节见 `docs/crud_module_guide/`。
 4. **关系型数据库只选 PostgreSQL**：本程序一切关系型存储（运行库、新模块、新服务、演示数据）只允许 PostgreSQL（含 pgvector）；禁止新增或启用 MySQL / SQLite 等其他关系型方言。`data.yaml` 的多方言切换项、go.mod 里的 mysql/sqlite 驱动、`*_sqlite_test.go` 内存库测试均属历史遗留，**不得扩展使用**；新代码一律按"只有 PostgreSQL"假设编写（迁移、DSN 示例、部署文档都是 postgres）。
 5. **前端只维护 react**：`frontend/admin/react` 是唯一继续维护的前端；`vue-element` 与 `vue-vben` 自 2026-10-20 起冻结——不加功能、不修 bug、不升级依赖、不移植新模块。react 的改动不再向两端移植，"三端镜像 parity"不再是要求；两端代码仅供行为对照时阅读，**不要修改**。
+6. **数据库结构变更只走 goose 版本化迁移**：表结构的单一事实源仍是 Ent schema，但落库 DDL 一律通过 `backend/app/admin/service/internal/data/migrations/` 新增 `000NN_<module>_<what>.sql`（**与 schema 改动同一 commit 提交**）；历史的 Ent 自动迁移（`Schema.Create`）已移除，`data.database.migrate` 控制的是启动时执行 goose。存量老库升级先跑 `cmd/migrate baseline`。CI 漂移守卫（db-schema-drift workflow / `make db-drift-check`）校验迁移链与 Ent schema 一致。唯一登记的例外是 AI 向量子系统的运行期动态 DDL（向量列补建/HNSW 门槛索引/`sys_ai_search_index`，见设计文档 §9），除此之外禁止任何运行期 DDL。改任何表结构前先读 `docs/database/design/ent-goose-migrations.md`。
 
 ## 开发策略：只做 react 端
 
@@ -80,6 +81,7 @@ gow 未覆盖的任务（三端 TS 生成 `make ts`、OpenAPI `make openapi`、`
 - 前端权限模型：`docs/frontend_authority.md`
 - 查询/分页规则：`docs/list_query_rule.md`
 - **改一个字段速查**：`docs/field_change_guide.md`（给**已有**资源加字段的四档判定 + 命令数 + 文件清单，含"哪些事明确不用做"）——本仓最高频的任务，别套用 04 章的新模块流程；接到"加个字段/页面少一列"这类需求先读它
+- **数据库结构版本化迁移**：`docs/database/design/ent-goose-migrations.md`（goose 版本化迁移：改表结构标准五步流程、危险变更 expand–migrate–contract、存量库纳管、CI 漂移守卫、`cmd/migrate` CLI；改任何表结构前必读，排"迁移失败/结构漂移/老库升级"时读它）
 - **新增 CRUD 模块全流程**：`docs/crud_module_guide/`（新增完整业务模块的端到端手册：README 跨端编排与通用陷阱、backend.md 后端全流程与样例镜像索引、三端各自的页面实现参考；正文为英文原稿）——接到「新增模块/新增资源/新建管理页」这类需求、动工新增整个模块前先读它；只给已有资源加字段读上面的速查，别套新模块流程
 - 脚本系统：`docs/script_system.md`（Lua/JS 脚本级插件：钩子点/定时任务/HTTP 出站/安全模型；改钩子点或模块先读它）
 - 认证与令牌链路：`docs/authentication.md`（登录全流程/令牌与刷新轮换/MFA/限流策略/会话吊销/已知问题；改登录、令牌、刷新、MFA、限流或登录策略前先读它）

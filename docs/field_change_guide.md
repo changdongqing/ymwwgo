@@ -33,8 +33,8 @@ A 档纯前端，直接跳 §3。B/C 档先看 §1 的三条前提，能省掉�
 
 ## 1. 三条前提事实（决定了"不用做什么"）
 
-1. **加列不需要 SQL、不需要迁移命令。** 启动时 ent 自动建列：`internal/data/ent_client.go:46-51` 在 `cfg.Data.Database.GetMigrate()` 为真时跑 `client.Schema.Create(...)`，而 `configs/data.yaml:7` 就是 `migrate: true`。→ 改完 schema 只要**重启后端进程**。
-   所以业务字段照 04 章一律 `Optional().Nillable()`（本仓所有 schema 都这样，见 `ent/schema/dict_type.go:34-45`）——加非空列要自动迁移去给已有行填值，那是给自己加活。要"必填"交给前端 `rules` + proto validate。
+1. **加列必须同步写一条迁移 SQL（全仓铁律 6，2026-10-21 起）。** 历史的 ent 自动迁移（`Schema.Create`）已移除，表结构落库只走 goose 版本化迁移：改完 schema 后在 `internal/data/migrations/` 下新建 `000NN_<module>_<what>.sql`（Up 必写、Down 尽量写），**与 schema 改动同一 commit 提交**；CI 漂移守卫（`make db-drift-check`）会校验迁移链与 ent schema 一致，忘了写会直接红。存量老库升级先跑一次 `cmd/migrate baseline`（幂等）。流程与危险变更见 [database/design/ent-goose-migrations.md](./database/design/ent-goose-migrations.md)。
+   所以业务字段照 04 章一律 `Optional().Nillable()`（本仓所有 schema 都这样，见 `ent/schema/dict_type.go:34-45`）——可空列让迁移 SQL 最简单（`ADD COLUMN ... NULL`，无需回填默认值）。要"必填"交给前端 `rules` + proto validate。
 2. **想加的字段很可能已经在 mixin 里。** `AutoIncrementId / TimeAt / OperatorID / IsEnabled / SortOrder / TenantID` 六个 mixin（`data/ent/schema/dict_type.go:50-59`）已经贡献了 `id / created_at / updated_at / deleted_at / created_by / updated_by / deleted_by / is_enabled / sort_order / tenant_id`。先看这张表，别在 `Fields()` 里重造一个 `status`。
 3. **BFF proto 不定义 message，所以加字段只改一个 proto。** `api/protos/admin/service/v1/i_dict_type.proto:9` 只是 `import` domain 包再挂 `google.api.http`；43 个 `i_*.proto` 里只有 `i_admin_portal.proto`、`i_dashboard.proto` 自己声明 message，而它们不是 CRUD 资源。→ domain 那一处加完就够了。
 
@@ -119,7 +119,7 @@ Create/Update 两处**仍然是 `SetNillable<字段>(…)`，只是实参要过�
 | 点「接口同步」/ 改 Api 表 | 闸门按 `(path, method)` 建行（`internal/service/api_service.go:200-201` 遍历 `doc.Paths.Map()` × operations）。加字段不改路径，也就不新增任何一行。**只有新端点才需要同步**，且那是 04 章的事。 |
 | 配字段权限 | 字段黑名单是 opt-in 的数据库行，语义写在 schema 注释里：`未配置 = 全字段可见`（`ent/schema/role_field_permission.go:13-15`，`field_name` 存 proto 的 `json_name`）。新字段默认对所有人可读可写。 |
 | 加菜单 / 走菜单同步 | 字段进的是已有页面，没有新路由。 |
-| 写 SQL、找迁移脚本 | §1 第 1 条。`backend/sql/` 下只有演示数据。 |
+| 写 SQL、找迁移脚本 | ~~§1 第 1 条~~ **此条已随 goose 迁移机制作废（2026-10-21）**：加列现在**必须**写迁移 SQL（`internal/data/migrations/000NN_*.sql`，就一条 `ALTER TABLE ... ADD COLUMN ... NULL`），见 §1 第 1 条。`backend/sql/` 下仍然只有演示数据。 |
 | 手改 `src/api/generated/` | 生成物，下一次 `make ts` 就没了。 |
 
 ---
@@ -155,7 +155,8 @@ Create/Update 两处**仍然是 `SetNillable<字段>(…)`，只是实参要过�
 
 ## 6. 验收清单
 
-- [ ] **重启**后端（改 schema 后热重载不算，自动迁移只在启动链里跑）；
+- [ ] **迁移 SQL 已随本次改动提交**（`internal/data/migrations/000NN_*.sql`，与 schema 同一 commit，铁律 6）；
+- [ ] **重启**后端（`migrate: true` 时启动链自动 `goose up` 应用迁移；改 schema 而没写迁移文件的话，重启后库里不会有新列，CI 漂移守卫也会红）；
 - [ ] 库里出现新列（`psql`/客户端看 `sys_dict_types`），且**旧行取的是默认值而非报错**；
 - [ ] <http://localhost:7788/docs> 里该资源的 schema 出现这个字段，`json_name` 与你前端写的键一致；
 - [ ] 建一条带新字段的记录 → 列表能看到 → **编辑时只改另一个字段** → 回来看新字段没被清零（这一条专杀 §5.1）；

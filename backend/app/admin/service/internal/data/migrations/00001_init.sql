@@ -1,0 +1,13079 @@
+-- 数据库结构基线 v1（00001_init.sql）
+-- 来源: 2026-10-21 从参考库（gwa，Ent 自动迁移产物）pg_dump --schema-only 导出。
+-- 剔除了运行期动态 DDL 管理的对象: sys_ai_chunks.embedding 向量列由
+-- data.EnsureVectorColumnDim 按需补建（设计文档 §9 已登记的例外），不进版本化基线。
+-- 本文件已合入即冻结: 禁止手工修改其内容，后续结构变更一律新增 000NN_<module>_<what>.sql。
+
+-- +goose Up
+
+--
+-- PostgreSQL database dump
+--
+
+
+-- Dumped from database version 16.15 (Debian 16.15-1.pgdg12+2)
+-- Dumped by pg_dump version 16.15 (Debian 16.15-1.pgdg12+2)
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+--
+-- Name: vector; Type: EXTENSION; Schema: -; Owner: -
+--
+
+CREATE EXTENSION IF NOT EXISTS vector WITH SCHEMA public;
+
+
+--
+-- Name: EXTENSION vector; Type: COMMENT; Schema: -; Owner: -
+--
+
+COMMENT ON EXTENSION vector IS 'vector data type and ivfflat and hnsw access methods';
+
+
+SET default_tablespace = '';
+
+SET default_table_access_method = heap;
+
+--
+-- Name: files; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.files (
+    id bigint NOT NULL,
+    created_at timestamp with time zone,
+    updated_at timestamp with time zone,
+    deleted_at timestamp with time zone,
+    created_by bigint,
+    updated_by bigint,
+    deleted_by bigint,
+    remark character varying,
+    tenant_id bigint DEFAULT 0,
+    provider character varying DEFAULT 'MINIO'::character varying,
+    bucket_name character varying,
+    file_directory character varying,
+    file_guid character varying,
+    save_file_name character varying,
+    file_name character varying,
+    extension character varying,
+    size bigint,
+    size_format character varying,
+    link_url character varying,
+    content_hash character varying
+);
+
+
+--
+-- Name: TABLE files; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.files IS '文件表';
+
+
+--
+-- Name: COLUMN files.id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.files.id IS 'id';
+
+
+--
+-- Name: COLUMN files.created_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.files.created_at IS '创建时间';
+
+
+--
+-- Name: COLUMN files.updated_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.files.updated_at IS '更新时间';
+
+
+--
+-- Name: COLUMN files.deleted_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.files.deleted_at IS '删除时间';
+
+
+--
+-- Name: COLUMN files.created_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.files.created_by IS '创建者ID';
+
+
+--
+-- Name: COLUMN files.updated_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.files.updated_by IS '更新者ID';
+
+
+--
+-- Name: COLUMN files.deleted_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.files.deleted_by IS '删除者ID';
+
+
+--
+-- Name: COLUMN files.remark; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.files.remark IS '备注';
+
+
+--
+-- Name: COLUMN files.tenant_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.files.tenant_id IS '租户ID';
+
+
+--
+-- Name: COLUMN files.provider; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.files.provider IS 'OSS供应商';
+
+
+--
+-- Name: COLUMN files.bucket_name; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.files.bucket_name IS '存储桶名称';
+
+
+--
+-- Name: COLUMN files.file_directory; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.files.file_directory IS '文件目录';
+
+
+--
+-- Name: COLUMN files.file_guid; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.files.file_guid IS '文件Guid';
+
+
+--
+-- Name: COLUMN files.save_file_name; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.files.save_file_name IS '实际存储文件名';
+
+
+--
+-- Name: COLUMN files.file_name; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.files.file_name IS '原始文件名';
+
+
+--
+-- Name: COLUMN files.extension; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.files.extension IS '文件扩展名';
+
+
+--
+-- Name: COLUMN files.size; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.files.size IS '文件长度，单位：字节';
+
+
+--
+-- Name: COLUMN files.size_format; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.files.size_format IS '格式化后的文件长度字符串';
+
+
+--
+-- Name: COLUMN files.link_url; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.files.link_url IS '链接地址';
+
+
+--
+-- Name: COLUMN files.content_hash; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.files.content_hash IS '文件内容hash值，防止上传重复文件';
+
+
+--
+-- Name: files_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.files ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.files_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: internal_message_categories; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.internal_message_categories (
+    id bigint NOT NULL,
+    created_at timestamp with time zone,
+    updated_at timestamp with time zone,
+    deleted_at timestamp with time zone,
+    created_by bigint,
+    updated_by bigint,
+    deleted_by bigint,
+    is_enabled boolean DEFAULT true,
+    sort_order bigint DEFAULT 0,
+    remark character varying,
+    tenant_id bigint DEFAULT 0,
+    name character varying,
+    code character varying,
+    icon_url character varying
+);
+
+
+--
+-- Name: TABLE internal_message_categories; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.internal_message_categories IS '站内信消息分类表';
+
+
+--
+-- Name: COLUMN internal_message_categories.id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.internal_message_categories.id IS 'id';
+
+
+--
+-- Name: COLUMN internal_message_categories.created_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.internal_message_categories.created_at IS '创建时间';
+
+
+--
+-- Name: COLUMN internal_message_categories.updated_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.internal_message_categories.updated_at IS '更新时间';
+
+
+--
+-- Name: COLUMN internal_message_categories.deleted_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.internal_message_categories.deleted_at IS '删除时间';
+
+
+--
+-- Name: COLUMN internal_message_categories.created_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.internal_message_categories.created_by IS '创建者ID';
+
+
+--
+-- Name: COLUMN internal_message_categories.updated_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.internal_message_categories.updated_by IS '更新者ID';
+
+
+--
+-- Name: COLUMN internal_message_categories.deleted_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.internal_message_categories.deleted_by IS '删除者ID';
+
+
+--
+-- Name: COLUMN internal_message_categories.is_enabled; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.internal_message_categories.is_enabled IS '是否启用';
+
+
+--
+-- Name: COLUMN internal_message_categories.sort_order; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.internal_message_categories.sort_order IS '排序值（越小越靠前）';
+
+
+--
+-- Name: COLUMN internal_message_categories.remark; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.internal_message_categories.remark IS '备注';
+
+
+--
+-- Name: COLUMN internal_message_categories.tenant_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.internal_message_categories.tenant_id IS '租户ID';
+
+
+--
+-- Name: COLUMN internal_message_categories.name; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.internal_message_categories.name IS '名称';
+
+
+--
+-- Name: COLUMN internal_message_categories.code; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.internal_message_categories.code IS '编码';
+
+
+--
+-- Name: COLUMN internal_message_categories.icon_url; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.internal_message_categories.icon_url IS '图标URL';
+
+
+--
+-- Name: internal_message_categories_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.internal_message_categories ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.internal_message_categories_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: internal_message_recipients; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.internal_message_recipients (
+    id bigint NOT NULL,
+    created_at timestamp with time zone,
+    updated_at timestamp with time zone,
+    deleted_at timestamp with time zone,
+    tenant_id bigint DEFAULT 0,
+    message_id bigint,
+    recipient_user_id bigint,
+    status character varying,
+    received_at timestamp with time zone,
+    read_at timestamp with time zone
+);
+
+
+--
+-- Name: TABLE internal_message_recipients; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.internal_message_recipients IS '站内信消息用户接收信息表';
+
+
+--
+-- Name: COLUMN internal_message_recipients.id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.internal_message_recipients.id IS 'id';
+
+
+--
+-- Name: COLUMN internal_message_recipients.created_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.internal_message_recipients.created_at IS '创建时间';
+
+
+--
+-- Name: COLUMN internal_message_recipients.updated_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.internal_message_recipients.updated_at IS '更新时间';
+
+
+--
+-- Name: COLUMN internal_message_recipients.deleted_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.internal_message_recipients.deleted_at IS '删除时间';
+
+
+--
+-- Name: COLUMN internal_message_recipients.tenant_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.internal_message_recipients.tenant_id IS '租户ID';
+
+
+--
+-- Name: COLUMN internal_message_recipients.message_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.internal_message_recipients.message_id IS '站内信内容ID';
+
+
+--
+-- Name: COLUMN internal_message_recipients.recipient_user_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.internal_message_recipients.recipient_user_id IS '接收者用户ID';
+
+
+--
+-- Name: COLUMN internal_message_recipients.status; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.internal_message_recipients.status IS '消息状态';
+
+
+--
+-- Name: COLUMN internal_message_recipients.received_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.internal_message_recipients.received_at IS '消息到达用户收件箱的时间';
+
+
+--
+-- Name: COLUMN internal_message_recipients.read_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.internal_message_recipients.read_at IS '用户阅读消息的时间';
+
+
+--
+-- Name: internal_message_recipients_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.internal_message_recipients ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.internal_message_recipients_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: internal_messages; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.internal_messages (
+    id bigint NOT NULL,
+    created_at timestamp with time zone,
+    updated_at timestamp with time zone,
+    deleted_at timestamp with time zone,
+    created_by bigint,
+    updated_by bigint,
+    deleted_by bigint,
+    tenant_id bigint DEFAULT 0,
+    title character varying,
+    content character varying,
+    sender_id bigint NOT NULL,
+    category_id bigint,
+    status character varying DEFAULT 'DRAFT'::character varying,
+    type character varying DEFAULT 'NOTIFICATION'::character varying
+);
+
+
+--
+-- Name: TABLE internal_messages; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.internal_messages IS '站内信消息表';
+
+
+--
+-- Name: COLUMN internal_messages.id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.internal_messages.id IS 'id';
+
+
+--
+-- Name: COLUMN internal_messages.created_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.internal_messages.created_at IS '创建时间';
+
+
+--
+-- Name: COLUMN internal_messages.updated_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.internal_messages.updated_at IS '更新时间';
+
+
+--
+-- Name: COLUMN internal_messages.deleted_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.internal_messages.deleted_at IS '删除时间';
+
+
+--
+-- Name: COLUMN internal_messages.created_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.internal_messages.created_by IS '创建者ID';
+
+
+--
+-- Name: COLUMN internal_messages.updated_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.internal_messages.updated_by IS '更新者ID';
+
+
+--
+-- Name: COLUMN internal_messages.deleted_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.internal_messages.deleted_by IS '删除者ID';
+
+
+--
+-- Name: COLUMN internal_messages.tenant_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.internal_messages.tenant_id IS '租户ID';
+
+
+--
+-- Name: COLUMN internal_messages.title; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.internal_messages.title IS '消息标题';
+
+
+--
+-- Name: COLUMN internal_messages.content; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.internal_messages.content IS '消息内容';
+
+
+--
+-- Name: COLUMN internal_messages.sender_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.internal_messages.sender_id IS '发送者用户ID';
+
+
+--
+-- Name: COLUMN internal_messages.category_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.internal_messages.category_id IS '分类ID';
+
+
+--
+-- Name: COLUMN internal_messages.status; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.internal_messages.status IS '消息状态';
+
+
+--
+-- Name: COLUMN internal_messages.type; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.internal_messages.type IS '消息类型';
+
+
+--
+-- Name: internal_messages_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.internal_messages ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.internal_messages_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: monitor_alert_rules; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.monitor_alert_rules (
+    id bigint NOT NULL,
+    created_at timestamp with time zone,
+    updated_at timestamp with time zone,
+    deleted_at timestamp with time zone,
+    created_by bigint,
+    updated_by bigint,
+    deleted_by bigint,
+    remark character varying,
+    name character varying,
+    metric character varying,
+    op character varying,
+    threshold double precision,
+    cooldown_minutes bigint DEFAULT 30 NOT NULL,
+    channel character varying,
+    target character varying,
+    is_enabled boolean DEFAULT true NOT NULL,
+    last_firing boolean DEFAULT false NOT NULL,
+    last_value double precision,
+    last_alerted_at timestamp with time zone
+);
+
+
+--
+-- Name: TABLE monitor_alert_rules; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.monitor_alert_rules IS '监控告警规则表';
+
+
+--
+-- Name: COLUMN monitor_alert_rules.id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.monitor_alert_rules.id IS 'id';
+
+
+--
+-- Name: COLUMN monitor_alert_rules.created_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.monitor_alert_rules.created_at IS '创建时间';
+
+
+--
+-- Name: COLUMN monitor_alert_rules.updated_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.monitor_alert_rules.updated_at IS '更新时间';
+
+
+--
+-- Name: COLUMN monitor_alert_rules.deleted_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.monitor_alert_rules.deleted_at IS '删除时间';
+
+
+--
+-- Name: COLUMN monitor_alert_rules.created_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.monitor_alert_rules.created_by IS '创建者ID';
+
+
+--
+-- Name: COLUMN monitor_alert_rules.updated_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.monitor_alert_rules.updated_by IS '更新者ID';
+
+
+--
+-- Name: COLUMN monitor_alert_rules.deleted_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.monitor_alert_rules.deleted_by IS '删除者ID';
+
+
+--
+-- Name: COLUMN monitor_alert_rules.remark; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.monitor_alert_rules.remark IS '备注';
+
+
+--
+-- Name: COLUMN monitor_alert_rules.name; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.monitor_alert_rules.name IS '规则名称';
+
+
+--
+-- Name: COLUMN monitor_alert_rules.metric; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.monitor_alert_rules.metric IS '监控指标';
+
+
+--
+-- Name: COLUMN monitor_alert_rules.op; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.monitor_alert_rules.op IS '比较运算（DB_PING_FAIL 忽略本列）';
+
+
+--
+-- Name: COLUMN monitor_alert_rules.threshold; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.monitor_alert_rules.threshold IS '阈值（DB_PING_FAIL 忽略本列）';
+
+
+--
+-- Name: COLUMN monitor_alert_rules.cooldown_minutes; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.monitor_alert_rules.cooldown_minutes IS '重复告警冷却（分钟）：持续越限时按此间隔重发';
+
+
+--
+-- Name: COLUMN monitor_alert_rules.channel; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.monitor_alert_rules.channel IS '告警渠道（显式指定，不经路由表）';
+
+
+--
+-- Name: COLUMN monitor_alert_rules.target; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.monitor_alert_rules.target IS '投递目标：EMAIL 为收件地址，WEBHOOK 为回调 URL（显式指定）';
+
+
+--
+-- Name: COLUMN monitor_alert_rules.is_enabled; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.monitor_alert_rules.is_enabled IS '是否启用';
+
+
+--
+-- Name: COLUMN monitor_alert_rules.last_firing; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.monitor_alert_rules.last_firing IS '上次扫描是否越限（用于区分「首次触发」与「恢复」）';
+
+
+--
+-- Name: COLUMN monitor_alert_rules.last_value; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.monitor_alert_rules.last_value IS '上次扫描的指标值';
+
+
+--
+-- Name: COLUMN monitor_alert_rules.last_alerted_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.monitor_alert_rules.last_alerted_at IS '上次告警时间（冷却判断锚）';
+
+
+--
+-- Name: monitor_alert_rules_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.monitor_alert_rules ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.monitor_alert_rules_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: notification_preferences; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.notification_preferences (
+    id bigint NOT NULL,
+    created_at timestamp with time zone,
+    updated_at timestamp with time zone,
+    deleted_at timestamp with time zone,
+    created_by bigint,
+    updated_by bigint,
+    deleted_by bigint,
+    user_id bigint NOT NULL,
+    quiet_enabled boolean DEFAULT false NOT NULL,
+    quiet_start_minute integer DEFAULT 1320 NOT NULL,
+    quiet_end_minute integer DEFAULT 480 NOT NULL,
+    muted_category_ids jsonb
+);
+
+
+--
+-- Name: TABLE notification_preferences; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.notification_preferences IS '用户通知偏好表（静音时段 + 分类退订）';
+
+
+--
+-- Name: COLUMN notification_preferences.id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.notification_preferences.id IS 'id';
+
+
+--
+-- Name: COLUMN notification_preferences.created_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.notification_preferences.created_at IS '创建时间';
+
+
+--
+-- Name: COLUMN notification_preferences.updated_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.notification_preferences.updated_at IS '更新时间';
+
+
+--
+-- Name: COLUMN notification_preferences.deleted_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.notification_preferences.deleted_at IS '删除时间';
+
+
+--
+-- Name: COLUMN notification_preferences.created_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.notification_preferences.created_by IS '创建者ID';
+
+
+--
+-- Name: COLUMN notification_preferences.updated_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.notification_preferences.updated_by IS '更新者ID';
+
+
+--
+-- Name: COLUMN notification_preferences.deleted_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.notification_preferences.deleted_by IS '删除者ID';
+
+
+--
+-- Name: COLUMN notification_preferences.user_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.notification_preferences.user_id IS '用户ID（唯一，每用户一行）';
+
+
+--
+-- Name: COLUMN notification_preferences.quiet_enabled; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.notification_preferences.quiet_enabled IS '是否启用实时推送静音时段（只抑制 SSE 实时推送，收件行照常落库）';
+
+
+--
+-- Name: COLUMN notification_preferences.quiet_start_minute; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.notification_preferences.quiet_start_minute IS '静音开始：自当日 00:00 起的分钟数（0-1439）';
+
+
+--
+-- Name: COLUMN notification_preferences.quiet_end_minute; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.notification_preferences.quiet_end_minute IS '静音结束：自当日 00:00 起的分钟数（0-1439）；跨零点窗口 start > end 合法';
+
+
+--
+-- Name: COLUMN notification_preferences.muted_category_ids; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.notification_preferences.muted_category_ids IS '退订的站内信分类ID列表（仅约束全员广播，点对点定向发送不受影响）';
+
+
+--
+-- Name: notification_preferences_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.notification_preferences ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.notification_preferences_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: notification_templates; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.notification_templates (
+    id bigint NOT NULL,
+    created_at timestamp with time zone,
+    updated_at timestamp with time zone,
+    deleted_at timestamp with time zone,
+    created_by bigint,
+    updated_by bigint,
+    deleted_by bigint,
+    is_enabled boolean DEFAULT true,
+    remark character varying,
+    name character varying,
+    code character varying,
+    title_template character varying,
+    content_template character varying
+);
+
+
+--
+-- Name: TABLE notification_templates; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.notification_templates IS '通知模板表';
+
+
+--
+-- Name: COLUMN notification_templates.id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.notification_templates.id IS 'id';
+
+
+--
+-- Name: COLUMN notification_templates.created_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.notification_templates.created_at IS '创建时间';
+
+
+--
+-- Name: COLUMN notification_templates.updated_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.notification_templates.updated_at IS '更新时间';
+
+
+--
+-- Name: COLUMN notification_templates.deleted_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.notification_templates.deleted_at IS '删除时间';
+
+
+--
+-- Name: COLUMN notification_templates.created_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.notification_templates.created_by IS '创建者ID';
+
+
+--
+-- Name: COLUMN notification_templates.updated_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.notification_templates.updated_by IS '更新者ID';
+
+
+--
+-- Name: COLUMN notification_templates.deleted_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.notification_templates.deleted_by IS '删除者ID';
+
+
+--
+-- Name: COLUMN notification_templates.is_enabled; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.notification_templates.is_enabled IS '是否启用';
+
+
+--
+-- Name: COLUMN notification_templates.remark; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.notification_templates.remark IS '备注';
+
+
+--
+-- Name: COLUMN notification_templates.name; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.notification_templates.name IS '模板名称';
+
+
+--
+-- Name: COLUMN notification_templates.code; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.notification_templates.code IS '模板编码（全局唯一，发送方以 template_code 引用）';
+
+
+--
+-- Name: COLUMN notification_templates.title_template; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.notification_templates.title_template IS '标题模板，支持 {{var}} 占位符';
+
+
+--
+-- Name: COLUMN notification_templates.content_template; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.notification_templates.content_template IS '正文模板，支持 {{var}} 占位符';
+
+
+--
+-- Name: notification_templates_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.notification_templates ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.notification_templates_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: sys_access_keys; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.sys_access_keys (
+    id bigint NOT NULL,
+    created_at timestamp with time zone,
+    updated_at timestamp with time zone,
+    deleted_at timestamp with time zone,
+    created_by bigint,
+    updated_by bigint,
+    deleted_by bigint,
+    status character varying DEFAULT 'ON'::character varying NOT NULL,
+    tenant_id bigint DEFAULT 0,
+    name character varying,
+    access_key character varying,
+    secret_hash character varying,
+    expires_at timestamp with time zone,
+    last_used_at timestamp with time zone
+);
+
+
+--
+-- Name: TABLE sys_access_keys; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.sys_access_keys IS 'OpenAPI访问凭证表';
+
+
+--
+-- Name: COLUMN sys_access_keys.id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_access_keys.id IS 'id';
+
+
+--
+-- Name: COLUMN sys_access_keys.created_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_access_keys.created_at IS '创建时间';
+
+
+--
+-- Name: COLUMN sys_access_keys.updated_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_access_keys.updated_at IS '更新时间';
+
+
+--
+-- Name: COLUMN sys_access_keys.deleted_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_access_keys.deleted_at IS '删除时间';
+
+
+--
+-- Name: COLUMN sys_access_keys.created_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_access_keys.created_by IS '创建者ID';
+
+
+--
+-- Name: COLUMN sys_access_keys.updated_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_access_keys.updated_by IS '更新者ID';
+
+
+--
+-- Name: COLUMN sys_access_keys.deleted_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_access_keys.deleted_by IS '删除者ID';
+
+
+--
+-- Name: COLUMN sys_access_keys.status; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_access_keys.status IS '状态';
+
+
+--
+-- Name: COLUMN sys_access_keys.tenant_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_access_keys.tenant_id IS '租户ID';
+
+
+--
+-- Name: COLUMN sys_access_keys.name; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_access_keys.name IS '凭证名称（用途说明）';
+
+
+--
+-- Name: COLUMN sys_access_keys.access_key; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_access_keys.access_key IS '访问键（AK，公开标识）';
+
+
+--
+-- Name: COLUMN sys_access_keys.secret_hash; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_access_keys.secret_hash IS '密钥摘要（SHA-256 hex，明文不落库）';
+
+
+--
+-- Name: COLUMN sys_access_keys.expires_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_access_keys.expires_at IS '过期时间（空表示长期有效）';
+
+
+--
+-- Name: COLUMN sys_access_keys.last_used_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_access_keys.last_used_at IS '最近一次令牌交换时间';
+
+
+--
+-- Name: sys_access_keys_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.sys_access_keys ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.sys_access_keys_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: sys_ai_agent_apps; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.sys_ai_agent_apps (
+    id bigint NOT NULL,
+    created_at timestamp with time zone,
+    updated_at timestamp with time zone,
+    deleted_at timestamp with time zone,
+    created_by bigint,
+    updated_by bigint,
+    deleted_by bigint,
+    tenant_id bigint DEFAULT 0,
+    name character varying NOT NULL,
+    description character varying,
+    graph text,
+    enabled boolean DEFAULT true NOT NULL
+);
+
+
+--
+-- Name: TABLE sys_ai_agent_apps; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.sys_ai_agent_apps IS 'AI Agent 编排应用';
+
+
+--
+-- Name: COLUMN sys_ai_agent_apps.id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_agent_apps.id IS 'id';
+
+
+--
+-- Name: COLUMN sys_ai_agent_apps.created_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_agent_apps.created_at IS '创建时间';
+
+
+--
+-- Name: COLUMN sys_ai_agent_apps.updated_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_agent_apps.updated_at IS '更新时间';
+
+
+--
+-- Name: COLUMN sys_ai_agent_apps.deleted_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_agent_apps.deleted_at IS '删除时间';
+
+
+--
+-- Name: COLUMN sys_ai_agent_apps.created_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_agent_apps.created_by IS '创建者ID';
+
+
+--
+-- Name: COLUMN sys_ai_agent_apps.updated_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_agent_apps.updated_by IS '更新者ID';
+
+
+--
+-- Name: COLUMN sys_ai_agent_apps.deleted_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_agent_apps.deleted_by IS '删除者ID';
+
+
+--
+-- Name: COLUMN sys_ai_agent_apps.tenant_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_agent_apps.tenant_id IS '租户ID';
+
+
+--
+-- Name: COLUMN sys_ai_agent_apps.name; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_agent_apps.name IS '应用名称（租户内唯一）';
+
+
+--
+-- Name: COLUMN sys_ai_agent_apps.description; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_agent_apps.description IS '应用描述';
+
+
+--
+-- Name: COLUMN sys_ai_agent_apps.graph; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_agent_apps.graph IS '图 DSL（JSON：nodes/edges，五种节点）';
+
+
+--
+-- Name: COLUMN sys_ai_agent_apps.enabled; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_agent_apps.enabled IS '是否启用（停用的应用拒绝运行）';
+
+
+--
+-- Name: sys_ai_agent_apps_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.sys_ai_agent_apps ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.sys_ai_agent_apps_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: sys_ai_agent_runs; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.sys_ai_agent_runs (
+    id bigint NOT NULL,
+    created_at timestamp with time zone,
+    updated_at timestamp with time zone,
+    deleted_at timestamp with time zone,
+    created_by bigint,
+    updated_by bigint,
+    deleted_by bigint,
+    tenant_id bigint DEFAULT 0,
+    app_id bigint,
+    status character varying DEFAULT 'RUNNING'::character varying NOT NULL,
+    input text,
+    output text,
+    error text,
+    trace text NOT NULL,
+    prompt_tokens bigint DEFAULT 0 NOT NULL,
+    completion_tokens bigint DEFAULT 0 NOT NULL,
+    total_tokens bigint DEFAULT 0 NOT NULL,
+    duration_ms bigint DEFAULT 0 NOT NULL
+);
+
+
+--
+-- Name: TABLE sys_ai_agent_runs; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.sys_ai_agent_runs IS 'AI Agent 运行记录';
+
+
+--
+-- Name: COLUMN sys_ai_agent_runs.id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_agent_runs.id IS 'id';
+
+
+--
+-- Name: COLUMN sys_ai_agent_runs.created_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_agent_runs.created_at IS '创建时间';
+
+
+--
+-- Name: COLUMN sys_ai_agent_runs.updated_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_agent_runs.updated_at IS '更新时间';
+
+
+--
+-- Name: COLUMN sys_ai_agent_runs.deleted_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_agent_runs.deleted_at IS '删除时间';
+
+
+--
+-- Name: COLUMN sys_ai_agent_runs.created_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_agent_runs.created_by IS '创建者ID';
+
+
+--
+-- Name: COLUMN sys_ai_agent_runs.updated_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_agent_runs.updated_by IS '更新者ID';
+
+
+--
+-- Name: COLUMN sys_ai_agent_runs.deleted_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_agent_runs.deleted_by IS '删除者ID';
+
+
+--
+-- Name: COLUMN sys_ai_agent_runs.tenant_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_agent_runs.tenant_id IS '租户ID';
+
+
+--
+-- Name: COLUMN sys_ai_agent_runs.app_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_agent_runs.app_id IS '应用ID';
+
+
+--
+-- Name: COLUMN sys_ai_agent_runs.status; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_agent_runs.status IS '运行状态';
+
+
+--
+-- Name: COLUMN sys_ai_agent_runs.input; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_agent_runs.input IS '运行入参 JSON（start 节点声明的变量）';
+
+
+--
+-- Name: COLUMN sys_ai_agent_runs.output; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_agent_runs.output IS '产出（到达的 end 节点渲染值）';
+
+
+--
+-- Name: COLUMN sys_ai_agent_runs.error; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_agent_runs.error IS '失败原因';
+
+
+--
+-- Name: COLUMN sys_ai_agent_runs.trace; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_agent_runs.trace IS '逐节点执行轨迹 JSON';
+
+
+--
+-- Name: COLUMN sys_ai_agent_runs.prompt_tokens; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_agent_runs.prompt_tokens IS '输入 token 合计';
+
+
+--
+-- Name: COLUMN sys_ai_agent_runs.completion_tokens; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_agent_runs.completion_tokens IS '输出 token 合计';
+
+
+--
+-- Name: COLUMN sys_ai_agent_runs.total_tokens; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_agent_runs.total_tokens IS '总 token 合计';
+
+
+--
+-- Name: COLUMN sys_ai_agent_runs.duration_ms; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_agent_runs.duration_ms IS '总耗时（毫秒）';
+
+
+--
+-- Name: sys_ai_agent_runs_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.sys_ai_agent_runs ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.sys_ai_agent_runs_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: sys_ai_chunks; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.sys_ai_chunks (
+    id bigint NOT NULL,
+    created_at timestamp with time zone,
+    tenant_id bigint DEFAULT 0,
+    content text,
+    chunk_index bigint,
+    doc_id bigint
+);
+
+
+--
+-- Name: TABLE sys_ai_chunks; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.sys_ai_chunks IS 'AI 知识库切片';
+
+
+--
+-- Name: COLUMN sys_ai_chunks.id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_chunks.id IS 'id';
+
+
+--
+-- Name: COLUMN sys_ai_chunks.created_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_chunks.created_at IS '创建时间';
+
+
+--
+-- Name: COLUMN sys_ai_chunks.tenant_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_chunks.tenant_id IS '租户ID';
+
+
+--
+-- Name: COLUMN sys_ai_chunks.content; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_chunks.content IS '切片文本';
+
+
+--
+-- Name: COLUMN sys_ai_chunks.chunk_index; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_chunks.chunk_index IS '切片序号';
+
+
+--
+-- Name: COLUMN sys_ai_chunks.doc_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_chunks.doc_id IS '所属文档ID（edge 外键）';
+
+
+--
+-- Name: sys_ai_chunks_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.sys_ai_chunks ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.sys_ai_chunks_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: sys_ai_conversations; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.sys_ai_conversations (
+    id bigint NOT NULL,
+    created_at timestamp with time zone,
+    updated_at timestamp with time zone,
+    deleted_at timestamp with time zone,
+    created_by bigint,
+    updated_by bigint,
+    deleted_by bigint,
+    tenant_id bigint DEFAULT 0,
+    title character varying,
+    provider_id bigint,
+    user_id bigint,
+    last_message_at timestamp with time zone
+);
+
+
+--
+-- Name: TABLE sys_ai_conversations; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.sys_ai_conversations IS 'AI 对话会话';
+
+
+--
+-- Name: COLUMN sys_ai_conversations.id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_conversations.id IS 'id';
+
+
+--
+-- Name: COLUMN sys_ai_conversations.created_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_conversations.created_at IS '创建时间';
+
+
+--
+-- Name: COLUMN sys_ai_conversations.updated_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_conversations.updated_at IS '更新时间';
+
+
+--
+-- Name: COLUMN sys_ai_conversations.deleted_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_conversations.deleted_at IS '删除时间';
+
+
+--
+-- Name: COLUMN sys_ai_conversations.created_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_conversations.created_by IS '创建者ID';
+
+
+--
+-- Name: COLUMN sys_ai_conversations.updated_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_conversations.updated_by IS '更新者ID';
+
+
+--
+-- Name: COLUMN sys_ai_conversations.deleted_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_conversations.deleted_by IS '删除者ID';
+
+
+--
+-- Name: COLUMN sys_ai_conversations.tenant_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_conversations.tenant_id IS '租户ID';
+
+
+--
+-- Name: COLUMN sys_ai_conversations.title; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_conversations.title IS '会话标题';
+
+
+--
+-- Name: COLUMN sys_ai_conversations.provider_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_conversations.provider_id IS '会话使用的提供商ID（0=未指定）';
+
+
+--
+-- Name: COLUMN sys_ai_conversations.user_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_conversations.user_id IS '归属用户ID';
+
+
+--
+-- Name: COLUMN sys_ai_conversations.last_message_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_conversations.last_message_at IS '最近一条消息时间';
+
+
+--
+-- Name: sys_ai_conversations_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.sys_ai_conversations ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.sys_ai_conversations_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: sys_ai_docs; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.sys_ai_docs (
+    id bigint NOT NULL,
+    created_at timestamp with time zone,
+    updated_at timestamp with time zone,
+    deleted_at timestamp with time zone,
+    created_by bigint,
+    updated_by bigint,
+    deleted_by bigint,
+    tenant_id bigint DEFAULT 0,
+    name character varying,
+    chunk_count bigint,
+    status character varying,
+    error_message text,
+    user_id bigint,
+    base_id bigint
+);
+
+
+--
+-- Name: TABLE sys_ai_docs; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.sys_ai_docs IS 'AI 知识库文档';
+
+
+--
+-- Name: COLUMN sys_ai_docs.id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_docs.id IS 'id';
+
+
+--
+-- Name: COLUMN sys_ai_docs.created_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_docs.created_at IS '创建时间';
+
+
+--
+-- Name: COLUMN sys_ai_docs.updated_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_docs.updated_at IS '更新时间';
+
+
+--
+-- Name: COLUMN sys_ai_docs.deleted_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_docs.deleted_at IS '删除时间';
+
+
+--
+-- Name: COLUMN sys_ai_docs.created_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_docs.created_by IS '创建者ID';
+
+
+--
+-- Name: COLUMN sys_ai_docs.updated_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_docs.updated_by IS '更新者ID';
+
+
+--
+-- Name: COLUMN sys_ai_docs.deleted_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_docs.deleted_by IS '删除者ID';
+
+
+--
+-- Name: COLUMN sys_ai_docs.tenant_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_docs.tenant_id IS '租户ID';
+
+
+--
+-- Name: COLUMN sys_ai_docs.name; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_docs.name IS '文档名称';
+
+
+--
+-- Name: COLUMN sys_ai_docs.chunk_count; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_docs.chunk_count IS '切片数';
+
+
+--
+-- Name: COLUMN sys_ai_docs.status; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_docs.status IS '状态：READY/FAILED';
+
+
+--
+-- Name: COLUMN sys_ai_docs.error_message; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_docs.error_message IS '失败原因';
+
+
+--
+-- Name: COLUMN sys_ai_docs.user_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_docs.user_id IS '上传人用户ID';
+
+
+--
+-- Name: COLUMN sys_ai_docs.base_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_docs.base_id IS '所属知识库ID（edge 外键）';
+
+
+--
+-- Name: sys_ai_docs_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.sys_ai_docs ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.sys_ai_docs_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: sys_ai_knowledge_bases; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.sys_ai_knowledge_bases (
+    id bigint NOT NULL,
+    created_at timestamp with time zone,
+    updated_at timestamp with time zone,
+    deleted_at timestamp with time zone,
+    created_by bigint,
+    updated_by bigint,
+    deleted_by bigint,
+    tenant_id bigint DEFAULT 0,
+    name character varying,
+    description character varying,
+    provider_id bigint,
+    embedding_model character varying,
+    user_id bigint
+);
+
+
+--
+-- Name: TABLE sys_ai_knowledge_bases; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.sys_ai_knowledge_bases IS 'AI 知识库';
+
+
+--
+-- Name: COLUMN sys_ai_knowledge_bases.id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_knowledge_bases.id IS 'id';
+
+
+--
+-- Name: COLUMN sys_ai_knowledge_bases.created_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_knowledge_bases.created_at IS '创建时间';
+
+
+--
+-- Name: COLUMN sys_ai_knowledge_bases.updated_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_knowledge_bases.updated_at IS '更新时间';
+
+
+--
+-- Name: COLUMN sys_ai_knowledge_bases.deleted_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_knowledge_bases.deleted_at IS '删除时间';
+
+
+--
+-- Name: COLUMN sys_ai_knowledge_bases.created_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_knowledge_bases.created_by IS '创建者ID';
+
+
+--
+-- Name: COLUMN sys_ai_knowledge_bases.updated_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_knowledge_bases.updated_by IS '更新者ID';
+
+
+--
+-- Name: COLUMN sys_ai_knowledge_bases.deleted_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_knowledge_bases.deleted_by IS '删除者ID';
+
+
+--
+-- Name: COLUMN sys_ai_knowledge_bases.tenant_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_knowledge_bases.tenant_id IS '租户ID';
+
+
+--
+-- Name: COLUMN sys_ai_knowledge_bases.name; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_knowledge_bases.name IS '知识库名称';
+
+
+--
+-- Name: COLUMN sys_ai_knowledge_bases.description; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_knowledge_bases.description IS '描述';
+
+
+--
+-- Name: COLUMN sys_ai_knowledge_bases.provider_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_knowledge_bases.provider_id IS '向量化使用的模型提供商ID';
+
+
+--
+-- Name: COLUMN sys_ai_knowledge_bases.embedding_model; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_knowledge_bases.embedding_model IS 'embedding 模型名';
+
+
+--
+-- Name: COLUMN sys_ai_knowledge_bases.user_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_knowledge_bases.user_id IS '创建人用户ID';
+
+
+--
+-- Name: sys_ai_knowledge_bases_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.sys_ai_knowledge_bases ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.sys_ai_knowledge_bases_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: sys_ai_messages; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.sys_ai_messages (
+    id bigint NOT NULL,
+    created_at timestamp with time zone,
+    updated_at timestamp with time zone,
+    deleted_at timestamp with time zone,
+    created_by bigint,
+    updated_by bigint,
+    deleted_by bigint,
+    tenant_id bigint DEFAULT 0,
+    role character varying,
+    content text,
+    model_name character varying,
+    prompt_tokens bigint,
+    completion_tokens bigint,
+    duration_ms bigint,
+    error_message text,
+    user_id bigint,
+    conversation_id bigint
+);
+
+
+--
+-- Name: TABLE sys_ai_messages; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.sys_ai_messages IS 'AI 对话消息';
+
+
+--
+-- Name: COLUMN sys_ai_messages.id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_messages.id IS 'id';
+
+
+--
+-- Name: COLUMN sys_ai_messages.created_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_messages.created_at IS '创建时间';
+
+
+--
+-- Name: COLUMN sys_ai_messages.updated_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_messages.updated_at IS '更新时间';
+
+
+--
+-- Name: COLUMN sys_ai_messages.deleted_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_messages.deleted_at IS '删除时间';
+
+
+--
+-- Name: COLUMN sys_ai_messages.created_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_messages.created_by IS '创建者ID';
+
+
+--
+-- Name: COLUMN sys_ai_messages.updated_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_messages.updated_by IS '更新者ID';
+
+
+--
+-- Name: COLUMN sys_ai_messages.deleted_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_messages.deleted_by IS '删除者ID';
+
+
+--
+-- Name: COLUMN sys_ai_messages.tenant_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_messages.tenant_id IS '租户ID';
+
+
+--
+-- Name: COLUMN sys_ai_messages.role; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_messages.role IS '消息角色';
+
+
+--
+-- Name: COLUMN sys_ai_messages.content; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_messages.content IS '消息正文（Markdown）';
+
+
+--
+-- Name: COLUMN sys_ai_messages.model_name; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_messages.model_name IS '模型名称快照';
+
+
+--
+-- Name: COLUMN sys_ai_messages.prompt_tokens; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_messages.prompt_tokens IS '输入 token 数';
+
+
+--
+-- Name: COLUMN sys_ai_messages.completion_tokens; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_messages.completion_tokens IS '输出 token 数';
+
+
+--
+-- Name: COLUMN sys_ai_messages.duration_ms; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_messages.duration_ms IS '生成耗时（毫秒）';
+
+
+--
+-- Name: COLUMN sys_ai_messages.error_message; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_messages.error_message IS '生成失败原因';
+
+
+--
+-- Name: COLUMN sys_ai_messages.user_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_messages.user_id IS '归属用户ID';
+
+
+--
+-- Name: COLUMN sys_ai_messages.conversation_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_messages.conversation_id IS '所属会话ID（edge 外键）';
+
+
+--
+-- Name: sys_ai_messages_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.sys_ai_messages ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.sys_ai_messages_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: sys_ai_providers; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.sys_ai_providers (
+    id bigint NOT NULL,
+    created_at timestamp with time zone,
+    updated_at timestamp with time zone,
+    deleted_at timestamp with time zone,
+    created_by bigint,
+    updated_by bigint,
+    deleted_by bigint,
+    is_enabled boolean DEFAULT true,
+    name character varying,
+    model_type character varying,
+    model_name character varying,
+    base_url character varying,
+    organization character varying,
+    api_key character varying,
+    api_key_hint character varying,
+    local_host character varying,
+    local_port bigint,
+    timeout_seconds bigint,
+    system_prompt text,
+    is_default boolean DEFAULT false,
+    remark character varying
+);
+
+
+--
+-- Name: TABLE sys_ai_providers; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.sys_ai_providers IS 'AI 模型提供商';
+
+
+--
+-- Name: COLUMN sys_ai_providers.id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_providers.id IS 'id';
+
+
+--
+-- Name: COLUMN sys_ai_providers.created_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_providers.created_at IS '创建时间';
+
+
+--
+-- Name: COLUMN sys_ai_providers.updated_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_providers.updated_at IS '更新时间';
+
+
+--
+-- Name: COLUMN sys_ai_providers.deleted_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_providers.deleted_at IS '删除时间';
+
+
+--
+-- Name: COLUMN sys_ai_providers.created_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_providers.created_by IS '创建者ID';
+
+
+--
+-- Name: COLUMN sys_ai_providers.updated_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_providers.updated_by IS '更新者ID';
+
+
+--
+-- Name: COLUMN sys_ai_providers.deleted_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_providers.deleted_by IS '删除者ID';
+
+
+--
+-- Name: COLUMN sys_ai_providers.is_enabled; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_providers.is_enabled IS '是否启用';
+
+
+--
+-- Name: COLUMN sys_ai_providers.name; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_providers.name IS '提供商显示名称';
+
+
+--
+-- Name: COLUMN sys_ai_providers.model_type; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_providers.model_type IS '模型部署形态';
+
+
+--
+-- Name: COLUMN sys_ai_providers.model_name; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_providers.model_name IS '模型名称';
+
+
+--
+-- Name: COLUMN sys_ai_providers.base_url; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_providers.base_url IS '云端 OpenAI 兼容 API 地址';
+
+
+--
+-- Name: COLUMN sys_ai_providers.organization; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_providers.organization IS 'OpenAI Organization';
+
+
+--
+-- Name: COLUMN sys_ai_providers.api_key; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_providers.api_key IS 'API Key（AES-GCM 加密落库，enc: 前缀）';
+
+
+--
+-- Name: COLUMN sys_ai_providers.api_key_hint; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_providers.api_key_hint IS 'API Key 脱敏提示（如 sk-***abcd）';
+
+
+--
+-- Name: COLUMN sys_ai_providers.local_host; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_providers.local_host IS '本地模型主机';
+
+
+--
+-- Name: COLUMN sys_ai_providers.local_port; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_providers.local_port IS '本地模型端口';
+
+
+--
+-- Name: COLUMN sys_ai_providers.timeout_seconds; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_providers.timeout_seconds IS '连接超时秒数';
+
+
+--
+-- Name: COLUMN sys_ai_providers.system_prompt; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_providers.system_prompt IS '系统提示词';
+
+
+--
+-- Name: COLUMN sys_ai_providers.is_default; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_providers.is_default IS '是否默认提供商';
+
+
+--
+-- Name: COLUMN sys_ai_providers.remark; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_providers.remark IS '备注';
+
+
+--
+-- Name: sys_ai_providers_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.sys_ai_providers ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.sys_ai_providers_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: sys_ai_usage_logs; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.sys_ai_usage_logs (
+    id bigint NOT NULL,
+    created_at timestamp with time zone,
+    tenant_id bigint DEFAULT 0,
+    provider_id bigint,
+    conversation_id bigint,
+    user_id bigint,
+    model_name character varying,
+    prompt_tokens bigint,
+    completion_tokens bigint,
+    total_tokens bigint,
+    duration_ms bigint
+);
+
+
+--
+-- Name: TABLE sys_ai_usage_logs; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.sys_ai_usage_logs IS 'AI 调用用量流水';
+
+
+--
+-- Name: COLUMN sys_ai_usage_logs.id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_usage_logs.id IS 'id';
+
+
+--
+-- Name: COLUMN sys_ai_usage_logs.created_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_usage_logs.created_at IS '创建时间';
+
+
+--
+-- Name: COLUMN sys_ai_usage_logs.tenant_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_usage_logs.tenant_id IS '租户ID';
+
+
+--
+-- Name: COLUMN sys_ai_usage_logs.provider_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_usage_logs.provider_id IS '提供商ID';
+
+
+--
+-- Name: COLUMN sys_ai_usage_logs.conversation_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_usage_logs.conversation_id IS '会话ID（0=非对话调用）';
+
+
+--
+-- Name: COLUMN sys_ai_usage_logs.user_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_usage_logs.user_id IS '发起用户ID';
+
+
+--
+-- Name: COLUMN sys_ai_usage_logs.model_name; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_usage_logs.model_name IS '模型名称';
+
+
+--
+-- Name: COLUMN sys_ai_usage_logs.prompt_tokens; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_usage_logs.prompt_tokens IS '输入 token 数';
+
+
+--
+-- Name: COLUMN sys_ai_usage_logs.completion_tokens; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_usage_logs.completion_tokens IS '输出 token 数';
+
+
+--
+-- Name: COLUMN sys_ai_usage_logs.total_tokens; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_usage_logs.total_tokens IS '总 token 数';
+
+
+--
+-- Name: COLUMN sys_ai_usage_logs.duration_ms; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_ai_usage_logs.duration_ms IS '调用耗时（毫秒）';
+
+
+--
+-- Name: sys_ai_usage_logs_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.sys_ai_usage_logs ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.sys_ai_usage_logs_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: sys_api_audit_logs; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.sys_api_audit_logs (
+    id bigint NOT NULL,
+    created_at timestamp with time zone,
+    tenant_id bigint DEFAULT 0,
+    user_id bigint,
+    username character varying,
+    ip_address character varying,
+    geo_location jsonb,
+    device_info jsonb,
+    referer character varying,
+    app_version character varying,
+    http_method character varying,
+    path character varying,
+    request_uri character varying,
+    api_module character varying,
+    api_operation character varying,
+    api_description character varying,
+    request_id character varying,
+    trace_id character varying,
+    span_id character varying,
+    latency_ms bigint,
+    success boolean,
+    status_code bigint,
+    reason character varying,
+    request_header character varying,
+    request_body character varying,
+    response character varying,
+    log_hash character varying,
+    signature bytea
+);
+
+
+--
+-- Name: TABLE sys_api_audit_logs; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.sys_api_audit_logs IS 'API审计日志表';
+
+
+--
+-- Name: COLUMN sys_api_audit_logs.id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_api_audit_logs.id IS 'id';
+
+
+--
+-- Name: COLUMN sys_api_audit_logs.created_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_api_audit_logs.created_at IS '创建时间';
+
+
+--
+-- Name: COLUMN sys_api_audit_logs.tenant_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_api_audit_logs.tenant_id IS '租户ID';
+
+
+--
+-- Name: COLUMN sys_api_audit_logs.user_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_api_audit_logs.user_id IS '操作者用户ID';
+
+
+--
+-- Name: COLUMN sys_api_audit_logs.username; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_api_audit_logs.username IS '操作者账号名';
+
+
+--
+-- Name: COLUMN sys_api_audit_logs.ip_address; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_api_audit_logs.ip_address IS 'IP地址';
+
+
+--
+-- Name: COLUMN sys_api_audit_logs.geo_location; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_api_audit_logs.geo_location IS '地理位置(来自IP库)';
+
+
+--
+-- Name: COLUMN sys_api_audit_logs.device_info; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_api_audit_logs.device_info IS '设备信息';
+
+
+--
+-- Name: COLUMN sys_api_audit_logs.referer; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_api_audit_logs.referer IS '请求来源URL';
+
+
+--
+-- Name: COLUMN sys_api_audit_logs.app_version; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_api_audit_logs.app_version IS '客户端版本号';
+
+
+--
+-- Name: COLUMN sys_api_audit_logs.http_method; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_api_audit_logs.http_method IS 'HTTP请求方法';
+
+
+--
+-- Name: COLUMN sys_api_audit_logs.path; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_api_audit_logs.path IS '请求路径';
+
+
+--
+-- Name: COLUMN sys_api_audit_logs.request_uri; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_api_audit_logs.request_uri IS '完整请求URI';
+
+
+--
+-- Name: COLUMN sys_api_audit_logs.api_module; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_api_audit_logs.api_module IS 'API所属业务模块';
+
+
+--
+-- Name: COLUMN sys_api_audit_logs.api_operation; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_api_audit_logs.api_operation IS 'API业务操作';
+
+
+--
+-- Name: COLUMN sys_api_audit_logs.api_description; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_api_audit_logs.api_description IS 'API功能描述';
+
+
+--
+-- Name: COLUMN sys_api_audit_logs.request_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_api_audit_logs.request_id IS '请求ID';
+
+
+--
+-- Name: COLUMN sys_api_audit_logs.trace_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_api_audit_logs.trace_id IS '全局链路追踪ID';
+
+
+--
+-- Name: COLUMN sys_api_audit_logs.span_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_api_audit_logs.span_id IS '当前跨度ID';
+
+
+--
+-- Name: COLUMN sys_api_audit_logs.latency_ms; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_api_audit_logs.latency_ms IS '操作耗时';
+
+
+--
+-- Name: COLUMN sys_api_audit_logs.success; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_api_audit_logs.success IS '操作结果';
+
+
+--
+-- Name: COLUMN sys_api_audit_logs.status_code; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_api_audit_logs.status_code IS 'HTTP状态码';
+
+
+--
+-- Name: COLUMN sys_api_audit_logs.reason; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_api_audit_logs.reason IS '操作失败原因';
+
+
+--
+-- Name: COLUMN sys_api_audit_logs.request_header; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_api_audit_logs.request_header IS '请求头';
+
+
+--
+-- Name: COLUMN sys_api_audit_logs.request_body; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_api_audit_logs.request_body IS '请求体';
+
+
+--
+-- Name: COLUMN sys_api_audit_logs.response; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_api_audit_logs.response IS '响应信息';
+
+
+--
+-- Name: COLUMN sys_api_audit_logs.log_hash; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_api_audit_logs.log_hash IS '日志内容哈希（SHA256，十六进制字符串）';
+
+
+--
+-- Name: COLUMN sys_api_audit_logs.signature; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_api_audit_logs.signature IS '日志数字签名';
+
+
+--
+-- Name: sys_api_audit_logs_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.sys_api_audit_logs ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.sys_api_audit_logs_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: sys_apis; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.sys_apis (
+    id bigint NOT NULL,
+    created_at timestamp with time zone,
+    updated_at timestamp with time zone,
+    deleted_at timestamp with time zone,
+    created_by bigint,
+    updated_by bigint,
+    deleted_by bigint,
+    status character varying DEFAULT 'ON'::character varying NOT NULL,
+    description character varying,
+    module character varying,
+    module_description character varying,
+    business_module character varying,
+    operation character varying,
+    path character varying,
+    method character varying,
+    scope character varying DEFAULT 'ADMIN'::character varying
+);
+
+
+--
+-- Name: TABLE sys_apis; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.sys_apis IS 'API资源表';
+
+
+--
+-- Name: COLUMN sys_apis.id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_apis.id IS 'id';
+
+
+--
+-- Name: COLUMN sys_apis.created_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_apis.created_at IS '创建时间';
+
+
+--
+-- Name: COLUMN sys_apis.updated_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_apis.updated_at IS '更新时间';
+
+
+--
+-- Name: COLUMN sys_apis.deleted_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_apis.deleted_at IS '删除时间';
+
+
+--
+-- Name: COLUMN sys_apis.created_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_apis.created_by IS '创建者ID';
+
+
+--
+-- Name: COLUMN sys_apis.updated_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_apis.updated_by IS '更新者ID';
+
+
+--
+-- Name: COLUMN sys_apis.deleted_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_apis.deleted_by IS '删除者ID';
+
+
+--
+-- Name: COLUMN sys_apis.status; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_apis.status IS '状态';
+
+
+--
+-- Name: COLUMN sys_apis.description; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_apis.description IS '描述';
+
+
+--
+-- Name: COLUMN sys_apis.module; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_apis.module IS '所属业务模块';
+
+
+--
+-- Name: COLUMN sys_apis.module_description; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_apis.module_description IS '业务模块描述';
+
+
+--
+-- Name: COLUMN sys_apis.business_module; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_apis.business_module IS '所属业务功能模块（用于套餐白名单过滤）';
+
+
+--
+-- Name: COLUMN sys_apis.operation; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_apis.operation IS '接口操作名';
+
+
+--
+-- Name: COLUMN sys_apis.path; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_apis.path IS '接口路径';
+
+
+--
+-- Name: COLUMN sys_apis.method; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_apis.method IS '请求方法';
+
+
+--
+-- Name: COLUMN sys_apis.scope; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_apis.scope IS '作用域';
+
+
+--
+-- Name: sys_apis_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.sys_apis ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.sys_apis_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: sys_configs; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.sys_configs (
+    id bigint NOT NULL,
+    created_at timestamp with time zone,
+    updated_at timestamp with time zone,
+    deleted_at timestamp with time zone,
+    created_by bigint,
+    updated_by bigint,
+    deleted_by bigint,
+    name character varying,
+    key character varying,
+    value character varying,
+    value_type character varying DEFAULT 'STRING'::character varying,
+    is_built_in boolean DEFAULT false
+);
+
+
+--
+-- Name: TABLE sys_configs; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.sys_configs IS '系统参数表（平台全局动态 KV 运行时配置；区别于字典管理的业务枚举，两者语义不同）';
+
+
+--
+-- Name: COLUMN sys_configs.id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_configs.id IS 'id';
+
+
+--
+-- Name: COLUMN sys_configs.created_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_configs.created_at IS '创建时间';
+
+
+--
+-- Name: COLUMN sys_configs.updated_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_configs.updated_at IS '更新时间';
+
+
+--
+-- Name: COLUMN sys_configs.deleted_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_configs.deleted_at IS '删除时间';
+
+
+--
+-- Name: COLUMN sys_configs.created_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_configs.created_by IS '创建者ID';
+
+
+--
+-- Name: COLUMN sys_configs.updated_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_configs.updated_by IS '更新者ID';
+
+
+--
+-- Name: COLUMN sys_configs.deleted_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_configs.deleted_by IS '删除者ID';
+
+
+--
+-- Name: COLUMN sys_configs.name; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_configs.name IS '参数名称（展示用）';
+
+
+--
+-- Name: COLUMN sys_configs.key; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_configs.key IS '参数键名，全局唯一，服务侧读取器按键定位';
+
+
+--
+-- Name: COLUMN sys_configs.value; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_configs.value IS '参数键值';
+
+
+--
+-- Name: COLUMN sys_configs.value_type; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_configs.value_type IS '参数值类型（读取器按类型解析，类型不符回退默认值）';
+
+
+--
+-- Name: COLUMN sys_configs.is_built_in; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_configs.is_built_in IS '是否系统内置参数（内置参数禁止删除）';
+
+
+--
+-- Name: sys_configs_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.sys_configs ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.sys_configs_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: sys_data_access_audit_logs; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.sys_data_access_audit_logs (
+    id bigint NOT NULL,
+    created_at timestamp with time zone,
+    tenant_id bigint DEFAULT 0,
+    user_id bigint,
+    username character varying,
+    ip_address character varying,
+    geo_location jsonb,
+    device_info jsonb,
+    request_id character varying,
+    trace_id character varying,
+    data_source character varying,
+    table_name character varying,
+    data_id character varying,
+    access_type character varying,
+    sql_digest character varying,
+    sql_text character varying,
+    affected_rows bigint,
+    latency_ms bigint,
+    success boolean,
+    sensitive_level character varying,
+    data_masked boolean,
+    masking_rules character varying,
+    business_purpose character varying,
+    data_category character varying,
+    db_user character varying,
+    log_hash character varying,
+    signature bytea
+);
+
+
+--
+-- Name: TABLE sys_data_access_audit_logs; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.sys_data_access_audit_logs IS '数据访问审计日志表';
+
+
+--
+-- Name: COLUMN sys_data_access_audit_logs.id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_data_access_audit_logs.id IS 'id';
+
+
+--
+-- Name: COLUMN sys_data_access_audit_logs.created_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_data_access_audit_logs.created_at IS '创建时间';
+
+
+--
+-- Name: COLUMN sys_data_access_audit_logs.tenant_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_data_access_audit_logs.tenant_id IS '租户ID';
+
+
+--
+-- Name: COLUMN sys_data_access_audit_logs.user_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_data_access_audit_logs.user_id IS '操作者用户ID';
+
+
+--
+-- Name: COLUMN sys_data_access_audit_logs.username; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_data_access_audit_logs.username IS '操作者账号名';
+
+
+--
+-- Name: COLUMN sys_data_access_audit_logs.ip_address; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_data_access_audit_logs.ip_address IS 'IP地址';
+
+
+--
+-- Name: COLUMN sys_data_access_audit_logs.geo_location; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_data_access_audit_logs.geo_location IS '地理位置(来自IP库)';
+
+
+--
+-- Name: COLUMN sys_data_access_audit_logs.device_info; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_data_access_audit_logs.device_info IS '设备信息';
+
+
+--
+-- Name: COLUMN sys_data_access_audit_logs.request_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_data_access_audit_logs.request_id IS '全局请求ID';
+
+
+--
+-- Name: COLUMN sys_data_access_audit_logs.trace_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_data_access_audit_logs.trace_id IS '全局链路追踪ID';
+
+
+--
+-- Name: COLUMN sys_data_access_audit_logs.data_source; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_data_access_audit_logs.data_source IS '数据源类型';
+
+
+--
+-- Name: COLUMN sys_data_access_audit_logs.table_name; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_data_access_audit_logs.table_name IS '数据表名';
+
+
+--
+-- Name: COLUMN sys_data_access_audit_logs.data_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_data_access_audit_logs.data_id IS '数据主键ID';
+
+
+--
+-- Name: COLUMN sys_data_access_audit_logs.access_type; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_data_access_audit_logs.access_type IS '数据访问类型';
+
+
+--
+-- Name: COLUMN sys_data_access_audit_logs.sql_digest; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_data_access_audit_logs.sql_digest IS '执行的SQL语句摘要';
+
+
+--
+-- Name: COLUMN sys_data_access_audit_logs.sql_text; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_data_access_audit_logs.sql_text IS '执行的SQL语句';
+
+
+--
+-- Name: COLUMN sys_data_access_audit_logs.affected_rows; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_data_access_audit_logs.affected_rows IS '影响行数';
+
+
+--
+-- Name: COLUMN sys_data_access_audit_logs.latency_ms; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_data_access_audit_logs.latency_ms IS '延迟时间（毫秒）';
+
+
+--
+-- Name: COLUMN sys_data_access_audit_logs.success; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_data_access_audit_logs.success IS '操作结果';
+
+
+--
+-- Name: COLUMN sys_data_access_audit_logs.sensitive_level; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_data_access_audit_logs.sensitive_level IS '数据敏感级别';
+
+
+--
+-- Name: COLUMN sys_data_access_audit_logs.data_masked; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_data_access_audit_logs.data_masked IS '是否已脱敏';
+
+
+--
+-- Name: COLUMN sys_data_access_audit_logs.masking_rules; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_data_access_audit_logs.masking_rules IS '脱敏规则';
+
+
+--
+-- Name: COLUMN sys_data_access_audit_logs.business_purpose; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_data_access_audit_logs.business_purpose IS '业务处理目的';
+
+
+--
+-- Name: COLUMN sys_data_access_audit_logs.data_category; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_data_access_audit_logs.data_category IS '数据分类标签';
+
+
+--
+-- Name: COLUMN sys_data_access_audit_logs.db_user; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_data_access_audit_logs.db_user IS '数据库用户';
+
+
+--
+-- Name: COLUMN sys_data_access_audit_logs.log_hash; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_data_access_audit_logs.log_hash IS '日志内容哈希（SHA256，十六进制字符串）';
+
+
+--
+-- Name: COLUMN sys_data_access_audit_logs.signature; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_data_access_audit_logs.signature IS '日志数字签名';
+
+
+--
+-- Name: sys_data_access_audit_logs_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.sys_data_access_audit_logs ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.sys_data_access_audit_logs_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: sys_dict_entries; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.sys_dict_entries (
+    id bigint NOT NULL,
+    created_at timestamp with time zone,
+    updated_at timestamp with time zone,
+    deleted_at timestamp with time zone,
+    created_by bigint,
+    updated_by bigint,
+    deleted_by bigint,
+    sort_order bigint DEFAULT 0,
+    is_enabled boolean DEFAULT true,
+    tenant_id bigint DEFAULT 0,
+    entry_value character varying NOT NULL,
+    numeric_value integer,
+    type_id bigint
+);
+
+
+--
+-- Name: TABLE sys_dict_entries; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.sys_dict_entries IS '字典项表';
+
+
+--
+-- Name: COLUMN sys_dict_entries.id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_dict_entries.id IS 'id';
+
+
+--
+-- Name: COLUMN sys_dict_entries.created_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_dict_entries.created_at IS '创建时间';
+
+
+--
+-- Name: COLUMN sys_dict_entries.updated_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_dict_entries.updated_at IS '更新时间';
+
+
+--
+-- Name: COLUMN sys_dict_entries.deleted_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_dict_entries.deleted_at IS '删除时间';
+
+
+--
+-- Name: COLUMN sys_dict_entries.created_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_dict_entries.created_by IS '创建者ID';
+
+
+--
+-- Name: COLUMN sys_dict_entries.updated_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_dict_entries.updated_by IS '更新者ID';
+
+
+--
+-- Name: COLUMN sys_dict_entries.deleted_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_dict_entries.deleted_by IS '删除者ID';
+
+
+--
+-- Name: COLUMN sys_dict_entries.sort_order; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_dict_entries.sort_order IS '排序值（越小越靠前）';
+
+
+--
+-- Name: COLUMN sys_dict_entries.is_enabled; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_dict_entries.is_enabled IS '是否启用';
+
+
+--
+-- Name: COLUMN sys_dict_entries.tenant_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_dict_entries.tenant_id IS '租户ID';
+
+
+--
+-- Name: COLUMN sys_dict_entries.entry_value; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_dict_entries.entry_value IS '字典项的实际值';
+
+
+--
+-- Name: COLUMN sys_dict_entries.numeric_value; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_dict_entries.numeric_value IS '数值型值';
+
+
+--
+-- Name: sys_dict_entries_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.sys_dict_entries ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.sys_dict_entries_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: sys_dict_entry_i18n; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.sys_dict_entry_i18n (
+    id bigint NOT NULL,
+    created_at timestamp with time zone,
+    updated_at timestamp with time zone,
+    deleted_at timestamp with time zone,
+    created_by bigint,
+    updated_by bigint,
+    deleted_by bigint,
+    description character varying,
+    sort_order bigint DEFAULT 0,
+    tenant_id bigint DEFAULT 0,
+    language_code character varying,
+    entry_label character varying,
+    entry_id bigint
+);
+
+
+--
+-- Name: TABLE sys_dict_entry_i18n; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.sys_dict_entry_i18n IS '字典项翻译表';
+
+
+--
+-- Name: COLUMN sys_dict_entry_i18n.id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_dict_entry_i18n.id IS 'id';
+
+
+--
+-- Name: COLUMN sys_dict_entry_i18n.created_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_dict_entry_i18n.created_at IS '创建时间';
+
+
+--
+-- Name: COLUMN sys_dict_entry_i18n.updated_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_dict_entry_i18n.updated_at IS '更新时间';
+
+
+--
+-- Name: COLUMN sys_dict_entry_i18n.deleted_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_dict_entry_i18n.deleted_at IS '删除时间';
+
+
+--
+-- Name: COLUMN sys_dict_entry_i18n.created_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_dict_entry_i18n.created_by IS '创建者ID';
+
+
+--
+-- Name: COLUMN sys_dict_entry_i18n.updated_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_dict_entry_i18n.updated_by IS '更新者ID';
+
+
+--
+-- Name: COLUMN sys_dict_entry_i18n.deleted_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_dict_entry_i18n.deleted_by IS '删除者ID';
+
+
+--
+-- Name: COLUMN sys_dict_entry_i18n.description; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_dict_entry_i18n.description IS '描述';
+
+
+--
+-- Name: COLUMN sys_dict_entry_i18n.sort_order; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_dict_entry_i18n.sort_order IS '排序值（越小越靠前）';
+
+
+--
+-- Name: COLUMN sys_dict_entry_i18n.tenant_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_dict_entry_i18n.tenant_id IS '租户ID';
+
+
+--
+-- Name: COLUMN sys_dict_entry_i18n.language_code; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_dict_entry_i18n.language_code IS '语言代码';
+
+
+--
+-- Name: COLUMN sys_dict_entry_i18n.entry_label; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_dict_entry_i18n.entry_label IS '字典项的显示标签';
+
+
+--
+-- Name: sys_dict_entry_i18n_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.sys_dict_entry_i18n ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.sys_dict_entry_i18n_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: sys_dict_types; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.sys_dict_types (
+    id bigint NOT NULL,
+    created_at timestamp with time zone,
+    updated_at timestamp with time zone,
+    deleted_at timestamp with time zone,
+    created_by bigint,
+    updated_by bigint,
+    deleted_by bigint,
+    is_enabled boolean DEFAULT true,
+    sort_order bigint DEFAULT 0,
+    tenant_id bigint DEFAULT 0,
+    type_code character varying,
+    type_name character varying
+);
+
+
+--
+-- Name: TABLE sys_dict_types; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.sys_dict_types IS '字典类型表';
+
+
+--
+-- Name: COLUMN sys_dict_types.id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_dict_types.id IS 'id';
+
+
+--
+-- Name: COLUMN sys_dict_types.created_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_dict_types.created_at IS '创建时间';
+
+
+--
+-- Name: COLUMN sys_dict_types.updated_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_dict_types.updated_at IS '更新时间';
+
+
+--
+-- Name: COLUMN sys_dict_types.deleted_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_dict_types.deleted_at IS '删除时间';
+
+
+--
+-- Name: COLUMN sys_dict_types.created_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_dict_types.created_by IS '创建者ID';
+
+
+--
+-- Name: COLUMN sys_dict_types.updated_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_dict_types.updated_by IS '更新者ID';
+
+
+--
+-- Name: COLUMN sys_dict_types.deleted_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_dict_types.deleted_by IS '删除者ID';
+
+
+--
+-- Name: COLUMN sys_dict_types.is_enabled; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_dict_types.is_enabled IS '是否启用';
+
+
+--
+-- Name: COLUMN sys_dict_types.sort_order; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_dict_types.sort_order IS '排序值（越小越靠前）';
+
+
+--
+-- Name: COLUMN sys_dict_types.tenant_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_dict_types.tenant_id IS '租户ID';
+
+
+--
+-- Name: COLUMN sys_dict_types.type_code; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_dict_types.type_code IS '字典类型唯一编码';
+
+
+--
+-- Name: COLUMN sys_dict_types.type_name; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_dict_types.type_name IS '字典类型名称（中文，仅后台用）';
+
+
+--
+-- Name: sys_dict_types_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.sys_dict_types ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.sys_dict_types_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: sys_languages; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.sys_languages (
+    id bigint NOT NULL,
+    created_at timestamp with time zone,
+    updated_at timestamp with time zone,
+    deleted_at timestamp with time zone,
+    created_by bigint,
+    updated_by bigint,
+    deleted_by bigint,
+    sort_order bigint DEFAULT 0,
+    is_enabled boolean DEFAULT true,
+    language_code character varying,
+    language_name character varying,
+    native_name character varying,
+    is_default boolean DEFAULT false
+);
+
+
+--
+-- Name: TABLE sys_languages; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.sys_languages IS '语言表';
+
+
+--
+-- Name: COLUMN sys_languages.id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_languages.id IS 'id';
+
+
+--
+-- Name: COLUMN sys_languages.created_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_languages.created_at IS '创建时间';
+
+
+--
+-- Name: COLUMN sys_languages.updated_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_languages.updated_at IS '更新时间';
+
+
+--
+-- Name: COLUMN sys_languages.deleted_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_languages.deleted_at IS '删除时间';
+
+
+--
+-- Name: COLUMN sys_languages.created_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_languages.created_by IS '创建者ID';
+
+
+--
+-- Name: COLUMN sys_languages.updated_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_languages.updated_by IS '更新者ID';
+
+
+--
+-- Name: COLUMN sys_languages.deleted_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_languages.deleted_by IS '删除者ID';
+
+
+--
+-- Name: COLUMN sys_languages.sort_order; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_languages.sort_order IS '排序值（越小越靠前）';
+
+
+--
+-- Name: COLUMN sys_languages.is_enabled; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_languages.is_enabled IS '是否启用';
+
+
+--
+-- Name: COLUMN sys_languages.language_code; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_languages.language_code IS '标准语言代码';
+
+
+--
+-- Name: COLUMN sys_languages.language_name; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_languages.language_name IS '语言名称';
+
+
+--
+-- Name: COLUMN sys_languages.native_name; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_languages.native_name IS '本地语言名称';
+
+
+--
+-- Name: COLUMN sys_languages.is_default; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_languages.is_default IS '是否为默认语言';
+
+
+--
+-- Name: sys_languages_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.sys_languages ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.sys_languages_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: sys_login_audit_logs; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.sys_login_audit_logs (
+    id bigint NOT NULL,
+    created_at timestamp with time zone,
+    tenant_id bigint DEFAULT 0,
+    user_id bigint,
+    username character varying,
+    ip_address character varying,
+    geo_location jsonb,
+    session_id character varying,
+    device_info jsonb,
+    request_id character varying,
+    trace_id character varying,
+    action_type character varying,
+    status character varying,
+    login_method character varying,
+    failure_reason character varying,
+    mfa_status character varying,
+    risk_score bigint,
+    risk_level character varying,
+    risk_factors jsonb,
+    log_hash character varying,
+    signature bytea
+);
+
+
+--
+-- Name: TABLE sys_login_audit_logs; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.sys_login_audit_logs IS '登录审计日志表';
+
+
+--
+-- Name: COLUMN sys_login_audit_logs.id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_login_audit_logs.id IS 'id';
+
+
+--
+-- Name: COLUMN sys_login_audit_logs.created_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_login_audit_logs.created_at IS '创建时间';
+
+
+--
+-- Name: COLUMN sys_login_audit_logs.tenant_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_login_audit_logs.tenant_id IS '租户ID';
+
+
+--
+-- Name: COLUMN sys_login_audit_logs.user_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_login_audit_logs.user_id IS '操作者用户ID';
+
+
+--
+-- Name: COLUMN sys_login_audit_logs.username; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_login_audit_logs.username IS '操作者账号名';
+
+
+--
+-- Name: COLUMN sys_login_audit_logs.ip_address; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_login_audit_logs.ip_address IS 'IP地址';
+
+
+--
+-- Name: COLUMN sys_login_audit_logs.geo_location; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_login_audit_logs.geo_location IS '地理位置(来自IP库)';
+
+
+--
+-- Name: COLUMN sys_login_audit_logs.session_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_login_audit_logs.session_id IS '会话ID';
+
+
+--
+-- Name: COLUMN sys_login_audit_logs.device_info; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_login_audit_logs.device_info IS '设备信息';
+
+
+--
+-- Name: COLUMN sys_login_audit_logs.request_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_login_audit_logs.request_id IS '全局请求ID';
+
+
+--
+-- Name: COLUMN sys_login_audit_logs.trace_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_login_audit_logs.trace_id IS '全局链路追踪ID';
+
+
+--
+-- Name: COLUMN sys_login_audit_logs.action_type; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_login_audit_logs.action_type IS '事件动作类型';
+
+
+--
+-- Name: COLUMN sys_login_audit_logs.status; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_login_audit_logs.status IS '操作结果状态';
+
+
+--
+-- Name: COLUMN sys_login_audit_logs.login_method; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_login_audit_logs.login_method IS '登录方式';
+
+
+--
+-- Name: COLUMN sys_login_audit_logs.failure_reason; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_login_audit_logs.failure_reason IS '失败原因';
+
+
+--
+-- Name: COLUMN sys_login_audit_logs.mfa_status; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_login_audit_logs.mfa_status IS 'MFA状态';
+
+
+--
+-- Name: COLUMN sys_login_audit_logs.risk_score; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_login_audit_logs.risk_score IS '风险评分（0-100，分值越高风险越大）';
+
+
+--
+-- Name: COLUMN sys_login_audit_logs.risk_level; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_login_audit_logs.risk_level IS '风险等级（高风险需实时告警）';
+
+
+--
+-- Name: COLUMN sys_login_audit_logs.risk_factors; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_login_audit_logs.risk_factors IS '风险因素（ISO 27001标准，如：异地登录/新设备/密码尝试次数过多）';
+
+
+--
+-- Name: COLUMN sys_login_audit_logs.log_hash; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_login_audit_logs.log_hash IS '日志内容哈希（SHA256，十六进制字符串）';
+
+
+--
+-- Name: COLUMN sys_login_audit_logs.signature; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_login_audit_logs.signature IS '日志数字签名';
+
+
+--
+-- Name: sys_login_audit_logs_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.sys_login_audit_logs ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.sys_login_audit_logs_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: sys_login_policies; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.sys_login_policies (
+    id bigint NOT NULL,
+    created_at timestamp with time zone,
+    updated_at timestamp with time zone,
+    deleted_at timestamp with time zone,
+    created_by bigint,
+    updated_by bigint,
+    deleted_by bigint,
+    tenant_id bigint DEFAULT 0,
+    target_id bigint,
+    value character varying,
+    reason character varying,
+    type character varying DEFAULT 'BLACKLIST'::character varying,
+    method character varying DEFAULT 'IP'::character varying
+);
+
+
+--
+-- Name: TABLE sys_login_policies; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.sys_login_policies IS '登录策略表';
+
+
+--
+-- Name: COLUMN sys_login_policies.id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_login_policies.id IS 'id';
+
+
+--
+-- Name: COLUMN sys_login_policies.created_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_login_policies.created_at IS '创建时间';
+
+
+--
+-- Name: COLUMN sys_login_policies.updated_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_login_policies.updated_at IS '更新时间';
+
+
+--
+-- Name: COLUMN sys_login_policies.deleted_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_login_policies.deleted_at IS '删除时间';
+
+
+--
+-- Name: COLUMN sys_login_policies.created_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_login_policies.created_by IS '创建者ID';
+
+
+--
+-- Name: COLUMN sys_login_policies.updated_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_login_policies.updated_by IS '更新者ID';
+
+
+--
+-- Name: COLUMN sys_login_policies.deleted_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_login_policies.deleted_by IS '删除者ID';
+
+
+--
+-- Name: COLUMN sys_login_policies.tenant_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_login_policies.tenant_id IS '租户ID';
+
+
+--
+-- Name: COLUMN sys_login_policies.target_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_login_policies.target_id IS '目标用户ID';
+
+
+--
+-- Name: COLUMN sys_login_policies.value; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_login_policies.value IS '限制值（如IP地址、MAC地址或地区代码）';
+
+
+--
+-- Name: COLUMN sys_login_policies.reason; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_login_policies.reason IS '限制原因';
+
+
+--
+-- Name: COLUMN sys_login_policies.type; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_login_policies.type IS '限制类型';
+
+
+--
+-- Name: COLUMN sys_login_policies.method; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_login_policies.method IS '限制方式';
+
+
+--
+-- Name: sys_login_policies_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.sys_login_policies ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.sys_login_policies_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: sys_membership_org_units; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.sys_membership_org_units (
+    id bigint NOT NULL,
+    created_at timestamp with time zone,
+    updated_at timestamp with time zone,
+    deleted_at timestamp with time zone,
+    created_by bigint,
+    updated_by bigint,
+    deleted_by bigint,
+    tenant_id bigint DEFAULT 0,
+    remark character varying,
+    membership_id bigint NOT NULL,
+    org_unit_id bigint NOT NULL,
+    position_id bigint,
+    role_id bigint,
+    start_at timestamp with time zone,
+    end_at timestamp with time zone,
+    assigned_at timestamp with time zone,
+    assigned_by bigint,
+    is_primary boolean DEFAULT false NOT NULL,
+    status character varying DEFAULT 'ACTIVE'::character varying
+);
+
+
+--
+-- Name: TABLE sys_membership_org_units; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.sys_membership_org_units IS '成员与组织单元关联表';
+
+
+--
+-- Name: COLUMN sys_membership_org_units.id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_membership_org_units.id IS 'id';
+
+
+--
+-- Name: COLUMN sys_membership_org_units.created_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_membership_org_units.created_at IS '创建时间';
+
+
+--
+-- Name: COLUMN sys_membership_org_units.updated_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_membership_org_units.updated_at IS '更新时间';
+
+
+--
+-- Name: COLUMN sys_membership_org_units.deleted_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_membership_org_units.deleted_at IS '删除时间';
+
+
+--
+-- Name: COLUMN sys_membership_org_units.created_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_membership_org_units.created_by IS '创建者ID';
+
+
+--
+-- Name: COLUMN sys_membership_org_units.updated_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_membership_org_units.updated_by IS '更新者ID';
+
+
+--
+-- Name: COLUMN sys_membership_org_units.deleted_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_membership_org_units.deleted_by IS '删除者ID';
+
+
+--
+-- Name: COLUMN sys_membership_org_units.tenant_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_membership_org_units.tenant_id IS '租户ID';
+
+
+--
+-- Name: COLUMN sys_membership_org_units.remark; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_membership_org_units.remark IS '备注';
+
+
+--
+-- Name: COLUMN sys_membership_org_units.membership_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_membership_org_units.membership_id IS 'membership ID';
+
+
+--
+-- Name: COLUMN sys_membership_org_units.org_unit_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_membership_org_units.org_unit_id IS '组织单元 ID';
+
+
+--
+-- Name: COLUMN sys_membership_org_units.position_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_membership_org_units.position_id IS '岗位 ID（可选，冗余）';
+
+
+--
+-- Name: COLUMN sys_membership_org_units.role_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_membership_org_units.role_id IS '角色 ID（可选，冗余）';
+
+
+--
+-- Name: COLUMN sys_membership_org_units.start_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_membership_org_units.start_at IS '生效时间（UTC）';
+
+
+--
+-- Name: COLUMN sys_membership_org_units.end_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_membership_org_units.end_at IS '结束时间（UTC）';
+
+
+--
+-- Name: COLUMN sys_membership_org_units.assigned_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_membership_org_units.assigned_at IS '分配时间（UTC）';
+
+
+--
+-- Name: COLUMN sys_membership_org_units.assigned_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_membership_org_units.assigned_by IS '分配者用户 ID';
+
+
+--
+-- Name: COLUMN sys_membership_org_units.is_primary; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_membership_org_units.is_primary IS '是否为主所属';
+
+
+--
+-- Name: COLUMN sys_membership_org_units.status; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_membership_org_units.status IS '关联状态';
+
+
+--
+-- Name: sys_membership_org_units_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.sys_membership_org_units ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.sys_membership_org_units_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: sys_membership_positions; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.sys_membership_positions (
+    id bigint NOT NULL,
+    created_at timestamp with time zone,
+    updated_at timestamp with time zone,
+    deleted_at timestamp with time zone,
+    created_by bigint,
+    updated_by bigint,
+    deleted_by bigint,
+    tenant_id bigint DEFAULT 0,
+    remark character varying,
+    membership_id bigint NOT NULL,
+    position_id bigint NOT NULL,
+    is_primary boolean DEFAULT false,
+    start_at timestamp with time zone,
+    end_at timestamp with time zone,
+    assigned_at timestamp with time zone,
+    assigned_by bigint,
+    status character varying DEFAULT 'ACTIVE'::character varying NOT NULL
+);
+
+
+--
+-- Name: TABLE sys_membership_positions; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.sys_membership_positions IS '成员与岗位关联表';
+
+
+--
+-- Name: COLUMN sys_membership_positions.id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_membership_positions.id IS 'id';
+
+
+--
+-- Name: COLUMN sys_membership_positions.created_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_membership_positions.created_at IS '创建时间';
+
+
+--
+-- Name: COLUMN sys_membership_positions.updated_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_membership_positions.updated_at IS '更新时间';
+
+
+--
+-- Name: COLUMN sys_membership_positions.deleted_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_membership_positions.deleted_at IS '删除时间';
+
+
+--
+-- Name: COLUMN sys_membership_positions.created_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_membership_positions.created_by IS '创建者ID';
+
+
+--
+-- Name: COLUMN sys_membership_positions.updated_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_membership_positions.updated_by IS '更新者ID';
+
+
+--
+-- Name: COLUMN sys_membership_positions.deleted_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_membership_positions.deleted_by IS '删除者ID';
+
+
+--
+-- Name: COLUMN sys_membership_positions.tenant_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_membership_positions.tenant_id IS '租户ID';
+
+
+--
+-- Name: COLUMN sys_membership_positions.remark; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_membership_positions.remark IS '备注';
+
+
+--
+-- Name: COLUMN sys_membership_positions.membership_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_membership_positions.membership_id IS 'membership ID';
+
+
+--
+-- Name: COLUMN sys_membership_positions.position_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_membership_positions.position_id IS '岗位ID';
+
+
+--
+-- Name: COLUMN sys_membership_positions.is_primary; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_membership_positions.is_primary IS '是否主岗位';
+
+
+--
+-- Name: COLUMN sys_membership_positions.start_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_membership_positions.start_at IS '生效时间';
+
+
+--
+-- Name: COLUMN sys_membership_positions.end_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_membership_positions.end_at IS '失效时间';
+
+
+--
+-- Name: COLUMN sys_membership_positions.assigned_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_membership_positions.assigned_at IS '岗位分配时间';
+
+
+--
+-- Name: COLUMN sys_membership_positions.assigned_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_membership_positions.assigned_by IS '分配者用户 ID';
+
+
+--
+-- Name: COLUMN sys_membership_positions.status; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_membership_positions.status IS '岗位状态';
+
+
+--
+-- Name: sys_membership_positions_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.sys_membership_positions ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.sys_membership_positions_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: sys_membership_roles; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.sys_membership_roles (
+    id bigint NOT NULL,
+    created_at timestamp with time zone,
+    updated_at timestamp with time zone,
+    deleted_at timestamp with time zone,
+    created_by bigint,
+    updated_by bigint,
+    deleted_by bigint,
+    tenant_id bigint DEFAULT 0,
+    membership_id bigint NOT NULL,
+    role_id bigint NOT NULL,
+    start_at timestamp with time zone,
+    end_at timestamp with time zone,
+    assigned_at timestamp with time zone,
+    assigned_by bigint,
+    is_primary boolean DEFAULT false NOT NULL,
+    status character varying DEFAULT 'ACTIVE'::character varying NOT NULL
+);
+
+
+--
+-- Name: TABLE sys_membership_roles; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.sys_membership_roles IS '成员与角色关联表';
+
+
+--
+-- Name: COLUMN sys_membership_roles.id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_membership_roles.id IS 'id';
+
+
+--
+-- Name: COLUMN sys_membership_roles.created_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_membership_roles.created_at IS '创建时间';
+
+
+--
+-- Name: COLUMN sys_membership_roles.updated_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_membership_roles.updated_at IS '更新时间';
+
+
+--
+-- Name: COLUMN sys_membership_roles.deleted_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_membership_roles.deleted_at IS '删除时间';
+
+
+--
+-- Name: COLUMN sys_membership_roles.created_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_membership_roles.created_by IS '创建者ID';
+
+
+--
+-- Name: COLUMN sys_membership_roles.updated_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_membership_roles.updated_by IS '更新者ID';
+
+
+--
+-- Name: COLUMN sys_membership_roles.deleted_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_membership_roles.deleted_by IS '删除者ID';
+
+
+--
+-- Name: COLUMN sys_membership_roles.tenant_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_membership_roles.tenant_id IS '租户ID';
+
+
+--
+-- Name: COLUMN sys_membership_roles.membership_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_membership_roles.membership_id IS 'membership ID';
+
+
+--
+-- Name: COLUMN sys_membership_roles.role_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_membership_roles.role_id IS '角色ID';
+
+
+--
+-- Name: COLUMN sys_membership_roles.start_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_membership_roles.start_at IS '生效时间（UTC）';
+
+
+--
+-- Name: COLUMN sys_membership_roles.end_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_membership_roles.end_at IS '失效时间（UTC）';
+
+
+--
+-- Name: COLUMN sys_membership_roles.assigned_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_membership_roles.assigned_at IS '分配时间（UTC）';
+
+
+--
+-- Name: COLUMN sys_membership_roles.assigned_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_membership_roles.assigned_by IS '分配者用户ID';
+
+
+--
+-- Name: COLUMN sys_membership_roles.is_primary; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_membership_roles.is_primary IS '是否为主角色';
+
+
+--
+-- Name: COLUMN sys_membership_roles.status; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_membership_roles.status IS '岗位状态';
+
+
+--
+-- Name: sys_membership_roles_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.sys_membership_roles ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.sys_membership_roles_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: sys_memberships; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.sys_memberships (
+    id bigint NOT NULL,
+    created_at timestamp with time zone,
+    updated_at timestamp with time zone,
+    deleted_at timestamp with time zone,
+    created_by bigint,
+    updated_by bigint,
+    deleted_by bigint,
+    tenant_id bigint DEFAULT 0,
+    remark character varying,
+    user_id bigint NOT NULL,
+    org_unit_id bigint,
+    position_id bigint,
+    role_id bigint,
+    is_primary boolean DEFAULT false NOT NULL,
+    start_at timestamp with time zone,
+    end_at timestamp with time zone,
+    assigned_at timestamp with time zone,
+    assigned_by bigint,
+    joined_at timestamp with time zone,
+    status character varying DEFAULT 'ACTIVE'::character varying
+);
+
+
+--
+-- Name: TABLE sys_memberships; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.sys_memberships IS '成员关联表';
+
+
+--
+-- Name: COLUMN sys_memberships.id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_memberships.id IS 'id';
+
+
+--
+-- Name: COLUMN sys_memberships.created_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_memberships.created_at IS '创建时间';
+
+
+--
+-- Name: COLUMN sys_memberships.updated_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_memberships.updated_at IS '更新时间';
+
+
+--
+-- Name: COLUMN sys_memberships.deleted_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_memberships.deleted_at IS '删除时间';
+
+
+--
+-- Name: COLUMN sys_memberships.created_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_memberships.created_by IS '创建者ID';
+
+
+--
+-- Name: COLUMN sys_memberships.updated_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_memberships.updated_by IS '更新者ID';
+
+
+--
+-- Name: COLUMN sys_memberships.deleted_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_memberships.deleted_by IS '删除者ID';
+
+
+--
+-- Name: COLUMN sys_memberships.tenant_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_memberships.tenant_id IS '租户ID';
+
+
+--
+-- Name: COLUMN sys_memberships.remark; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_memberships.remark IS '备注';
+
+
+--
+-- Name: COLUMN sys_memberships.user_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_memberships.user_id IS '用户ID';
+
+
+--
+-- Name: COLUMN sys_memberships.org_unit_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_memberships.org_unit_id IS '组织架构ID（单一，冗余/互斥）';
+
+
+--
+-- Name: COLUMN sys_memberships.position_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_memberships.position_id IS '职位ID（单一，冗余/互斥）';
+
+
+--
+-- Name: COLUMN sys_memberships.role_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_memberships.role_id IS '角色ID（单一，冗余/互斥）';
+
+
+--
+-- Name: COLUMN sys_memberships.is_primary; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_memberships.is_primary IS '是否主身份';
+
+
+--
+-- Name: COLUMN sys_memberships.start_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_memberships.start_at IS '生效时间';
+
+
+--
+-- Name: COLUMN sys_memberships.end_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_memberships.end_at IS '失效时间';
+
+
+--
+-- Name: COLUMN sys_memberships.assigned_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_memberships.assigned_at IS '分配时间（UTC）';
+
+
+--
+-- Name: COLUMN sys_memberships.assigned_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_memberships.assigned_by IS '分配者用户ID';
+
+
+--
+-- Name: COLUMN sys_memberships.joined_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_memberships.joined_at IS '加入时间（UTC）';
+
+
+--
+-- Name: COLUMN sys_memberships.status; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_memberships.status IS '状态';
+
+
+--
+-- Name: sys_memberships_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.sys_memberships ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.sys_memberships_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: sys_menus; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.sys_menus (
+    id bigint NOT NULL,
+    created_at timestamp with time zone,
+    updated_at timestamp with time zone,
+    deleted_at timestamp with time zone,
+    created_by bigint,
+    updated_by bigint,
+    deleted_by bigint,
+    remark character varying,
+    status character varying DEFAULT 'ON'::character varying NOT NULL,
+    type character varying DEFAULT 'MENU'::character varying,
+    path character varying DEFAULT ''::character varying,
+    redirect character varying,
+    alias character varying,
+    name character varying,
+    component character varying DEFAULT ''::character varying,
+    meta jsonb,
+    module character varying,
+    parent_id bigint
+);
+
+
+--
+-- Name: TABLE sys_menus; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.sys_menus IS '菜单资源表';
+
+
+--
+-- Name: COLUMN sys_menus.id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_menus.id IS 'id';
+
+
+--
+-- Name: COLUMN sys_menus.created_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_menus.created_at IS '创建时间';
+
+
+--
+-- Name: COLUMN sys_menus.updated_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_menus.updated_at IS '更新时间';
+
+
+--
+-- Name: COLUMN sys_menus.deleted_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_menus.deleted_at IS '删除时间';
+
+
+--
+-- Name: COLUMN sys_menus.created_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_menus.created_by IS '创建者ID';
+
+
+--
+-- Name: COLUMN sys_menus.updated_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_menus.updated_by IS '更新者ID';
+
+
+--
+-- Name: COLUMN sys_menus.deleted_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_menus.deleted_by IS '删除者ID';
+
+
+--
+-- Name: COLUMN sys_menus.remark; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_menus.remark IS '备注';
+
+
+--
+-- Name: COLUMN sys_menus.status; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_menus.status IS '状态';
+
+
+--
+-- Name: COLUMN sys_menus.type; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_menus.type IS '菜单类型 CATALOG: 目录 MENU: 菜单 BUTTON: 按钮 EMBEDDED: 内嵌 LINK: 外链';
+
+
+--
+-- Name: COLUMN sys_menus.path; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_menus.path IS '路径,当其类型为''按钮''的时候对应的数据操作名,例如:/identity.service.v1.UserService/Login';
+
+
+--
+-- Name: COLUMN sys_menus.redirect; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_menus.redirect IS '重定向地址';
+
+
+--
+-- Name: COLUMN sys_menus.alias; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_menus.alias IS '路由别名';
+
+
+--
+-- Name: COLUMN sys_menus.name; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_menus.name IS '路由命名，然后我们可以使用 name 而不是 path 来传递 to 属性给 <router-link>。';
+
+
+--
+-- Name: COLUMN sys_menus.component; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_menus.component IS '前端页面组件';
+
+
+--
+-- Name: COLUMN sys_menus.meta; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_menus.meta IS '路由元信息';
+
+
+--
+-- Name: COLUMN sys_menus.module; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_menus.module IS '所属业务功能模块（用于套餐白名单过滤）';
+
+
+--
+-- Name: COLUMN sys_menus.parent_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_menus.parent_id IS '父节点ID';
+
+
+--
+-- Name: sys_menus_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.sys_menus ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.sys_menus_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: sys_notification_channels; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.sys_notification_channels (
+    id bigint NOT NULL,
+    created_at timestamp with time zone,
+    updated_at timestamp with time zone,
+    deleted_at timestamp with time zone,
+    created_by bigint,
+    updated_by bigint,
+    deleted_by bigint,
+    remark character varying,
+    status character varying DEFAULT 'ON'::character varying NOT NULL,
+    name character varying NOT NULL,
+    type character varying DEFAULT 'EMAIL'::character varying NOT NULL,
+    settings text,
+    smtp_host character varying,
+    smtp_port bigint,
+    smtp_username character varying,
+    smtp_password character varying,
+    smtp_from character varying,
+    smtp_from_name character varying,
+    smtp_tls character varying DEFAULT 'START_TLS'::character varying,
+    webhook_url character varying,
+    webhook_secret character varying,
+    webhook_sign_style character varying DEFAULT 'CUSTOM'::character varying,
+    webhook_payload_template character varying,
+    sms_provider character varying DEFAULT 'ALIYUN'::character varying,
+    sms_access_key_id character varying,
+    sms_access_secret character varying,
+    sms_sign_name character varying,
+    sms_template_code character varying,
+    sms_app_id character varying,
+    sms_region character varying
+);
+
+
+--
+-- Name: TABLE sys_notification_channels; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.sys_notification_channels IS '通知渠道表';
+
+
+--
+-- Name: COLUMN sys_notification_channels.id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_notification_channels.id IS 'id';
+
+
+--
+-- Name: COLUMN sys_notification_channels.created_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_notification_channels.created_at IS '创建时间';
+
+
+--
+-- Name: COLUMN sys_notification_channels.updated_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_notification_channels.updated_at IS '更新时间';
+
+
+--
+-- Name: COLUMN sys_notification_channels.deleted_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_notification_channels.deleted_at IS '删除时间';
+
+
+--
+-- Name: COLUMN sys_notification_channels.created_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_notification_channels.created_by IS '创建者ID';
+
+
+--
+-- Name: COLUMN sys_notification_channels.updated_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_notification_channels.updated_by IS '更新者ID';
+
+
+--
+-- Name: COLUMN sys_notification_channels.deleted_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_notification_channels.deleted_by IS '删除者ID';
+
+
+--
+-- Name: COLUMN sys_notification_channels.remark; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_notification_channels.remark IS '备注';
+
+
+--
+-- Name: COLUMN sys_notification_channels.status; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_notification_channels.status IS '状态';
+
+
+--
+-- Name: COLUMN sys_notification_channels.name; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_notification_channels.name IS '渠道名称';
+
+
+--
+-- Name: COLUMN sys_notification_channels.type; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_notification_channels.type IS '渠道类型（EMAIL/WEBHOOK/SMS 老三样 + EXT_* 扩展渠道）';
+
+
+--
+-- Name: COLUMN sys_notification_channels.settings; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_notification_channels.settings IS '扩展渠道配置 JSON（sensitive 字段值 EncryptIfNeeded 加密）';
+
+
+--
+-- Name: COLUMN sys_notification_channels.smtp_host; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_notification_channels.smtp_host IS 'SMTP 服务器地址';
+
+
+--
+-- Name: COLUMN sys_notification_channels.smtp_port; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_notification_channels.smtp_port IS 'SMTP 端口（25/465/587）';
+
+
+--
+-- Name: COLUMN sys_notification_channels.smtp_username; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_notification_channels.smtp_username IS 'SMTP 用户名';
+
+
+--
+-- Name: COLUMN sys_notification_channels.smtp_password; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_notification_channels.smtp_password IS 'SMTP 密码/授权码（EncryptIfNeeded 加密存储）';
+
+
+--
+-- Name: COLUMN sys_notification_channels.smtp_from; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_notification_channels.smtp_from IS '发件人地址';
+
+
+--
+-- Name: COLUMN sys_notification_channels.smtp_from_name; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_notification_channels.smtp_from_name IS '发件人显示名（如 GoWind，收件客户端直接显示该名）';
+
+
+--
+-- Name: COLUMN sys_notification_channels.smtp_tls; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_notification_channels.smtp_tls IS '加密方式';
+
+
+--
+-- Name: COLUMN sys_notification_channels.webhook_url; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_notification_channels.webhook_url IS 'Webhook 回调地址（仅 WEBHOOK 渠道）';
+
+
+--
+-- Name: COLUMN sys_notification_channels.webhook_secret; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_notification_channels.webhook_secret IS 'Webhook 签名密钥（EncryptIfNeeded 加密存储，仅 WEBHOOK 渠道）';
+
+
+--
+-- Name: COLUMN sys_notification_channels.webhook_sign_style; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_notification_channels.webhook_sign_style IS 'Webhook 出站风格（签名位置/算法与应答判据，仅 WEBHOOK 渠道）';
+
+
+--
+-- Name: COLUMN sys_notification_channels.webhook_payload_template; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_notification_channels.webhook_payload_template IS 'Webhook 载荷模板（{{占位符}} 渲染；留空则用该风格的内置默认 JSON）';
+
+
+--
+-- Name: COLUMN sys_notification_channels.sms_provider; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_notification_channels.sms_provider IS '短信服务商（仅 SMS 渠道）';
+
+
+--
+-- Name: COLUMN sys_notification_channels.sms_access_key_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_notification_channels.sms_access_key_id IS '短信访问密钥 ID（仅 SMS 渠道）';
+
+
+--
+-- Name: COLUMN sys_notification_channels.sms_access_secret; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_notification_channels.sms_access_secret IS '短信访问密钥 Secret（EncryptIfNeeded 加密存储，仅 SMS 渠道）';
+
+
+--
+-- Name: COLUMN sys_notification_channels.sms_sign_name; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_notification_channels.sms_sign_name IS '短信签名（服务商侧已备案的签名名，仅 SMS 渠道）';
+
+
+--
+-- Name: COLUMN sys_notification_channels.sms_template_code; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_notification_channels.sms_template_code IS '短信验证码模板 ID（服务商侧审核通过的模板，仅 SMS 渠道）';
+
+
+--
+-- Name: COLUMN sys_notification_channels.sms_app_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_notification_channels.sms_app_id IS '短信应用 ID（腾讯云 SmsSdkAppId 必填；阿里云留空）';
+
+
+--
+-- Name: COLUMN sys_notification_channels.sms_region; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_notification_channels.sms_region IS '服务地域（腾讯云必填如 ap-guangzhou；阿里云留空）';
+
+
+--
+-- Name: sys_notification_channels_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.sys_notification_channels ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.sys_notification_channels_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: sys_notification_deliveries; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.sys_notification_deliveries (
+    id bigint NOT NULL,
+    created_at timestamp with time zone,
+    updated_at timestamp with time zone,
+    deleted_at timestamp with time zone,
+    created_by bigint,
+    updated_by bigint,
+    deleted_by bigint,
+    event_type character varying,
+    channel character varying,
+    channel_id bigint,
+    recipient_user_id bigint,
+    related_id bigint,
+    target character varying,
+    status character varying DEFAULT 'SENDING'::character varying,
+    last_error character varying,
+    request_id character varying,
+    attempts bigint DEFAULT 0,
+    sent_at timestamp with time zone,
+    provider_id character varying
+);
+
+
+--
+-- Name: TABLE sys_notification_deliveries; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.sys_notification_deliveries IS '通知投递台账表';
+
+
+--
+-- Name: COLUMN sys_notification_deliveries.id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_notification_deliveries.id IS 'id';
+
+
+--
+-- Name: COLUMN sys_notification_deliveries.created_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_notification_deliveries.created_at IS '创建时间';
+
+
+--
+-- Name: COLUMN sys_notification_deliveries.updated_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_notification_deliveries.updated_at IS '更新时间';
+
+
+--
+-- Name: COLUMN sys_notification_deliveries.deleted_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_notification_deliveries.deleted_at IS '删除时间';
+
+
+--
+-- Name: COLUMN sys_notification_deliveries.created_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_notification_deliveries.created_by IS '创建者ID';
+
+
+--
+-- Name: COLUMN sys_notification_deliveries.updated_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_notification_deliveries.updated_by IS '更新者ID';
+
+
+--
+-- Name: COLUMN sys_notification_deliveries.deleted_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_notification_deliveries.deleted_by IS '删除者ID';
+
+
+--
+-- Name: COLUMN sys_notification_deliveries.event_type; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_notification_deliveries.event_type IS '业务事件类型';
+
+
+--
+-- Name: COLUMN sys_notification_deliveries.channel; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_notification_deliveries.channel IS '投递渠道';
+
+
+--
+-- Name: COLUMN sys_notification_deliveries.channel_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_notification_deliveries.channel_id IS '实际选中的渠道配置ID';
+
+
+--
+-- Name: COLUMN sys_notification_deliveries.recipient_user_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_notification_deliveries.recipient_user_id IS '收件用户ID（直发模式可为空）';
+
+
+--
+-- Name: COLUMN sys_notification_deliveries.related_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_notification_deliveries.related_id IS '关联业务对象ID（按事件类型解释）';
+
+
+--
+-- Name: COLUMN sys_notification_deliveries.target; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_notification_deliveries.target IS '投递目标（脱敏后的地址）';
+
+
+--
+-- Name: COLUMN sys_notification_deliveries.status; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_notification_deliveries.status IS '投递状态';
+
+
+--
+-- Name: COLUMN sys_notification_deliveries.last_error; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_notification_deliveries.last_error IS '最近一次失败原因';
+
+
+--
+-- Name: COLUMN sys_notification_deliveries.request_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_notification_deliveries.request_id IS '派发请求ID（幂等锚）';
+
+
+--
+-- Name: COLUMN sys_notification_deliveries.attempts; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_notification_deliveries.attempts IS '实际尝试投递次数（含首次）';
+
+
+--
+-- Name: COLUMN sys_notification_deliveries.sent_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_notification_deliveries.sent_at IS '投递完成时间';
+
+
+--
+-- Name: COLUMN sys_notification_deliveries.provider_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_notification_deliveries.provider_id IS '服务商侧的消息/请求 ID（扩展渠道回执带回，对账用）';
+
+
+--
+-- Name: sys_notification_deliveries_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.sys_notification_deliveries ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.sys_notification_deliveries_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: sys_notification_rules; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.sys_notification_rules (
+    id bigint NOT NULL,
+    created_at timestamp with time zone,
+    updated_at timestamp with time zone,
+    deleted_at timestamp with time zone,
+    created_by bigint,
+    updated_by bigint,
+    deleted_by bigint,
+    is_enabled boolean DEFAULT true,
+    remark character varying,
+    event_type character varying,
+    channel character varying,
+    is_async boolean DEFAULT false
+);
+
+
+--
+-- Name: TABLE sys_notification_rules; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.sys_notification_rules IS '通知路由规则表（事件类型 → 渠道）';
+
+
+--
+-- Name: COLUMN sys_notification_rules.id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_notification_rules.id IS 'id';
+
+
+--
+-- Name: COLUMN sys_notification_rules.created_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_notification_rules.created_at IS '创建时间';
+
+
+--
+-- Name: COLUMN sys_notification_rules.updated_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_notification_rules.updated_at IS '更新时间';
+
+
+--
+-- Name: COLUMN sys_notification_rules.deleted_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_notification_rules.deleted_at IS '删除时间';
+
+
+--
+-- Name: COLUMN sys_notification_rules.created_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_notification_rules.created_by IS '创建者ID';
+
+
+--
+-- Name: COLUMN sys_notification_rules.updated_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_notification_rules.updated_by IS '更新者ID';
+
+
+--
+-- Name: COLUMN sys_notification_rules.deleted_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_notification_rules.deleted_by IS '删除者ID';
+
+
+--
+-- Name: COLUMN sys_notification_rules.is_enabled; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_notification_rules.is_enabled IS '是否启用';
+
+
+--
+-- Name: COLUMN sys_notification_rules.remark; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_notification_rules.remark IS '备注';
+
+
+--
+-- Name: COLUMN sys_notification_rules.event_type; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_notification_rules.event_type IS '业务事件类型';
+
+
+--
+-- Name: COLUMN sys_notification_rules.channel; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_notification_rules.channel IS '投递渠道';
+
+
+--
+-- Name: COLUMN sys_notification_rules.is_async; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_notification_rules.is_async IS '是否异步派发（true = 入队 asynq，请求不等投递结论）';
+
+
+--
+-- Name: sys_notification_rules_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.sys_notification_rules ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.sys_notification_rules_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: sys_operation_audit_logs; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.sys_operation_audit_logs (
+    id bigint NOT NULL,
+    created_at timestamp with time zone,
+    tenant_id bigint DEFAULT 0,
+    user_id bigint,
+    username character varying,
+    resource_type character varying,
+    resource_id character varying,
+    action character varying,
+    before_data jsonb,
+    after_data jsonb,
+    sensitive_level character varying,
+    request_id character varying,
+    trace_id character varying,
+    success boolean,
+    failure_reason character varying,
+    ip_address character varying,
+    geo_location jsonb,
+    device_info jsonb,
+    log_hash character varying,
+    signature bytea
+);
+
+
+--
+-- Name: TABLE sys_operation_audit_logs; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.sys_operation_audit_logs IS '操作审计日志表';
+
+
+--
+-- Name: COLUMN sys_operation_audit_logs.id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_operation_audit_logs.id IS 'id';
+
+
+--
+-- Name: COLUMN sys_operation_audit_logs.created_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_operation_audit_logs.created_at IS '创建时间';
+
+
+--
+-- Name: COLUMN sys_operation_audit_logs.tenant_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_operation_audit_logs.tenant_id IS '租户ID';
+
+
+--
+-- Name: COLUMN sys_operation_audit_logs.user_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_operation_audit_logs.user_id IS '操作者用户ID';
+
+
+--
+-- Name: COLUMN sys_operation_audit_logs.username; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_operation_audit_logs.username IS '操作者账号名';
+
+
+--
+-- Name: COLUMN sys_operation_audit_logs.resource_type; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_operation_audit_logs.resource_type IS '资源类型';
+
+
+--
+-- Name: COLUMN sys_operation_audit_logs.resource_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_operation_audit_logs.resource_id IS '资源ID';
+
+
+--
+-- Name: COLUMN sys_operation_audit_logs.action; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_operation_audit_logs.action IS '动作';
+
+
+--
+-- Name: COLUMN sys_operation_audit_logs.before_data; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_operation_audit_logs.before_data IS '操作前数据';
+
+
+--
+-- Name: COLUMN sys_operation_audit_logs.after_data; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_operation_audit_logs.after_data IS '操作后数据';
+
+
+--
+-- Name: COLUMN sys_operation_audit_logs.sensitive_level; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_operation_audit_logs.sensitive_level IS '数据敏感级别';
+
+
+--
+-- Name: COLUMN sys_operation_audit_logs.request_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_operation_audit_logs.request_id IS '全局请求ID';
+
+
+--
+-- Name: COLUMN sys_operation_audit_logs.trace_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_operation_audit_logs.trace_id IS '全局链路追踪ID';
+
+
+--
+-- Name: COLUMN sys_operation_audit_logs.success; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_operation_audit_logs.success IS '操作结果';
+
+
+--
+-- Name: COLUMN sys_operation_audit_logs.failure_reason; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_operation_audit_logs.failure_reason IS '失败原因';
+
+
+--
+-- Name: COLUMN sys_operation_audit_logs.ip_address; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_operation_audit_logs.ip_address IS 'IP地址';
+
+
+--
+-- Name: COLUMN sys_operation_audit_logs.geo_location; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_operation_audit_logs.geo_location IS '地理位置(来自IP库)';
+
+
+--
+-- Name: COLUMN sys_operation_audit_logs.device_info; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_operation_audit_logs.device_info IS '设备信息';
+
+
+--
+-- Name: COLUMN sys_operation_audit_logs.log_hash; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_operation_audit_logs.log_hash IS '日志内容哈希（SHA256，十六进制字符串）';
+
+
+--
+-- Name: COLUMN sys_operation_audit_logs.signature; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_operation_audit_logs.signature IS '日志数字签名';
+
+
+--
+-- Name: sys_operation_audit_logs_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.sys_operation_audit_logs ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.sys_operation_audit_logs_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: sys_org_units; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.sys_org_units (
+    id bigint NOT NULL,
+    created_at timestamp with time zone,
+    updated_at timestamp with time zone,
+    deleted_at timestamp with time zone,
+    created_by bigint,
+    updated_by bigint,
+    deleted_by bigint,
+    status character varying DEFAULT 'ON'::character varying NOT NULL,
+    sort_order bigint DEFAULT 0,
+    tenant_id bigint DEFAULT 0,
+    remark character varying,
+    description character varying,
+    path character varying,
+    name character varying NOT NULL,
+    code character varying,
+    leader_id bigint,
+    type character varying DEFAULT 'DEPARTMENT'::character varying NOT NULL,
+    business_scopes jsonb,
+    external_id character varying,
+    is_legal_entity boolean DEFAULT false,
+    registration_number character varying,
+    tax_id character varying,
+    legal_entity_org_id bigint,
+    address character varying,
+    phone character varying,
+    email character varying,
+    timezone character varying,
+    country character varying,
+    latitude double precision,
+    longitude double precision,
+    start_at timestamp with time zone,
+    end_at timestamp with time zone,
+    contact_user_id bigint,
+    permission_tags jsonb,
+    parent_id bigint
+);
+
+
+--
+-- Name: TABLE sys_org_units; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.sys_org_units IS '组织单元表';
+
+
+--
+-- Name: COLUMN sys_org_units.id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_org_units.id IS 'id';
+
+
+--
+-- Name: COLUMN sys_org_units.created_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_org_units.created_at IS '创建时间';
+
+
+--
+-- Name: COLUMN sys_org_units.updated_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_org_units.updated_at IS '更新时间';
+
+
+--
+-- Name: COLUMN sys_org_units.deleted_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_org_units.deleted_at IS '删除时间';
+
+
+--
+-- Name: COLUMN sys_org_units.created_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_org_units.created_by IS '创建者ID';
+
+
+--
+-- Name: COLUMN sys_org_units.updated_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_org_units.updated_by IS '更新者ID';
+
+
+--
+-- Name: COLUMN sys_org_units.deleted_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_org_units.deleted_by IS '删除者ID';
+
+
+--
+-- Name: COLUMN sys_org_units.status; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_org_units.status IS '状态';
+
+
+--
+-- Name: COLUMN sys_org_units.sort_order; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_org_units.sort_order IS '排序值（越小越靠前）';
+
+
+--
+-- Name: COLUMN sys_org_units.tenant_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_org_units.tenant_id IS '租户ID';
+
+
+--
+-- Name: COLUMN sys_org_units.remark; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_org_units.remark IS '备注';
+
+
+--
+-- Name: COLUMN sys_org_units.description; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_org_units.description IS '描述';
+
+
+--
+-- Name: COLUMN sys_org_units.path; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_org_units.path IS '树路径，规范： 根节点: /，非根节点: /1/2/3/（以 / 开头且以 / 结尾）。禁止空字符串（NULL 表示未设置）。';
+
+
+--
+-- Name: COLUMN sys_org_units.name; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_org_units.name IS '名称';
+
+
+--
+-- Name: COLUMN sys_org_units.code; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_org_units.code IS '唯一编码（可用于导入/识别）';
+
+
+--
+-- Name: COLUMN sys_org_units.leader_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_org_units.leader_id IS '负责人用户ID';
+
+
+--
+-- Name: COLUMN sys_org_units.type; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_org_units.type IS '组织类型';
+
+
+--
+-- Name: COLUMN sys_org_units.business_scopes; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_org_units.business_scopes IS '组织的业务范围/服务条线';
+
+
+--
+-- Name: COLUMN sys_org_units.external_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_org_units.external_id IS '外部系统ID';
+
+
+--
+-- Name: COLUMN sys_org_units.is_legal_entity; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_org_units.is_legal_entity IS '是否为法定主体';
+
+
+--
+-- Name: COLUMN sys_org_units.registration_number; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_org_units.registration_number IS '注册号/统一社会信用代码';
+
+
+--
+-- Name: COLUMN sys_org_units.tax_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_org_units.tax_id IS '税号';
+
+
+--
+-- Name: COLUMN sys_org_units.legal_entity_org_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_org_units.legal_entity_org_id IS '关联的法定主体组织ID';
+
+
+--
+-- Name: COLUMN sys_org_units.address; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_org_units.address IS '详细地址';
+
+
+--
+-- Name: COLUMN sys_org_units.phone; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_org_units.phone IS '联系电话';
+
+
+--
+-- Name: COLUMN sys_org_units.email; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_org_units.email IS '联系邮箱';
+
+
+--
+-- Name: COLUMN sys_org_units.timezone; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_org_units.timezone IS '时区';
+
+
+--
+-- Name: COLUMN sys_org_units.country; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_org_units.country IS '国家/地区代码';
+
+
+--
+-- Name: COLUMN sys_org_units.latitude; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_org_units.latitude IS '纬度';
+
+
+--
+-- Name: COLUMN sys_org_units.longitude; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_org_units.longitude IS '经度';
+
+
+--
+-- Name: COLUMN sys_org_units.start_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_org_units.start_at IS '生效时间（UTC）';
+
+
+--
+-- Name: COLUMN sys_org_units.end_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_org_units.end_at IS '结束有效期（UTC）';
+
+
+--
+-- Name: COLUMN sys_org_units.contact_user_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_org_units.contact_user_id IS '业务联系人用户ID';
+
+
+--
+-- Name: COLUMN sys_org_units.permission_tags; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_org_units.permission_tags IS '与权限/角色映射的标签';
+
+
+--
+-- Name: COLUMN sys_org_units.parent_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_org_units.parent_id IS '父节点ID';
+
+
+--
+-- Name: sys_org_units_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.sys_org_units ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.sys_org_units_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: sys_permission_apis; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.sys_permission_apis (
+    id bigint NOT NULL,
+    created_at timestamp with time zone,
+    updated_at timestamp with time zone,
+    deleted_at timestamp with time zone,
+    created_by bigint,
+    updated_by bigint,
+    deleted_by bigint,
+    permission_id bigint NOT NULL,
+    api_id bigint NOT NULL
+);
+
+
+--
+-- Name: TABLE sys_permission_apis; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.sys_permission_apis IS '权限点与API接口关联表';
+
+
+--
+-- Name: COLUMN sys_permission_apis.id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_permission_apis.id IS 'id';
+
+
+--
+-- Name: COLUMN sys_permission_apis.created_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_permission_apis.created_at IS '创建时间';
+
+
+--
+-- Name: COLUMN sys_permission_apis.updated_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_permission_apis.updated_at IS '更新时间';
+
+
+--
+-- Name: COLUMN sys_permission_apis.deleted_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_permission_apis.deleted_at IS '删除时间';
+
+
+--
+-- Name: COLUMN sys_permission_apis.created_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_permission_apis.created_by IS '创建者ID';
+
+
+--
+-- Name: COLUMN sys_permission_apis.updated_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_permission_apis.updated_by IS '更新者ID';
+
+
+--
+-- Name: COLUMN sys_permission_apis.deleted_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_permission_apis.deleted_by IS '删除者ID';
+
+
+--
+-- Name: COLUMN sys_permission_apis.permission_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_permission_apis.permission_id IS '权限ID（关联sys_permissions.id）';
+
+
+--
+-- Name: COLUMN sys_permission_apis.api_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_permission_apis.api_id IS 'API资源ID（关联sys_apis.id）';
+
+
+--
+-- Name: sys_permission_apis_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.sys_permission_apis ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.sys_permission_apis_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: sys_permission_audit_logs; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.sys_permission_audit_logs (
+    id bigint NOT NULL,
+    created_at timestamp with time zone,
+    tenant_id bigint DEFAULT 0,
+    operator_id bigint,
+    operator_name character varying,
+    target_type character varying,
+    target_id character varying,
+    target_name character varying,
+    action character varying,
+    old_value jsonb,
+    new_value jsonb,
+    ip_address character varying NOT NULL,
+    request_id character varying NOT NULL,
+    reason character varying NOT NULL,
+    log_hash character varying,
+    signature bytea
+);
+
+
+--
+-- Name: TABLE sys_permission_audit_logs; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.sys_permission_audit_logs IS '权限变更审计日志表';
+
+
+--
+-- Name: COLUMN sys_permission_audit_logs.id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_permission_audit_logs.id IS 'id';
+
+
+--
+-- Name: COLUMN sys_permission_audit_logs.created_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_permission_audit_logs.created_at IS '创建时间';
+
+
+--
+-- Name: COLUMN sys_permission_audit_logs.tenant_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_permission_audit_logs.tenant_id IS '租户ID';
+
+
+--
+-- Name: COLUMN sys_permission_audit_logs.operator_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_permission_audit_logs.operator_id IS '操作者 用户ID';
+
+
+--
+-- Name: COLUMN sys_permission_audit_logs.operator_name; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_permission_audit_logs.operator_name IS '操作者用户名';
+
+
+--
+-- Name: COLUMN sys_permission_audit_logs.target_type; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_permission_audit_logs.target_type IS '目标类型';
+
+
+--
+-- Name: COLUMN sys_permission_audit_logs.target_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_permission_audit_logs.target_id IS '目标ID';
+
+
+--
+-- Name: COLUMN sys_permission_audit_logs.target_name; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_permission_audit_logs.target_name IS '目标名称';
+
+
+--
+-- Name: COLUMN sys_permission_audit_logs.action; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_permission_audit_logs.action IS '动作';
+
+
+--
+-- Name: COLUMN sys_permission_audit_logs.old_value; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_permission_audit_logs.old_value IS '旧值（JSON）';
+
+
+--
+-- Name: COLUMN sys_permission_audit_logs.new_value; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_permission_audit_logs.new_value IS '新值（JSON）';
+
+
+--
+-- Name: COLUMN sys_permission_audit_logs.ip_address; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_permission_audit_logs.ip_address IS '操作者IP地址';
+
+
+--
+-- Name: COLUMN sys_permission_audit_logs.request_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_permission_audit_logs.request_id IS '关联全局请求ID';
+
+
+--
+-- Name: COLUMN sys_permission_audit_logs.reason; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_permission_audit_logs.reason IS '变更原因';
+
+
+--
+-- Name: COLUMN sys_permission_audit_logs.log_hash; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_permission_audit_logs.log_hash IS '日志内容哈希（SHA256，十六进制字符串）';
+
+
+--
+-- Name: COLUMN sys_permission_audit_logs.signature; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_permission_audit_logs.signature IS '日志数字签名';
+
+
+--
+-- Name: sys_permission_audit_logs_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.sys_permission_audit_logs ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.sys_permission_audit_logs_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: sys_permission_groups; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.sys_permission_groups (
+    id bigint NOT NULL,
+    created_at timestamp with time zone,
+    updated_at timestamp with time zone,
+    deleted_at timestamp with time zone,
+    created_by bigint,
+    updated_by bigint,
+    deleted_by bigint,
+    description character varying,
+    status character varying DEFAULT 'ON'::character varying NOT NULL,
+    sort_order bigint DEFAULT 0,
+    path character varying,
+    name character varying NOT NULL,
+    module character varying,
+    parent_id bigint
+);
+
+
+--
+-- Name: TABLE sys_permission_groups; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.sys_permission_groups IS '权限分组表';
+
+
+--
+-- Name: COLUMN sys_permission_groups.id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_permission_groups.id IS 'id';
+
+
+--
+-- Name: COLUMN sys_permission_groups.created_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_permission_groups.created_at IS '创建时间';
+
+
+--
+-- Name: COLUMN sys_permission_groups.updated_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_permission_groups.updated_at IS '更新时间';
+
+
+--
+-- Name: COLUMN sys_permission_groups.deleted_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_permission_groups.deleted_at IS '删除时间';
+
+
+--
+-- Name: COLUMN sys_permission_groups.created_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_permission_groups.created_by IS '创建者ID';
+
+
+--
+-- Name: COLUMN sys_permission_groups.updated_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_permission_groups.updated_by IS '更新者ID';
+
+
+--
+-- Name: COLUMN sys_permission_groups.deleted_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_permission_groups.deleted_by IS '删除者ID';
+
+
+--
+-- Name: COLUMN sys_permission_groups.description; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_permission_groups.description IS '描述';
+
+
+--
+-- Name: COLUMN sys_permission_groups.status; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_permission_groups.status IS '状态';
+
+
+--
+-- Name: COLUMN sys_permission_groups.sort_order; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_permission_groups.sort_order IS '排序值（越小越靠前）';
+
+
+--
+-- Name: COLUMN sys_permission_groups.path; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_permission_groups.path IS '树路径，规范： 根节点: /，非根节点: /1/2/3/（以 / 开头且以 / 结尾）。禁止空字符串（NULL 表示未设置）。';
+
+
+--
+-- Name: COLUMN sys_permission_groups.name; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_permission_groups.name IS '分组名称（如：用户管理、订单操作）';
+
+
+--
+-- Name: COLUMN sys_permission_groups.module; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_permission_groups.module IS '业务模块标识（如：opm、order、pay）';
+
+
+--
+-- Name: COLUMN sys_permission_groups.parent_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_permission_groups.parent_id IS '父节点ID';
+
+
+--
+-- Name: sys_permission_groups_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.sys_permission_groups ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.sys_permission_groups_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: sys_permission_menus; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.sys_permission_menus (
+    id bigint NOT NULL,
+    created_at timestamp with time zone,
+    updated_at timestamp with time zone,
+    deleted_at timestamp with time zone,
+    created_by bigint,
+    updated_by bigint,
+    deleted_by bigint,
+    permission_id bigint NOT NULL,
+    menu_id bigint NOT NULL
+);
+
+
+--
+-- Name: TABLE sys_permission_menus; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.sys_permission_menus IS '权限点与前端菜单关联表';
+
+
+--
+-- Name: COLUMN sys_permission_menus.id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_permission_menus.id IS 'id';
+
+
+--
+-- Name: COLUMN sys_permission_menus.created_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_permission_menus.created_at IS '创建时间';
+
+
+--
+-- Name: COLUMN sys_permission_menus.updated_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_permission_menus.updated_at IS '更新时间';
+
+
+--
+-- Name: COLUMN sys_permission_menus.deleted_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_permission_menus.deleted_at IS '删除时间';
+
+
+--
+-- Name: COLUMN sys_permission_menus.created_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_permission_menus.created_by IS '创建者ID';
+
+
+--
+-- Name: COLUMN sys_permission_menus.updated_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_permission_menus.updated_by IS '更新者ID';
+
+
+--
+-- Name: COLUMN sys_permission_menus.deleted_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_permission_menus.deleted_by IS '删除者ID';
+
+
+--
+-- Name: COLUMN sys_permission_menus.permission_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_permission_menus.permission_id IS '权限ID（关联sys_permissions.id）';
+
+
+--
+-- Name: COLUMN sys_permission_menus.menu_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_permission_menus.menu_id IS '菜单ID（关联sys_menus.id）';
+
+
+--
+-- Name: sys_permission_menus_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.sys_permission_menus ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.sys_permission_menus_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: sys_permission_policies; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.sys_permission_policies (
+    id bigint NOT NULL,
+    created_at timestamp with time zone,
+    updated_at timestamp with time zone,
+    deleted_at timestamp with time zone,
+    created_by bigint,
+    updated_by bigint,
+    deleted_by bigint,
+    status character varying DEFAULT 'ON'::character varying NOT NULL,
+    permission_id bigint NOT NULL,
+    policy_engine character varying DEFAULT 'CASBIN'::character varying NOT NULL,
+    definition jsonb,
+    version bigint DEFAULT 1 NOT NULL,
+    eval_order bigint DEFAULT 0 NOT NULL,
+    cache_ttl bigint DEFAULT 300 NOT NULL
+);
+
+
+--
+-- Name: TABLE sys_permission_policies; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.sys_permission_policies IS '权限点动态策略表';
+
+
+--
+-- Name: COLUMN sys_permission_policies.id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_permission_policies.id IS 'id';
+
+
+--
+-- Name: COLUMN sys_permission_policies.created_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_permission_policies.created_at IS '创建时间';
+
+
+--
+-- Name: COLUMN sys_permission_policies.updated_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_permission_policies.updated_at IS '更新时间';
+
+
+--
+-- Name: COLUMN sys_permission_policies.deleted_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_permission_policies.deleted_at IS '删除时间';
+
+
+--
+-- Name: COLUMN sys_permission_policies.created_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_permission_policies.created_by IS '创建者ID';
+
+
+--
+-- Name: COLUMN sys_permission_policies.updated_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_permission_policies.updated_by IS '更新者ID';
+
+
+--
+-- Name: COLUMN sys_permission_policies.deleted_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_permission_policies.deleted_by IS '删除者ID';
+
+
+--
+-- Name: COLUMN sys_permission_policies.status; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_permission_policies.status IS '状态';
+
+
+--
+-- Name: COLUMN sys_permission_policies.permission_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_permission_policies.permission_id IS '权限ID（关联sys_permissions.id）';
+
+
+--
+-- Name: COLUMN sys_permission_policies.policy_engine; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_permission_policies.policy_engine IS '策略引擎';
+
+
+--
+-- Name: COLUMN sys_permission_policies.definition; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_permission_policies.definition IS '策略定义（动态结构）';
+
+
+--
+-- Name: COLUMN sys_permission_policies.version; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_permission_policies.version IS '策略版本（用于灰度/回滚）';
+
+
+--
+-- Name: COLUMN sys_permission_policies.eval_order; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_permission_policies.eval_order IS '评估优先级（越小越先执行）';
+
+
+--
+-- Name: COLUMN sys_permission_policies.cache_ttl; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_permission_policies.cache_ttl IS '结果缓存秒数（0=不缓存）';
+
+
+--
+-- Name: sys_permission_policies_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.sys_permission_policies ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.sys_permission_policies_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: sys_permissions; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.sys_permissions (
+    id bigint NOT NULL,
+    created_at timestamp with time zone,
+    updated_at timestamp with time zone,
+    deleted_at timestamp with time zone,
+    created_by bigint,
+    updated_by bigint,
+    deleted_by bigint,
+    status character varying DEFAULT 'ON'::character varying NOT NULL,
+    description character varying,
+    name character varying NOT NULL,
+    code character varying NOT NULL,
+    group_id bigint
+);
+
+
+--
+-- Name: TABLE sys_permissions; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.sys_permissions IS '权限点表';
+
+
+--
+-- Name: COLUMN sys_permissions.id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_permissions.id IS 'id';
+
+
+--
+-- Name: COLUMN sys_permissions.created_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_permissions.created_at IS '创建时间';
+
+
+--
+-- Name: COLUMN sys_permissions.updated_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_permissions.updated_at IS '更新时间';
+
+
+--
+-- Name: COLUMN sys_permissions.deleted_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_permissions.deleted_at IS '删除时间';
+
+
+--
+-- Name: COLUMN sys_permissions.created_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_permissions.created_by IS '创建者ID';
+
+
+--
+-- Name: COLUMN sys_permissions.updated_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_permissions.updated_by IS '更新者ID';
+
+
+--
+-- Name: COLUMN sys_permissions.deleted_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_permissions.deleted_by IS '删除者ID';
+
+
+--
+-- Name: COLUMN sys_permissions.status; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_permissions.status IS '状态';
+
+
+--
+-- Name: COLUMN sys_permissions.description; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_permissions.description IS '描述';
+
+
+--
+-- Name: COLUMN sys_permissions.name; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_permissions.name IS '权限名称（如：删除用户）';
+
+
+--
+-- Name: COLUMN sys_permissions.code; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_permissions.code IS '权限编码（如：opm:user:delete、order:export）';
+
+
+--
+-- Name: COLUMN sys_permissions.group_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_permissions.group_id IS '关联权限分组 ID';
+
+
+--
+-- Name: sys_permissions_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.sys_permissions ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.sys_permissions_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: sys_plan_modules; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.sys_plan_modules (
+    id bigint NOT NULL,
+    created_at timestamp with time zone,
+    updated_at timestamp with time zone,
+    deleted_at timestamp with time zone,
+    created_by bigint,
+    updated_by bigint,
+    deleted_by bigint,
+    module character varying,
+    plan_id bigint
+);
+
+
+--
+-- Name: TABLE sys_plan_modules; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.sys_plan_modules IS '套餐功能模块白名单表';
+
+
+--
+-- Name: COLUMN sys_plan_modules.id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_plan_modules.id IS 'id';
+
+
+--
+-- Name: COLUMN sys_plan_modules.created_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_plan_modules.created_at IS '创建时间';
+
+
+--
+-- Name: COLUMN sys_plan_modules.updated_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_plan_modules.updated_at IS '更新时间';
+
+
+--
+-- Name: COLUMN sys_plan_modules.deleted_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_plan_modules.deleted_at IS '删除时间';
+
+
+--
+-- Name: COLUMN sys_plan_modules.created_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_plan_modules.created_by IS '创建者ID';
+
+
+--
+-- Name: COLUMN sys_plan_modules.updated_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_plan_modules.updated_by IS '更新者ID';
+
+
+--
+-- Name: COLUMN sys_plan_modules.deleted_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_plan_modules.deleted_by IS '删除者ID';
+
+
+--
+-- Name: COLUMN sys_plan_modules.module; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_plan_modules.module IS '功能模块';
+
+
+--
+-- Name: sys_plan_modules_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.sys_plan_modules ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.sys_plan_modules_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: sys_plan_quotas; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.sys_plan_quotas (
+    id bigint NOT NULL,
+    created_at timestamp with time zone,
+    updated_at timestamp with time zone,
+    deleted_at timestamp with time zone,
+    created_by bigint,
+    updated_by bigint,
+    deleted_by bigint,
+    quota_type character varying,
+    quota_value bigint,
+    plan_id bigint
+);
+
+
+--
+-- Name: TABLE sys_plan_quotas; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.sys_plan_quotas IS '套餐配额表';
+
+
+--
+-- Name: COLUMN sys_plan_quotas.id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_plan_quotas.id IS 'id';
+
+
+--
+-- Name: COLUMN sys_plan_quotas.created_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_plan_quotas.created_at IS '创建时间';
+
+
+--
+-- Name: COLUMN sys_plan_quotas.updated_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_plan_quotas.updated_at IS '更新时间';
+
+
+--
+-- Name: COLUMN sys_plan_quotas.deleted_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_plan_quotas.deleted_at IS '删除时间';
+
+
+--
+-- Name: COLUMN sys_plan_quotas.created_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_plan_quotas.created_by IS '创建者ID';
+
+
+--
+-- Name: COLUMN sys_plan_quotas.updated_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_plan_quotas.updated_by IS '更新者ID';
+
+
+--
+-- Name: COLUMN sys_plan_quotas.deleted_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_plan_quotas.deleted_by IS '删除者ID';
+
+
+--
+-- Name: COLUMN sys_plan_quotas.quota_type; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_plan_quotas.quota_type IS '配额类型';
+
+
+--
+-- Name: COLUMN sys_plan_quotas.quota_value; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_plan_quotas.quota_value IS '配额值';
+
+
+--
+-- Name: sys_plan_quotas_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.sys_plan_quotas ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.sys_plan_quotas_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: sys_plans; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.sys_plans (
+    id bigint NOT NULL,
+    created_at timestamp with time zone,
+    updated_at timestamp with time zone,
+    deleted_at timestamp with time zone,
+    created_by bigint,
+    updated_by bigint,
+    deleted_by bigint,
+    remark character varying,
+    name character varying,
+    version character varying DEFAULT 'FREE'::character varying,
+    expiry_policy character varying DEFAULT 'READONLY'::character varying,
+    data_retention_days bigint,
+    description character varying
+);
+
+
+--
+-- Name: TABLE sys_plans; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.sys_plans IS '套餐目录表';
+
+
+--
+-- Name: COLUMN sys_plans.id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_plans.id IS 'id';
+
+
+--
+-- Name: COLUMN sys_plans.created_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_plans.created_at IS '创建时间';
+
+
+--
+-- Name: COLUMN sys_plans.updated_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_plans.updated_at IS '更新时间';
+
+
+--
+-- Name: COLUMN sys_plans.deleted_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_plans.deleted_at IS '删除时间';
+
+
+--
+-- Name: COLUMN sys_plans.created_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_plans.created_by IS '创建者ID';
+
+
+--
+-- Name: COLUMN sys_plans.updated_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_plans.updated_by IS '更新者ID';
+
+
+--
+-- Name: COLUMN sys_plans.deleted_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_plans.deleted_by IS '删除者ID';
+
+
+--
+-- Name: COLUMN sys_plans.remark; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_plans.remark IS '备注';
+
+
+--
+-- Name: COLUMN sys_plans.name; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_plans.name IS '套餐名称';
+
+
+--
+-- Name: COLUMN sys_plans.version; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_plans.version IS '套餐版本';
+
+
+--
+-- Name: COLUMN sys_plans.expiry_policy; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_plans.expiry_policy IS '到期处置策略';
+
+
+--
+-- Name: COLUMN sys_plans.data_retention_days; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_plans.data_retention_days IS '数据保留周期（天）';
+
+
+--
+-- Name: COLUMN sys_plans.description; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_plans.description IS '描述';
+
+
+--
+-- Name: sys_plans_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.sys_plans ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.sys_plans_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: sys_policy_evaluation_logs; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.sys_policy_evaluation_logs (
+    id bigint NOT NULL,
+    created_at timestamp with time zone,
+    tenant_id bigint DEFAULT 0,
+    user_id bigint NOT NULL,
+    membership_id bigint NOT NULL,
+    permission_id bigint NOT NULL,
+    policy_id bigint,
+    request_path character varying,
+    request_method character varying,
+    result boolean DEFAULT false NOT NULL,
+    effect_details character varying,
+    scope_sql character varying,
+    ip_address character varying,
+    trace_id character varying,
+    evaluation_context character varying,
+    log_hash character varying,
+    signature bytea
+);
+
+
+--
+-- Name: TABLE sys_policy_evaluation_logs; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.sys_policy_evaluation_logs IS '策略评估日志表';
+
+
+--
+-- Name: COLUMN sys_policy_evaluation_logs.id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_policy_evaluation_logs.id IS 'id';
+
+
+--
+-- Name: COLUMN sys_policy_evaluation_logs.created_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_policy_evaluation_logs.created_at IS '创建时间';
+
+
+--
+-- Name: COLUMN sys_policy_evaluation_logs.tenant_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_policy_evaluation_logs.tenant_id IS '租户ID';
+
+
+--
+-- Name: COLUMN sys_policy_evaluation_logs.user_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_policy_evaluation_logs.user_id IS '用户ID';
+
+
+--
+-- Name: COLUMN sys_policy_evaluation_logs.membership_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_policy_evaluation_logs.membership_id IS '成员身份ID';
+
+
+--
+-- Name: COLUMN sys_policy_evaluation_logs.permission_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_policy_evaluation_logs.permission_id IS '权限点ID';
+
+
+--
+-- Name: COLUMN sys_policy_evaluation_logs.policy_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_policy_evaluation_logs.policy_id IS '策略ID（可能无策略）';
+
+
+--
+-- Name: COLUMN sys_policy_evaluation_logs.request_path; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_policy_evaluation_logs.request_path IS '请求API路径';
+
+
+--
+-- Name: COLUMN sys_policy_evaluation_logs.request_method; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_policy_evaluation_logs.request_method IS '请求HTTP方法';
+
+
+--
+-- Name: COLUMN sys_policy_evaluation_logs.result; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_policy_evaluation_logs.result IS '是否通过';
+
+
+--
+-- Name: COLUMN sys_policy_evaluation_logs.effect_details; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_policy_evaluation_logs.effect_details IS '评估详情/拒绝原因';
+
+
+--
+-- Name: COLUMN sys_policy_evaluation_logs.scope_sql; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_policy_evaluation_logs.scope_sql IS '生成的SQL条件';
+
+
+--
+-- Name: COLUMN sys_policy_evaluation_logs.ip_address; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_policy_evaluation_logs.ip_address IS '操作者IP地址';
+
+
+--
+-- Name: COLUMN sys_policy_evaluation_logs.trace_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_policy_evaluation_logs.trace_id IS '全局链路追踪ID';
+
+
+--
+-- Name: COLUMN sys_policy_evaluation_logs.evaluation_context; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_policy_evaluation_logs.evaluation_context IS '决策上下文快照';
+
+
+--
+-- Name: COLUMN sys_policy_evaluation_logs.log_hash; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_policy_evaluation_logs.log_hash IS '日志内容哈希（SHA256，十六进制字符串）';
+
+
+--
+-- Name: COLUMN sys_policy_evaluation_logs.signature; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_policy_evaluation_logs.signature IS '日志数字签名';
+
+
+--
+-- Name: sys_policy_evaluation_logs_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.sys_policy_evaluation_logs ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.sys_policy_evaluation_logs_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: sys_positions; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.sys_positions (
+    id bigint NOT NULL,
+    created_at timestamp with time zone,
+    updated_at timestamp with time zone,
+    deleted_at timestamp with time zone,
+    created_by bigint,
+    updated_by bigint,
+    deleted_by bigint,
+    sort_order bigint DEFAULT 0,
+    remark character varying,
+    tenant_id bigint DEFAULT 0,
+    status character varying DEFAULT 'ON'::character varying NOT NULL,
+    name character varying NOT NULL,
+    code character varying NOT NULL,
+    org_unit_id bigint NOT NULL,
+    reports_to_position_id bigint,
+    description character varying,
+    job_family character varying,
+    job_grade character varying,
+    level integer,
+    headcount bigint DEFAULT 0 NOT NULL,
+    is_key_position boolean DEFAULT false NOT NULL,
+    type character varying DEFAULT 'REGULAR'::character varying NOT NULL,
+    start_at timestamp with time zone,
+    end_at timestamp with time zone
+);
+
+
+--
+-- Name: TABLE sys_positions; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.sys_positions IS '职位表';
+
+
+--
+-- Name: COLUMN sys_positions.id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_positions.id IS 'id';
+
+
+--
+-- Name: COLUMN sys_positions.created_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_positions.created_at IS '创建时间';
+
+
+--
+-- Name: COLUMN sys_positions.updated_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_positions.updated_at IS '更新时间';
+
+
+--
+-- Name: COLUMN sys_positions.deleted_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_positions.deleted_at IS '删除时间';
+
+
+--
+-- Name: COLUMN sys_positions.created_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_positions.created_by IS '创建者ID';
+
+
+--
+-- Name: COLUMN sys_positions.updated_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_positions.updated_by IS '更新者ID';
+
+
+--
+-- Name: COLUMN sys_positions.deleted_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_positions.deleted_by IS '删除者ID';
+
+
+--
+-- Name: COLUMN sys_positions.sort_order; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_positions.sort_order IS '排序值（越小越靠前）';
+
+
+--
+-- Name: COLUMN sys_positions.remark; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_positions.remark IS '备注';
+
+
+--
+-- Name: COLUMN sys_positions.tenant_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_positions.tenant_id IS '租户ID';
+
+
+--
+-- Name: COLUMN sys_positions.status; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_positions.status IS '状态';
+
+
+--
+-- Name: COLUMN sys_positions.name; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_positions.name IS '职位名称';
+
+
+--
+-- Name: COLUMN sys_positions.code; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_positions.code IS '唯一编码';
+
+
+--
+-- Name: COLUMN sys_positions.org_unit_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_positions.org_unit_id IS '所属组织单元ID';
+
+
+--
+-- Name: COLUMN sys_positions.reports_to_position_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_positions.reports_to_position_id IS '汇报关系';
+
+
+--
+-- Name: COLUMN sys_positions.description; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_positions.description IS '职位描述';
+
+
+--
+-- Name: COLUMN sys_positions.job_family; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_positions.job_family IS '职类/序列';
+
+
+--
+-- Name: COLUMN sys_positions.job_grade; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_positions.job_grade IS '职级';
+
+
+--
+-- Name: COLUMN sys_positions.level; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_positions.level IS '数值化职级';
+
+
+--
+-- Name: COLUMN sys_positions.headcount; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_positions.headcount IS '编制人数';
+
+
+--
+-- Name: COLUMN sys_positions.is_key_position; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_positions.is_key_position IS '是否关键岗位';
+
+
+--
+-- Name: COLUMN sys_positions.type; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_positions.type IS '岗位类型';
+
+
+--
+-- Name: COLUMN sys_positions.start_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_positions.start_at IS '生效时间（UTC）';
+
+
+--
+-- Name: COLUMN sys_positions.end_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_positions.end_at IS '结束有效期（UTC）';
+
+
+--
+-- Name: sys_positions_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.sys_positions ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.sys_positions_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: sys_role_field_permissions; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.sys_role_field_permissions (
+    id bigint NOT NULL,
+    created_at timestamp with time zone,
+    updated_at timestamp with time zone,
+    deleted_at timestamp with time zone,
+    created_by bigint,
+    updated_by bigint,
+    deleted_by bigint,
+    tenant_id bigint DEFAULT 0,
+    role_id bigint NOT NULL,
+    resource character varying NOT NULL,
+    field_name character varying NOT NULL
+);
+
+
+--
+-- Name: TABLE sys_role_field_permissions; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.sys_role_field_permissions IS '角色字段权限配置表';
+
+
+--
+-- Name: COLUMN sys_role_field_permissions.id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_role_field_permissions.id IS 'id';
+
+
+--
+-- Name: COLUMN sys_role_field_permissions.created_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_role_field_permissions.created_at IS '创建时间';
+
+
+--
+-- Name: COLUMN sys_role_field_permissions.updated_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_role_field_permissions.updated_at IS '更新时间';
+
+
+--
+-- Name: COLUMN sys_role_field_permissions.deleted_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_role_field_permissions.deleted_at IS '删除时间';
+
+
+--
+-- Name: COLUMN sys_role_field_permissions.created_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_role_field_permissions.created_by IS '创建者ID';
+
+
+--
+-- Name: COLUMN sys_role_field_permissions.updated_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_role_field_permissions.updated_by IS '更新者ID';
+
+
+--
+-- Name: COLUMN sys_role_field_permissions.deleted_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_role_field_permissions.deleted_by IS '删除者ID';
+
+
+--
+-- Name: COLUMN sys_role_field_permissions.tenant_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_role_field_permissions.tenant_id IS '租户ID';
+
+
+--
+-- Name: COLUMN sys_role_field_permissions.role_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_role_field_permissions.role_id IS '角色ID（关联sys_roles.id）';
+
+
+--
+-- Name: COLUMN sys_role_field_permissions.resource; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_role_field_permissions.resource IS '资源名（proto 消息名，如 User）';
+
+
+--
+-- Name: COLUMN sys_role_field_permissions.field_name; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_role_field_permissions.field_name IS '字段名（proto 字段 json_name，如 email）';
+
+
+--
+-- Name: sys_role_field_permissions_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.sys_role_field_permissions ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.sys_role_field_permissions_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: sys_role_metadata; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.sys_role_metadata (
+    id bigint NOT NULL,
+    created_at timestamp with time zone,
+    updated_at timestamp with time zone,
+    deleted_at timestamp with time zone,
+    created_by bigint,
+    updated_by bigint,
+    deleted_by bigint,
+    tenant_id bigint DEFAULT 0,
+    role_id bigint,
+    is_template boolean DEFAULT false,
+    template_for character varying,
+    template_version integer DEFAULT 1,
+    last_synced_version integer,
+    last_synced_at timestamp with time zone,
+    sync_policy character varying DEFAULT 'AUTO'::character varying,
+    scope character varying DEFAULT 'TENANT'::character varying,
+    custom_overrides jsonb NOT NULL
+);
+
+
+--
+-- Name: TABLE sys_role_metadata; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.sys_role_metadata IS '角色元数据';
+
+
+--
+-- Name: COLUMN sys_role_metadata.id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_role_metadata.id IS 'id';
+
+
+--
+-- Name: COLUMN sys_role_metadata.created_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_role_metadata.created_at IS '创建时间';
+
+
+--
+-- Name: COLUMN sys_role_metadata.updated_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_role_metadata.updated_at IS '更新时间';
+
+
+--
+-- Name: COLUMN sys_role_metadata.deleted_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_role_metadata.deleted_at IS '删除时间';
+
+
+--
+-- Name: COLUMN sys_role_metadata.created_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_role_metadata.created_by IS '创建者ID';
+
+
+--
+-- Name: COLUMN sys_role_metadata.updated_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_role_metadata.updated_by IS '更新者ID';
+
+
+--
+-- Name: COLUMN sys_role_metadata.deleted_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_role_metadata.deleted_by IS '删除者ID';
+
+
+--
+-- Name: COLUMN sys_role_metadata.tenant_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_role_metadata.tenant_id IS '租户ID';
+
+
+--
+-- Name: COLUMN sys_role_metadata.role_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_role_metadata.role_id IS '角色ID';
+
+
+--
+-- Name: COLUMN sys_role_metadata.is_template; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_role_metadata.is_template IS '是否是模版';
+
+
+--
+-- Name: COLUMN sys_role_metadata.template_for; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_role_metadata.template_for IS '模板适用对象';
+
+
+--
+-- Name: COLUMN sys_role_metadata.template_version; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_role_metadata.template_version IS '模板版本号';
+
+
+--
+-- Name: COLUMN sys_role_metadata.last_synced_version; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_role_metadata.last_synced_version IS '上次同步的版本号';
+
+
+--
+-- Name: COLUMN sys_role_metadata.last_synced_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_role_metadata.last_synced_at IS '最后同步时间';
+
+
+--
+-- Name: COLUMN sys_role_metadata.sync_policy; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_role_metadata.sync_policy IS '同步策略';
+
+
+--
+-- Name: COLUMN sys_role_metadata.scope; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_role_metadata.scope IS '作用域';
+
+
+--
+-- Name: COLUMN sys_role_metadata.custom_overrides; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_role_metadata.custom_overrides IS '租户自定义覆盖项';
+
+
+--
+-- Name: sys_role_metadata_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.sys_role_metadata ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.sys_role_metadata_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: sys_role_org_units; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.sys_role_org_units (
+    id bigint NOT NULL,
+    created_at timestamp with time zone,
+    updated_at timestamp with time zone,
+    deleted_at timestamp with time zone,
+    created_by bigint,
+    updated_by bigint,
+    deleted_by bigint,
+    tenant_id bigint DEFAULT 0,
+    role_id bigint NOT NULL,
+    org_unit_id bigint NOT NULL
+);
+
+
+--
+-- Name: TABLE sys_role_org_units; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.sys_role_org_units IS '角色与组织单元关联表';
+
+
+--
+-- Name: COLUMN sys_role_org_units.id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_role_org_units.id IS 'id';
+
+
+--
+-- Name: COLUMN sys_role_org_units.created_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_role_org_units.created_at IS '创建时间';
+
+
+--
+-- Name: COLUMN sys_role_org_units.updated_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_role_org_units.updated_at IS '更新时间';
+
+
+--
+-- Name: COLUMN sys_role_org_units.deleted_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_role_org_units.deleted_at IS '删除时间';
+
+
+--
+-- Name: COLUMN sys_role_org_units.created_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_role_org_units.created_by IS '创建者ID';
+
+
+--
+-- Name: COLUMN sys_role_org_units.updated_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_role_org_units.updated_by IS '更新者ID';
+
+
+--
+-- Name: COLUMN sys_role_org_units.deleted_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_role_org_units.deleted_by IS '删除者ID';
+
+
+--
+-- Name: COLUMN sys_role_org_units.tenant_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_role_org_units.tenant_id IS '租户ID';
+
+
+--
+-- Name: COLUMN sys_role_org_units.role_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_role_org_units.role_id IS '角色ID（关联sys_roles.id）';
+
+
+--
+-- Name: COLUMN sys_role_org_units.org_unit_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_role_org_units.org_unit_id IS '组织单元ID（关联org_units.id）';
+
+
+--
+-- Name: sys_role_org_units_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.sys_role_org_units ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.sys_role_org_units_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: sys_role_permissions; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.sys_role_permissions (
+    id bigint NOT NULL,
+    created_at timestamp with time zone,
+    updated_at timestamp with time zone,
+    deleted_at timestamp with time zone,
+    created_by bigint,
+    updated_by bigint,
+    deleted_by bigint,
+    tenant_id bigint DEFAULT 0,
+    status character varying DEFAULT 'ON'::character varying NOT NULL,
+    role_id bigint NOT NULL,
+    permission_id bigint NOT NULL,
+    effect character varying DEFAULT 'ALLOW'::character varying,
+    priority integer DEFAULT 0
+);
+
+
+--
+-- Name: TABLE sys_role_permissions; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.sys_role_permissions IS '角色与权限关联表';
+
+
+--
+-- Name: COLUMN sys_role_permissions.id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_role_permissions.id IS 'id';
+
+
+--
+-- Name: COLUMN sys_role_permissions.created_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_role_permissions.created_at IS '创建时间';
+
+
+--
+-- Name: COLUMN sys_role_permissions.updated_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_role_permissions.updated_at IS '更新时间';
+
+
+--
+-- Name: COLUMN sys_role_permissions.deleted_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_role_permissions.deleted_at IS '删除时间';
+
+
+--
+-- Name: COLUMN sys_role_permissions.created_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_role_permissions.created_by IS '创建者ID';
+
+
+--
+-- Name: COLUMN sys_role_permissions.updated_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_role_permissions.updated_by IS '更新者ID';
+
+
+--
+-- Name: COLUMN sys_role_permissions.deleted_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_role_permissions.deleted_by IS '删除者ID';
+
+
+--
+-- Name: COLUMN sys_role_permissions.tenant_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_role_permissions.tenant_id IS '租户ID';
+
+
+--
+-- Name: COLUMN sys_role_permissions.status; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_role_permissions.status IS '状态';
+
+
+--
+-- Name: COLUMN sys_role_permissions.role_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_role_permissions.role_id IS 'API资源ID（关联sys_apis.id）';
+
+
+--
+-- Name: COLUMN sys_role_permissions.permission_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_role_permissions.permission_id IS '权限ID（关联sys_permissions.id）';
+
+
+--
+-- Name: COLUMN sys_role_permissions.effect; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_role_permissions.effect IS '生效方式';
+
+
+--
+-- Name: COLUMN sys_role_permissions.priority; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_role_permissions.priority IS '优先级（-100~100，值越大优先级越高）';
+
+
+--
+-- Name: sys_role_permissions_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.sys_role_permissions ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.sys_role_permissions_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: sys_roles; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.sys_roles (
+    id bigint NOT NULL,
+    created_at timestamp with time zone,
+    updated_at timestamp with time zone,
+    deleted_at timestamp with time zone,
+    created_by bigint,
+    updated_by bigint,
+    deleted_by bigint,
+    remark character varying,
+    description character varying,
+    sort_order bigint DEFAULT 0,
+    tenant_id bigint DEFAULT 0,
+    status character varying DEFAULT 'ON'::character varying NOT NULL,
+    name character varying,
+    code character varying,
+    is_protected boolean DEFAULT false NOT NULL,
+    type character varying DEFAULT 'TENANT'::character varying NOT NULL,
+    data_scope character varying DEFAULT 'ALL'::character varying NOT NULL
+);
+
+
+--
+-- Name: TABLE sys_roles; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.sys_roles IS '角色表';
+
+
+--
+-- Name: COLUMN sys_roles.id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_roles.id IS 'id';
+
+
+--
+-- Name: COLUMN sys_roles.created_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_roles.created_at IS '创建时间';
+
+
+--
+-- Name: COLUMN sys_roles.updated_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_roles.updated_at IS '更新时间';
+
+
+--
+-- Name: COLUMN sys_roles.deleted_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_roles.deleted_at IS '删除时间';
+
+
+--
+-- Name: COLUMN sys_roles.created_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_roles.created_by IS '创建者ID';
+
+
+--
+-- Name: COLUMN sys_roles.updated_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_roles.updated_by IS '更新者ID';
+
+
+--
+-- Name: COLUMN sys_roles.deleted_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_roles.deleted_by IS '删除者ID';
+
+
+--
+-- Name: COLUMN sys_roles.remark; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_roles.remark IS '备注';
+
+
+--
+-- Name: COLUMN sys_roles.description; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_roles.description IS '描述';
+
+
+--
+-- Name: COLUMN sys_roles.sort_order; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_roles.sort_order IS '排序值（越小越靠前）';
+
+
+--
+-- Name: COLUMN sys_roles.tenant_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_roles.tenant_id IS '租户ID';
+
+
+--
+-- Name: COLUMN sys_roles.status; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_roles.status IS '状态';
+
+
+--
+-- Name: COLUMN sys_roles.name; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_roles.name IS '角色名称';
+
+
+--
+-- Name: COLUMN sys_roles.code; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_roles.code IS '角色标识';
+
+
+--
+-- Name: COLUMN sys_roles.is_protected; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_roles.is_protected IS '是否受保护的角色';
+
+
+--
+-- Name: COLUMN sys_roles.type; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_roles.type IS '角色类型';
+
+
+--
+-- Name: COLUMN sys_roles.data_scope; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_roles.data_scope IS '数据权限范围';
+
+
+--
+-- Name: sys_roles_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.sys_roles ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.sys_roles_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: sys_script_logs; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.sys_script_logs (
+    id bigint NOT NULL,
+    created_at timestamp with time zone,
+    updated_at timestamp with time zone,
+    deleted_at timestamp with time zone,
+    script_id bigint DEFAULT 0,
+    script_name character varying,
+    language character varying,
+    trigger_type character varying,
+    hook_point character varying,
+    version bigint DEFAULT 0,
+    success boolean DEFAULT false,
+    duration_ms bigint DEFAULT 0,
+    error text
+);
+
+
+--
+-- Name: TABLE sys_script_logs; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.sys_script_logs IS '脚本执行日志';
+
+
+--
+-- Name: COLUMN sys_script_logs.id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_script_logs.id IS 'id';
+
+
+--
+-- Name: COLUMN sys_script_logs.created_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_script_logs.created_at IS '创建时间';
+
+
+--
+-- Name: COLUMN sys_script_logs.updated_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_script_logs.updated_at IS '更新时间';
+
+
+--
+-- Name: COLUMN sys_script_logs.deleted_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_script_logs.deleted_at IS '删除时间';
+
+
+--
+-- Name: COLUMN sys_script_logs.script_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_script_logs.script_id IS '脚本ID（试运行草稿为 0）';
+
+
+--
+-- Name: COLUMN sys_script_logs.script_name; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_script_logs.script_name IS '脚本名称';
+
+
+--
+-- Name: COLUMN sys_script_logs.language; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_script_logs.language IS '脚本语言（LUA/JAVASCRIPT）';
+
+
+--
+-- Name: COLUMN sys_script_logs.trigger_type; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_script_logs.trigger_type IS '触发方式（hook/task/test_run/manual）';
+
+
+--
+-- Name: COLUMN sys_script_logs.hook_point; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_script_logs.hook_point IS '钩子点或任务类型';
+
+
+--
+-- Name: COLUMN sys_script_logs.version; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_script_logs.version IS '执行时的脚本版本（草稿为 0）';
+
+
+--
+-- Name: COLUMN sys_script_logs.success; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_script_logs.success IS '是否执行成功';
+
+
+--
+-- Name: COLUMN sys_script_logs.duration_ms; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_script_logs.duration_ms IS '执行耗时（毫秒）';
+
+
+--
+-- Name: COLUMN sys_script_logs.error; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_script_logs.error IS '失败原因（成功为空）';
+
+
+--
+-- Name: sys_script_logs_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.sys_script_logs ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.sys_script_logs_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: sys_scripts; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.sys_scripts (
+    id bigint NOT NULL,
+    created_at timestamp with time zone,
+    updated_at timestamp with time zone,
+    deleted_at timestamp with time zone,
+    created_by bigint,
+    updated_by bigint,
+    deleted_by bigint,
+    is_enabled boolean DEFAULT true,
+    name character varying,
+    language character varying DEFAULT 'LUA'::character varying,
+    hook_point character varying,
+    source text,
+    priority integer DEFAULT 0,
+    description character varying,
+    critical boolean DEFAULT false,
+    version bigint DEFAULT 1
+);
+
+
+--
+-- Name: TABLE sys_scripts; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.sys_scripts IS '平台脚本表（脚本引擎插件承载）';
+
+
+--
+-- Name: COLUMN sys_scripts.id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_scripts.id IS 'id';
+
+
+--
+-- Name: COLUMN sys_scripts.created_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_scripts.created_at IS '创建时间';
+
+
+--
+-- Name: COLUMN sys_scripts.updated_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_scripts.updated_at IS '更新时间';
+
+
+--
+-- Name: COLUMN sys_scripts.deleted_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_scripts.deleted_at IS '删除时间';
+
+
+--
+-- Name: COLUMN sys_scripts.created_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_scripts.created_by IS '创建者ID';
+
+
+--
+-- Name: COLUMN sys_scripts.updated_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_scripts.updated_by IS '更新者ID';
+
+
+--
+-- Name: COLUMN sys_scripts.deleted_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_scripts.deleted_by IS '删除者ID';
+
+
+--
+-- Name: COLUMN sys_scripts.is_enabled; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_scripts.is_enabled IS '是否启用';
+
+
+--
+-- Name: COLUMN sys_scripts.name; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_scripts.name IS '脚本唯一名称';
+
+
+--
+-- Name: COLUMN sys_scripts.language; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_scripts.language IS '脚本语言（LUA=Lua JAVASCRIPT=JavaScript）';
+
+
+--
+-- Name: COLUMN sys_scripts.hook_point; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_scripts.hook_point IS '挂载的钩子点名称，空表示未挂载';
+
+
+--
+-- Name: COLUMN sys_scripts.source; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_scripts.source IS '脚本源码';
+
+
+--
+-- Name: COLUMN sys_scripts.priority; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_scripts.priority IS '执行优先级，越小越先执行';
+
+
+--
+-- Name: COLUMN sys_scripts.description; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_scripts.description IS '脚本用途说明';
+
+
+--
+-- Name: COLUMN sys_scripts.critical; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_scripts.critical IS '关键脚本：执行失败时中断钩子链';
+
+
+--
+-- Name: COLUMN sys_scripts.version; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_scripts.version IS '版本号，每次更新自增（热更新指纹）';
+
+
+--
+-- Name: sys_scripts_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.sys_scripts ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.sys_scripts_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: sys_tasks; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.sys_tasks (
+    id bigint NOT NULL,
+    created_at timestamp with time zone,
+    updated_at timestamp with time zone,
+    deleted_at timestamp with time zone,
+    created_by bigint,
+    updated_by bigint,
+    deleted_by bigint,
+    remark character varying,
+    tenant_id bigint DEFAULT 0,
+    type character varying DEFAULT 'PERIODIC'::character varying,
+    type_name character varying,
+    task_payload jsonb,
+    cron_spec character varying,
+    task_options jsonb,
+    enable boolean DEFAULT false
+);
+
+
+--
+-- Name: TABLE sys_tasks; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.sys_tasks IS '任务表';
+
+
+--
+-- Name: COLUMN sys_tasks.id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_tasks.id IS 'id';
+
+
+--
+-- Name: COLUMN sys_tasks.created_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_tasks.created_at IS '创建时间';
+
+
+--
+-- Name: COLUMN sys_tasks.updated_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_tasks.updated_at IS '更新时间';
+
+
+--
+-- Name: COLUMN sys_tasks.deleted_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_tasks.deleted_at IS '删除时间';
+
+
+--
+-- Name: COLUMN sys_tasks.created_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_tasks.created_by IS '创建者ID';
+
+
+--
+-- Name: COLUMN sys_tasks.updated_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_tasks.updated_by IS '更新者ID';
+
+
+--
+-- Name: COLUMN sys_tasks.deleted_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_tasks.deleted_by IS '删除者ID';
+
+
+--
+-- Name: COLUMN sys_tasks.remark; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_tasks.remark IS '备注';
+
+
+--
+-- Name: COLUMN sys_tasks.tenant_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_tasks.tenant_id IS '租户ID';
+
+
+--
+-- Name: COLUMN sys_tasks.type; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_tasks.type IS '任务类型';
+
+
+--
+-- Name: COLUMN sys_tasks.type_name; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_tasks.type_name IS '任务执行类型名';
+
+
+--
+-- Name: COLUMN sys_tasks.task_payload; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_tasks.task_payload IS '任务数据';
+
+
+--
+-- Name: COLUMN sys_tasks.cron_spec; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_tasks.cron_spec IS 'cron表达式';
+
+
+--
+-- Name: COLUMN sys_tasks.task_options; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_tasks.task_options IS '任务选项';
+
+
+--
+-- Name: COLUMN sys_tasks.enable; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_tasks.enable IS '启用/禁用任务';
+
+
+--
+-- Name: sys_tasks_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.sys_tasks ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.sys_tasks_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: sys_tenants; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.sys_tenants (
+    id bigint NOT NULL,
+    created_at timestamp with time zone,
+    updated_at timestamp with time zone,
+    deleted_at timestamp with time zone,
+    created_by bigint,
+    updated_by bigint,
+    deleted_by bigint,
+    remark character varying,
+    name character varying,
+    code character varying,
+    logo_url character varying,
+    domain character varying,
+    industry character varying,
+    admin_user_id bigint,
+    status character varying DEFAULT 'ON'::character varying,
+    type character varying DEFAULT 'PAID'::character varying,
+    audit_status character varying,
+    subscription_at timestamp with time zone,
+    unsubscribe_at timestamp with time zone,
+    subscription_plan character varying,
+    expired_at timestamp with time zone,
+    plan_id bigint
+);
+
+
+--
+-- Name: TABLE sys_tenants; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.sys_tenants IS '租户表';
+
+
+--
+-- Name: COLUMN sys_tenants.id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_tenants.id IS 'id';
+
+
+--
+-- Name: COLUMN sys_tenants.created_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_tenants.created_at IS '创建时间';
+
+
+--
+-- Name: COLUMN sys_tenants.updated_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_tenants.updated_at IS '更新时间';
+
+
+--
+-- Name: COLUMN sys_tenants.deleted_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_tenants.deleted_at IS '删除时间';
+
+
+--
+-- Name: COLUMN sys_tenants.created_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_tenants.created_by IS '创建者ID';
+
+
+--
+-- Name: COLUMN sys_tenants.updated_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_tenants.updated_by IS '更新者ID';
+
+
+--
+-- Name: COLUMN sys_tenants.deleted_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_tenants.deleted_by IS '删除者ID';
+
+
+--
+-- Name: COLUMN sys_tenants.remark; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_tenants.remark IS '备注';
+
+
+--
+-- Name: COLUMN sys_tenants.name; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_tenants.name IS '租户名称';
+
+
+--
+-- Name: COLUMN sys_tenants.code; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_tenants.code IS '租户编号';
+
+
+--
+-- Name: COLUMN sys_tenants.logo_url; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_tenants.logo_url IS '租户logo地址';
+
+
+--
+-- Name: COLUMN sys_tenants.domain; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_tenants.domain IS '租户专属域名';
+
+
+--
+-- Name: COLUMN sys_tenants.industry; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_tenants.industry IS '所属行业';
+
+
+--
+-- Name: COLUMN sys_tenants.admin_user_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_tenants.admin_user_id IS '管理员用户ID';
+
+
+--
+-- Name: COLUMN sys_tenants.status; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_tenants.status IS '租户状态';
+
+
+--
+-- Name: COLUMN sys_tenants.type; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_tenants.type IS '租户类型';
+
+
+--
+-- Name: COLUMN sys_tenants.audit_status; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_tenants.audit_status IS '审核状态';
+
+
+--
+-- Name: COLUMN sys_tenants.subscription_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_tenants.subscription_at IS '订阅时间';
+
+
+--
+-- Name: COLUMN sys_tenants.unsubscribe_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_tenants.unsubscribe_at IS '取消订阅时间';
+
+
+--
+-- Name: COLUMN sys_tenants.subscription_plan; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_tenants.subscription_plan IS '订阅套餐';
+
+
+--
+-- Name: COLUMN sys_tenants.expired_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_tenants.expired_at IS '租户有效期';
+
+
+--
+-- Name: sys_tenants_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.sys_tenants ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.sys_tenants_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: sys_user_credentials; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.sys_user_credentials (
+    id bigint NOT NULL,
+    created_at timestamp with time zone,
+    updated_at timestamp with time zone,
+    deleted_at timestamp with time zone,
+    tenant_id bigint DEFAULT 0,
+    user_id bigint,
+    identity_type character varying DEFAULT 'USERNAME'::character varying,
+    identifier character varying,
+    credential_type character varying DEFAULT 'PASSWORD_HASH'::character varying,
+    credential character varying,
+    is_primary boolean DEFAULT false,
+    status character varying DEFAULT 'ENABLED'::character varying,
+    extra_info jsonb,
+    provider character varying,
+    provider_account_id character varying,
+    activate_token_hash character varying,
+    activate_token_expires_at timestamp with time zone,
+    activate_token_used_at timestamp with time zone,
+    reset_token_hash character varying,
+    reset_token_expires_at timestamp with time zone,
+    reset_token_used_at timestamp with time zone
+);
+
+
+--
+-- Name: TABLE sys_user_credentials; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.sys_user_credentials IS '用户认证信息表';
+
+
+--
+-- Name: COLUMN sys_user_credentials.id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_user_credentials.id IS 'id';
+
+
+--
+-- Name: COLUMN sys_user_credentials.created_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_user_credentials.created_at IS '创建时间';
+
+
+--
+-- Name: COLUMN sys_user_credentials.updated_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_user_credentials.updated_at IS '更新时间';
+
+
+--
+-- Name: COLUMN sys_user_credentials.deleted_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_user_credentials.deleted_at IS '删除时间';
+
+
+--
+-- Name: COLUMN sys_user_credentials.tenant_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_user_credentials.tenant_id IS '租户ID';
+
+
+--
+-- Name: COLUMN sys_user_credentials.user_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_user_credentials.user_id IS '关联主表的用户ID';
+
+
+--
+-- Name: COLUMN sys_user_credentials.identity_type; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_user_credentials.identity_type IS '认证方式类型';
+
+
+--
+-- Name: COLUMN sys_user_credentials.identifier; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_user_credentials.identifier IS '身份唯一标识符';
+
+
+--
+-- Name: COLUMN sys_user_credentials.credential_type; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_user_credentials.credential_type IS '凭证类型';
+
+
+--
+-- Name: COLUMN sys_user_credentials.credential; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_user_credentials.credential IS '凭证';
+
+
+--
+-- Name: COLUMN sys_user_credentials.is_primary; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_user_credentials.is_primary IS '是否主认证方式';
+
+
+--
+-- Name: COLUMN sys_user_credentials.status; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_user_credentials.status IS '凭证状态';
+
+
+--
+-- Name: COLUMN sys_user_credentials.extra_info; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_user_credentials.extra_info IS '扩展信息';
+
+
+--
+-- Name: COLUMN sys_user_credentials.provider; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_user_credentials.provider IS '第三方平台标识';
+
+
+--
+-- Name: COLUMN sys_user_credentials.provider_account_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_user_credentials.provider_account_id IS '第三方平台的账号唯一ID';
+
+
+--
+-- Name: COLUMN sys_user_credentials.activate_token_hash; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_user_credentials.activate_token_hash IS '激活令牌哈希（不要存明文）';
+
+
+--
+-- Name: COLUMN sys_user_credentials.activate_token_expires_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_user_credentials.activate_token_expires_at IS '激活令牌到期时间';
+
+
+--
+-- Name: COLUMN sys_user_credentials.activate_token_used_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_user_credentials.activate_token_used_at IS '激活令牌使用时间，单次使用时记录';
+
+
+--
+-- Name: COLUMN sys_user_credentials.reset_token_hash; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_user_credentials.reset_token_hash IS '重置密码令牌哈希（不要存明文）';
+
+
+--
+-- Name: COLUMN sys_user_credentials.reset_token_expires_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_user_credentials.reset_token_expires_at IS '重置令牌到期时间';
+
+
+--
+-- Name: COLUMN sys_user_credentials.reset_token_used_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_user_credentials.reset_token_used_at IS '重置令牌使用时间';
+
+
+--
+-- Name: sys_user_credentials_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.sys_user_credentials ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.sys_user_credentials_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: sys_user_mfa_factors; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.sys_user_mfa_factors (
+    id bigint NOT NULL,
+    created_at timestamp with time zone,
+    updated_at timestamp with time zone,
+    deleted_at timestamp with time zone,
+    tenant_id bigint DEFAULT 0,
+    user_id bigint,
+    method character varying DEFAULT 'TOTP'::character varying,
+    secret_hash character varying,
+    display_name character varying,
+    status character varying DEFAULT 'ENABLED'::character varying,
+    last_used_at timestamp with time zone
+);
+
+
+--
+-- Name: TABLE sys_user_mfa_factors; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.sys_user_mfa_factors IS '用户 MFA 因子表';
+
+
+--
+-- Name: COLUMN sys_user_mfa_factors.id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_user_mfa_factors.id IS 'id';
+
+
+--
+-- Name: COLUMN sys_user_mfa_factors.created_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_user_mfa_factors.created_at IS '创建时间';
+
+
+--
+-- Name: COLUMN sys_user_mfa_factors.updated_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_user_mfa_factors.updated_at IS '更新时间';
+
+
+--
+-- Name: COLUMN sys_user_mfa_factors.deleted_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_user_mfa_factors.deleted_at IS '删除时间';
+
+
+--
+-- Name: COLUMN sys_user_mfa_factors.tenant_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_user_mfa_factors.tenant_id IS '租户ID';
+
+
+--
+-- Name: COLUMN sys_user_mfa_factors.user_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_user_mfa_factors.user_id IS '关联主表的用户ID';
+
+
+--
+-- Name: COLUMN sys_user_mfa_factors.method; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_user_mfa_factors.method IS 'MFA 方法';
+
+
+--
+-- Name: COLUMN sys_user_mfa_factors.secret_hash; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_user_mfa_factors.secret_hash IS 'MFA secret 密文（AES-GCM 加密，base64 编码；TOTP 校验需还原明文）';
+
+
+--
+-- Name: COLUMN sys_user_mfa_factors.display_name; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_user_mfa_factors.display_name IS '设备/因子展示名（用户自定义）';
+
+
+--
+-- Name: COLUMN sys_user_mfa_factors.status; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_user_mfa_factors.status IS '因子状态';
+
+
+--
+-- Name: COLUMN sys_user_mfa_factors.last_used_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_user_mfa_factors.last_used_at IS '最近一次用于验证的时间';
+
+
+--
+-- Name: sys_user_mfa_factors_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.sys_user_mfa_factors ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.sys_user_mfa_factors_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: sys_user_org_units; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.sys_user_org_units (
+    id bigint NOT NULL,
+    created_at timestamp with time zone,
+    updated_at timestamp with time zone,
+    deleted_at timestamp with time zone,
+    created_by bigint,
+    updated_by bigint,
+    deleted_by bigint,
+    tenant_id bigint DEFAULT 0,
+    remark character varying,
+    user_id bigint NOT NULL,
+    org_unit_id bigint NOT NULL,
+    position_id bigint,
+    start_at timestamp with time zone,
+    end_at timestamp with time zone,
+    assigned_at timestamp with time zone,
+    assigned_by bigint,
+    is_primary boolean DEFAULT false NOT NULL,
+    status character varying DEFAULT 'ACTIVE'::character varying
+);
+
+
+--
+-- Name: TABLE sys_user_org_units; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.sys_user_org_units IS '成员与组织单元关联表';
+
+
+--
+-- Name: COLUMN sys_user_org_units.id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_user_org_units.id IS 'id';
+
+
+--
+-- Name: COLUMN sys_user_org_units.created_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_user_org_units.created_at IS '创建时间';
+
+
+--
+-- Name: COLUMN sys_user_org_units.updated_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_user_org_units.updated_at IS '更新时间';
+
+
+--
+-- Name: COLUMN sys_user_org_units.deleted_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_user_org_units.deleted_at IS '删除时间';
+
+
+--
+-- Name: COLUMN sys_user_org_units.created_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_user_org_units.created_by IS '创建者ID';
+
+
+--
+-- Name: COLUMN sys_user_org_units.updated_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_user_org_units.updated_by IS '更新者ID';
+
+
+--
+-- Name: COLUMN sys_user_org_units.deleted_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_user_org_units.deleted_by IS '删除者ID';
+
+
+--
+-- Name: COLUMN sys_user_org_units.tenant_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_user_org_units.tenant_id IS '租户ID';
+
+
+--
+-- Name: COLUMN sys_user_org_units.remark; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_user_org_units.remark IS '备注';
+
+
+--
+-- Name: COLUMN sys_user_org_units.user_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_user_org_units.user_id IS '用户ID';
+
+
+--
+-- Name: COLUMN sys_user_org_units.org_unit_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_user_org_units.org_unit_id IS '组织单元 ID';
+
+
+--
+-- Name: COLUMN sys_user_org_units.position_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_user_org_units.position_id IS '岗位 ID（可选，冗余）';
+
+
+--
+-- Name: COLUMN sys_user_org_units.start_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_user_org_units.start_at IS '生效时间（UTC）';
+
+
+--
+-- Name: COLUMN sys_user_org_units.end_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_user_org_units.end_at IS '结束时间（UTC）';
+
+
+--
+-- Name: COLUMN sys_user_org_units.assigned_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_user_org_units.assigned_at IS '分配时间（UTC）';
+
+
+--
+-- Name: COLUMN sys_user_org_units.assigned_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_user_org_units.assigned_by IS '分配者用户 ID';
+
+
+--
+-- Name: COLUMN sys_user_org_units.is_primary; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_user_org_units.is_primary IS '是否为主所属';
+
+
+--
+-- Name: COLUMN sys_user_org_units.status; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_user_org_units.status IS '关联状态';
+
+
+--
+-- Name: sys_user_org_units_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.sys_user_org_units ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.sys_user_org_units_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: sys_user_positions; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.sys_user_positions (
+    id bigint NOT NULL,
+    created_at timestamp with time zone,
+    updated_at timestamp with time zone,
+    deleted_at timestamp with time zone,
+    created_by bigint,
+    updated_by bigint,
+    deleted_by bigint,
+    tenant_id bigint DEFAULT 0,
+    remark character varying,
+    user_id bigint NOT NULL,
+    position_id bigint NOT NULL,
+    is_primary boolean DEFAULT false,
+    start_at timestamp with time zone,
+    end_at timestamp with time zone,
+    assigned_at timestamp with time zone,
+    assigned_by bigint,
+    status character varying DEFAULT 'ACTIVE'::character varying NOT NULL
+);
+
+
+--
+-- Name: TABLE sys_user_positions; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.sys_user_positions IS '用户与岗位关联表';
+
+
+--
+-- Name: COLUMN sys_user_positions.id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_user_positions.id IS 'id';
+
+
+--
+-- Name: COLUMN sys_user_positions.created_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_user_positions.created_at IS '创建时间';
+
+
+--
+-- Name: COLUMN sys_user_positions.updated_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_user_positions.updated_at IS '更新时间';
+
+
+--
+-- Name: COLUMN sys_user_positions.deleted_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_user_positions.deleted_at IS '删除时间';
+
+
+--
+-- Name: COLUMN sys_user_positions.created_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_user_positions.created_by IS '创建者ID';
+
+
+--
+-- Name: COLUMN sys_user_positions.updated_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_user_positions.updated_by IS '更新者ID';
+
+
+--
+-- Name: COLUMN sys_user_positions.deleted_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_user_positions.deleted_by IS '删除者ID';
+
+
+--
+-- Name: COLUMN sys_user_positions.tenant_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_user_positions.tenant_id IS '租户ID';
+
+
+--
+-- Name: COLUMN sys_user_positions.remark; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_user_positions.remark IS '备注';
+
+
+--
+-- Name: COLUMN sys_user_positions.user_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_user_positions.user_id IS '用户ID';
+
+
+--
+-- Name: COLUMN sys_user_positions.position_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_user_positions.position_id IS '岗位ID';
+
+
+--
+-- Name: COLUMN sys_user_positions.is_primary; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_user_positions.is_primary IS '是否主岗位';
+
+
+--
+-- Name: COLUMN sys_user_positions.start_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_user_positions.start_at IS '生效时间';
+
+
+--
+-- Name: COLUMN sys_user_positions.end_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_user_positions.end_at IS '失效时间';
+
+
+--
+-- Name: COLUMN sys_user_positions.assigned_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_user_positions.assigned_at IS '岗位分配时间';
+
+
+--
+-- Name: COLUMN sys_user_positions.assigned_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_user_positions.assigned_by IS '分配者用户 ID';
+
+
+--
+-- Name: COLUMN sys_user_positions.status; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_user_positions.status IS '岗位状态';
+
+
+--
+-- Name: sys_user_positions_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.sys_user_positions ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.sys_user_positions_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: sys_user_roles; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.sys_user_roles (
+    id bigint NOT NULL,
+    created_at timestamp with time zone,
+    updated_at timestamp with time zone,
+    deleted_at timestamp with time zone,
+    created_by bigint,
+    updated_by bigint,
+    deleted_by bigint,
+    tenant_id bigint DEFAULT 0,
+    user_id bigint NOT NULL,
+    role_id bigint NOT NULL,
+    start_at timestamp with time zone,
+    end_at timestamp with time zone,
+    assigned_at timestamp with time zone,
+    assigned_by bigint,
+    is_primary boolean DEFAULT false NOT NULL,
+    status character varying DEFAULT 'ACTIVE'::character varying NOT NULL
+);
+
+
+--
+-- Name: TABLE sys_user_roles; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.sys_user_roles IS '用户与角色关联表';
+
+
+--
+-- Name: COLUMN sys_user_roles.id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_user_roles.id IS 'id';
+
+
+--
+-- Name: COLUMN sys_user_roles.created_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_user_roles.created_at IS '创建时间';
+
+
+--
+-- Name: COLUMN sys_user_roles.updated_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_user_roles.updated_at IS '更新时间';
+
+
+--
+-- Name: COLUMN sys_user_roles.deleted_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_user_roles.deleted_at IS '删除时间';
+
+
+--
+-- Name: COLUMN sys_user_roles.created_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_user_roles.created_by IS '创建者ID';
+
+
+--
+-- Name: COLUMN sys_user_roles.updated_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_user_roles.updated_by IS '更新者ID';
+
+
+--
+-- Name: COLUMN sys_user_roles.deleted_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_user_roles.deleted_by IS '删除者ID';
+
+
+--
+-- Name: COLUMN sys_user_roles.tenant_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_user_roles.tenant_id IS '租户ID';
+
+
+--
+-- Name: COLUMN sys_user_roles.user_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_user_roles.user_id IS '用户ID';
+
+
+--
+-- Name: COLUMN sys_user_roles.role_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_user_roles.role_id IS '角色ID';
+
+
+--
+-- Name: COLUMN sys_user_roles.start_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_user_roles.start_at IS '生效时间（UTC）';
+
+
+--
+-- Name: COLUMN sys_user_roles.end_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_user_roles.end_at IS '失效时间（UTC）';
+
+
+--
+-- Name: COLUMN sys_user_roles.assigned_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_user_roles.assigned_at IS '分配时间（UTC）';
+
+
+--
+-- Name: COLUMN sys_user_roles.assigned_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_user_roles.assigned_by IS '分配者用户ID';
+
+
+--
+-- Name: COLUMN sys_user_roles.is_primary; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_user_roles.is_primary IS '是否为主角色';
+
+
+--
+-- Name: COLUMN sys_user_roles.status; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_user_roles.status IS '岗位状态';
+
+
+--
+-- Name: sys_user_roles_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.sys_user_roles ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.sys_user_roles_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: sys_users; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.sys_users (
+    id bigint NOT NULL,
+    created_by bigint,
+    updated_by bigint,
+    deleted_by bigint,
+    created_at timestamp with time zone,
+    updated_at timestamp with time zone,
+    deleted_at timestamp with time zone,
+    remark character varying,
+    tenant_id bigint DEFAULT 0,
+    username character varying,
+    nickname character varying,
+    realname character varying,
+    email character varying,
+    mobile character varying DEFAULT ''::character varying,
+    telephone character varying DEFAULT ''::character varying,
+    avatar character varying,
+    address character varying DEFAULT ''::character varying,
+    region character varying DEFAULT ''::character varying,
+    locale character varying DEFAULT ''::character varying,
+    description character varying,
+    gender character varying DEFAULT 'SECRET'::character varying,
+    last_login_at timestamp with time zone,
+    last_login_ip character varying,
+    locked_until timestamp with time zone,
+    status character varying DEFAULT 'NORMAL'::character varying
+);
+
+
+--
+-- Name: TABLE sys_users; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.sys_users IS '用户表';
+
+
+--
+-- Name: COLUMN sys_users.id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_users.id IS 'id';
+
+
+--
+-- Name: COLUMN sys_users.created_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_users.created_by IS '创建者ID';
+
+
+--
+-- Name: COLUMN sys_users.updated_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_users.updated_by IS '更新者ID';
+
+
+--
+-- Name: COLUMN sys_users.deleted_by; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_users.deleted_by IS '删除者ID';
+
+
+--
+-- Name: COLUMN sys_users.created_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_users.created_at IS '创建时间';
+
+
+--
+-- Name: COLUMN sys_users.updated_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_users.updated_at IS '更新时间';
+
+
+--
+-- Name: COLUMN sys_users.deleted_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_users.deleted_at IS '删除时间';
+
+
+--
+-- Name: COLUMN sys_users.remark; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_users.remark IS '备注';
+
+
+--
+-- Name: COLUMN sys_users.tenant_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_users.tenant_id IS '租户ID';
+
+
+--
+-- Name: COLUMN sys_users.username; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_users.username IS '用户名';
+
+
+--
+-- Name: COLUMN sys_users.nickname; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_users.nickname IS '昵称';
+
+
+--
+-- Name: COLUMN sys_users.realname; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_users.realname IS '真实名字';
+
+
+--
+-- Name: COLUMN sys_users.email; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_users.email IS '电子邮箱';
+
+
+--
+-- Name: COLUMN sys_users.mobile; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_users.mobile IS '手机号码';
+
+
+--
+-- Name: COLUMN sys_users.telephone; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_users.telephone IS '座机号码';
+
+
+--
+-- Name: COLUMN sys_users.avatar; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_users.avatar IS '头像';
+
+
+--
+-- Name: COLUMN sys_users.address; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_users.address IS '地址';
+
+
+--
+-- Name: COLUMN sys_users.region; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_users.region IS '国家地区';
+
+
+--
+-- Name: COLUMN sys_users.locale; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_users.locale IS '偏好语言（事务性邮件按此渲染；zh-CN/en-US，空=按请求 Accept-Language）';
+
+
+--
+-- Name: COLUMN sys_users.description; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_users.description IS '个人说明';
+
+
+--
+-- Name: COLUMN sys_users.gender; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_users.gender IS '性别';
+
+
+--
+-- Name: COLUMN sys_users.last_login_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_users.last_login_at IS '最后一次登录的时间';
+
+
+--
+-- Name: COLUMN sys_users.last_login_ip; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_users.last_login_ip IS '最后一次登录的IP';
+
+
+--
+-- Name: COLUMN sys_users.locked_until; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_users.locked_until IS '锁定截止时间';
+
+
+--
+-- Name: COLUMN sys_users.status; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.sys_users.status IS '状态';
+
+
+--
+-- Name: sys_users_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.sys_users ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.sys_users_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: files files_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.files
+    ADD CONSTRAINT files_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: internal_message_categories internal_message_categories_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.internal_message_categories
+    ADD CONSTRAINT internal_message_categories_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: internal_message_recipients internal_message_recipients_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.internal_message_recipients
+    ADD CONSTRAINT internal_message_recipients_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: internal_messages internal_messages_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.internal_messages
+    ADD CONSTRAINT internal_messages_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: monitor_alert_rules monitor_alert_rules_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.monitor_alert_rules
+    ADD CONSTRAINT monitor_alert_rules_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: notification_preferences notification_preferences_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.notification_preferences
+    ADD CONSTRAINT notification_preferences_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: notification_templates notification_templates_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.notification_templates
+    ADD CONSTRAINT notification_templates_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: sys_access_keys sys_access_keys_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sys_access_keys
+    ADD CONSTRAINT sys_access_keys_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: sys_ai_agent_apps sys_ai_agent_apps_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sys_ai_agent_apps
+    ADD CONSTRAINT sys_ai_agent_apps_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: sys_ai_agent_runs sys_ai_agent_runs_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sys_ai_agent_runs
+    ADD CONSTRAINT sys_ai_agent_runs_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: sys_ai_chunks sys_ai_chunks_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sys_ai_chunks
+    ADD CONSTRAINT sys_ai_chunks_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: sys_ai_conversations sys_ai_conversations_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sys_ai_conversations
+    ADD CONSTRAINT sys_ai_conversations_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: sys_ai_docs sys_ai_docs_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sys_ai_docs
+    ADD CONSTRAINT sys_ai_docs_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: sys_ai_knowledge_bases sys_ai_knowledge_bases_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sys_ai_knowledge_bases
+    ADD CONSTRAINT sys_ai_knowledge_bases_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: sys_ai_messages sys_ai_messages_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sys_ai_messages
+    ADD CONSTRAINT sys_ai_messages_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: sys_ai_providers sys_ai_providers_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sys_ai_providers
+    ADD CONSTRAINT sys_ai_providers_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: sys_ai_usage_logs sys_ai_usage_logs_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sys_ai_usage_logs
+    ADD CONSTRAINT sys_ai_usage_logs_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: sys_api_audit_logs sys_api_audit_logs_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sys_api_audit_logs
+    ADD CONSTRAINT sys_api_audit_logs_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: sys_apis sys_apis_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sys_apis
+    ADD CONSTRAINT sys_apis_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: sys_configs sys_configs_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sys_configs
+    ADD CONSTRAINT sys_configs_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: sys_data_access_audit_logs sys_data_access_audit_logs_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sys_data_access_audit_logs
+    ADD CONSTRAINT sys_data_access_audit_logs_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: sys_dict_entries sys_dict_entries_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sys_dict_entries
+    ADD CONSTRAINT sys_dict_entries_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: sys_dict_entry_i18n sys_dict_entry_i18n_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sys_dict_entry_i18n
+    ADD CONSTRAINT sys_dict_entry_i18n_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: sys_dict_types sys_dict_types_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sys_dict_types
+    ADD CONSTRAINT sys_dict_types_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: sys_languages sys_languages_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sys_languages
+    ADD CONSTRAINT sys_languages_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: sys_login_audit_logs sys_login_audit_logs_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sys_login_audit_logs
+    ADD CONSTRAINT sys_login_audit_logs_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: sys_login_policies sys_login_policies_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sys_login_policies
+    ADD CONSTRAINT sys_login_policies_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: sys_membership_org_units sys_membership_org_units_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sys_membership_org_units
+    ADD CONSTRAINT sys_membership_org_units_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: sys_membership_positions sys_membership_positions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sys_membership_positions
+    ADD CONSTRAINT sys_membership_positions_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: sys_membership_roles sys_membership_roles_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sys_membership_roles
+    ADD CONSTRAINT sys_membership_roles_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: sys_memberships sys_memberships_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sys_memberships
+    ADD CONSTRAINT sys_memberships_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: sys_menus sys_menus_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sys_menus
+    ADD CONSTRAINT sys_menus_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: sys_notification_channels sys_notification_channels_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sys_notification_channels
+    ADD CONSTRAINT sys_notification_channels_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: sys_notification_deliveries sys_notification_deliveries_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sys_notification_deliveries
+    ADD CONSTRAINT sys_notification_deliveries_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: sys_notification_rules sys_notification_rules_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sys_notification_rules
+    ADD CONSTRAINT sys_notification_rules_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: sys_operation_audit_logs sys_operation_audit_logs_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sys_operation_audit_logs
+    ADD CONSTRAINT sys_operation_audit_logs_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: sys_org_units sys_org_units_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sys_org_units
+    ADD CONSTRAINT sys_org_units_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: sys_permission_apis sys_permission_apis_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sys_permission_apis
+    ADD CONSTRAINT sys_permission_apis_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: sys_permission_audit_logs sys_permission_audit_logs_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sys_permission_audit_logs
+    ADD CONSTRAINT sys_permission_audit_logs_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: sys_permission_groups sys_permission_groups_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sys_permission_groups
+    ADD CONSTRAINT sys_permission_groups_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: sys_permission_menus sys_permission_menus_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sys_permission_menus
+    ADD CONSTRAINT sys_permission_menus_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: sys_permission_policies sys_permission_policies_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sys_permission_policies
+    ADD CONSTRAINT sys_permission_policies_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: sys_permissions sys_permissions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sys_permissions
+    ADD CONSTRAINT sys_permissions_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: sys_plan_modules sys_plan_modules_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sys_plan_modules
+    ADD CONSTRAINT sys_plan_modules_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: sys_plan_quotas sys_plan_quotas_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sys_plan_quotas
+    ADD CONSTRAINT sys_plan_quotas_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: sys_plans sys_plans_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sys_plans
+    ADD CONSTRAINT sys_plans_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: sys_policy_evaluation_logs sys_policy_evaluation_logs_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sys_policy_evaluation_logs
+    ADD CONSTRAINT sys_policy_evaluation_logs_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: sys_positions sys_positions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sys_positions
+    ADD CONSTRAINT sys_positions_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: sys_role_field_permissions sys_role_field_permissions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sys_role_field_permissions
+    ADD CONSTRAINT sys_role_field_permissions_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: sys_role_metadata sys_role_metadata_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sys_role_metadata
+    ADD CONSTRAINT sys_role_metadata_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: sys_role_org_units sys_role_org_units_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sys_role_org_units
+    ADD CONSTRAINT sys_role_org_units_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: sys_role_permissions sys_role_permissions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sys_role_permissions
+    ADD CONSTRAINT sys_role_permissions_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: sys_roles sys_roles_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sys_roles
+    ADD CONSTRAINT sys_roles_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: sys_script_logs sys_script_logs_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sys_script_logs
+    ADD CONSTRAINT sys_script_logs_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: sys_scripts sys_scripts_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sys_scripts
+    ADD CONSTRAINT sys_scripts_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: sys_tasks sys_tasks_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sys_tasks
+    ADD CONSTRAINT sys_tasks_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: sys_tenants sys_tenants_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sys_tenants
+    ADD CONSTRAINT sys_tenants_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: sys_user_credentials sys_user_credentials_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sys_user_credentials
+    ADD CONSTRAINT sys_user_credentials_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: sys_user_mfa_factors sys_user_mfa_factors_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sys_user_mfa_factors
+    ADD CONSTRAINT sys_user_mfa_factors_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: sys_user_org_units sys_user_org_units_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sys_user_org_units
+    ADD CONSTRAINT sys_user_org_units_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: sys_user_positions sys_user_positions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sys_user_positions
+    ADD CONSTRAINT sys_user_positions_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: sys_user_roles sys_user_roles_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sys_user_roles
+    ADD CONSTRAINT sys_user_roles_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: sys_users sys_users_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sys_users
+    ADD CONSTRAINT sys_users_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: dataaccessauditlog_access_type; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX dataaccessauditlog_access_type ON public.sys_data_access_audit_logs USING btree (access_type);
+
+
+--
+-- Name: dataaccessauditlog_access_type_success_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX dataaccessauditlog_access_type_success_created_at ON public.sys_data_access_audit_logs USING btree (access_type, success, created_at);
+
+
+--
+-- Name: dataaccessauditlog_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX dataaccessauditlog_created_at ON public.sys_data_access_audit_logs USING btree (created_at);
+
+
+--
+-- Name: dataaccessauditlog_data_masked; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX dataaccessauditlog_data_masked ON public.sys_data_access_audit_logs USING btree (data_masked);
+
+
+--
+-- Name: dataaccessauditlog_data_source_table_name_data_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX dataaccessauditlog_data_source_table_name_data_id ON public.sys_data_access_audit_logs USING btree (data_source, table_name, data_id);
+
+
+--
+-- Name: dataaccessauditlog_ip_address; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX dataaccessauditlog_ip_address ON public.sys_data_access_audit_logs USING btree (ip_address);
+
+
+--
+-- Name: dataaccessauditlog_ip_address_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX dataaccessauditlog_ip_address_created_at ON public.sys_data_access_audit_logs USING btree (ip_address, created_at);
+
+
+--
+-- Name: dataaccessauditlog_request_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX dataaccessauditlog_request_id ON public.sys_data_access_audit_logs USING btree (request_id);
+
+
+--
+-- Name: dataaccessauditlog_sql_digest; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX dataaccessauditlog_sql_digest ON public.sys_data_access_audit_logs USING btree (sql_digest);
+
+
+--
+-- Name: dataaccessauditlog_tenant_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX dataaccessauditlog_tenant_id ON public.sys_data_access_audit_logs USING btree (tenant_id);
+
+
+--
+-- Name: dataaccessauditlog_tenant_id_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX dataaccessauditlog_tenant_id_created_at ON public.sys_data_access_audit_logs USING btree (tenant_id, created_at);
+
+
+--
+-- Name: dataaccessauditlog_tenant_id_user_id_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX dataaccessauditlog_tenant_id_user_id_created_at ON public.sys_data_access_audit_logs USING btree (tenant_id, user_id, created_at);
+
+
+--
+-- Name: dataaccessauditlog_trace_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX dataaccessauditlog_trace_id ON public.sys_data_access_audit_logs USING btree (trace_id);
+
+
+--
+-- Name: dataaccessauditlog_user_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX dataaccessauditlog_user_id ON public.sys_data_access_audit_logs USING btree (user_id);
+
+
+--
+-- Name: dataaccessauditlog_username; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX dataaccessauditlog_username ON public.sys_data_access_audit_logs USING btree (username);
+
+
+--
+-- Name: idx_files_bucket_name; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_files_bucket_name ON public.files USING btree (bucket_name);
+
+
+--
+-- Name: idx_files_content_hash; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_files_content_hash ON public.files USING btree (content_hash);
+
+
+--
+-- Name: idx_files_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_files_created_at ON public.files USING btree (created_at);
+
+
+--
+-- Name: idx_files_extension; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_files_extension ON public.files USING btree (extension);
+
+
+--
+-- Name: idx_files_file_name; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_files_file_name ON public.files USING btree (file_name);
+
+
+--
+-- Name: idx_files_size; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_files_size ON public.files USING btree (size);
+
+
+--
+-- Name: idx_files_tenant_content_hash; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_files_tenant_content_hash ON public.files USING btree (tenant_id, content_hash);
+
+
+--
+-- Name: idx_files_tenant_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_files_tenant_id ON public.files USING btree (tenant_id);
+
+
+--
+-- Name: idx_internal_msg_cat_tenant_code; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX idx_internal_msg_cat_tenant_code ON public.internal_message_categories USING btree (tenant_id, code);
+
+
+--
+-- Name: idx_internal_msg_cat_tenant_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_internal_msg_cat_tenant_created_at ON public.internal_message_categories USING btree (tenant_id, created_at);
+
+
+--
+-- Name: idx_internal_msg_cat_tenant_created_by; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_internal_msg_cat_tenant_created_by ON public.internal_message_categories USING btree (tenant_id, created_by);
+
+
+--
+-- Name: idx_internal_msg_cat_tenant_enabled; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_internal_msg_cat_tenant_enabled ON public.internal_message_categories USING btree (tenant_id, is_enabled);
+
+
+--
+-- Name: idx_internal_msg_cat_tenant_name; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_internal_msg_cat_tenant_name ON public.internal_message_categories USING btree (tenant_id, name);
+
+
+--
+-- Name: idx_internal_msg_recipient_recipient_status_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_internal_msg_recipient_recipient_status_created_at ON public.internal_message_recipients USING btree (recipient_user_id, status, created_at);
+
+
+--
+-- Name: idx_internal_msg_recipient_tenant_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_internal_msg_recipient_tenant_created_at ON public.internal_message_recipients USING btree (tenant_id, created_at);
+
+
+--
+-- Name: idx_internal_msg_recipient_tenant_message; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_internal_msg_recipient_tenant_message ON public.internal_message_recipients USING btree (tenant_id, message_id);
+
+
+--
+-- Name: idx_internal_msg_recipient_tenant_recipient_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_internal_msg_recipient_tenant_recipient_created_at ON public.internal_message_recipients USING btree (tenant_id, recipient_user_id, created_at);
+
+
+--
+-- Name: idx_internal_msg_recipient_tenant_status_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_internal_msg_recipient_tenant_status_created_at ON public.internal_message_recipients USING btree (tenant_id, status, created_at);
+
+
+--
+-- Name: idx_internal_msg_tenant_category; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_internal_msg_tenant_category ON public.internal_messages USING btree (tenant_id, category_id);
+
+
+--
+-- Name: idx_internal_msg_tenant_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_internal_msg_tenant_created_at ON public.internal_messages USING btree (tenant_id, created_at);
+
+
+--
+-- Name: idx_internal_msg_tenant_created_by_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_internal_msg_tenant_created_by_created_at ON public.internal_messages USING btree (tenant_id, created_by, created_at);
+
+
+--
+-- Name: idx_internal_msg_tenant_sender_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_internal_msg_tenant_sender_created_at ON public.internal_messages USING btree (tenant_id, sender_id, created_at);
+
+
+--
+-- Name: idx_internal_msg_tenant_status_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_internal_msg_tenant_status_created_at ON public.internal_messages USING btree (tenant_id, status, created_at);
+
+
+--
+-- Name: idx_monitor_alert_enabled; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_monitor_alert_enabled ON public.monitor_alert_rules USING btree (is_enabled);
+
+
+--
+-- Name: idx_mou_assigned_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_mou_assigned_at ON public.sys_membership_org_units USING btree (assigned_at);
+
+
+--
+-- Name: idx_mou_assigned_by; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_mou_assigned_by ON public.sys_membership_org_units USING btree (assigned_by);
+
+
+--
+-- Name: idx_mou_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_mou_created_at ON public.sys_membership_org_units USING btree (created_at);
+
+
+--
+-- Name: idx_mou_created_by_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_mou_created_by_created_at ON public.sys_membership_org_units USING btree (created_by, created_at);
+
+
+--
+-- Name: idx_mou_end_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_mou_end_at ON public.sys_membership_org_units USING btree (end_at);
+
+
+--
+-- Name: idx_mou_is_primary; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_mou_is_primary ON public.sys_membership_org_units USING btree (is_primary);
+
+
+--
+-- Name: idx_mou_membership_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_mou_membership_id ON public.sys_membership_org_units USING btree (membership_id);
+
+
+--
+-- Name: idx_mou_org_unit_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_mou_org_unit_id ON public.sys_membership_org_units USING btree (org_unit_id);
+
+
+--
+-- Name: idx_mou_position_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_mou_position_id ON public.sys_membership_org_units USING btree (position_id);
+
+
+--
+-- Name: idx_mou_role_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_mou_role_id ON public.sys_membership_org_units USING btree (role_id);
+
+
+--
+-- Name: idx_mou_start_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_mou_start_at ON public.sys_membership_org_units USING btree (start_at);
+
+
+--
+-- Name: idx_mou_status; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_mou_status ON public.sys_membership_org_units USING btree (status);
+
+
+--
+-- Name: idx_mou_tenant_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_mou_tenant_created_at ON public.sys_membership_org_units USING btree (tenant_id, created_at);
+
+
+--
+-- Name: idx_mou_tenant_membership; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_mou_tenant_membership ON public.sys_membership_org_units USING btree (tenant_id, membership_id);
+
+
+--
+-- Name: idx_mou_tenant_org_unit; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_mou_tenant_org_unit ON public.sys_membership_org_units USING btree (tenant_id, org_unit_id);
+
+
+--
+-- Name: idx_mp_assigned_by; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_mp_assigned_by ON public.sys_membership_positions USING btree (assigned_by);
+
+
+--
+-- Name: idx_mp_is_primary; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_mp_is_primary ON public.sys_membership_positions USING btree (is_primary);
+
+
+--
+-- Name: idx_mp_membership_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_mp_membership_id ON public.sys_membership_positions USING btree (membership_id);
+
+
+--
+-- Name: idx_mp_position_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_mp_position_id ON public.sys_membership_positions USING btree (position_id);
+
+
+--
+-- Name: idx_mp_status; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_mp_status ON public.sys_membership_positions USING btree (status);
+
+
+--
+-- Name: idx_mp_tenant_assigned_by; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_mp_tenant_assigned_by ON public.sys_membership_positions USING btree (tenant_id, assigned_by);
+
+
+--
+-- Name: idx_mp_tenant_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_mp_tenant_id ON public.sys_membership_positions USING btree (tenant_id);
+
+
+--
+-- Name: idx_mp_tenant_membership; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_mp_tenant_membership ON public.sys_membership_positions USING btree (tenant_id, membership_id);
+
+
+--
+-- Name: idx_mp_tenant_membership_primary; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_mp_tenant_membership_primary ON public.sys_membership_positions USING btree (tenant_id, membership_id, is_primary);
+
+
+--
+-- Name: idx_mp_tenant_position; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_mp_tenant_position ON public.sys_membership_positions USING btree (tenant_id, position_id);
+
+
+--
+-- Name: idx_mr_assigned_by; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_mr_assigned_by ON public.sys_membership_roles USING btree (assigned_by);
+
+
+--
+-- Name: idx_mr_is_primary; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_mr_is_primary ON public.sys_membership_roles USING btree (is_primary);
+
+
+--
+-- Name: idx_mr_membership_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_mr_membership_id ON public.sys_membership_roles USING btree (membership_id);
+
+
+--
+-- Name: idx_mr_role_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_mr_role_id ON public.sys_membership_roles USING btree (role_id);
+
+
+--
+-- Name: idx_mr_status; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_mr_status ON public.sys_membership_roles USING btree (status);
+
+
+--
+-- Name: idx_mr_tenant_assigned_by; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_mr_tenant_assigned_by ON public.sys_membership_roles USING btree (tenant_id, assigned_by);
+
+
+--
+-- Name: idx_mr_tenant_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_mr_tenant_id ON public.sys_membership_roles USING btree (tenant_id);
+
+
+--
+-- Name: idx_mr_tenant_membership; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_mr_tenant_membership ON public.sys_membership_roles USING btree (tenant_id, membership_id);
+
+
+--
+-- Name: idx_mr_tenant_membership_primary; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_mr_tenant_membership_primary ON public.sys_membership_roles USING btree (tenant_id, membership_id, is_primary);
+
+
+--
+-- Name: idx_mr_tenant_role; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_mr_tenant_role ON public.sys_membership_roles USING btree (tenant_id, role_id);
+
+
+--
+-- Name: idx_notification_tpl_enabled; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_notification_tpl_enabled ON public.notification_templates USING btree (is_enabled);
+
+
+--
+-- Name: idx_org_contact_user_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_org_contact_user_id ON public.sys_org_units USING btree (contact_user_id);
+
+
+--
+-- Name: idx_org_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_org_created_at ON public.sys_org_units USING btree (created_at);
+
+
+--
+-- Name: idx_org_created_by_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_org_created_by_created_at ON public.sys_org_units USING btree (created_by, created_at);
+
+
+--
+-- Name: idx_org_end_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_org_end_at ON public.sys_org_units USING btree (end_at);
+
+
+--
+-- Name: idx_org_external_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_org_external_id ON public.sys_org_units USING btree (external_id);
+
+
+--
+-- Name: idx_org_is_legal_entity; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_org_is_legal_entity ON public.sys_org_units USING btree (is_legal_entity);
+
+
+--
+-- Name: idx_org_leader_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_org_leader_id ON public.sys_org_units USING btree (leader_id);
+
+
+--
+-- Name: idx_org_parent_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_org_parent_id ON public.sys_org_units USING btree (parent_id);
+
+
+--
+-- Name: idx_org_start_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_org_start_at ON public.sys_org_units USING btree (start_at);
+
+
+--
+-- Name: idx_org_tenant_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_org_tenant_created_at ON public.sys_org_units USING btree (tenant_id, created_at);
+
+
+--
+-- Name: idx_org_tenant_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_org_tenant_id ON public.sys_org_units USING btree (tenant_id);
+
+
+--
+-- Name: idx_org_tenant_path; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_org_tenant_path ON public.sys_org_units USING btree (tenant_id, path);
+
+
+--
+-- Name: idx_org_type; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_org_type ON public.sys_org_units USING btree (type);
+
+
+--
+-- Name: idx_perm_api_api_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_perm_api_api_id ON public.sys_permission_apis USING btree (api_id);
+
+
+--
+-- Name: idx_perm_api_permission_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_perm_api_permission_id ON public.sys_permission_apis USING btree (permission_id);
+
+
+--
+-- Name: idx_perm_group_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_perm_group_id ON public.sys_permissions USING btree (group_id);
+
+
+--
+-- Name: idx_perm_group_module; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_perm_group_module ON public.sys_permission_groups USING btree (module);
+
+
+--
+-- Name: idx_perm_group_name; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_perm_group_name ON public.sys_permission_groups USING btree (name);
+
+
+--
+-- Name: idx_perm_group_parent_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_perm_group_parent_id ON public.sys_permission_groups USING btree (parent_id);
+
+
+--
+-- Name: idx_perm_menu_menu_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_perm_menu_menu_id ON public.sys_permission_menus USING btree (menu_id);
+
+
+--
+-- Name: idx_perm_menu_permission_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_perm_menu_permission_id ON public.sys_permission_menus USING btree (permission_id);
+
+
+--
+-- Name: idx_perm_name; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_perm_name ON public.sys_permissions USING btree (name);
+
+
+--
+-- Name: idx_perm_policy_engine; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_perm_policy_engine ON public.sys_permission_policies USING btree (policy_engine);
+
+
+--
+-- Name: idx_perm_policy_perm; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_perm_policy_perm ON public.sys_permission_policies USING btree (permission_id);
+
+
+--
+-- Name: idx_perm_policy_perm_version; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_perm_policy_perm_version ON public.sys_permission_policies USING btree (permission_id, version);
+
+
+--
+-- Name: idx_perm_policy_version; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_perm_policy_version ON public.sys_permission_policies USING btree (version);
+
+
+--
+-- Name: idx_permission_audit_target; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_permission_audit_target ON public.sys_permission_audit_logs USING btree (target_type, target_id);
+
+
+--
+-- Name: idx_permission_audit_tenant_action_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_permission_audit_tenant_action_created_at ON public.sys_permission_audit_logs USING btree (tenant_id, action, created_at);
+
+
+--
+-- Name: idx_permission_audit_tenant_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_permission_audit_tenant_created_at ON public.sys_permission_audit_logs USING btree (tenant_id, created_at);
+
+
+--
+-- Name: idx_permission_audit_tenant_ip; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_permission_audit_tenant_ip ON public.sys_permission_audit_logs USING btree (tenant_id, ip_address);
+
+
+--
+-- Name: idx_permission_audit_tenant_operator_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_permission_audit_tenant_operator_created_at ON public.sys_permission_audit_logs USING btree (tenant_id, operator_id, created_at);
+
+
+--
+-- Name: idx_permission_audit_tenant_target_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_permission_audit_tenant_target_created_at ON public.sys_permission_audit_logs USING btree (tenant_id, target_type, target_id, created_at);
+
+
+--
+-- Name: idx_policy_eval_ip_address_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_policy_eval_ip_address_created_at ON public.sys_policy_evaluation_logs USING btree (ip_address, created_at);
+
+
+--
+-- Name: idx_policy_eval_log_hash; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_policy_eval_log_hash ON public.sys_policy_evaluation_logs USING btree (log_hash);
+
+
+--
+-- Name: idx_policy_eval_request_method; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_policy_eval_request_method ON public.sys_policy_evaluation_logs USING btree (request_method);
+
+
+--
+-- Name: idx_policy_eval_request_path; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_policy_eval_request_path ON public.sys_policy_evaluation_logs USING btree (request_path);
+
+
+--
+-- Name: idx_policy_eval_tenant_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_policy_eval_tenant_created_at ON public.sys_policy_evaluation_logs USING btree (tenant_id, created_at);
+
+
+--
+-- Name: idx_policy_eval_tenant_membership_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_policy_eval_tenant_membership_created_at ON public.sys_policy_evaluation_logs USING btree (tenant_id, membership_id, created_at);
+
+
+--
+-- Name: idx_policy_eval_tenant_permission_result_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_policy_eval_tenant_permission_result_created_at ON public.sys_policy_evaluation_logs USING btree (tenant_id, permission_id, result, created_at);
+
+
+--
+-- Name: idx_policy_eval_tenant_policy_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_policy_eval_tenant_policy_created_at ON public.sys_policy_evaluation_logs USING btree (tenant_id, policy_id, created_at);
+
+
+--
+-- Name: idx_policy_eval_tenant_user_permission_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_policy_eval_tenant_user_permission_created_at ON public.sys_policy_evaluation_logs USING btree (tenant_id, user_id, permission_id, created_at);
+
+
+--
+-- Name: idx_policy_eval_trace_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_policy_eval_trace_id ON public.sys_policy_evaluation_logs USING btree (trace_id);
+
+
+--
+-- Name: idx_rfp_tenant_role; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_rfp_tenant_role ON public.sys_role_field_permissions USING btree (tenant_id, role_id);
+
+
+--
+-- Name: idx_role_metadata_last_synced_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_role_metadata_last_synced_at ON public.sys_role_metadata USING btree (tenant_id, last_synced_at);
+
+
+--
+-- Name: idx_role_metadata_last_synced_version; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_role_metadata_last_synced_version ON public.sys_role_metadata USING btree (tenant_id, last_synced_version);
+
+
+--
+-- Name: idx_role_metadata_scope_role; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_role_metadata_scope_role ON public.sys_role_metadata USING btree (tenant_id, scope, role_id);
+
+
+--
+-- Name: idx_role_metadata_template_lookup; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_role_metadata_template_lookup ON public.sys_role_metadata USING btree (tenant_id, is_template, template_for);
+
+
+--
+-- Name: idx_role_metadata_tenant_role; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX idx_role_metadata_tenant_role ON public.sys_role_metadata USING btree (tenant_id, role_id);
+
+
+--
+-- Name: idx_rou_tenant_role; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_rou_tenant_role ON public.sys_role_org_units USING btree (tenant_id, role_id);
+
+
+--
+-- Name: idx_rp_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_rp_created_at ON public.sys_role_permissions USING btree (created_at);
+
+
+--
+-- Name: idx_rp_created_by; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_rp_created_by ON public.sys_role_permissions USING btree (created_by);
+
+
+--
+-- Name: idx_rp_permission_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_rp_permission_id ON public.sys_role_permissions USING btree (permission_id);
+
+
+--
+-- Name: idx_rp_role_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_rp_role_id ON public.sys_role_permissions USING btree (role_id);
+
+
+--
+-- Name: idx_rp_tenant_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_rp_tenant_id ON public.sys_role_permissions USING btree (tenant_id);
+
+
+--
+-- Name: idx_rp_tenant_permission; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_rp_tenant_permission ON public.sys_role_permissions USING btree (tenant_id, permission_id);
+
+
+--
+-- Name: idx_rp_tenant_role; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_rp_tenant_role ON public.sys_role_permissions USING btree (tenant_id, role_id);
+
+
+--
+-- Name: idx_sys_access_keys_access_key; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX idx_sys_access_keys_access_key ON public.sys_access_keys USING btree (access_key);
+
+
+--
+-- Name: idx_sys_access_keys_tenant_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_access_keys_tenant_id ON public.sys_access_keys USING btree (tenant_id);
+
+
+--
+-- Name: idx_sys_ai_agent_runs_tenant_app; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_ai_agent_runs_tenant_app ON public.sys_ai_agent_runs USING btree (tenant_id, app_id);
+
+
+--
+-- Name: idx_sys_ai_conversations_last_message_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_ai_conversations_last_message_at ON public.sys_ai_conversations USING btree (last_message_at);
+
+
+--
+-- Name: idx_sys_ai_conversations_tenant_user; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_ai_conversations_tenant_user ON public.sys_ai_conversations USING btree (tenant_id, user_id);
+
+
+--
+-- Name: idx_sys_ai_docs_tenant; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_ai_docs_tenant ON public.sys_ai_docs USING btree (tenant_id);
+
+
+--
+-- Name: idx_sys_ai_knowledge_bases_tenant; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_ai_knowledge_bases_tenant ON public.sys_ai_knowledge_bases USING btree (tenant_id);
+
+
+--
+-- Name: idx_sys_ai_messages_tenant_user; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_ai_messages_tenant_user ON public.sys_ai_messages USING btree (tenant_id, user_id);
+
+
+--
+-- Name: idx_sys_ai_providers_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_ai_providers_created_at ON public.sys_ai_providers USING btree (created_at);
+
+
+--
+-- Name: idx_sys_ai_providers_enabled_default; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_ai_providers_enabled_default ON public.sys_ai_providers USING btree (is_enabled, is_default);
+
+
+--
+-- Name: idx_sys_ai_usage_logs_tenant_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_ai_usage_logs_tenant_created_at ON public.sys_ai_usage_logs USING btree (tenant_id, created_at);
+
+
+--
+-- Name: idx_sys_ai_usage_logs_user; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_ai_usage_logs_user ON public.sys_ai_usage_logs USING btree (user_id);
+
+
+--
+-- Name: idx_sys_api_audit_logs_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_api_audit_logs_created_at ON public.sys_api_audit_logs USING btree (created_at);
+
+
+--
+-- Name: idx_sys_api_audit_logs_tenant_api_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_api_audit_logs_tenant_api_created_at ON public.sys_api_audit_logs USING btree (tenant_id, api_module, api_operation, created_at);
+
+
+--
+-- Name: idx_sys_api_audit_logs_tenant_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_api_audit_logs_tenant_created_at ON public.sys_api_audit_logs USING btree (tenant_id, created_at);
+
+
+--
+-- Name: idx_sys_api_audit_logs_tenant_ip_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_api_audit_logs_tenant_ip_created_at ON public.sys_api_audit_logs USING btree (tenant_id, ip_address, created_at);
+
+
+--
+-- Name: idx_sys_api_audit_logs_tenant_path_method_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_api_audit_logs_tenant_path_method_created_at ON public.sys_api_audit_logs USING btree (tenant_id, path, http_method, created_at);
+
+
+--
+-- Name: idx_sys_api_audit_logs_tenant_status_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_api_audit_logs_tenant_status_created_at ON public.sys_api_audit_logs USING btree (tenant_id, status_code, success, created_at);
+
+
+--
+-- Name: idx_sys_api_audit_logs_tenant_trace_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_api_audit_logs_tenant_trace_id ON public.sys_api_audit_logs USING btree (tenant_id, trace_id);
+
+
+--
+-- Name: idx_sys_api_audit_logs_tenant_user_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_api_audit_logs_tenant_user_created_at ON public.sys_api_audit_logs USING btree (tenant_id, user_id, created_at);
+
+
+--
+-- Name: idx_sys_api_audit_logs_tenant_username_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_api_audit_logs_tenant_username_created_at ON public.sys_api_audit_logs USING btree (tenant_id, username, created_at);
+
+
+--
+-- Name: idx_sys_api_res_business_module; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_api_res_business_module ON public.sys_apis USING btree (business_module);
+
+
+--
+-- Name: idx_sys_api_res_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_api_res_created_at ON public.sys_apis USING btree (created_at);
+
+
+--
+-- Name: idx_sys_api_res_created_by_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_api_res_created_by_created_at ON public.sys_apis USING btree (created_by, created_at);
+
+
+--
+-- Name: idx_sys_api_res_module; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_api_res_module ON public.sys_apis USING btree (module);
+
+
+--
+-- Name: idx_sys_api_res_module_path_method_scope; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX idx_sys_api_res_module_path_method_scope ON public.sys_apis USING btree (module, path, method, scope);
+
+
+--
+-- Name: idx_sys_api_res_path_method; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_api_res_path_method ON public.sys_apis USING btree (path, method);
+
+
+--
+-- Name: idx_sys_api_res_scope; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_api_res_scope ON public.sys_apis USING btree (scope);
+
+
+--
+-- Name: idx_sys_configs_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_configs_created_at ON public.sys_configs USING btree (created_at);
+
+
+--
+-- Name: idx_sys_dict_entries_entry_value; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_dict_entries_entry_value ON public.sys_dict_entries USING btree (entry_value);
+
+
+--
+-- Name: idx_sys_dict_entries_numeric_value; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_dict_entries_numeric_value ON public.sys_dict_entries USING btree (numeric_value);
+
+
+--
+-- Name: idx_sys_dict_entries_tenant_entry_value; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_dict_entries_tenant_entry_value ON public.sys_dict_entries USING btree (tenant_id, entry_value);
+
+
+--
+-- Name: idx_sys_dict_entries_tenant_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_dict_entries_tenant_id ON public.sys_dict_entries USING btree (tenant_id);
+
+
+--
+-- Name: idx_sys_dict_entries_tenant_type; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_dict_entries_tenant_type ON public.sys_dict_entries USING btree (tenant_id, id);
+
+
+--
+-- Name: idx_sys_dict_entry_i18n_language_code; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_dict_entry_i18n_language_code ON public.sys_dict_entry_i18n USING btree (language_code);
+
+
+--
+-- Name: idx_sys_dict_types_is_enabled; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_dict_types_is_enabled ON public.sys_dict_types USING btree (is_enabled);
+
+
+--
+-- Name: idx_sys_dict_types_sort_order; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_dict_types_sort_order ON public.sys_dict_types USING btree (sort_order);
+
+
+--
+-- Name: idx_sys_dict_types_tenant_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_dict_types_tenant_id ON public.sys_dict_types USING btree (tenant_id);
+
+
+--
+-- Name: idx_sys_languages_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_languages_created_at ON public.sys_languages USING btree (created_at);
+
+
+--
+-- Name: idx_sys_languages_is_default; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_languages_is_default ON public.sys_languages USING btree (is_default);
+
+
+--
+-- Name: idx_sys_languages_is_enabled; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_languages_is_enabled ON public.sys_languages USING btree (is_enabled);
+
+
+--
+-- Name: idx_sys_languages_language_code; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_languages_language_code ON public.sys_languages USING btree (language_code);
+
+
+--
+-- Name: idx_sys_languages_language_name; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_languages_language_name ON public.sys_languages USING btree (language_name);
+
+
+--
+-- Name: idx_sys_languages_native_name; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_languages_native_name ON public.sys_languages USING btree (native_name);
+
+
+--
+-- Name: idx_sys_languages_sort_order; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_languages_sort_order ON public.sys_languages USING btree (sort_order);
+
+
+--
+-- Name: idx_sys_login_policy_tenant_type_method; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_login_policy_tenant_type_method ON public.sys_login_policies USING btree (tenant_id, type, method);
+
+
+--
+-- Name: idx_sys_login_policy_tenant_value; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_login_policy_tenant_value ON public.sys_login_policies USING btree (tenant_id, value);
+
+
+--
+-- Name: idx_sys_membership_assigned_by; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_membership_assigned_by ON public.sys_memberships USING btree (assigned_by);
+
+
+--
+-- Name: idx_sys_membership_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_membership_created_at ON public.sys_memberships USING btree (created_at);
+
+
+--
+-- Name: idx_sys_membership_created_by_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_membership_created_by_created_at ON public.sys_memberships USING btree (created_by, created_at);
+
+
+--
+-- Name: idx_sys_membership_end_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_membership_end_at ON public.sys_memberships USING btree (end_at);
+
+
+--
+-- Name: idx_sys_membership_org_unit_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_membership_org_unit_id ON public.sys_memberships USING btree (org_unit_id);
+
+
+--
+-- Name: idx_sys_membership_position_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_membership_position_id ON public.sys_memberships USING btree (position_id);
+
+
+--
+-- Name: idx_sys_membership_role_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_membership_role_id ON public.sys_memberships USING btree (role_id);
+
+
+--
+-- Name: idx_sys_membership_start_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_membership_start_at ON public.sys_memberships USING btree (start_at);
+
+
+--
+-- Name: idx_sys_membership_status; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_membership_status ON public.sys_memberships USING btree (status);
+
+
+--
+-- Name: idx_sys_membership_tenant_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_membership_tenant_id ON public.sys_memberships USING btree (tenant_id);
+
+
+--
+-- Name: idx_sys_membership_tenant_user_status_start_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_membership_tenant_user_status_start_at ON public.sys_memberships USING btree (tenant_id, user_id, status, start_at);
+
+
+--
+-- Name: idx_sys_membership_user_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_membership_user_id ON public.sys_memberships USING btree (user_id);
+
+
+--
+-- Name: idx_sys_menu_alias; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_menu_alias ON public.sys_menus USING btree (alias);
+
+
+--
+-- Name: idx_sys_menu_component; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_menu_component ON public.sys_menus USING btree (component);
+
+
+--
+-- Name: idx_sys_menu_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_menu_created_at ON public.sys_menus USING btree (created_at);
+
+
+--
+-- Name: idx_sys_menu_created_by_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_menu_created_by_created_at ON public.sys_menus USING btree (created_by, created_at);
+
+
+--
+-- Name: idx_sys_menu_module; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_menu_module ON public.sys_menus USING btree (module);
+
+
+--
+-- Name: idx_sys_menu_parent; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_menu_parent ON public.sys_menus USING btree (parent_id);
+
+
+--
+-- Name: idx_sys_menu_parent_name; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX idx_sys_menu_parent_name ON public.sys_menus USING btree (parent_id, name);
+
+
+--
+-- Name: idx_sys_menu_parent_path; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX idx_sys_menu_parent_path ON public.sys_menus USING btree (parent_id, path);
+
+
+--
+-- Name: idx_sys_menu_path; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_menu_path ON public.sys_menus USING btree (path);
+
+
+--
+-- Name: idx_sys_menu_status; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_menu_status ON public.sys_menus USING btree (status);
+
+
+--
+-- Name: idx_sys_menu_type; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_menu_type ON public.sys_menus USING btree (type);
+
+
+--
+-- Name: idx_sys_notification_delivery_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_notification_delivery_created_at ON public.sys_notification_deliveries USING btree (created_at);
+
+
+--
+-- Name: idx_sys_notification_delivery_event_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_notification_delivery_event_created_at ON public.sys_notification_deliveries USING btree (event_type, created_at);
+
+
+--
+-- Name: idx_sys_notification_delivery_event_related; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_notification_delivery_event_related ON public.sys_notification_deliveries USING btree (event_type, related_id);
+
+
+--
+-- Name: idx_sys_notification_delivery_recipient_user; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_notification_delivery_recipient_user ON public.sys_notification_deliveries USING btree (recipient_user_id);
+
+
+--
+-- Name: idx_sys_notification_delivery_status_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_notification_delivery_status_created_at ON public.sys_notification_deliveries USING btree (status, created_at);
+
+
+--
+-- Name: idx_sys_plan_modules_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_plan_modules_created_at ON public.sys_plan_modules USING btree (created_at);
+
+
+--
+-- Name: idx_sys_plan_quotas_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_plan_quotas_created_at ON public.sys_plan_quotas USING btree (created_at);
+
+
+--
+-- Name: idx_sys_plans_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_plans_created_at ON public.sys_plans USING btree (created_at);
+
+
+--
+-- Name: idx_sys_positions_code; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_positions_code ON public.sys_positions USING btree (code);
+
+
+--
+-- Name: idx_sys_positions_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_positions_created_at ON public.sys_positions USING btree (created_at);
+
+
+--
+-- Name: idx_sys_positions_end_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_positions_end_at ON public.sys_positions USING btree (end_at);
+
+
+--
+-- Name: idx_sys_positions_headcount; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_positions_headcount ON public.sys_positions USING btree (headcount);
+
+
+--
+-- Name: idx_sys_positions_is_key; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_positions_is_key ON public.sys_positions USING btree (is_key_position);
+
+
+--
+-- Name: idx_sys_positions_level; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_positions_level ON public.sys_positions USING btree (level);
+
+
+--
+-- Name: idx_sys_positions_name; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_positions_name ON public.sys_positions USING btree (name);
+
+
+--
+-- Name: idx_sys_positions_org_unit_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_positions_org_unit_id ON public.sys_positions USING btree (org_unit_id);
+
+
+--
+-- Name: idx_sys_positions_reports_to; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_positions_reports_to ON public.sys_positions USING btree (reports_to_position_id);
+
+
+--
+-- Name: idx_sys_positions_sort_order; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_positions_sort_order ON public.sys_positions USING btree (sort_order);
+
+
+--
+-- Name: idx_sys_positions_start_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_positions_start_at ON public.sys_positions USING btree (start_at);
+
+
+--
+-- Name: idx_sys_positions_status; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_positions_status ON public.sys_positions USING btree (status);
+
+
+--
+-- Name: idx_sys_positions_tenant_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_positions_tenant_id ON public.sys_positions USING btree (tenant_id);
+
+
+--
+-- Name: idx_sys_positions_tenant_is_key; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_positions_tenant_is_key ON public.sys_positions USING btree (tenant_id, is_key_position);
+
+
+--
+-- Name: idx_sys_positions_tenant_name; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_positions_tenant_name ON public.sys_positions USING btree (tenant_id, name);
+
+
+--
+-- Name: idx_sys_positions_tenant_org_unit_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_positions_tenant_org_unit_id ON public.sys_positions USING btree (tenant_id, org_unit_id);
+
+
+--
+-- Name: idx_sys_positions_tenant_reports_to; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_positions_tenant_reports_to ON public.sys_positions USING btree (tenant_id, reports_to_position_id);
+
+
+--
+-- Name: idx_sys_positions_tenant_type; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_positions_tenant_type ON public.sys_positions USING btree (tenant_id, type);
+
+
+--
+-- Name: idx_sys_positions_type; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_positions_type ON public.sys_positions USING btree (type);
+
+
+--
+-- Name: idx_sys_roles_code; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_roles_code ON public.sys_roles USING btree (code);
+
+
+--
+-- Name: idx_sys_roles_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_roles_created_at ON public.sys_roles USING btree (created_at);
+
+
+--
+-- Name: idx_sys_roles_created_by; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_roles_created_by ON public.sys_roles USING btree (created_by);
+
+
+--
+-- Name: idx_sys_roles_is_protected; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_roles_is_protected ON public.sys_roles USING btree (is_protected);
+
+
+--
+-- Name: idx_sys_roles_name; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_roles_name ON public.sys_roles USING btree (name);
+
+
+--
+-- Name: idx_sys_roles_sort_order; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_roles_sort_order ON public.sys_roles USING btree (sort_order);
+
+
+--
+-- Name: idx_sys_roles_status; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_roles_status ON public.sys_roles USING btree (status);
+
+
+--
+-- Name: idx_sys_roles_tenant_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_roles_tenant_id ON public.sys_roles USING btree (tenant_id);
+
+
+--
+-- Name: idx_sys_roles_tenant_name; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_roles_tenant_name ON public.sys_roles USING btree (tenant_id, name);
+
+
+--
+-- Name: idx_sys_script_logs_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_script_logs_created_at ON public.sys_script_logs USING btree (created_at);
+
+
+--
+-- Name: idx_sys_script_logs_script_created; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_script_logs_script_created ON public.sys_script_logs USING btree (script_id, created_at);
+
+
+--
+-- Name: idx_sys_script_logs_success_created; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_script_logs_success_created ON public.sys_script_logs USING btree (success, created_at);
+
+
+--
+-- Name: idx_sys_scripts_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_scripts_created_at ON public.sys_scripts USING btree (created_at);
+
+
+--
+-- Name: idx_sys_scripts_hook_point_enabled; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_scripts_hook_point_enabled ON public.sys_scripts USING btree (hook_point, is_enabled);
+
+
+--
+-- Name: idx_sys_task_tenant_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_task_tenant_created_at ON public.sys_tasks USING btree (tenant_id, created_at);
+
+
+--
+-- Name: idx_sys_task_tenant_created_by_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_task_tenant_created_by_created_at ON public.sys_tasks USING btree (tenant_id, created_by, created_at);
+
+
+--
+-- Name: idx_sys_task_tenant_enable_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_task_tenant_enable_created_at ON public.sys_tasks USING btree (tenant_id, enable, created_at);
+
+
+--
+-- Name: idx_sys_task_tenant_type; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_task_tenant_type ON public.sys_tasks USING btree (tenant_id, type);
+
+
+--
+-- Name: idx_sys_task_tenant_type_name; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX idx_sys_task_tenant_type_name ON public.sys_tasks USING btree (tenant_id, type_name);
+
+
+--
+-- Name: idx_sys_tenant_admin_user_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_tenant_admin_user_id ON public.sys_tenants USING btree (admin_user_id);
+
+
+--
+-- Name: idx_sys_tenant_code; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX idx_sys_tenant_code ON public.sys_tenants USING btree (code);
+
+
+--
+-- Name: idx_sys_tenant_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_tenant_created_at ON public.sys_tenants USING btree (created_at);
+
+
+--
+-- Name: idx_sys_tenant_created_by_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_tenant_created_by_created_at ON public.sys_tenants USING btree (created_by, created_at);
+
+
+--
+-- Name: idx_sys_tenant_domain; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_tenant_domain ON public.sys_tenants USING btree (domain);
+
+
+--
+-- Name: idx_sys_tenant_expired_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_tenant_expired_at ON public.sys_tenants USING btree (expired_at);
+
+
+--
+-- Name: idx_sys_tenant_name; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX idx_sys_tenant_name ON public.sys_tenants USING btree (name);
+
+
+--
+-- Name: idx_sys_tenant_status_audit_status; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_tenant_status_audit_status ON public.sys_tenants USING btree (status, audit_status);
+
+
+--
+-- Name: idx_sys_tenant_subscription_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_tenant_subscription_at ON public.sys_tenants USING btree (subscription_at);
+
+
+--
+-- Name: idx_sys_tenant_type_expired_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_tenant_type_expired_at ON public.sys_tenants USING btree (type, expired_at);
+
+
+--
+-- Name: idx_sys_user_cred_tenant_activate_expires_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_user_cred_tenant_activate_expires_at ON public.sys_user_credentials USING btree (tenant_id, activate_token_expires_at);
+
+
+--
+-- Name: idx_sys_user_cred_tenant_identifier; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_user_cred_tenant_identifier ON public.sys_user_credentials USING btree (tenant_id, identifier);
+
+
+--
+-- Name: idx_sys_user_cred_tenant_is_primary; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_user_cred_tenant_is_primary ON public.sys_user_credentials USING btree (tenant_id, is_primary);
+
+
+--
+-- Name: idx_sys_user_cred_tenant_provider; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_user_cred_tenant_provider ON public.sys_user_credentials USING btree (tenant_id, provider);
+
+
+--
+-- Name: idx_sys_user_cred_tenant_provider_account; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX idx_sys_user_cred_tenant_provider_account ON public.sys_user_credentials USING btree (tenant_id, provider, provider_account_id);
+
+
+--
+-- Name: idx_sys_user_cred_tenant_status_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_user_cred_tenant_status_created_at ON public.sys_user_credentials USING btree (tenant_id, status, created_at);
+
+
+--
+-- Name: idx_sys_user_cred_tenant_uid_identity_identifier; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX idx_sys_user_cred_tenant_uid_identity_identifier ON public.sys_user_credentials USING btree (tenant_id, user_id, identity_type, identifier);
+
+
+--
+-- Name: idx_sys_user_cred_tenant_user_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_user_cred_tenant_user_id ON public.sys_user_credentials USING btree (tenant_id, user_id);
+
+
+--
+-- Name: idx_sys_user_mfa_tenant_uid_method; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX idx_sys_user_mfa_tenant_uid_method ON public.sys_user_mfa_factors USING btree (tenant_id, user_id, method);
+
+
+--
+-- Name: idx_sys_user_mfa_tenant_user_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_user_mfa_tenant_user_id ON public.sys_user_mfa_factors USING btree (tenant_id, user_id);
+
+
+--
+-- Name: idx_sys_user_tenant_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_user_tenant_created_at ON public.sys_users USING btree (tenant_id, created_at);
+
+
+--
+-- Name: idx_sys_user_tenant_created_by; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_user_tenant_created_by ON public.sys_users USING btree (tenant_id, created_by);
+
+
+--
+-- Name: idx_sys_user_tenant_email; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX idx_sys_user_tenant_email ON public.sys_users USING btree (tenant_id, email);
+
+
+--
+-- Name: idx_sys_user_tenant_last_login_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_user_tenant_last_login_at ON public.sys_users USING btree (tenant_id, last_login_at);
+
+
+--
+-- Name: idx_sys_user_tenant_last_login_ip; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_user_tenant_last_login_ip ON public.sys_users USING btree (tenant_id, last_login_ip);
+
+
+--
+-- Name: idx_sys_user_tenant_mobile; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_sys_user_tenant_mobile ON public.sys_users USING btree (tenant_id, mobile);
+
+
+--
+-- Name: idx_sys_user_tenant_username; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX idx_sys_user_tenant_username ON public.sys_users USING btree (tenant_id, username);
+
+
+--
+-- Name: idx_uou_assigned_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_uou_assigned_at ON public.sys_user_org_units USING btree (assigned_at);
+
+
+--
+-- Name: idx_uou_assigned_by; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_uou_assigned_by ON public.sys_user_org_units USING btree (assigned_by);
+
+
+--
+-- Name: idx_uou_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_uou_created_at ON public.sys_user_org_units USING btree (created_at);
+
+
+--
+-- Name: idx_uou_created_by_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_uou_created_by_created_at ON public.sys_user_org_units USING btree (created_by, created_at);
+
+
+--
+-- Name: idx_uou_end_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_uou_end_at ON public.sys_user_org_units USING btree (end_at);
+
+
+--
+-- Name: idx_uou_is_primary; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_uou_is_primary ON public.sys_user_org_units USING btree (is_primary);
+
+
+--
+-- Name: idx_uou_org_unit_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_uou_org_unit_id ON public.sys_user_org_units USING btree (org_unit_id);
+
+
+--
+-- Name: idx_uou_position_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_uou_position_id ON public.sys_user_org_units USING btree (position_id);
+
+
+--
+-- Name: idx_uou_start_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_uou_start_at ON public.sys_user_org_units USING btree (start_at);
+
+
+--
+-- Name: idx_uou_status; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_uou_status ON public.sys_user_org_units USING btree (status);
+
+
+--
+-- Name: idx_uou_tenant_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_uou_tenant_created_at ON public.sys_user_org_units USING btree (tenant_id, created_at);
+
+
+--
+-- Name: idx_uou_tenant_org_unit; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_uou_tenant_org_unit ON public.sys_user_org_units USING btree (tenant_id, org_unit_id);
+
+
+--
+-- Name: idx_uou_tenant_user; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_uou_tenant_user ON public.sys_user_org_units USING btree (tenant_id, user_id);
+
+
+--
+-- Name: idx_uou_user_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_uou_user_id ON public.sys_user_org_units USING btree (user_id);
+
+
+--
+-- Name: idx_up_assigned_by; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_up_assigned_by ON public.sys_user_positions USING btree (assigned_by);
+
+
+--
+-- Name: idx_up_is_primary; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_up_is_primary ON public.sys_user_positions USING btree (is_primary);
+
+
+--
+-- Name: idx_up_position_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_up_position_id ON public.sys_user_positions USING btree (position_id);
+
+
+--
+-- Name: idx_up_status; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_up_status ON public.sys_user_positions USING btree (status);
+
+
+--
+-- Name: idx_up_tenant_assigned_by; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_up_tenant_assigned_by ON public.sys_user_positions USING btree (tenant_id, assigned_by);
+
+
+--
+-- Name: idx_up_tenant_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_up_tenant_id ON public.sys_user_positions USING btree (tenant_id);
+
+
+--
+-- Name: idx_up_tenant_position; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_up_tenant_position ON public.sys_user_positions USING btree (tenant_id, position_id);
+
+
+--
+-- Name: idx_up_tenant_user; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_up_tenant_user ON public.sys_user_positions USING btree (tenant_id, user_id);
+
+
+--
+-- Name: idx_up_tenant_user_primary; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_up_tenant_user_primary ON public.sys_user_positions USING btree (tenant_id, user_id, is_primary);
+
+
+--
+-- Name: idx_up_user_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_up_user_id ON public.sys_user_positions USING btree (user_id);
+
+
+--
+-- Name: idx_ur_assigned_by; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_ur_assigned_by ON public.sys_user_roles USING btree (assigned_by);
+
+
+--
+-- Name: idx_ur_is_primary; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_ur_is_primary ON public.sys_user_roles USING btree (is_primary);
+
+
+--
+-- Name: idx_ur_role_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_ur_role_id ON public.sys_user_roles USING btree (role_id);
+
+
+--
+-- Name: idx_ur_status; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_ur_status ON public.sys_user_roles USING btree (status);
+
+
+--
+-- Name: idx_ur_tenant_assigned_by; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_ur_tenant_assigned_by ON public.sys_user_roles USING btree (tenant_id, assigned_by);
+
+
+--
+-- Name: idx_ur_tenant_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_ur_tenant_id ON public.sys_user_roles USING btree (tenant_id);
+
+
+--
+-- Name: idx_ur_tenant_role; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_ur_tenant_role ON public.sys_user_roles USING btree (tenant_id, role_id);
+
+
+--
+-- Name: idx_ur_tenant_user; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_ur_tenant_user ON public.sys_user_roles USING btree (tenant_id, user_id);
+
+
+--
+-- Name: idx_ur_tenant_user_primary; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_ur_tenant_user_primary ON public.sys_user_roles USING btree (tenant_id, user_id, is_primary);
+
+
+--
+-- Name: idx_ur_user_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_ur_user_id ON public.sys_user_roles USING btree (user_id);
+
+
+--
+-- Name: loginauditlog_action_type; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX loginauditlog_action_type ON public.sys_login_audit_logs USING btree (action_type);
+
+
+--
+-- Name: loginauditlog_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX loginauditlog_created_at ON public.sys_login_audit_logs USING btree (created_at);
+
+
+--
+-- Name: loginauditlog_ip_address; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX loginauditlog_ip_address ON public.sys_login_audit_logs USING btree (ip_address);
+
+
+--
+-- Name: loginauditlog_ip_address_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX loginauditlog_ip_address_created_at ON public.sys_login_audit_logs USING btree (ip_address, created_at);
+
+
+--
+-- Name: loginauditlog_request_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX loginauditlog_request_id ON public.sys_login_audit_logs USING btree (request_id);
+
+
+--
+-- Name: loginauditlog_session_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX loginauditlog_session_id ON public.sys_login_audit_logs USING btree (session_id);
+
+
+--
+-- Name: loginauditlog_status; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX loginauditlog_status ON public.sys_login_audit_logs USING btree (status);
+
+
+--
+-- Name: loginauditlog_tenant_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX loginauditlog_tenant_id ON public.sys_login_audit_logs USING btree (tenant_id);
+
+
+--
+-- Name: loginauditlog_tenant_id_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX loginauditlog_tenant_id_created_at ON public.sys_login_audit_logs USING btree (tenant_id, created_at);
+
+
+--
+-- Name: loginauditlog_user_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX loginauditlog_user_id ON public.sys_login_audit_logs USING btree (user_id);
+
+
+--
+-- Name: loginauditlog_username; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX loginauditlog_username ON public.sys_login_audit_logs USING btree (username);
+
+
+--
+-- Name: notification_preferences_user_id_key; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX notification_preferences_user_id_key ON public.notification_preferences USING btree (user_id);
+
+
+--
+-- Name: operationauditlog_action; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX operationauditlog_action ON public.sys_operation_audit_logs USING btree (action);
+
+
+--
+-- Name: operationauditlog_action_success_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX operationauditlog_action_success_created_at ON public.sys_operation_audit_logs USING btree (action, success, created_at);
+
+
+--
+-- Name: operationauditlog_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX operationauditlog_created_at ON public.sys_operation_audit_logs USING btree (created_at);
+
+
+--
+-- Name: operationauditlog_ip_address; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX operationauditlog_ip_address ON public.sys_operation_audit_logs USING btree (ip_address);
+
+
+--
+-- Name: operationauditlog_ip_address_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX operationauditlog_ip_address_created_at ON public.sys_operation_audit_logs USING btree (ip_address, created_at);
+
+
+--
+-- Name: operationauditlog_log_hash; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX operationauditlog_log_hash ON public.sys_operation_audit_logs USING btree (log_hash);
+
+
+--
+-- Name: operationauditlog_request_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX operationauditlog_request_id ON public.sys_operation_audit_logs USING btree (request_id);
+
+
+--
+-- Name: operationauditlog_resource_type_resource_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX operationauditlog_resource_type_resource_id ON public.sys_operation_audit_logs USING btree (resource_type, resource_id);
+
+
+--
+-- Name: operationauditlog_sensitive_level; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX operationauditlog_sensitive_level ON public.sys_operation_audit_logs USING btree (sensitive_level);
+
+
+--
+-- Name: operationauditlog_success; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX operationauditlog_success ON public.sys_operation_audit_logs USING btree (success);
+
+
+--
+-- Name: operationauditlog_tenant_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX operationauditlog_tenant_id ON public.sys_operation_audit_logs USING btree (tenant_id);
+
+
+--
+-- Name: operationauditlog_tenant_id_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX operationauditlog_tenant_id_created_at ON public.sys_operation_audit_logs USING btree (tenant_id, created_at);
+
+
+--
+-- Name: operationauditlog_tenant_id_user_id_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX operationauditlog_tenant_id_user_id_created_at ON public.sys_operation_audit_logs USING btree (tenant_id, user_id, created_at);
+
+
+--
+-- Name: operationauditlog_trace_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX operationauditlog_trace_id ON public.sys_operation_audit_logs USING btree (trace_id);
+
+
+--
+-- Name: operationauditlog_user_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX operationauditlog_user_id ON public.sys_operation_audit_logs USING btree (user_id);
+
+
+--
+-- Name: operationauditlog_username; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX operationauditlog_username ON public.sys_operation_audit_logs USING btree (username);
+
+
+--
+-- Name: uidx_sys_ai_agent_apps_tenant_name; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX uidx_sys_ai_agent_apps_tenant_name ON public.sys_ai_agent_apps USING btree (tenant_id, name);
+
+
+--
+-- Name: uidx_sys_api_audit_logs_tenant_log_hash; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX uidx_sys_api_audit_logs_tenant_log_hash ON public.sys_api_audit_logs USING btree (tenant_id, log_hash);
+
+
+--
+-- Name: uidx_sys_api_audit_logs_tenant_request_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX uidx_sys_api_audit_logs_tenant_request_id ON public.sys_api_audit_logs USING btree (tenant_id, request_id);
+
+
+--
+-- Name: uidx_sys_configs_key; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX uidx_sys_configs_key ON public.sys_configs USING btree (key);
+
+
+--
+-- Name: uidx_sys_login_policy_tenant_target_type_method; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX uidx_sys_login_policy_tenant_target_type_method ON public.sys_login_policies USING btree (tenant_id, target_id, type, method);
+
+
+--
+-- Name: uidx_sys_notification_channel_name; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX uidx_sys_notification_channel_name ON public.sys_notification_channels USING btree (name);
+
+
+--
+-- Name: uidx_sys_notification_delivery_request_channel; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX uidx_sys_notification_delivery_request_channel ON public.sys_notification_deliveries USING btree (request_id, channel);
+
+
+--
+-- Name: uidx_sys_notification_rule_event_type; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX uidx_sys_notification_rule_event_type ON public.sys_notification_rules USING btree (event_type);
+
+
+--
+-- Name: uix_files_tenant_file_guid; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX uix_files_tenant_file_guid ON public.files USING btree (tenant_id, file_guid);
+
+
+--
+-- Name: uix_mou_tenant_mem_org_pos_role; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX uix_mou_tenant_mem_org_pos_role ON public.sys_membership_org_units USING btree (tenant_id, membership_id, org_unit_id, position_id, role_id);
+
+
+--
+-- Name: uix_mou_tenant_membership_primary; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX uix_mou_tenant_membership_primary ON public.sys_membership_org_units USING btree (tenant_id, membership_id, is_primary);
+
+
+--
+-- Name: uix_mp_tenant_membership_pos; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX uix_mp_tenant_membership_pos ON public.sys_membership_positions USING btree (tenant_id, membership_id, position_id);
+
+
+--
+-- Name: uix_mr_tenant_membership_role; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX uix_mr_tenant_membership_role ON public.sys_membership_roles USING btree (tenant_id, membership_id, role_id);
+
+
+--
+-- Name: uix_org_tenant_code; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX uix_org_tenant_code ON public.sys_org_units USING btree (tenant_id, code);
+
+
+--
+-- Name: uix_org_tenant_parent_name; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX uix_org_tenant_parent_name ON public.sys_org_units USING btree (tenant_id, parent_id, name);
+
+
+--
+-- Name: uix_org_tenant_parent_path; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX uix_org_tenant_parent_path ON public.sys_org_units USING btree (tenant_id, parent_id, path);
+
+
+--
+-- Name: uix_perm_api_permission_api_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX uix_perm_api_permission_api_id ON public.sys_permission_apis USING btree (permission_id, api_id);
+
+
+--
+-- Name: uix_perm_code; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX uix_perm_code ON public.sys_permissions USING btree (code);
+
+
+--
+-- Name: uix_perm_menu_permission_menu_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX uix_perm_menu_permission_menu_id ON public.sys_permission_menus USING btree (permission_id, menu_id);
+
+
+--
+-- Name: uix_rfp_tenant_role_resource_field; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX uix_rfp_tenant_role_resource_field ON public.sys_role_field_permissions USING btree (tenant_id, role_id, resource, field_name);
+
+
+--
+-- Name: uix_rou_tenant_role_org_unit; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX uix_rou_tenant_role_org_unit ON public.sys_role_org_units USING btree (tenant_id, role_id, org_unit_id);
+
+
+--
+-- Name: uix_rp_role_permission; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX uix_rp_role_permission ON public.sys_role_permissions USING btree (role_id, permission_id);
+
+
+--
+-- Name: uix_rp_tenant_role_permission; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX uix_rp_tenant_role_permission ON public.sys_role_permissions USING btree (tenant_id, role_id, permission_id);
+
+
+--
+-- Name: uix_sys_dict_entries_tenant_type_value; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX uix_sys_dict_entries_tenant_type_value ON public.sys_dict_entries USING btree (tenant_id, id, entry_value);
+
+
+--
+-- Name: uix_sys_dict_types_tenant_type_code; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX uix_sys_dict_types_tenant_type_code ON public.sys_dict_types USING btree (tenant_id, type_code);
+
+
+--
+-- Name: uix_sys_languages_language_code; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX uix_sys_languages_language_code ON public.sys_languages USING btree (language_code);
+
+
+--
+-- Name: uix_sys_membership_tenant_user; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX uix_sys_membership_tenant_user ON public.sys_memberships USING btree (tenant_id, user_id);
+
+
+--
+-- Name: uix_sys_membership_tenant_user_primary; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX uix_sys_membership_tenant_user_primary ON public.sys_memberships USING btree (tenant_id, user_id, is_primary);
+
+
+--
+-- Name: uix_sys_plans_name; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX uix_sys_plans_name ON public.sys_plans USING btree (name);
+
+
+--
+-- Name: uix_sys_positions_tenant_code; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX uix_sys_positions_tenant_code ON public.sys_positions USING btree (tenant_id, code);
+
+
+--
+-- Name: uix_sys_roles_tenant_code; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX uix_sys_roles_tenant_code ON public.sys_roles USING btree (tenant_id, code);
+
+
+--
+-- Name: uix_uou_tenant_user_org_pos; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX uix_uou_tenant_user_org_pos ON public.sys_user_org_units USING btree (tenant_id, user_id, org_unit_id, position_id);
+
+
+--
+-- Name: uix_uou_tenant_user_primary; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX uix_uou_tenant_user_primary ON public.sys_user_org_units USING btree (tenant_id, user_id, is_primary);
+
+
+--
+-- Name: uix_up_tenant_user_pos; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX uix_up_tenant_user_pos ON public.sys_user_positions USING btree (tenant_id, user_id, position_id);
+
+
+--
+-- Name: uix_ur_tenant_user_role; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX uix_ur_tenant_user_role ON public.sys_user_roles USING btree (tenant_id, user_id, role_id);
+
+
+--
+-- Name: uk_notification_tpl_code; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX uk_notification_tpl_code ON public.notification_templates USING btree (code);
+
+
+--
+-- Name: uk_sys_scripts_name; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX uk_sys_scripts_name ON public.sys_scripts USING btree (name);
+
+
+--
+-- Name: uq_internal_msg_recipient_message_recipient; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX uq_internal_msg_recipient_message_recipient ON public.internal_message_recipients USING btree (message_id, recipient_user_id);
+
+
+--
+-- Name: sys_ai_chunks sys_ai_chunks_sys_ai_docs_chunks; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sys_ai_chunks
+    ADD CONSTRAINT sys_ai_chunks_sys_ai_docs_chunks FOREIGN KEY (doc_id) REFERENCES public.sys_ai_docs(id) ON DELETE CASCADE;
+
+
+--
+-- Name: sys_ai_docs sys_ai_docs_sys_ai_knowledge_bases_docs; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sys_ai_docs
+    ADD CONSTRAINT sys_ai_docs_sys_ai_knowledge_bases_docs FOREIGN KEY (base_id) REFERENCES public.sys_ai_knowledge_bases(id) ON DELETE CASCADE;
+
+
+--
+-- Name: sys_ai_messages sys_ai_messages_sys_ai_conversations_messages; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sys_ai_messages
+    ADD CONSTRAINT sys_ai_messages_sys_ai_conversations_messages FOREIGN KEY (conversation_id) REFERENCES public.sys_ai_conversations(id) ON DELETE CASCADE;
+
+
+--
+-- Name: sys_dict_entries sys_dict_entries_sys_dict_types_entries; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sys_dict_entries
+    ADD CONSTRAINT sys_dict_entries_sys_dict_types_entries FOREIGN KEY (type_id) REFERENCES public.sys_dict_types(id) ON DELETE CASCADE;
+
+
+--
+-- Name: sys_dict_entry_i18n sys_dict_entry_i18n_sys_dict_entries_i18ns; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sys_dict_entry_i18n
+    ADD CONSTRAINT sys_dict_entry_i18n_sys_dict_entries_i18ns FOREIGN KEY (entry_id) REFERENCES public.sys_dict_entries(id) ON DELETE CASCADE;
+
+
+--
+-- Name: sys_menus sys_menus_sys_menus_children; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sys_menus
+    ADD CONSTRAINT sys_menus_sys_menus_children FOREIGN KEY (parent_id) REFERENCES public.sys_menus(id) ON DELETE SET NULL;
+
+
+--
+-- Name: sys_org_units sys_org_units_sys_org_units_children; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sys_org_units
+    ADD CONSTRAINT sys_org_units_sys_org_units_children FOREIGN KEY (parent_id) REFERENCES public.sys_org_units(id) ON DELETE SET NULL;
+
+
+--
+-- Name: sys_permission_groups sys_permission_groups_sys_permission_groups_children; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sys_permission_groups
+    ADD CONSTRAINT sys_permission_groups_sys_permission_groups_children FOREIGN KEY (parent_id) REFERENCES public.sys_permission_groups(id) ON DELETE SET NULL;
+
+
+--
+-- Name: sys_plan_modules sys_plan_modules_sys_plans_modules; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sys_plan_modules
+    ADD CONSTRAINT sys_plan_modules_sys_plans_modules FOREIGN KEY (plan_id) REFERENCES public.sys_plans(id) ON DELETE CASCADE;
+
+
+--
+-- Name: sys_plan_quotas sys_plan_quotas_sys_plans_quotas; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sys_plan_quotas
+    ADD CONSTRAINT sys_plan_quotas_sys_plans_quotas FOREIGN KEY (plan_id) REFERENCES public.sys_plans(id) ON DELETE CASCADE;
+
+
+--
+-- Name: sys_tenants sys_tenants_sys_plans_tenants; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sys_tenants
+    ADD CONSTRAINT sys_tenants_sys_plans_tenants FOREIGN KEY (plan_id) REFERENCES public.sys_plans(id) ON DELETE SET NULL;
+
+
+--
+-- PostgreSQL database dump complete
+--
+
+
+
+-- +goose Down
+
+-- 基线不提供回滚: 全量重建请对空库重新 migrate up（见设计文档 §9）。

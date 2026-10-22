@@ -254,6 +254,12 @@ gow ent        # 推荐
 cd app/admin/service && make ent
 ```
 
+**同时必须新增迁移 SQL**（全仓铁律 6，数据库结构的唯一落库通道）：在
+`internal/data/migrations/` 下新建 `000NN_<module>_<what>.sql`（Up 必写、Down 尽量写），
+与 schema 改动同一 commit 提交；CI 漂移守卫（`make db-drift-check` / db-schema-drift
+workflow）会校验迁移链与 Ent schema 一致。流程、危险变更三步法与存量库纳管见
+`docs/database/design/ent-goose-migrations.md`——**改任何表结构前先读它**。
+
 ### Step 6: 创建 Repository
 
 在 `app/admin/service/internal/data/` 下创建 `*_repo.go`。**关键**: 使用自封装的 `go-crud/entgo` 泛型 Repository，泛型签名包含 10 个类型参数。骨架（参照现有 `api_repo.go`）:

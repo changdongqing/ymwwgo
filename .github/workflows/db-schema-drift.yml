@@ -1,0 +1,44 @@
+name: db-schema-drift
+
+# 数据库结构漂移守卫：goose 迁移链与 Ent schema 全量建表必须产出一致的结构，
+# 否则说明"改了 schema 忘写迁移 SQL"或迁移 SQL 与 schema 打架。
+# 原理与处理办法见 docs/database/design/ent-goose-migrations.md §7 / FAQ。
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'backend/app/admin/service/internal/data/ent/schema/**'
+      - 'backend/app/admin/service/internal/data/migrations/**'
+      - 'backend/app/admin/service/cmd/migrate/**'
+      - 'backend/app/admin/service/internal/data/ent_client.go'
+      - 'backend/app/admin/service/internal/data/schema_migrate.go'
+      - 'backend/scripts/database/**'
+      - '.github/workflows/db-schema-drift.yml'
+
+jobs:
+  drift-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: backend/go.mod
+
+      # Ent schema 含 vector 列（AI 模块），须用 pgvector 镜像；
+      # 显式 docker run 命名容器，pg_dump 走 docker exec，保证 dump 版本与 server 一致。
+      - name: Start postgres (pgvector)
+        run: |
+          docker run -d --name drift-pg -p 127.0.0.1:5432:5432 \
+            -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD='*Abcd123456' \
+            pgvector/pgvector:pg16
+          for i in $(seq 1 30); do
+            docker exec drift-pg pg_isready -U postgres && break
+            sleep 2
+          done
+          docker exec drift-pg pg_isready -U postgres
+
+      - name: Run drift check
+        run: backend/scripts/database/drift_check.sh 127.0.0.1 5432 drift-pg

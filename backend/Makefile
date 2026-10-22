@@ -16,7 +16,14 @@ ROOT_DIR	:= $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
 SRCS_MK		:= $(foreach dir, app, $(wildcard $(dir)/*/*/Makefile))
 
 .PHONY: help gen ent build api openapi init all vendor dep test cover vet lint docker \
-		register install-dev install-prod docker-up docker-down docker-libs pm2-deploy
+		register install-dev install-prod docker-up docker-down docker-libs pm2-deploy \
+		db-migrate-up db-migrate-status db-drift-check
+
+# 数据库结构迁移（goose，见 docs/database/design/ent-goose-migrations.md）
+DB_DSN				?= host=127.0.0.1 port=5432 user=postgres password=*Abcd123456 dbname=gwa sslmode=disable
+DRIFT_PG_HOST		?= 127.0.0.1
+DRIFT_PG_PORT		?= 5432
+DRIFT_PG_CONTAINER	?=
 
 # show environment variables
 env:
@@ -62,6 +69,18 @@ test:
 # run coverage tests
 cover:
 	go test -v ./... -coverprofile=coverage.out
+
+# apply pending schema migrations (goose; see docs/database/design/ent-goose-migrations.md)
+db-migrate-up:
+	go run ./app/admin/service/cmd/migrate up -dsn "$(DB_DSN)"
+
+# show schema migration status (goose)
+db-migrate-status:
+	go run ./app/admin/service/cmd/migrate status -dsn "$(DB_DSN)"
+
+# schema drift guard: goose migrations vs ent schema (see docs/database/design/ent-goose-migrations.md)
+db-drift-check:
+	scripts/database/drift_check.sh $(DRIFT_PG_HOST) $(DRIFT_PG_PORT) $(DRIFT_PG_CONTAINER)
 
 # run static analysis
 vet:

@@ -16,7 +16,6 @@ import (
 	entBootstrap "github.com/tx7do/kratos-bootstrap/database/ent"
 
 	"go-wind-admin/app/admin/service/internal/data/ent"
-	"go-wind-admin/app/admin/service/internal/data/ent/migrate"
 	_ "go-wind-admin/app/admin/service/internal/data/ent/runtime"
 )
 
@@ -30,6 +29,17 @@ func NewEntClient(ctx *bootstrap.Context) (*entCrud.EntClient[*ent.Client], func
 		panic("[ENT] failed getting config")
 	}
 
+	// 结构迁移：goose 版本化迁移是 DDL 的唯一通道（docs/database/design/ent-goose-migrations.md，
+	// 全仓铁律 6）。历史的 Ent 自动迁移（Schema.Create）已移除——改表结构一律在
+	// internal/data/migrations/ 新增迁移文件，CI 漂移守卫校验迁移与 Ent schema 一致。
+	// migrate=false 时不做任何 DDL，由部署链先行执行 cmd/migrate up（多副本场景）。
+	if cfg.Data.Database.GetMigrate() {
+		if err := RunSchemaMigrations(ctx.Context(), ctx); err != nil {
+			l.Errorf(context.Background(), "[ENT] failed running schema migrations: %v", err)
+			panic("[ENT] failed running schema migrations")
+		}
+	}
+
 	cli, err := entBootstrap.NewEntClient(cfg, func(drv *sql.Driver) *ent.Client {
 		client := ent.NewClient(
 			ent.Driver(&auditDriver{drv}),
@@ -40,14 +50,6 @@ func NewEntClient(ctx *bootstrap.Context) (*entCrud.EntClient[*ent.Client], func
 		if client == nil {
 			l.Errorf(context.Background(), "[ENT] failed creating ent client")
 			panic("[ENT] failed creating ent client")
-		}
-
-		// run the auto migration tool
-		if cfg.Data.Database.GetMigrate() {
-			if err := client.Schema.Create(ctx.Context(), migrate.WithForeignKeys(true)); err != nil {
-				l.Errorf(context.Background(), "[ENT] failed creating schema resources: %v", err)
-				panic("[ENT] failed creating schema resources")
-			}
 		}
 
 		return client

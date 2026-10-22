@@ -5,6 +5,10 @@ data:
 #    driver: "mysql"
 #    source: "root:*Abcd123456@tcp(localhost:3306)/gwa?parseTime=true&charset=utf8mb4&loc=Asia%2FShanghai"
     migrate: true
+#    migrate 开关语义（见 docs/database/design/ent-goose-migrations.md）：
+#    true  = 启动时自动执行内嵌 goose 版本化迁移（推荐，单实例部署）
+#    false = 启动不做任何 DDL，由部署链先执行 cmd/migrate up（多副本/DBA 管控场景）
+#    结构变更一律在 internal/data/migrations/ 新增迁移文件，历史的 Ent 自动迁移已移除。
     debug: false
     enable_trace: false
     enable_metrics: false
