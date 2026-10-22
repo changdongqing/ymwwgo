@@ -1,0 +1,70 @@
+syntax = "proto3";
+
+package admin.service.v1;
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+
+import "ontology/service/v1/ontology.proto";
+import "ontology/service/v1/ontology_datatype.proto";
+
+// 数据类型管理服务（admin 门面）
+//
+// 系列首个无 tree 端点、有 simple-list 端点的实体（OWL 2 无 subDatatypeOf 层级，
+// Protégé OWLDataTypeViewComponent 同构平铺；simple-list 供数据属性值域双源下拉）。
+// create/update/delete 是自定义 RPC（公理事务管线），body: "*" 收扁平请求体——
+// 不是通用 CRUD，勿按惯例包 { data: {...} }（protojson 会把 data 当未知字段丢弃）。
+// definition 为 optional message 字段（presence 可靠）：JSON null/缺失 = 跳过定义区 diff，
+// 显式空定义 = 清空。
+service OntologyDatatypeService {
+    // 分页查询数据类型列表
+    rpc List (ontology.service.v1.ListDatatypesRequest) returns (ontology.service.v1.ListDatatypesResponse) {
+        option (google.api.http) = {
+            get: "/admin/v1/ontology/datatypes"
+        };
+    }
+
+    // 查询数据类型简况列表（值域双源下拉数据源）
+    rpc SimpleList (ontology.service.v1.ListSimpleDatatypesRequest) returns (ontology.service.v1.SimpleDatatypeListResponse) {
+        option (google.api.http) = {
+            get: "/admin/v1/ontology/datatypes/simple-list"
+        };
+    }
+
+    // 查询数据类型 frame 详情
+    rpc Frame (ontology.service.v1.GetDatatypeFrameRequest) returns (ontology.service.v1.DatatypeFrame) {
+        option (google.api.http) = {
+            get: "/admin/v1/ontology/datatypes/{id}/frame"
+        };
+    }
+
+    // 查询数据类型引用明细（被哪些数据属性作派生值域引用）
+    rpc Usage (ontology.service.v1.GetDatatypeUsageRequest) returns (ontology.service.v1.EntityUsage) {
+        option (google.api.http) = {
+            get: "/admin/v1/ontology/datatypes/{id}/usage"
+        };
+    }
+
+    // 创建数据类型（公理事务管线；返回新实体 id + 变更后版本）
+    rpc Create (ontology.service.v1.CreateDatatypeRequest) returns (ontology.service.v1.CreateDatatypeResponse) {
+        option (google.api.http) = {
+            post: "/admin/v1/ontology/datatypes"
+            body: "*"
+        };
+    }
+
+    // 更新数据类型（frame 全量提交，公理事务管线）
+    rpc Update (ontology.service.v1.UpdateDatatypeRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            put: "/admin/v1/ontology/datatypes/{id}"
+            body: "*"
+        };
+    }
+
+    // 删除数据类型（force=true 级联移除 42 值域引用行，引用方数据属性其余值域完好）
+    rpc Delete (ontology.service.v1.DeleteDatatypeRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            delete: "/admin/v1/ontology/datatypes/{id}"
+        };
+    }
+}

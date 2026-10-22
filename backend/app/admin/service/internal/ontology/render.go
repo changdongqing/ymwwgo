@@ -129,8 +129,18 @@ func RenderAxiom(ax *ent.OntAxiom, entityNames map[uint32]string) string {
 	case AxiomDataPropertyDomain:
 		return "Domain(" + entityName(subject) + " " + entityName(nilUint(ax.ObjectID)) + ")"
 	case AxiomDataPropertyRange:
-		// 值域渲染 datatype 短名（value_text = 内建 datatype IRI，03 号文档 §4.4）
+		// 值域渲染双轨（05 期）：内建轨 value_text → datatype 短名；派生轨 object_id → 实体名
+		if objectID := nilUint(ax.ObjectID); objectID != 0 {
+			return "Range(" + entityName(subject) + " " + entityName(objectID) + ")"
+		}
 		return "Range(" + entityName(subject) + " " + DatatypeShortName(nilString(ax.ValueText)) + ")"
+	case AxiomDatatypeDefinition:
+		// 46 定义公理渲染（05 号文档 §4.7）：DatatypeDefinition(年龄, integer [0 ≤ x ≤ 100])；
+		// JSON 损坏（直改库）渲染占位，不 panic
+		if def, err := ParseDefinition(nilString(ax.ValueText)); err == nil {
+			return "DatatypeDefinition(" + entityName(subject) + ", " + DefinitionSummary(def) + ")"
+		}
+		return "DatatypeDefinition(" + entityName(subject) + ", <invalid-definition>)"
 	case AxiomDataPropertyCharacteristic:
 		return "Characteristic(" + entityName(subject) + ", " + CharacteristicShortName(nilString(ax.PredicateIri)) + ")"
 	case AxiomEquivalentDataProperties, AxiomDisjointDataProperties:
@@ -221,6 +231,78 @@ func DatatypeShortName(iri string) string {
 		return "xsd:" + strings.TrimPrefix(iri, IRIXSDNamespace)
 	}
 	return iri
+}
+
+// DefinitionSummary 定义摘要（05 号文档 §4.7：列表定义列与 46 公理渲染共用，前端纯渲染不重复拼）：
+// 区间段仅 min/maxInclusive/minExclusive/maxExclusive 四项参与合并（源修订 #5 内化）——
+// `integer [0 ≤ x ≤ 100]`；长度/位数按 `k=v`、pattern 按 `~ /…/`；无 facet 仅基类型短名。
+func DefinitionSummary(def DatatypeDefinition) string {
+	base := strings.TrimPrefix(strings.TrimSpace(def.BaseIRI), IRIXSDNamespace)
+	if base == "" {
+		base = strings.TrimSpace(def.BaseIRI)
+	}
+	facets := make(map[string]string, len(def.Facets))
+	for _, f := range def.Facets {
+		facets[strings.TrimSpace(f.Facet)] = strings.TrimSpace(f.Value)
+	}
+
+	var b strings.Builder
+	b.WriteString(base)
+
+	// 区间段：min 值 (≤|<) x (≤|<) max 值，方括号包裹
+	minVal, hasMin := "", false
+	minExclusive := false
+	if v, ok := facets["minInclusive"]; ok {
+		minVal, hasMin = v, true
+	} else if v, ok := facets["minExclusive"]; ok {
+		minVal, hasMin, minExclusive = v, true, true
+	}
+	maxVal, hasMax := "", false
+	maxExclusive := false
+	if v, ok := facets["maxInclusive"]; ok {
+		maxVal, hasMax = v, true
+	} else if v, ok := facets["maxExclusive"]; ok {
+		maxVal, hasMax, maxExclusive = v, true, true
+	}
+	if hasMin || hasMax {
+		b.WriteString(" [")
+		if hasMin {
+			b.WriteString(minVal)
+			if minExclusive {
+				b.WriteString(" < ")
+			} else {
+				b.WriteString(" ≤ ")
+			}
+		}
+		b.WriteString("x")
+		if hasMax {
+			if maxExclusive {
+				b.WriteString(" < ")
+			} else {
+				b.WriteString(" ≤ ")
+			}
+			b.WriteString(maxVal)
+		}
+		b.WriteString("]")
+	}
+
+	// pattern 段
+	if v, ok := facets["pattern"]; ok {
+		b.WriteString(" ~ /")
+		b.WriteString(v)
+		b.WriteString("/")
+	}
+
+	// 长度 / 位数段（k=v，声明序）
+	for _, name := range []string{"length", "minLength", "maxLength", "totalDigits", "fractionDigits"} {
+		if v, ok := facets[name]; ok {
+			b.WriteString(" ")
+			b.WriteString(name)
+			b.WriteString("=")
+			b.WriteString(v)
+		}
+	}
+	return b.String()
 }
 
 func quoteValue(v string) string {

@@ -213,6 +213,98 @@ func DiffSubjectSideValues(subject uint32, axiomType uint32, current []*ent.OntA
 	return changes
 }
 
+// DiffRangeRefs 42 值域双轨 diff（05 期增量，DiffSubjectSideValues 的双轨升级——
+// 比对键从 value_text 升级为归一化 IRI，05 号文档 §4.4）：
+//   - current 为"投影为 IRI"的存量行（value_text 行原样；object_id 行取实体 IRI；
+//     悬空 object_id 行 IRI 为空 → 直接删，不参与比对）；
+//   - targets 为 resolveRanges 三分支产物（内建轨 ValueText / 派生轨 ObjectID）；
+//   - 语义同 DiffSubjectSideValues（源修订 #2）：保留行 sort_order 严格递增否则整段重写；
+//     同 IRI 多行脏数据保留首行；新增行按提交序从保留行最大值后顺排，按目标轨形态落行。
+func DiffRangeRefs(subject uint32, axiomType uint32, current []RangeRow, targets []RangeRef) []AxiomChange {
+	firstByIRI := make(map[string]*RangeRow, len(current))
+	for i := range current {
+		row := &current[i]
+		if row.IRI == "" {
+			continue // 悬空 object_id（直改库场景）：无键可比，删除侧统一清掉
+		}
+		if _, ok := firstByIRI[row.IRI]; !ok {
+			firstByIRI[row.IRI] = row
+		}
+	}
+
+	// 重排检测：保留行按提交序展开的存量 sort_order 必须严格递增
+	prevSort := int32(-1)
+	reorder := false
+	for _, t := range targets {
+		row, ok := firstByIRI[t.IRI]
+		if !ok {
+			continue
+		}
+		if row.SortOrder <= prevSort {
+			reorder = true
+			break
+		}
+		prevSort = row.SortOrder
+	}
+
+	changes := make([]AxiomChange, 0, len(current)+len(targets))
+
+	if reorder {
+		for _, row := range current {
+			changes = append(changes, AxiomChange{Op: AxiomOpDelete, AxiomID: row.AxiomID, SubjectID: subject})
+		}
+		for i, t := range targets {
+			changes = append(changes, rangeAddChange(axiomType, subject, t, int32(i)))
+		}
+		return changes
+	}
+
+	// 删：IRI 不在目标中的行、同 IRI 多行的多余行、悬空行
+	inTarget := make(map[string]struct{}, len(targets))
+	for _, t := range targets {
+		inTarget[t.IRI] = struct{}{}
+	}
+	keptMax := int32(-1)
+	for _, row := range current {
+		_, targeted := inTarget[row.IRI]
+		first := firstByIRI[row.IRI]
+		if row.IRI != "" && targeted && first != nil && first.AxiomID == row.AxiomID {
+			if row.SortOrder > keptMax {
+				keptMax = row.SortOrder
+			}
+			continue
+		}
+		changes = append(changes, AxiomChange{Op: AxiomOpDelete, AxiomID: row.AxiomID, SubjectID: subject})
+	}
+
+	// 增：目标中无存量行的 IRI，按提交序从保留行最大值后顺排（存量行不动）
+	added := make(map[string]struct{}, len(targets))
+	seq := keptMax + 1
+	for _, t := range targets {
+		if _, ok := firstByIRI[t.IRI]; ok {
+			continue
+		}
+		if _, dup := added[t.IRI]; dup {
+			continue
+		}
+		added[t.IRI] = struct{}{}
+		changes = append(changes, rangeAddChange(axiomType, subject, t, seq))
+		seq++
+	}
+	return changes
+}
+
+// rangeAddChange 按目标轨形态落 42 行：内建轨 value_text / 派生轨 object_id（二选一，不双写）。
+func rangeAddChange(axiomType uint32, subject uint32, t RangeRef, sortOrder int32) AxiomChange {
+	c := AxiomChange{Op: AxiomOpAdd, AxiomType: axiomType, SubjectID: subject, SortOrder: sortOrder}
+	if t.ObjectID != 0 {
+		c.ObjectID = t.ObjectID
+	} else {
+		c.ValueText = t.ValueText
+	}
+	return c
+}
+
 // SymmetricAxiomPair 对称关系现状：伙伴 + 双向两行公理 id（成对存储）。
 type SymmetricAxiomPair struct {
 	OtherID         uint32

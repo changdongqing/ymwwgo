@@ -1,0 +1,7 @@
+/* 数据类型页（系列首个无左树全宽列表——05 号文档 §6.1）：工具条与 usage 弹窗警示。
+   样式类名与 01~04 期同源共用（ontology-usage-warning 在各页自带一份，避免跨页 import 耦合）。 */
+
+.ontology-usage-warning {
+  color: var(--ant-color-error);
+  margin-bottom: 12px;
+}

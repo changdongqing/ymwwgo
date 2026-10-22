@@ -68,6 +68,18 @@ export const ontologyRoutes: AppRouteObject[] = [
           authority: ['sys:platform_admin'],
         },
       },
+      {
+        // 数据类型（05 期，系列首个无左树全宽列表页——OWL 2 无 subDatatypeOf 层级）
+        name: 'datatypes',
+        path: 'datatypes',
+        element: createLazyRoute(() => import('@/pages/app/ontology/datatypes')),
+        meta: {
+          title: 'routes:datatypes',
+          icon: 'lucide:filter',
+          order: 6,
+          authority: ['sys:platform_admin'],
+        },
+      },
     ],
   },
 ];

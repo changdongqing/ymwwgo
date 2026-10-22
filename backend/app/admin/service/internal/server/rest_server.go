@@ -149,6 +149,7 @@ func NewRestServer(
 	ontologyObjectPropertyService *service.OntologyObjectPropertyService,
 	ontologyDataPropertyService *service.OntologyDataPropertyService,
 	ontologyAnnotationPropertyService *service.OntologyAnnotationPropertyService,
+	ontologyDatatypeService *service.OntologyDatatypeService,
 
 	tenantService *service.TenantService,
 	planService *service.PlanService,
@@ -243,6 +244,7 @@ func NewRestServer(
 	adminV1.RegisterOntologyObjectPropertyServiceHTTPServer(srv, ontologyObjectPropertyService)
 	adminV1.RegisterOntologyDataPropertyServiceHTTPServer(srv, ontologyDataPropertyService)
 	adminV1.RegisterOntologyAnnotationPropertyServiceHTTPServer(srv, ontologyAnnotationPropertyService)
+	adminV1.RegisterOntologyDatatypeServiceHTTPServer(srv, ontologyDatatypeService)
 
 	adminV1.RegisterApiServiceHTTPServer(srv, apiService)
 	adminV1.RegisterMenuServiceHTTPServer(srv, menuService)

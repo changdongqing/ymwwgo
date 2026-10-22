@@ -1,0 +1,212 @@
+syntax = "proto3";
+
+package ontology.service.v1;
+
+option go_package = "go-wind-admin/api/gen/go/ontology/service/v1;ontologyv1";
+
+import "gnostic/openapi/v3/annotations.proto";
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+import "ontology/service/v1/ontology.proto";
+
+// facet 定义项（46 行定义 JSON 的 proto 形态：{"facet":"minInclusive","value":"0"}）
+message DatatypeFacet {
+    string facet = 1 [
+        json_name = "facet",
+        (gnostic.openapi.v3.property) = { description: "facet 本地名（minInclusive/maxLength/pattern 等，白名单 10 种）" }
+    ]; // facet 本地名
+    string value = 2 [
+        json_name = "value",
+        (gnostic.openapi.v3.property) = { description: "约束值词形（非负整数/正则/基类型词法空间内的字面量）" }
+    ]; // 约束值词形
+}
+
+// datatype 定义（46 行 AXIOM_DATATYPE_DEFINITION 的 proto 形态；单层派生：内建基类型 + facet 约束）。
+// optional message 字段 presence 可靠：definition 未提交/JSON null = 跳过定义区 diff；
+// 显式空定义（base_iri 未设且 facets 空）= 清空存量定义（05 号文档 §4.3 两段语义）。
+message DatatypeDefinition {
+    optional string base_iri = 1 [
+        json_name = "baseIri",
+        (gnostic.openapi.v3.property) = { description: "内建基类型 IRI（白名单 31 项内；datatype 实体不作基类型——V1 单层派生）" }
+    ]; // 内建基类型 IRI
+    repeated DatatypeFacet facets = 2 [json_name = "facets"]; // facet 约束（保提交序；同 facet 名重复提交后者覆盖）
+}
+
+// 数据类型（列表项，含定义与聚合列）
+message Datatype {
+    optional uint32 id = 1 [
+        json_name = "id",
+        (gnostic.openapi.v3.property) = { description: "实体ID" }
+    ]; // 实体ID
+    optional uint32 ontology_id = 2 [
+        json_name = "ontologyId",
+        (gnostic.openapi.v3.property) = { description: "所属本体ID" }
+    ]; // 所属本体ID
+    optional string iri = 3 [
+        json_name = "iri",
+        (gnostic.openapi.v3.property) = { description: "完整 IRI（本体 base_iri 命名空间下）" }
+    ]; // 完整 IRI
+    optional string local_name = 4 [
+        json_name = "localName",
+        (gnostic.openapi.v3.property) = { description: "局部名（创建后不可变）" }
+    ]; // 局部名
+    optional string display_label = 5 [
+        json_name = "displayLabel",
+        (gnostic.openapi.v3.property) = { description: "显示名（rdfs:label 渲染缓存）" }
+    ]; // 显示名
+    optional bool deprecated = 6 [
+        json_name = "deprecated",
+        (gnostic.openapi.v3.property) = { description: "是否废弃（owl:deprecated）" }
+    ]; // 是否废弃
+    optional string comment = 7 [
+        json_name = "comment",
+        (gnostic.openapi.v3.property) = { description: "注释（rdfs:comment 注解公理聚合）" }
+    ]; // 注释
+    optional string definition_summary = 8 [
+        json_name = "definitionSummary",
+        (gnostic.openapi.v3.property) = { description: "定义摘要（如 integer [0 ≤ x ≤ 100]；仅声明未定义时为空）" }
+    ]; // 定义摘要
+    optional uint32 reference_count = 9 [
+        json_name = "referenceCount",
+        (gnostic.openapi.v3.property) = { description: "被引用数（42 行派生轨 object_id 命中的数据属性数）" }
+    ]; // 被引用数
+    optional string base_iri = 10 [
+        json_name = "baseIri",
+        (gnostic.openapi.v3.property) = { description: "定义基类型 IRI（未定义为空）" }
+    ]; // 定义基类型 IRI
+
+    optional uint32 created_by = 100 [json_name = "createdBy", (gnostic.openapi.v3.property) = { description: "创建者用户ID" }]; // 创建者用户ID
+    optional uint32 updated_by = 101 [json_name = "updatedBy", (gnostic.openapi.v3.property) = { description: "更新者用户ID" }]; // 更新者用户ID
+    optional uint32 deleted_by = 102 [json_name = "deletedBy", (gnostic.openapi.v3.property) = { description: "删除者用户ID" }]; // 删除者用户ID
+
+    optional google.protobuf.Timestamp created_at = 200 [json_name = "createdAt", (gnostic.openapi.v3.property) = { description: "创建时间" }]; // 创建时间
+    optional google.protobuf.Timestamp updated_at = 201 [json_name = "updatedAt", (gnostic.openapi.v3.property) = { description: "更新时间" }]; // 更新时间
+    optional google.protobuf.Timestamp deleted_at = 202 [json_name = "deletedAt", (gnostic.openapi.v3.property) = { description: "删除时间" }]; // 删除时间
+}
+
+// 查询数据类型列表 - 请求（无 tree——OWL 2 无 subDatatypeOf 层级，Protégé 同构平铺列表）
+message ListDatatypesRequest {
+    uint32 page = 1 [json_name = "page"];                    // 页码，1 起
+    uint32 page_size = 2 [json_name = "pageSize"];           // 每页条数
+    uint32 ontology_id = 3 [json_name = "ontologyId"];       // 本体ID（必填）
+    string local_name = 4 [json_name = "localName"];         // 局部名，contains 模糊
+    string display_label = 5 [json_name = "displayLabel"];   // 显示名，contains 模糊
+    optional bool deprecated = 6 [json_name = "deprecated"]; // 是否废弃，精确
+    string order_by = 7 [json_name = "orderBy"];             // JSON 数组字符串，默认 '["-created_at"]'
+}
+
+// 查询数据类型列表 - 回应
+message ListDatatypesResponse {
+    repeated Datatype items = 1;
+    uint64 total = 2;
+}
+
+// 查询数据类型 frame 详情 - 请求
+message GetDatatypeFrameRequest {
+    uint32 id = 1 [json_name = "id"]; // 实体ID
+}
+
+// 数据类型 frame 详情（Protégé OWLDatatypeDescriptionFrame 对应物；仅"类型定义"一节——
+// OWL 2 不给 datatype 层级/特征/成对关系。base_version 供乐观锁回传）
+message DatatypeFrame {
+    optional uint32 id = 1 [json_name = "id"];                     // 实体ID
+    optional uint32 ontology_id = 2 [json_name = "ontologyId"];    // 所属本体ID
+    optional string iri = 3 [json_name = "iri"];                   // 完整 IRI
+    optional string local_name = 4 [json_name = "localName"];      // 局部名
+    optional string display_label = 5 [json_name = "displayLabel"]; // 显示名
+    optional string comment = 6 [json_name = "comment"];           // 注释（rdfs:comment）
+    optional bool deprecated = 8 [json_name = "deprecated"];       // 是否废弃（owl:deprecated）
+    optional DatatypeDefinition definition = 9 [json_name = "definition"]; // 类型定义（nil = 仅声明未定义）
+    repeated AnnotationAssertion annotations = 10 [json_name = "annotations"]; // 自定义注解（04 期通用注解区复用）
+    optional uint32 base_version = 11 [json_name = "baseVersion"]; // 本体当前版本，下次提交回传（乐观锁基准）
+
+    optional google.protobuf.Timestamp updated_at = 201 [json_name = "updatedAt"]; // 更新时间
+}
+
+// 查询数据类型引用 - 请求（usage 反查：被哪些数据属性作派生值域引用）
+message GetDatatypeUsageRequest {
+    uint32 id = 1 [json_name = "id"]; // 实体ID
+}
+
+// 简化数据类型（值域双源下拉数据源；对应 Protégé getKnownDatatypes 的自定义半边）
+message SimpleDatatype {
+    optional uint32 id = 1 [json_name = "id"];                     // 实体ID
+    optional string iri = 2 [json_name = "iri"];                   // 完整 IRI
+    optional string local_name = 3 [json_name = "localName"];      // 局部名
+    optional string display_label = 4 [json_name = "displayLabel"]; // 显示名
+    optional bool deprecated = 5 [json_name = "deprecated"];       // 是否废弃
+    optional string base_iri = 6 [json_name = "baseIri"];          // 定义基类型 IRI（未定义为空）
+}
+
+// 查询数据类型简况列表 - 请求
+message ListSimpleDatatypesRequest {
+    uint32 ontology_id = 1 [json_name = "ontologyId"]; // 本体ID（必填）
+}
+
+// 查询数据类型简况列表 - 回应
+message SimpleDatatypeListResponse {
+    repeated SimpleDatatype items = 1;
+}
+
+// 创建数据类型 - 请求（自定义 RPC：扁平请求体，勿包 { data }——protojson 会把 data 当未知字段丢弃）。
+// 无父级/等价/不相交/特征——OWL 2 不给 datatype 任何逻辑结构（系列管线最短实体）。
+message CreateDatatypeRequest {
+    uint32 ontology_id = 1 [json_name = "ontologyId"];             // 本体ID（必填）
+    string local_name = 2 [json_name = "localName"];               // 局部名（必填，创建后不可变）
+    optional string display_label = 3 [json_name = "displayLabel"]; // 显示名 → rdfs:label（zh）
+    optional string comment = 4 [json_name = "comment"];           // 注释 → rdfs:comment（zh）
+    optional bool deprecated = 5 [json_name = "deprecated"];       // 废弃 → owl:deprecated
+    optional DatatypeDefinition definition = 6 [json_name = "definition"]; // 类型定义（nil = 仅声明未定义）
+    repeated AnnotationAssertionInput annotations = 7 [json_name = "annotations"]; // 自定义注解（全量提交语义）
+}
+
+// 创建数据类型 - 回应（新实体 id + 变更后本体版本）
+message CreateDatatypeResponse {
+    optional uint32 id = 1 [json_name = "id"];                     // 新实体ID
+    optional uint32 base_version = 2 [json_name = "baseVersion"];  // 变更后本体版本
+}
+
+// 更新数据类型 - 请求（frame 全量提交语义；local_name 忽略——不可变；base_version 缺省 = 跳过乐观锁比对）。
+// definition 为 optional message：未提交/JSON null = 跳过定义区 diff；显式空定义 = 清空（§4.3 两段语义）
+message UpdateDatatypeRequest {
+    uint32 id = 1 [json_name = "id"];                              // 实体ID
+    optional string display_label = 3 [json_name = "displayLabel"]; // 显示名（缺省 = 不变；空串 = 清空）
+    optional string comment = 4 [json_name = "comment"];           // 注释（缺省 = 不变；空串 = 清空）
+    optional bool deprecated = 5 [json_name = "deprecated"];       // 废弃（缺省 = 不变；false = 移除断言）
+    optional DatatypeDefinition definition = 6 [json_name = "definition"]; // 类型定义（nil = 跳过 diff；空定义 = 清空）
+    optional uint32 base_version = 8 [json_name = "baseVersion"];  // 乐观锁基准
+    repeated AnnotationAssertionInput annotations = 7 [json_name = "annotations"]; // 自定义注解全量（nil/缺失/空数组统一 = 清空）
+}
+
+// 删除数据类型 - 请求（force=true 级联移除引用公理：42 值域行随删，引用方数据属性其余值域完好）
+message DeleteDatatypeRequest {
+    uint32 id = 1 [json_name = "id"];                     // 实体ID
+    optional uint32 base_version = 2 [json_name = "baseVersion"]; // 乐观锁基准
+    optional bool force = 3 [json_name = "force"];        // 强制删除（默认 false：被引用即拒绝 ENTITY_IN_USE）
+}
+
+// 数据类型管理服务（源领域：只定义消息与 rpc，HTTP 路由在 admin 门面挂载）
+service OntologyDatatypeService {
+    // 分页查询数据类型列表（无 tree 端点——系列首个纯列表实体）
+    rpc List (ListDatatypesRequest) returns (ListDatatypesResponse) {}
+
+    // 查询数据类型简况列表（值域双源下拉数据源）
+    rpc SimpleList (ListSimpleDatatypesRequest) returns (SimpleDatatypeListResponse) {}
+
+    // 查询数据类型 frame 详情
+    rpc Frame (GetDatatypeFrameRequest) returns (DatatypeFrame) {}
+
+    // 查询数据类型引用明细
+    rpc Usage (GetDatatypeUsageRequest) returns (EntityUsage) {}
+
+    // 创建数据类型（公理事务管线）
+    rpc Create (CreateDatatypeRequest) returns (CreateDatatypeResponse) {}
+
+    // 更新数据类型（frame 全量提交，公理事务管线）
+    rpc Update (UpdateDatatypeRequest) returns (google.protobuf.Empty) {}
+
+    // 删除数据类型（公理事务管线）
+    rpc Delete (DeleteDatatypeRequest) returns (google.protobuf.Empty) {}
+}

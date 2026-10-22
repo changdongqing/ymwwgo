@@ -108,7 +108,7 @@ var DefaultPermissions = []*permissionV1.Permission{
 			72, 73, 74,
 			80, 81, 82, 83, 84,
 			101, 102,
-			110, 111, 112, 113, 114, 115,
+			110, 111, 112, 113, 114, 115, 116,
 		},
 		ApiIds: []uint32{
 			1, 2, 3, 4, 5, 6, 7, 8, 9,
@@ -1331,6 +1331,24 @@ var DefaultMenus = []*permissionV1.Menu{
 			Title:     trans.Ptr("menu.ontology.annotationProperty"),
 			Icon:      trans.Ptr("lucide:tag"),
 			Order:     trans.Ptr(int32(5)),
+			Authority: []string{"sys:platform_admin"},
+		},
+	},
+	{
+		// 数据类型：全宽列表（05 期，派生 datatype 词汇表；系列首个无左树实体页——OWL 2 无
+		// subDatatypeOf 层级，Protégé 平铺列表同构；公理事务管线）。
+		// 设计文档原文 Order 5 与 115 注解属性撞号，按系列惯例顺延为 6（实现修订记档）。
+		Id:        trans.Ptr(uint32(116)),
+		ParentId:  trans.Ptr(uint32(110)),
+		Type:      permissionV1.Menu_MENU.Enum(),
+		Name:      trans.Ptr("OntologyDatatypes"),
+		Path:      trans.Ptr("datatypes"),
+		Component: trans.Ptr("app/ontology/datatypes/index.tsx"),
+		CreatedAt: timeutil.TimeToTimestamppb(trans.Ptr(time.Now())),
+		Meta: &permissionV1.MenuMeta{
+			Title:     trans.Ptr("menu.ontology.datatype"),
+			Icon:      trans.Ptr("lucide:filter"),
+			Order:     trans.Ptr(int32(6)),
 			Authority: []string{"sys:platform_admin"},
 		},
 	},

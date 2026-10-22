@@ -86,11 +86,11 @@ func TestValidator_DataPropertyRange_Whitelist(t *testing.T) {
 		t.Fatalf("白名单外值域应拒绝：%v", problems)
 	}
 
-	// V1 双轨未启用：object_id 非空即拒绝（05 期放开）
+	// 05 期双轨：object_id 指向非 datatype 实体（fullScenario 的实体 1 是类）→ 类型不符拒绝
 	axioms2 := axiomRow(34, AxiomDataPropertyRange, 2, 1, "", IRIXSDNamespace+"string", "", 3)
 	problems = validate(t, entities, append(axioms[:len(axioms)-1], axioms2))
-	if len(problems) == 0 || !strings.Contains(problems[len(problems)-1].Error(), "object_id") {
-		t.Fatalf("42 行占用 object_id 应拒绝（05 期前）：%v", problems)
+	if len(problems) == 0 || !strings.Contains(problems[len(problems)-1].Error(), "数据类型实体") {
+		t.Fatalf("42 行 object_id 指向非 datatype 实体应拒绝：%v", problems)
 	}
 }
 

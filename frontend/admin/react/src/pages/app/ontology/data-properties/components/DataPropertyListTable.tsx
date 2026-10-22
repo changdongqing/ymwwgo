@@ -9,7 +9,7 @@ import { useProTableScrollY } from '@/hooks/useProTableScrollY';
 import { TABLE } from '@/config/constants';
 import type { ontologyservicev1_DataProperty } from '@/api/generated/admin/service/v1';
 import { fetchListDataProperties } from '@/api/hooks/ontologyDataProperty';
-import { DATATYPE_KEY_BY_IRI, datatypeShortName } from '../constants';
+import { DATATYPE_KEY_BY_IRI, datatypeShortName } from '../../constants';
 
 interface DataPropertyListTableProps {
   ontologyId: number | null;

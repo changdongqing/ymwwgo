@@ -19,7 +19,8 @@ import {
 } from '@/api/hooks/ontologyDataProperty';
 import { useOntologyClassTree } from '@/api/hooks/ontologyClass';
 import AnnotationListEditor, { cleanAnnotationRows } from '../../components/AnnotationListEditor';
-import { DATATYPE_LABELS, datatypeShortName } from '../constants';
+import { useSimpleDatatypes } from '@/api/hooks/ontologyDatatype';
+import { DATATYPE_LABELS, datatypeShortName, FAMILY_GROUPS } from '../../constants';
 
 interface DataPropertyDrawerProps {
   open: boolean;
@@ -132,17 +133,37 @@ const DataPropertyDrawer: React.FC<DataPropertyDrawerProps> = ({
     return propertyRoots.map((root) => toNode(root));
   }, [propertyRoots, isEdit, propertyId, t]);
 
-  // 值域白名单选项：label = 中文名 + 英文短名，option 附示例文案（03 号文档 §6.3）
-  const rangeOptions = useMemo(
-    () =>
-      DATATYPE_LABELS.map((d) => ({
+  // 本体派生 datatype 数据源（05 期值域双源下拉第二源；03 号文档 §6.3 → 05 号文档 §6.5）
+  const simpleDatatypesQuery = useSimpleDatatypes(
+    { ontologyId: ontologyId ?? 0 },
+    { enabled: open && ontologyId != null },
+  );
+  const simpleDatatypes = simpleDatatypesQuery.data?.items ?? [];
+
+  // 值域双源选项（05 号文档 §6.5）：① 内建 31 项按族分组；② 本体派生 datatype
+  // （文案 localName（基类型短名），deprecated 删除线但可选）。
+  // API 单形态（range_iris 内建 IRI ∪ datatype 实体 IRI），前端无双轨概念。
+  const rangeOptions = useMemo(() => {
+    const builtinGroups = FAMILY_GROUPS.map((g) => ({
+      label: t(g.i18nKey),
+      options: DATATYPE_LABELS.filter((d) => d.family === g.family).map((d) => ({
         value: d.iri,
         label: `${t(d.i18nKey)}（${datatypeShortName(d.iri)}）`,
         title: `${t(d.i18nKey)}（${datatypeShortName(d.iri)}）`,
         example: t(d.exampleKey),
       })),
-    [t],
-  );
+    }));
+    const customGroup = {
+      label: t('datatype.customGroupTitle'),
+      options: simpleDatatypes.map((d) => ({
+        value: d.iri!,
+        label: `${d.displayLabel || d.localName}（${d.baseIri ? datatypeShortName(d.baseIri) : t('datatype.undefined')}）${d.deprecated ? '（' + t('datatype.deprecatedYes') + '）' : ''}`,
+        title: `${d.displayLabel || d.localName}（${d.baseIri ? datatypeShortName(d.baseIri) : t('datatype.undefined')}）`,
+        example: d.iri,
+      })),
+    };
+    return simpleDatatypes.length > 0 ? [...builtinGroups, customGroup] : builtinGroups;
+  }, [t, simpleDatatypes]);
 
   // 编辑态回显（destroyOnHidden 时需延迟赋值）
   useEffect(() => {
@@ -215,6 +236,7 @@ const DataPropertyDrawer: React.FC<DataPropertyDrawerProps> = ({
         formRef.current?.setFields([{ name: 'domainIds', errors: [detail] }]);
         return true;
       case 'DATA_PROPERTY_RANGE_INVALID':
+      case 'DATATYPE_RANGE_TARGET_INVALID': // 05 期派生轨：值域引用类型不符/跨本体（§2.2 三分支）
         formRef.current?.setFields([{ name: 'rangeIris', errors: [detail] }]);
         return true;
       case 'DATA_PROPERTY_SELF_REFERENCE_INVALID':

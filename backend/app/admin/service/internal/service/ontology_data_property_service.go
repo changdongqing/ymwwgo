@@ -221,8 +221,12 @@ func (s *OntologyDataPropertyService) Frame(ctx context.Context, req *ontologyV1
 		frame.Domains = briefs
 	}
 
-	// 值域（42 型 value_text = datatype IRI，多值保序）
-	rangeIRIs := rangeIRIsOfSubject(subjectAxioms)
+	// 值域（42 型双轨投影：内建轨 value_text / 派生轨 object_id → 实体 IRI 反填；
+	// 悬空 object_id 防御跳过 + WARN——05 号文档 §4.4）
+	rangeIRIs, err := s.projectRangeIRIs(ctx, ontologyID, filterByType(subjectAxioms, ontology.AxiomDataPropertyRange))
+	if err != nil {
+		return nil, err
+	}
 	if len(rangeIRIs) > 0 {
 		frame.RangeIris = rangeIRIs
 	}
@@ -265,18 +269,65 @@ func (s *OntologyDataPropertyService) briefsByIDs(ctx context.Context, ontologyI
 	return out, nil
 }
 
-// rangeIRIsOfSubject 主语侧 42 行的 value_text 序列（保序 sort_order → id）
-func rangeIRIsOfSubject(subjectAxioms []*ent.OntAxiom) []string {
-	out := make([]string, 0)
-	for _, ax := range subjectAxioms {
-		if ax.AxiomType == nil || *ax.AxiomType != ontology.AxiomDataPropertyRange {
-			continue
-		}
-		if ax.ValueText != nil && *ax.ValueText != "" {
-			out = append(out, *ax.ValueText)
+// rangeIRIsOfSubject 已被 05 期双轨投影替代（projectRangeIRIs + data.RangeIRIsOf——05 号文档 §4.4）。
+
+// projectRangeIRIs 42 行双轨投影为 IRI 序列（frame 与 page 聚合共用 data.RangeIRIsOf，
+// 避免两处漂移）：内建轨 value_text 原样、派生轨 object_id 反查实体 IRI；悬空 object_id
+// （实体已删，直改库场景）防御跳过 + WARN，下次写操作由校验器兜底报错。
+func (s *OntologyDataPropertyService) projectRangeIRIs(ctx context.Context, ontologyID uint32, rangeAxioms []*ent.OntAxiom) ([]string, error) {
+	datatypeIRIs, err := s.datatypeIRIMap(ctx, ontologyID, rangeAxioms)
+	if err != nil {
+		return nil, adminV1.ErrorInternalServerError("query range datatype entities failed")
+	}
+	return data.RangeIRIsOf(rangeAxioms, datatypeIRIs), nil
+}
+
+// datatypeIRIMap 42 行派生轨的 datatype 实体 id → IRI 映射（批量反查，空集合短路）
+func (s *OntologyDataPropertyService) datatypeIRIMap(ctx context.Context, ontologyID uint32, rangeAxioms []*ent.OntAxiom) (map[uint32]string, error) {
+	objectIDs := data.RangeObjectIDsOf(rangeAxioms)
+	if len(objectIDs) == 0 {
+		return map[uint32]string{}, nil
+	}
+	entities, err := s.entityRepo.GetEntitiesByIDs(ctx, ontologyID, objectIDs)
+	if err != nil {
+		return nil, err
+	}
+	byID := entityMap(entities)
+	out := make(map[uint32]string, len(objectIDs))
+	for _, id := range objectIDs {
+		if e, ok := byID[id]; ok && e.Iri != nil {
+			out[id] = *e.Iri
+		} else {
+			s.log.Warnf(ctx, "data property range: 悬空 datatype 引用 %d（实体已删，直改库场景），投影跳过", id)
 		}
 	}
-	return out
+	return out, nil
+}
+
+// resolveRanges range_iris 三分支归一化（05 号文档 §2.2/§4.4）：normalizeRangeIRIs 后逐项分流
+// ——内建 IRI → value_text 轨；本体 datatype 实体 IRI → object_id 轨；类型不符/跨本体 →
+// DATATYPE_RANGE_TARGET_INVALID；未知 IRI → DATA_PROPERTY_RANGE_INVALID。
+func (s *OntologyDataPropertyService) resolveRanges(ctx context.Context, ontologyID uint32, iris []string) ([]ontology.RangeRef, error) {
+	normalized := normalizeRangeIRIs(iris)
+	if len(normalized) == 0 {
+		return nil, nil
+	}
+	lookup := func(iri string) (*ent.OntEntity, error) {
+		entities, err := s.entityRepo.GetEntityByIRI(ctx, iri)
+		if err != nil {
+			return nil, err
+		}
+		if len(entities) == 0 {
+			return nil, nil
+		}
+		for _, e := range entities { // 同本体命中优先；否则返回首个命中（跨本体判定在域内核分流）
+			if derefU32(e.OntologyID) == ontologyID {
+				return e, nil
+			}
+		}
+		return entities[0], nil
+	}
+	return ontology.ResolveRangeTargets(normalized, ontologyID, lookup)
 }
 
 // dataPropertyCharacteristicsOf 主语侧 43 行特征（V1 至多函数性；白名单外防御性补尾）
@@ -390,16 +441,20 @@ func (s *OntologyDataPropertyService) Create(ctx context.Context, req *ontologyV
 		return nil, mapDomainError(err)
 	}
 
-	// 八步校验管线（03 号文档 §4.2）：值域白名单 + 引用目标 + 特征 + 环
+	// 八步校验管线（03 号文档 §4.2）+ 05 期值域三分支（05 号文档 §4.4）：父/域/不相交引用 +
+	// 值域归一化（内建轨/派生轨分流在 resolveRanges 内完成）
 	superIDs := dedupeUint32(req.GetSuperPropertyIds())
 	domainIDs := dedupeUint32(req.GetDomainIds())
 	disjointIDs := dedupeUint32(req.GetDisjointIds())
-	rangeIRIs := normalizeRangeIRIs(req.GetRangeIris())
+	rangeTargets, err := s.resolveRanges(ctx, req.GetOntologyId(), req.GetRangeIris())
+	if err != nil {
+		return nil, mapDomainError(err)
+	}
 	var equivalentID uint32
 	if req.EquivalentId != nil && *req.EquivalentId > 0 {
 		equivalentID = *req.EquivalentId
 	}
-	if err = s.validateDataPropertyRefs(ctx, req.GetOntologyId(), superIDs, domainIDs, disjointIDs, equivalentID, rangeIRIs); err != nil {
+	if err = s.validateDataPropertyRefs(ctx, req.GetOntologyId(), superIDs, domainIDs, disjointIDs, equivalentID); err != nil {
 		return nil, err
 	}
 
@@ -429,7 +484,7 @@ func (s *OntologyDataPropertyService) Create(ctx context.Context, req *ontologyV
 		NewEntities: []ontology.EntityDraft{*draft},
 		Changes:     []ontology.AxiomChange{declaration},
 	}
-	appendDataPropertyRelationAdds(set, superIDs, domainIDs, disjointIDs, rangeIRIs, equivalentID)
+	appendDataPropertyRelationAdds(set, superIDs, domainIDs, disjointIDs, rangeTargets, equivalentID)
 	appendCharacteristicsAdds(set, ontology.AxiomDataPropertyCharacteristic, req.GetCharacteristics())
 	appendAnnotationAdds(set, req.DisplayLabel, req.Comment, nil, req.Deprecated)
 	ontology.AppendCustomAnnotationAxioms(set, 1, 0, annotationInputs) // 主语 = 新实体（NewEntities[0]）
@@ -464,7 +519,10 @@ func (s *OntologyDataPropertyService) Update(ctx context.Context, req *ontologyV
 	superIDs := dedupeUint32(req.GetSuperPropertyIds())
 	domainIDs := dedupeUint32(req.GetDomainIds())
 	disjointIDs := dedupeUint32(req.GetDisjointIds())
-	rangeIRIs := normalizeRangeIRIs(req.GetRangeIris())
+	rangeTargets, err := s.resolveRanges(ctx, ontologyID, req.GetRangeIris())
+	if err != nil {
+		return nil, mapDomainError(err)
+	}
 
 	// 自引用：不相交/等价自引用拒绝（父属性自引用交由环检测捕获）
 	for _, id := range disjointIDs {
@@ -481,7 +539,7 @@ func (s *OntologyDataPropertyService) Update(ctx context.Context, req *ontologyV
 		equivalentTarget = []uint32{*req.EquivalentId}
 	}
 
-	if err = s.validateDataPropertyRefs(ctx, ontologyID, superIDs, domainIDs, disjointIDs, 0, rangeIRIs); err != nil {
+	if err = s.validateDataPropertyRefs(ctx, ontologyID, superIDs, domainIDs, disjointIDs, 0); err != nil {
 		return nil, err
 	}
 	if err = validateDataPropertyCharacteristics(req.GetCharacteristics()); err != nil {
@@ -511,9 +569,18 @@ func (s *OntologyDataPropertyService) Update(ctx context.Context, req *ontologyV
 		filterByType(subjectAxioms, ontology.AxiomSubDataPropertyOf), superIDs)
 	changes = append(changes, ontology.DiffSubjectSideRelations(req.GetId(), ontology.AxiomDataPropertyDomain,
 		filterByType(subjectAxioms, ontology.AxiomDataPropertyDomain), domainIDs)...)
-	// 值域按 value_text 集合 diff（源修订 #2：新增行 sort_order 存量最大值后顺排，回读序=提交序）
-	changes = append(changes, ontology.DiffSubjectSideValues(req.GetId(), ontology.AxiomDataPropertyRange,
-		filterByType(subjectAxioms, ontology.AxiomDataPropertyRange), rangeIRIs)...)
+	// 值域双轨 diff（05 号文档 §4.4）：比对键 = 归一化 IRI 集合——当前行统一投影为 IRI
+	// （value_text 行原样；object_id 行取实体 IRI，批量反查空集合短路）；删多余行、按提交序
+	// 补新行（按目标轨形态落行），sort_order 存量最大值后顺排（03 号文档策略保持）
+	rangeAxioms := filterByType(subjectAxioms, ontology.AxiomDataPropertyRange)
+	if len(rangeTargets) > 0 || len(rangeAxioms) > 0 {
+		datatypeIRIs, err := s.datatypeIRIMap(ctx, ontologyID, rangeAxioms)
+		if err != nil {
+			return nil, err
+		}
+		changes = append(changes, ontology.DiffRangeRefs(req.GetId(), ontology.AxiomDataPropertyRange,
+			data.RangeRowsOf(rangeAxioms, datatypeIRIs), rangeTargets)...)
+	}
 	changes = append(changes, ontology.DiffCharacteristics(req.GetId(), ontology.AxiomDataPropertyCharacteristic,
 		filterByType(subjectAxioms, ontology.AxiomDataPropertyCharacteristic), req.GetCharacteristics())...)
 	changes = append(changes, ontology.DiffSymmetricPairs(req.GetId(), ontology.AxiomDisjointDataProperties,
@@ -619,14 +686,13 @@ func (s *OntologyDataPropertyService) Delete(ctx context.Context, req *ontologyV
 // ---- 校验与组装辅助 ----
 
 // validateDataPropertyRefs 引用目标类型与存在性校验（八步管线第 4/5 步）：
-// 属性侧引用（父/不相交/等价）→ DATA_PROPERTY_TARGET_INVALID；定义域 → DATA_PROPERTY_DOMAIN_INVALID；
-// 值域逐个命中内建白名单 → DATA_PROPERTY_RANGE_INVALID。
+// 属性侧引用（父/不相交/等价）→ DATA_PROPERTY_TARGET_INVALID；定义域 → DATA_PROPERTY_DOMAIN_INVALID。
+// 值域校验已并入 resolveRanges 三分支（05 号文档 §4.4）。
 // 自引用校验不在本方法（调用方按三态分流；create 不做——新实体尚无 id）。
 func (s *OntologyDataPropertyService) validateDataPropertyRefs(
 	ctx context.Context, ontologyID uint32,
 	superIDs, domainIDs, disjointIDs []uint32,
 	equivalentID uint32,
-	rangeIRIs []string,
 ) error {
 	if err := s.factory.ValidateRefEntities(ctx, ontologyID, superIDs, ontology.EntityTypeDataProperty, ontology.ReasonDataPropertyTargetInvalid); err != nil {
 		return mapDomainError(err)
@@ -643,13 +709,6 @@ func (s *OntologyDataPropertyService) validateDataPropertyRefs(
 	// 定义域指向非类不复用 ENTITY_TYPE_MISMATCH：专属文案码（03 号文档 §3.3）
 	if err := s.factory.ValidateRefEntities(ctx, ontologyID, domainIDs, ontology.EntityTypeClass, ontology.ReasonDataPropertyDomainInvalid); err != nil {
 		return mapDomainError(err)
-	}
-
-	// 值域白名单（服务层前置拦截；校验器 42 分支兜底直改库脏数据）
-	for _, iri := range rangeIRIs {
-		if _, ok := ontology.IsBuiltinDatatype(iri); !ok {
-			return ontologyV1.ErrorDataPropertyRangeInvalid("数据属性值域必须是内建数据类型：%s", iri)
-		}
 	}
 	return nil
 }
@@ -706,12 +765,12 @@ func (s *OntologyDataPropertyService) assertNoCycleForDataProperty(ctx context.C
 	return nil
 }
 
-// appendDataPropertyRelationAdds 创建时的关系 ADD 变更（父属性 40 / 定义域 41 / 值域 42 /
-// 不相交 45 / 等价 44；不相交与等价成对存储；值域 value_text=datatype IRI）
+// appendDataPropertyRelationAdds 创建时的关系 ADD 变更（父属性 40 / 定义域 41 / 值域 42 双轨 /
+// 不相交 45 / 等价 44；不相交与等价成对存储；值域按目标轨形态落行——内建 value_text / 派生 object_id）
 func appendDataPropertyRelationAdds(
 	set *ontology.EntityChangeSet,
 	superIDs, domainIDs, disjointIDs []uint32,
-	rangeIRIs []string,
+	rangeTargets []ontology.RangeRef,
 	equivalentID uint32,
 ) {
 	const selfRef = 1 // 主语 = 新实体（NewEntities[0]）
@@ -727,11 +786,17 @@ func appendDataPropertyRelationAdds(
 			SubjectNewEntityRef: selfRef, ObjectID: did, SortOrder: int32(i),
 		})
 	}
-	for i, iri := range rangeIRIs {
-		set.Changes = append(set.Changes, ontology.AxiomChange{
+	for i, t := range rangeTargets {
+		c := ontology.AxiomChange{
 			Op: ontology.AxiomOpAdd, AxiomType: ontology.AxiomDataPropertyRange,
-			SubjectNewEntityRef: selfRef, ValueText: iri, SortOrder: int32(i),
-		})
+			SubjectNewEntityRef: selfRef, SortOrder: int32(i),
+		}
+		if t.ObjectID != 0 { // 派生轨：object_id 承载 datatype 实体（不双写）
+			c.ObjectID = t.ObjectID
+		} else { // 内建轨：value_text 承载内建 datatype IRI
+			c.ValueText = t.ValueText
+		}
+		set.Changes = append(set.Changes, c)
 	}
 	for i, did := range disjointIDs {
 		set.Changes = append(set.Changes,

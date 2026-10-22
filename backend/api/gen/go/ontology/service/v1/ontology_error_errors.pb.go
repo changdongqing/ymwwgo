@@ -374,3 +374,73 @@ func IsAnnotationValueInvalid(err error) bool {
 func ErrorAnnotationValueInvalid(format string, args ...interface{}) *errors.Error {
 	return errors.New(422, OntologyErrorReason_ANNOTATION_VALUE_INVALID.String(), fmt.Sprintf(format, args...))
 }
+
+// ===== 数据类型（源 1-071-007 段，05 期；01 号文档预留段恰 5 槽）=====
+func IsDatatypeBaseInvalid(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == OntologyErrorReason_DATATYPE_BASE_INVALID.String() && e.Code == 422
+}
+
+// ===== 数据类型（源 1-071-007 段，05 期；01 号文档预留段恰 5 槽）=====
+func ErrorDatatypeBaseInvalid(format string, args ...interface{}) *errors.Error {
+	return errors.New(422, OntologyErrorReason_DATATYPE_BASE_INVALID.String(), fmt.Sprintf(format, args...))
+}
+
+// 基类型白名单外 / facets 非空而 base_iri 缺失 / datatype 实体作基类型（V1 单层派生）
+func IsDatatypeFacetInvalid(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == OntologyErrorReason_DATATYPE_FACET_INVALID.String() && e.Code == 422
+}
+
+// 基类型白名单外 / facets 非空而 base_iri 缺失 / datatype 实体作基类型（V1 单层派生）
+func ErrorDatatypeFacetInvalid(format string, args ...interface{}) *errors.Error {
+	return errors.New(422, OntologyErrorReason_DATATYPE_FACET_INVALID.String(), fmt.Sprintf(format, args...))
+}
+
+// facet 名白名单外 / 基类型族不适配 / facet 值词法非法（非负整数列传负数、pattern 非法正则、比较值不在基类型词法空间）
+func IsDatatypeFacetConflict(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == OntologyErrorReason_DATATYPE_FACET_CONFLICT.String() && e.Code == 422
+}
+
+// facet 名白名单外 / 基类型族不适配 / facet 值词法非法（非负整数列传负数、pattern 非法正则、比较值不在基类型词法空间）
+func ErrorDatatypeFacetConflict(format string, args ...interface{}) *errors.Error {
+	return errors.New(422, OntologyErrorReason_DATATYPE_FACET_CONFLICT.String(), fmt.Sprintf(format, args...))
+}
+
+// 静态冲突五规则：min 上下界二选一 / max 上下界二选一 / length 与区间二选一 / min≥max（含 min==max 且任一 exclusive）/ minLength>maxLength
+func IsDatatypeRangeTargetInvalid(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == OntologyErrorReason_DATATYPE_RANGE_TARGET_INVALID.String() && e.Code == 422
+}
+
+// 静态冲突五规则：min 上下界二选一 / max 上下界二选一 / length 与区间二选一 / min≥max（含 min==max 且任一 exclusive）/ minLength>maxLength
+func ErrorDatatypeRangeTargetInvalid(format string, args ...interface{}) *errors.Error {
+	return errors.New(422, OntologyErrorReason_DATATYPE_RANGE_TARGET_INVALID.String(), fmt.Sprintf(format, args...))
+}
+
+// 42 行派生轨：IRI 命中实体但类型不符（类/属性实体）或跨本体
+func IsDatatypeDefinitionJsonInvalid(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == OntologyErrorReason_DATATYPE_DEFINITION_JSON_INVALID.String() && e.Code == 422
+}
+
+// 42 行派生轨：IRI 命中实体但类型不符（类/属性实体）或跨本体
+func ErrorDatatypeDefinitionJsonInvalid(format string, args ...interface{}) *errors.Error {
+	return errors.New(422, OntologyErrorReason_DATATYPE_DEFINITION_JSON_INVALID.String(), fmt.Sprintf(format, args...))
+}

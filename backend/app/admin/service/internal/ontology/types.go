@@ -40,10 +40,11 @@ const (
 	AxiomSubPropertyChainOf           uint32 = 37  // 属性链（subject=超属性，value_text=链成员实体 id 的 JSON 字符串数组，保序）
 	AxiomSubDataPropertyOf            uint32 = 40  // 子数据属性（subject=子属性，object_id=父属性）
 	AxiomDataPropertyDomain           uint32 = 41  // 数据属性定义域（subject=属性，object_id=类；多行=多定义域，OWL 交集语义）
-	AxiomDataPropertyRange            uint32 = 42  // 数据属性值域（object_id=NULL，value_text=内建 datatype IRI；多行=多值域；05 期双轨 object_id 预留）
+	AxiomDataPropertyRange            uint32 = 42  // 数据属性值域（多行=多值域；05 期双轨激活：内建轨 value_text=内建 datatype IRI / 派生轨 object_id=datatype 实体 id，二选一）
 	AxiomDataPropertyCharacteristic   uint32 = 43  // 数据属性特征（泛型：subject=属性，predicate_iri=特征 IRI；V1 仅函数性）
 	AxiomEquivalentDataProperties     uint32 = 44  // 等价数据属性（成对 (P,Q)+(Q,P) 各一行）
 	AxiomDisjointDataProperties       uint32 = 45  // 不相交数据属性（成对）
+	AxiomDatatypeDefinition           uint32 = 46  // 数据类型定义（05 期：subject=datatype 实体，value_text=定义 JSON，至多一行；47~49 继续预留）
 	AxiomSubAnnotationPropertyOf      uint32 = 50  // 04：子注解属性（subject=子属性，object_id=父属性；多行=多父）
 	AxiomDataPropertyAssertion        uint32 = 62  // 数据属性断言（06 期写入方：subject=个体，object_id=数据属性实体，value_text=字面量词形；03 期定稿行语义 + 校验器分支）
 	AxiomAnnotationAssertion          uint32 = 100 // 注解断言，全功能共用
@@ -96,6 +97,7 @@ const IRIRDFLangString = "http://www.w3.org/1999/02/22-rdf-syntax-ns#langString"
 
 // DatatypeKind 内建 datatype 的词法校验分派键（03 号文档 §3.2/§4.4；Go 侧不承载展示文案，
 // 中文标签归前端 i18n 的 DATATYPE_LABELS——转译差异记录 #2）。
+// 03 期 10 键 + 05 期扩充 16 键（对齐 OWLAPI OWL2Datatype 枚举的 XSD 成员，05 号文档 §3.2）。
 type DatatypeKind uint8
 
 const (
@@ -109,32 +111,82 @@ const (
 	KindDateTime                         // xsd:dateTime：RFC3339 同构（要求时区）
 	KindTime                             // xsd:time：HH:MM:SS(.fff)?(Z|±HH:MM)?
 	KindAnyURI                           // xsd:anyURI：非空且无控制字符
+	// 05 期新增（词法实现见 lexical.go）
+	KindNonPosInteger                    // xsd:nonPositiveInteger：整数且 ≤ 0
+	KindPositiveInteger                  // xsd:positiveInteger：整数且 > 0
+	KindNegativeInteger                  // xsd:negativeInteger：整数且 < 0
+	KindUnsignedLong                     // xsd:unsignedLong：ParseUint 64 位（0 ~ 2^64-1）
+	KindUnsignedInt                      // xsd:unsignedInt：≤ 2^32-1
+	KindUnsignedShort                    // xsd:unsignedShort：≤ 65535
+	KindUnsignedByte                     // xsd:unsignedByte：≤ 255
+	KindNormalizedString                 // xsd:normalizedString：无换行/回车/制表
+	KindToken                            // xsd:token：normalizedString 且首尾无空白、无连续空白
+	KindLanguage                         // xsd:language：[a-zA-Z]{1,8}(-[a-zA-Z0-9]{1,8})*
+	KindName                             // xsd:Name：NCName 放宽冒号（首字符 字母/_/:）
+	KindNCName                           // xsd:NCName：首字符 字母/_，后续 字母/数字/./-/_
+	KindNMTOKEN                          // xsd:NMTOKEN：名称字符任意混合
+	KindHexBinary                        // xsd:hexBinary：[0-9A-Fa-f]* 且偶长度
+	KindBase64Binary                     // xsd:base64Binary：RFC 2045 词法（可夹空白）
+	KindDateTimeStamp                    // xsd:dateTimeStamp：RFC3339 且必须带时区（03 期 dateTime 同口径）
 )
 
-// BuiltinDatatype 内建 XSD datatype 白名单项：IRI + 词法校验分派键。
+// DatatypeFamily 内建 datatype 的词法族（05 号文档 §3.2）：facet 适用族矩阵的判定键，
+// 与前端 FAMILY_GROUPS 分组元数据同源维护（前端常量 FACET_META 镜像同一矩阵）。
+type DatatypeFamily string
+
+const (
+	FamilyNumericDecimal DatatypeFamily = "NUMERIC_DECIMAL" // 数值·十进制（decimal + integer 全族）
+	FamilyNumericFloat   DatatypeFamily = "NUMERIC_FLOAT"   // 数值·浮点（float/double）
+	FamilyString         DatatypeFamily = "STRING"          // 字符串（string + 词法收紧族）
+	FamilyBinary         DatatypeFamily = "BINARY"          // 二进制（hex/base64）
+	FamilyTemporal       DatatypeFamily = "TEMPORAL"        // 时间（date/dateTime/dateTimeStamp/time）
+	FamilyOther          DatatypeFamily = "OTHER"           // 其他（boolean/anyURI）
+)
+
+// BuiltinDatatype 内建 XSD datatype 白名单项：IRI + 词法校验分派键 + 词法族。
 type BuiltinDatatype struct {
-	IRI  string
-	Kind DatatypeKind
+	IRI    string
+	Kind   DatatypeKind
+	Family DatatypeFamily
 }
 
-// BuiltinDatatypes 内建 XSD datatype 白名单（15 项，覆盖 06 期编码/名称/数量/日期场景）。
-// 05 期接管扩展（全量内建 + facet + 自定义 datatype 实体管理），见 03 号文档 §2.2/§10。
+// BuiltinDatatypes 内建 XSD datatype 白名单（05 期接管扩展：15 → 31 项，对齐 OWLAPI
+// OWL2Datatype 枚举的 29 个 XSD 成员 + xsd:date/xsd:time 自建词法特例；03 期既有 15 项
+// IRI/Kind 不变，存量零影响）。刻意剔除并记档（05 号文档 §2.4）：rdfs:Literal（top datatype，
+// 等于不设值域行）、rdf:langString（语言文本走 62 行 lang 列）、rdf:PlainLiteral/rdf:XMLLiteral、
+// owl:real/owl:rational（业务场景被 decimal/double 覆盖）、gYear/duration/QName 等枚举外扩展类型。
 var BuiltinDatatypes = []BuiltinDatatype{
-	{IRI: IRIXSDNamespace + "string", Kind: KindString},
-	{IRI: IRIXSDNamespace + "boolean", Kind: KindBoolean},
-	{IRI: IRIXSDNamespace + "decimal", Kind: KindDecimal},
-	{IRI: IRIXSDNamespace + "integer", Kind: KindInteger},
-	{IRI: IRIXSDNamespace + "long", Kind: KindInteger},
-	{IRI: IRIXSDNamespace + "int", Kind: KindInteger},
-	{IRI: IRIXSDNamespace + "short", Kind: KindInteger},
-	{IRI: IRIXSDNamespace + "byte", Kind: KindInteger},
-	{IRI: IRIXSDNamespace + "nonNegativeInteger", Kind: KindNonNegInteger},
-	{IRI: IRIXSDNamespace + "float", Kind: KindFloat},
-	{IRI: IRIXSDNamespace + "double", Kind: KindFloat},
-	{IRI: IRIXSDNamespace + "date", Kind: KindDate},
-	{IRI: IRIXSDNamespace + "dateTime", Kind: KindDateTime},
-	{IRI: IRIXSDNamespace + "time", Kind: KindTime},
-	{IRI: IRIXSDNamespace + "anyURI", Kind: KindAnyURI},
+	{IRI: IRIXSDNamespace + "string", Kind: KindString, Family: FamilyString},
+	{IRI: IRIXSDNamespace + "normalizedString", Kind: KindNormalizedString, Family: FamilyString},
+	{IRI: IRIXSDNamespace + "token", Kind: KindToken, Family: FamilyString},
+	{IRI: IRIXSDNamespace + "language", Kind: KindLanguage, Family: FamilyString},
+	{IRI: IRIXSDNamespace + "Name", Kind: KindName, Family: FamilyString},
+	{IRI: IRIXSDNamespace + "NCName", Kind: KindNCName, Family: FamilyString},
+	{IRI: IRIXSDNamespace + "NMTOKEN", Kind: KindNMTOKEN, Family: FamilyString},
+	{IRI: IRIXSDNamespace + "boolean", Kind: KindBoolean, Family: FamilyOther},
+	{IRI: IRIXSDNamespace + "decimal", Kind: KindDecimal, Family: FamilyNumericDecimal},
+	{IRI: IRIXSDNamespace + "integer", Kind: KindInteger, Family: FamilyNumericDecimal},
+	{IRI: IRIXSDNamespace + "long", Kind: KindInteger, Family: FamilyNumericDecimal},
+	{IRI: IRIXSDNamespace + "int", Kind: KindInteger, Family: FamilyNumericDecimal},
+	{IRI: IRIXSDNamespace + "short", Kind: KindInteger, Family: FamilyNumericDecimal},
+	{IRI: IRIXSDNamespace + "byte", Kind: KindInteger, Family: FamilyNumericDecimal},
+	{IRI: IRIXSDNamespace + "nonNegativeInteger", Kind: KindNonNegInteger, Family: FamilyNumericDecimal},
+	{IRI: IRIXSDNamespace + "nonPositiveInteger", Kind: KindNonPosInteger, Family: FamilyNumericDecimal},
+	{IRI: IRIXSDNamespace + "positiveInteger", Kind: KindPositiveInteger, Family: FamilyNumericDecimal},
+	{IRI: IRIXSDNamespace + "negativeInteger", Kind: KindNegativeInteger, Family: FamilyNumericDecimal},
+	{IRI: IRIXSDNamespace + "unsignedLong", Kind: KindUnsignedLong, Family: FamilyNumericDecimal},
+	{IRI: IRIXSDNamespace + "unsignedInt", Kind: KindUnsignedInt, Family: FamilyNumericDecimal},
+	{IRI: IRIXSDNamespace + "unsignedShort", Kind: KindUnsignedShort, Family: FamilyNumericDecimal},
+	{IRI: IRIXSDNamespace + "unsignedByte", Kind: KindUnsignedByte, Family: FamilyNumericDecimal},
+	{IRI: IRIXSDNamespace + "float", Kind: KindFloat, Family: FamilyNumericFloat},
+	{IRI: IRIXSDNamespace + "double", Kind: KindFloat, Family: FamilyNumericFloat},
+	{IRI: IRIXSDNamespace + "hexBinary", Kind: KindHexBinary, Family: FamilyBinary},
+	{IRI: IRIXSDNamespace + "base64Binary", Kind: KindBase64Binary, Family: FamilyBinary},
+	{IRI: IRIXSDNamespace + "date", Kind: KindDate, Family: FamilyTemporal},
+	{IRI: IRIXSDNamespace + "dateTime", Kind: KindDateTime, Family: FamilyTemporal},
+	{IRI: IRIXSDNamespace + "dateTimeStamp", Kind: KindDateTimeStamp, Family: FamilyTemporal},
+	{IRI: IRIXSDNamespace + "time", Kind: KindTime, Family: FamilyTemporal},
+	{IRI: IRIXSDNamespace + "anyURI", Kind: KindAnyURI, Family: FamilyOther},
 }
 
 // IsBuiltinDatatype IRI 是否命中内建白名单（命中返回分派键；rdf:langString 不在其中）。
@@ -207,6 +259,14 @@ var AnnotationPropertyUsageAxiomTypes = []uint32{
 	AxiomAnnotationAssertion,
 }
 
+// DatatypeUsageAxiomTypes 数据类型删除保护（usage 反查）object 侧的引用公理类型集：
+// 42 值域行派生轨（数据属性以本 datatype 作值域，object_id 路径命中；内建轨 value_text 行不会
+// 命中 object_id 检索）。datatype 无入边公理的其余形态——定义 46 行以 datatype 为主语、
+// 引用的 base 是 IRI 常量，均不构成"被引用"（05 号文档 §4.5）。
+var DatatypeUsageAxiomTypes = []uint32{
+	AxiomDataPropertyRange,
+}
+
 // 变更日志操作名（ont_change_logs.operation；03~06 期按需追加）
 const (
 	OpCreateClass = "CREATE_CLASS"
@@ -224,6 +284,10 @@ const (
 	OpCreateAnnotationProperty = "CREATE_ANNOTATION_PROPERTY"
 	OpUpdateAnnotationProperty = "UPDATE_ANNOTATION_PROPERTY"
 	OpDeleteAnnotationProperty = "DELETE_ANNOTATION_PROPERTY"
+
+	OpCreateDatatype = "CREATE_DATATYPE"
+	OpUpdateDatatype = "UPDATE_DATATYPE"
+	OpDeleteDatatype = "DELETE_DATATYPE"
 )
 
 // NavKeepDepth 骨架树无条件保留深度：1=根类、2=域入口；更深的"有父类且无子类"叶子剪掉
@@ -265,6 +329,13 @@ const (
 	// 04 期注解属性（源 1-071-005 段）
 	ReasonAnnotationPropertyTargetInvalid = "ANNOTATION_PROPERTY_TARGET_INVALID"
 	ReasonAnnotationValueInvalid          = "ANNOTATION_VALUE_INVALID"
+
+	// 05 期数据类型（源 1-071-007 段）
+	ReasonDatatypeBaseInvalid           = "DATATYPE_BASE_INVALID"            // 基类型必须是内建数据类型（白名单外 / facets 非空而 base 缺失 / datatype 实体作基类型）
+	ReasonDatatypeFacetInvalid          = "DATATYPE_FACET_INVALID"           // facet 名白名单外 / 族不适配 / 值词法非法
+	ReasonDatatypeFacetConflict         = "DATATYPE_FACET_CONFLICT"          // 静态冲突五规则（§3.2）
+	ReasonDatatypeRangeTargetInvalid    = "DATATYPE_RANGE_TARGET_INVALID"    // 42 派生轨：IRI 命中实体但类型不符或跨本体
+	ReasonDatatypeDefinitionJSONInvalid = "DATATYPE_DEFINITION_JSON_INVALID" // 46 行 value_text 非 JSON / 形态不符
 )
 
 // DomainError 域内核错误：携带 reason 与用户可读明细。

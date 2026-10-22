@@ -54,4 +54,16 @@ enum OntologyErrorReason {
         // 父注解属性类型违规 + 自定义注解谓词非本体内注解属性实体 + frame/usage 直查非注解属性实体
     ANNOTATION_VALUE_INVALID = 51 [(errors.code) = 422];           // 注解值不合法：{}
         // 自定义注解值为空白（值长度由 value_text text 列承载，不设上限）
+
+    // ===== 数据类型（源 1-071-007 段，05 期；01 号文档预留段恰 5 槽）=====
+    DATATYPE_BASE_INVALID = 70 [(errors.code) = 422];            // 数据类型基类型必须是内建数据类型：{}
+        // 基类型白名单外 / facets 非空而 base_iri 缺失 / datatype 实体作基类型（V1 单层派生）
+    DATATYPE_FACET_INVALID = 71 [(errors.code) = 422];           // facet 约束不合法：{}
+        // facet 名白名单外 / 基类型族不适配 / facet 值词法非法（非负整数列传负数、pattern 非法正则、比较值不在基类型词法空间）
+    DATATYPE_FACET_CONFLICT = 72 [(errors.code) = 422];          // facet 约束冲突：{}
+        // 静态冲突五规则：min 上下界二选一 / max 上下界二选一 / length 与区间二选一 / min≥max（含 min==max 且任一 exclusive）/ minLength>maxLength
+    DATATYPE_RANGE_TARGET_INVALID = 73 [(errors.code) = 422];    // 数据属性值域引用必须是已声明的数据类型：{}
+        // 42 行派生轨：IRI 命中实体但类型不符（类/属性实体）或跨本体
+    DATATYPE_DEFINITION_JSON_INVALID = 74 [(errors.code) = 422]; // 数据类型定义解析失败：{}
+        // 46 行 value_text 非 JSON / 形态不符（直改库脏数据；frame 读取与校验器双拦）
 }

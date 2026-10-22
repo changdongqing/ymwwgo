@@ -60,6 +60,16 @@ const (
 	OntologyErrorReason_ANNOTATION_PROPERTY_TARGET_INVALID OntologyErrorReason = 50 // 引用目标必须是已声明的注解属性：{}
 	// 父注解属性类型违规 + 自定义注解谓词非本体内注解属性实体 + frame/usage 直查非注解属性实体
 	OntologyErrorReason_ANNOTATION_VALUE_INVALID OntologyErrorReason = 51 // 注解值不合法：{}
+	// ===== 数据类型（源 1-071-007 段，05 期；01 号文档预留段恰 5 槽）=====
+	OntologyErrorReason_DATATYPE_BASE_INVALID OntologyErrorReason = 70 // 数据类型基类型必须是内建数据类型：{}
+	// 基类型白名单外 / facets 非空而 base_iri 缺失 / datatype 实体作基类型（V1 单层派生）
+	OntologyErrorReason_DATATYPE_FACET_INVALID OntologyErrorReason = 71 // facet 约束不合法：{}
+	// facet 名白名单外 / 基类型族不适配 / facet 值词法非法（非负整数列传负数、pattern 非法正则、比较值不在基类型词法空间）
+	OntologyErrorReason_DATATYPE_FACET_CONFLICT OntologyErrorReason = 72 // facet 约束冲突：{}
+	// 静态冲突五规则：min 上下界二选一 / max 上下界二选一 / length 与区间二选一 / min≥max（含 min==max 且任一 exclusive）/ minLength>maxLength
+	OntologyErrorReason_DATATYPE_RANGE_TARGET_INVALID OntologyErrorReason = 73 // 数据属性值域引用必须是已声明的数据类型：{}
+	// 42 行派生轨：IRI 命中实体但类型不符（类/属性实体）或跨本体
+	OntologyErrorReason_DATATYPE_DEFINITION_JSON_INVALID OntologyErrorReason = 74 // 数据类型定义解析失败：{}
 )
 
 // Enum value maps for OntologyErrorReason.
@@ -91,6 +101,11 @@ var (
 		44: "DATA_PROPERTY_CHARACTERISTIC_INVALID",
 		50: "ANNOTATION_PROPERTY_TARGET_INVALID",
 		51: "ANNOTATION_VALUE_INVALID",
+		70: "DATATYPE_BASE_INVALID",
+		71: "DATATYPE_FACET_INVALID",
+		72: "DATATYPE_FACET_CONFLICT",
+		73: "DATATYPE_RANGE_TARGET_INVALID",
+		74: "DATATYPE_DEFINITION_JSON_INVALID",
 	}
 	OntologyErrorReason_value = map[string]int32{
 		"ONTOLOGY_NOT_FOUND":                   0,
@@ -119,6 +134,11 @@ var (
 		"DATA_PROPERTY_CHARACTERISTIC_INVALID": 44,
 		"ANNOTATION_PROPERTY_TARGET_INVALID":   50,
 		"ANNOTATION_VALUE_INVALID":             51,
+		"DATATYPE_BASE_INVALID":                70,
+		"DATATYPE_FACET_INVALID":               71,
+		"DATATYPE_FACET_CONFLICT":              72,
+		"DATATYPE_RANGE_TARGET_INVALID":        73,
+		"DATATYPE_DEFINITION_JSON_INVALID":     74,
 	}
 )
 
@@ -153,7 +173,7 @@ var File_ontology_service_v1_ontology_error_proto protoreflect.FileDescriptor
 
 const file_ontology_service_v1_ontology_error_proto_rawDesc = "" +
 	"\n" +
-	"(ontology/service/v1/ontology_error.proto\x12\x13ontology.service.v1\x1a\x13errors/errors.proto*\xc2\a\n" +
+	"(ontology/service/v1/ontology_error.proto\x12\x13ontology.service.v1\x1a\x13errors/errors.proto*\xfd\b\n" +
 	"\x13OntologyErrorReason\x12\x1c\n" +
 	"\x12ONTOLOGY_NOT_FOUND\x10\x00\x1a\x04\xa8E\x94\x03\x12!\n" +
 	"\x17ONTOLOGY_NAME_DUPLICATE\x10\x01\x1a\x04\xa8E\x99\x03\x12#\n" +
@@ -181,7 +201,12 @@ const file_ontology_service_v1_ontology_error_proto_rawDesc = "" +
 	"\x1cDATA_PROPERTY_TARGET_INVALID\x10+\x1a\x04\xa8E\xa6\x03\x12.\n" +
 	"$DATA_PROPERTY_CHARACTERISTIC_INVALID\x10,\x1a\x04\xa8E\xa6\x03\x12,\n" +
 	"\"ANNOTATION_PROPERTY_TARGET_INVALID\x102\x1a\x04\xa8E\xa6\x03\x12\"\n" +
-	"\x18ANNOTATION_VALUE_INVALID\x103\x1a\x04\xa8E\xa6\x03\x1a\x04\xa0E\xf4\x03B\xd4\x01\n" +
+	"\x18ANNOTATION_VALUE_INVALID\x103\x1a\x04\xa8E\xa6\x03\x12\x1f\n" +
+	"\x15DATATYPE_BASE_INVALID\x10F\x1a\x04\xa8E\xa6\x03\x12 \n" +
+	"\x16DATATYPE_FACET_INVALID\x10G\x1a\x04\xa8E\xa6\x03\x12!\n" +
+	"\x17DATATYPE_FACET_CONFLICT\x10H\x1a\x04\xa8E\xa6\x03\x12'\n" +
+	"\x1dDATATYPE_RANGE_TARGET_INVALID\x10I\x1a\x04\xa8E\xa6\x03\x12*\n" +
+	" DATATYPE_DEFINITION_JSON_INVALID\x10J\x1a\x04\xa8E\xa6\x03\x1a\x04\xa0E\xf4\x03B\xd4\x01\n" +
 	"\x17com.ontology.service.v1B\x12OntologyErrorProtoP\x01Z7go-wind-admin/api/gen/go/ontology/service/v1;ontologyv1\xa2\x02\x03OSX\xaa\x02\x13Ontology.Service.V1\xca\x02\x13Ontology\\Service\\V1\xe2\x02\x1fOntology\\Service\\V1\\GPBMetadata\xea\x02\x15Ontology::Service::V1b\x06proto3"
 
 var (

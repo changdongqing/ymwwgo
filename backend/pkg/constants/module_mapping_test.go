@@ -79,6 +79,7 @@ func TestServiceTagToBusinessModuleExactMapping(t *testing.T) {
 		"OntologyObjectPropertyService":     identityV1.Module_SYSTEM,
 		"OntologyDataPropertyService":       identityV1.Module_SYSTEM,
 		"OntologyAnnotationPropertyService": identityV1.Module_SYSTEM,
+		"OntologyDatatypeService":           identityV1.Module_SYSTEM,
 	}
 	assert.Equal(t, expected, ServiceTagToBusinessModule,
 		"ServiceTagToBusinessModule 内容漂移；如为有意变更请同步更新本测试")
@@ -93,7 +94,7 @@ func TestServiceTagToBusinessModuleReverseMapping(t *testing.T) {
 		identityV1.Module_OPM:              {"UserService", "OrgUnitService", "PositionService", "UserProfileService", "RoleService"},
 		identityV1.Module_PERMISSION:       {"MenuService", "ApiService", "PermissionService", "PermissionGroupService"},
 		identityV1.Module_DICT:             {"DictTypeService", "DictEntryService"},
-		identityV1.Module_SYSTEM:           {"LanguageService", "LoginPolicyService", "ConfigService", "AccessKeyService", "ServerMonitorService", "NotificationChannelService", "NotificationService", "NotificationRuleService", "NotificationTemplateService", "MonitorAlertService", "OnlineSessionService", "OneStopServiceTypeService", "OntologyService", "OntologyClassService", "OntologyObjectPropertyService", "OntologyDataPropertyService", "OntologyAnnotationPropertyService"},
+		identityV1.Module_SYSTEM:           {"LanguageService", "LoginPolicyService", "ConfigService", "AccessKeyService", "ServerMonitorService", "NotificationChannelService", "NotificationService", "NotificationRuleService", "NotificationTemplateService", "MonitorAlertService", "OnlineSessionService", "OneStopServiceTypeService", "OntologyService", "OntologyClassService", "OntologyObjectPropertyService", "OntologyDataPropertyService", "OntologyAnnotationPropertyService", "OntologyDatatypeService"},
 		identityV1.Module_FILE:             {"FileService", "FileTransferService"},
 		identityV1.Module_TASK:             {"TaskService", "TaskMonitorService"},
 		identityV1.Module_TENANT:           {"TenantService", "PlanService", "PlanQuotaService", "MyTenantUsageService"},

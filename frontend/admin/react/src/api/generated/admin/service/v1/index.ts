@@ -9065,6 +9065,320 @@ export type ontologyservicev1_DeleteDataPropertyRequest = {
   id: number | undefined;
 };
 
+// 数据类型管理服务（admin 门面）
+//
+// 系列首个无 tree 端点、有 simple-list 端点的实体（OWL 2 无 subDatatypeOf 层级，
+// Protégé OWLDataTypeViewComponent 同构平铺；simple-list 供数据属性值域双源下拉）。
+// create/update/delete 是自定义 RPC（公理事务管线），body: "*" 收扁平请求体——
+// 不是通用 CRUD，勿按惯例包 { data: {...} }（protojson 会把 data 当未知字段丢弃）。
+// definition 为 optional message 字段（presence 可靠）：JSON null/缺失 = 跳过定义区 diff，
+// 显式空定义 = 清空。
+export interface OntologyDatatypeService {
+  // 分页查询数据类型列表
+  List(
+    request: ontologyservicev1_ListDatatypesRequest,
+  ): Promise<ontologyservicev1_ListDatatypesResponse>;
+  // 查询数据类型简况列表（值域双源下拉数据源）
+  SimpleList(
+    request: ontologyservicev1_ListSimpleDatatypesRequest,
+  ): Promise<ontologyservicev1_SimpleDatatypeListResponse>;
+  // 查询数据类型 frame 详情
+  Frame(
+    request: ontologyservicev1_GetDatatypeFrameRequest,
+  ): Promise<ontologyservicev1_DatatypeFrame>;
+  // 查询数据类型引用明细（被哪些数据属性作派生值域引用）
+  Usage(
+    request: ontologyservicev1_GetDatatypeUsageRequest,
+  ): Promise<ontologyservicev1_EntityUsage>;
+  // 创建数据类型（公理事务管线；返回新实体 id + 变更后版本）
+  Create(
+    request: ontologyservicev1_CreateDatatypeRequest,
+  ): Promise<ontologyservicev1_CreateDatatypeResponse>;
+  // 更新数据类型（frame 全量提交，公理事务管线）
+  Update(
+    request: ontologyservicev1_UpdateDatatypeRequest,
+  ): Promise<wellKnownEmpty>;
+  // 删除数据类型（force=true 级联移除 42 值域引用行，引用方数据属性其余值域完好）
+  Delete(
+    request: ontologyservicev1_DeleteDatatypeRequest,
+  ): Promise<wellKnownEmpty>;
+}
+
+export function createOntologyDatatypeServiceClient(
+  transport: ClientTransport,
+): OntologyDatatypeService {
+  return {
+    List(request) {
+      const path = `/admin/v1/ontology/datatypes`;
+      const body = null;
+      const queryParams: string[] = [];
+      if (request.page) {
+        queryParams.push(
+          `page=${encodeURIComponent(request.page.toString())}`,
+        );
+      }
+      if (request.pageSize) {
+        queryParams.push(
+          `pageSize=${encodeURIComponent(request.pageSize.toString())}`,
+        );
+      }
+      if (request.ontologyId) {
+        queryParams.push(
+          `ontologyId=${encodeURIComponent(request.ontologyId.toString())}`,
+        );
+      }
+      if (request.localName) {
+        queryParams.push(
+          `localName=${encodeURIComponent(request.localName.toString())}`,
+        );
+      }
+      if (request.displayLabel) {
+        queryParams.push(
+          `displayLabel=${encodeURIComponent(request.displayLabel.toString())}`,
+        );
+      }
+      if (request.deprecated) {
+        queryParams.push(
+          `deprecated=${encodeURIComponent(request.deprecated.toString())}`,
+        );
+      }
+      if (request.orderBy) {
+        queryParams.push(
+          `orderBy=${encodeURIComponent(request.orderBy.toString())}`,
+        );
+      }
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join('&')}`;
+      }
+      return transport.unary(uri, 'GET', body, {
+        service: 'OntologyDatatypeService',
+        method: 'List',
+      }) as Promise<ontologyservicev1_ListDatatypesResponse>;
+    },
+    SimpleList(request) {
+      const path = `/admin/v1/ontology/datatypes/simple-list`;
+      const body = null;
+      const queryParams: string[] = [];
+      if (request.ontologyId) {
+        queryParams.push(
+          `ontologyId=${encodeURIComponent(request.ontologyId.toString())}`,
+        );
+      }
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join('&')}`;
+      }
+      return transport.unary(uri, 'GET', body, {
+        service: 'OntologyDatatypeService',
+        method: 'SimpleList',
+      }) as Promise<ontologyservicev1_SimpleDatatypeListResponse>;
+    },
+    Frame(request) {
+      if (request.id === undefined || request.id === null) {
+        throw new Error('missing required field request.id');
+      }
+      const path = `/admin/v1/ontology/datatypes/${request.id}/frame`;
+      const body = null;
+      return transport.unary(path, 'GET', body, {
+        service: 'OntologyDatatypeService',
+        method: 'Frame',
+      }) as Promise<ontologyservicev1_DatatypeFrame>;
+    },
+    Usage(request) {
+      if (request.id === undefined || request.id === null) {
+        throw new Error('missing required field request.id');
+      }
+      const path = `/admin/v1/ontology/datatypes/${request.id}/usage`;
+      const body = null;
+      return transport.unary(path, 'GET', body, {
+        service: 'OntologyDatatypeService',
+        method: 'Usage',
+      }) as Promise<ontologyservicev1_EntityUsage>;
+    },
+    Create(request) {
+      const path = `/admin/v1/ontology/datatypes`;
+      const body = JSON.stringify(request);
+      return transport.unary(path, 'POST', body, {
+        service: 'OntologyDatatypeService',
+        method: 'Create',
+      }) as Promise<ontologyservicev1_CreateDatatypeResponse>;
+    },
+    Update(request) {
+      if (request.id === undefined || request.id === null) {
+        throw new Error('missing required field request.id');
+      }
+      const path = `/admin/v1/ontology/datatypes/${request.id}`;
+      const bodyMap = { ...request } as Record<string, unknown>;
+      delete bodyMap["id"];
+      const body = JSON.stringify(bodyMap);
+      return transport.unary(path, 'PUT', body, {
+        service: 'OntologyDatatypeService',
+        method: 'Update',
+      }) as Promise<wellKnownEmpty>;
+    },
+    Delete(request) {
+      if (request.id === undefined || request.id === null) {
+        throw new Error('missing required field request.id');
+      }
+      const path = `/admin/v1/ontology/datatypes/${request.id}`;
+      const body = null;
+      const queryParams: string[] = [];
+      if (request.baseVersion) {
+        queryParams.push(
+          `baseVersion=${encodeURIComponent(request.baseVersion.toString())}`,
+        );
+      }
+      if (request.force) {
+        queryParams.push(
+          `force=${encodeURIComponent(request.force.toString())}`,
+        );
+      }
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join('&')}`;
+      }
+      return transport.unary(uri, 'DELETE', body, {
+        service: 'OntologyDatatypeService',
+        method: 'Delete',
+      }) as Promise<wellKnownEmpty>;
+    },
+  };
+}
+// 查询数据类型列表 - 请求（无 tree——OWL 2 无 subDatatypeOf 层级，Protégé 同构平铺列表）
+export type ontologyservicev1_ListDatatypesRequest = {
+  deprecated?: boolean;
+  displayLabel: string | undefined;
+  localName: string | undefined;
+  ontologyId: number | undefined;
+  orderBy: string | undefined;
+  page: number | undefined;
+  pageSize: number | undefined;
+};
+
+// 查询数据类型列表 - 回应
+export type ontologyservicev1_ListDatatypesResponse = {
+  items: ontologyservicev1_Datatype[] | undefined;
+  total: number | undefined;
+};
+
+// 数据类型（列表项，含定义与聚合列）
+export type ontologyservicev1_Datatype = {
+  baseIri?: string;
+  comment?: string;
+  createdAt?: wellKnownTimestamp;
+  createdBy?: number;
+  definitionSummary?: string;
+  deletedAt?: wellKnownTimestamp;
+  deletedBy?: number;
+  deprecated?: boolean;
+  displayLabel?: string;
+  id?: number;
+  iri?: string;
+  localName?: string;
+  ontologyId?: number;
+  referenceCount?: number;
+  updatedAt?: wellKnownTimestamp;
+  updatedBy?: number;
+};
+
+// 查询数据类型简况列表 - 请求
+export type ontologyservicev1_ListSimpleDatatypesRequest = {
+  ontologyId: number | undefined;
+};
+
+// 查询数据类型简况列表 - 回应
+export type ontologyservicev1_SimpleDatatypeListResponse = {
+  items: ontologyservicev1_SimpleDatatype[] | undefined;
+};
+
+// 简化数据类型（值域双源下拉数据源；对应 Protégé getKnownDatatypes 的自定义半边）
+export type ontologyservicev1_SimpleDatatype = {
+  baseIri?: string;
+  deprecated?: boolean;
+  displayLabel?: string;
+  id?: number;
+  iri?: string;
+  localName?: string;
+};
+
+// 查询数据类型 frame 详情 - 请求
+export type ontologyservicev1_GetDatatypeFrameRequest = {
+  id: number | undefined;
+};
+
+// 数据类型 frame 详情（Protégé OWLDatatypeDescriptionFrame 对应物；仅"类型定义"一节——
+// OWL 2 不给 datatype 层级/特征/成对关系。base_version 供乐观锁回传）
+export type ontologyservicev1_DatatypeFrame = {
+  annotations: ontologyservicev1_AnnotationAssertion[] | undefined;
+  baseVersion?: number;
+  comment?: string;
+  definition?: ontologyservicev1_DatatypeDefinition;
+  deprecated?: boolean;
+  displayLabel?: string;
+  id?: number;
+  iri?: string;
+  localName?: string;
+  ontologyId?: number;
+  updatedAt?: wellKnownTimestamp;
+};
+
+// datatype 定义（46 行 AXIOM_DATATYPE_DEFINITION 的 proto 形态；单层派生：内建基类型 + facet 约束）。
+// optional message 字段 presence 可靠：definition 未提交/JSON null = 跳过定义区 diff；
+// 显式空定义（base_iri 未设且 facets 空）= 清空存量定义（05 号文档 §4.3 两段语义）。
+export type ontologyservicev1_DatatypeDefinition = {
+  baseIri?: string;
+  facets: ontologyservicev1_DatatypeFacet[] | undefined;
+};
+
+// facet 定义项（46 行定义 JSON 的 proto 形态：{"facet":"minInclusive","value":"0"}）
+export type ontologyservicev1_DatatypeFacet = {
+  facet: string | undefined;
+  value: string | undefined;
+};
+
+// 查询数据类型引用 - 请求（usage 反查：被哪些数据属性作派生值域引用）
+export type ontologyservicev1_GetDatatypeUsageRequest = {
+  id: number | undefined;
+};
+
+// 创建数据类型 - 请求（自定义 RPC：扁平请求体，勿包 { data }——protojson 会把 data 当未知字段丢弃）。
+// 无父级/等价/不相交/特征——OWL 2 不给 datatype 任何逻辑结构（系列管线最短实体）。
+export type ontologyservicev1_CreateDatatypeRequest = {
+  annotations: ontologyservicev1_AnnotationAssertionInput[] | undefined;
+  comment?: string;
+  definition?: ontologyservicev1_DatatypeDefinition;
+  deprecated?: boolean;
+  displayLabel?: string;
+  localName: string | undefined;
+  ontologyId: number | undefined;
+};
+
+// 创建数据类型 - 回应（新实体 id + 变更后本体版本）
+export type ontologyservicev1_CreateDatatypeResponse = {
+  baseVersion?: number;
+  id?: number;
+};
+
+// 更新数据类型 - 请求（frame 全量提交语义；local_name 忽略——不可变；base_version 缺省 = 跳过乐观锁比对）。
+// definition 为 optional message：未提交/JSON null = 跳过定义区 diff；显式空定义 = 清空（§4.3 两段语义）
+export type ontologyservicev1_UpdateDatatypeRequest = {
+  annotations: ontologyservicev1_AnnotationAssertionInput[] | undefined;
+  baseVersion?: number;
+  comment?: string;
+  definition?: ontologyservicev1_DatatypeDefinition;
+  deprecated?: boolean;
+  displayLabel?: string;
+  id: number | undefined;
+};
+
+// 删除数据类型 - 请求（force=true 级联移除引用公理：42 值域行随删，引用方数据属性其余值域完好）
+export type ontologyservicev1_DeleteDatatypeRequest = {
+  baseVersion?: number;
+  force?: boolean;
+  id: number | undefined;
+};
+
 // 对象属性管理服务（admin 门面）
 //
 // 对象属性 create/update/delete 是自定义 RPC（公理事务管线：diff + 环检测 + 乐观锁 + 校验 + 变更日志），
@@ -13655,6 +13969,7 @@ export class ApiClient {
   private _ontologyAnnotationPropertyService?: OntologyAnnotationPropertyService;
   private _ontologyClassService?: OntologyClassService;
   private _ontologyDataPropertyService?: OntologyDataPropertyService;
+  private _ontologyDatatypeService?: OntologyDatatypeService;
   private _ontologyObjectPropertyService?: OntologyObjectPropertyService;
   private _ontologyService?: OntologyService;
   private _operationAuditLogService?: OperationAuditLogService;
@@ -13845,6 +14160,10 @@ export class ApiClient {
 
   get ontologyDataPropertyService(): OntologyDataPropertyService {
     return this._ontologyDataPropertyService ??= createOntologyDataPropertyServiceClient(this._transport);
+  }
+
+  get ontologyDatatypeService(): OntologyDatatypeService {
+    return this._ontologyDatatypeService ??= createOntologyDatatypeServiceClient(this._transport);
   }
 
   get ontologyObjectPropertyService(): OntologyObjectPropertyService {

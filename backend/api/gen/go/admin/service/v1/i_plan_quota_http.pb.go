@@ -40,13 +40,13 @@ type PlanQuotaServiceHTTPServer interface {
 
 func RegisterPlanQuotaServiceHTTPServer(s *http.Server, srv PlanQuotaServiceHTTPServer) {
 	r := s.Route("/")
-	r.GET("/admin/v1/plan-quotas", _PlanQuotaService_List32_HTTP_Handler(srv))
-	r.POST("/admin/v1/plan-quotas", _PlanQuotaService_Create24_HTTP_Handler(srv))
-	r.PUT("/admin/v1/plan-quotas/{id}", _PlanQuotaService_Update25_HTTP_Handler(srv))
-	r.DELETE("/admin/v1/plan-quotas", _PlanQuotaService_Delete26_HTTP_Handler(srv))
+	r.GET("/admin/v1/plan-quotas", _PlanQuotaService_List33_HTTP_Handler(srv))
+	r.POST("/admin/v1/plan-quotas", _PlanQuotaService_Create25_HTTP_Handler(srv))
+	r.PUT("/admin/v1/plan-quotas/{id}", _PlanQuotaService_Update26_HTTP_Handler(srv))
+	r.DELETE("/admin/v1/plan-quotas", _PlanQuotaService_Delete27_HTTP_Handler(srv))
 }
 
-func _PlanQuotaService_List32_HTTP_Handler(srv PlanQuotaServiceHTTPServer) func(ctx http.Context) error {
+func _PlanQuotaService_List33_HTTP_Handler(srv PlanQuotaServiceHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in v1.PagingRequest
 		if err := ctx.BindQuery(&in); err != nil {
@@ -65,7 +65,7 @@ func _PlanQuotaService_List32_HTTP_Handler(srv PlanQuotaServiceHTTPServer) func(
 	}
 }
 
-func _PlanQuotaService_Create24_HTTP_Handler(srv PlanQuotaServiceHTTPServer) func(ctx http.Context) error {
+func _PlanQuotaService_Create25_HTTP_Handler(srv PlanQuotaServiceHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in v11.CreatePlanQuotaRequest
 		if err := ctx.Bind(&in); err != nil {
@@ -87,7 +87,7 @@ func _PlanQuotaService_Create24_HTTP_Handler(srv PlanQuotaServiceHTTPServer) fun
 	}
 }
 
-func _PlanQuotaService_Update25_HTTP_Handler(srv PlanQuotaServiceHTTPServer) func(ctx http.Context) error {
+func _PlanQuotaService_Update26_HTTP_Handler(srv PlanQuotaServiceHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in v11.UpdatePlanQuotaRequest
 		if err := ctx.Bind(&in); err != nil {
@@ -112,7 +112,7 @@ func _PlanQuotaService_Update25_HTTP_Handler(srv PlanQuotaServiceHTTPServer) fun
 	}
 }
 
-func _PlanQuotaService_Delete26_HTTP_Handler(srv PlanQuotaServiceHTTPServer) func(ctx http.Context) error {
+func _PlanQuotaService_Delete27_HTTP_Handler(srv PlanQuotaServiceHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in v11.DeletePlanQuotaRequest
 		if err := ctx.BindQuery(&in); err != nil {

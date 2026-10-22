@@ -5661,6 +5661,176 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/EntityUsage'
+    /admin/v1/ontology/datatypes:
+        get:
+            tags:
+                - OntologyDatatypeService
+            description: 分页查询数据类型列表
+            operationId: OntologyDatatypeService_List
+            parameters:
+                - name: page
+                  in: query
+                  schema:
+                    type: integer
+                    format: uint32
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: uint32
+                - name: ontologyId
+                  in: query
+                  schema:
+                    type: integer
+                    format: uint32
+                - name: localName
+                  in: query
+                  schema:
+                    type: string
+                - name: displayLabel
+                  in: query
+                  schema:
+                    type: string
+                - name: deprecated
+                  in: query
+                  schema:
+                    type: boolean
+                - name: orderBy
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListDatatypesResponse'
+        post:
+            tags:
+                - OntologyDatatypeService
+            description: 创建数据类型（公理事务管线；返回新实体 id + 变更后版本）
+            operationId: OntologyDatatypeService_Create
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/CreateDatatypeRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/CreateDatatypeResponse'
+    /admin/v1/ontology/datatypes/simple-list:
+        get:
+            tags:
+                - OntologyDatatypeService
+            description: 查询数据类型简况列表（值域双源下拉数据源）
+            operationId: OntologyDatatypeService_SimpleList
+            parameters:
+                - name: ontologyId
+                  in: query
+                  schema:
+                    type: integer
+                    format: uint32
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/SimpleDatatypeListResponse'
+    /admin/v1/ontology/datatypes/{id}:
+        put:
+            tags:
+                - OntologyDatatypeService
+            description: 更新数据类型（frame 全量提交，公理事务管线）
+            operationId: OntologyDatatypeService_Update
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint32
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/UpdateDatatypeRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+        delete:
+            tags:
+                - OntologyDatatypeService
+            description: 删除数据类型（force=true 级联移除 42 值域引用行，引用方数据属性其余值域完好）
+            operationId: OntologyDatatypeService_Delete
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint32
+                - name: baseVersion
+                  in: query
+                  schema:
+                    type: integer
+                    format: uint32
+                - name: force
+                  in: query
+                  schema:
+                    type: boolean
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+    /admin/v1/ontology/datatypes/{id}/frame:
+        get:
+            tags:
+                - OntologyDatatypeService
+            description: 查询数据类型 frame 详情
+            operationId: OntologyDatatypeService_Frame
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint32
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/DatatypeFrame'
+    /admin/v1/ontology/datatypes/{id}/usage:
+        get:
+            tags:
+                - OntologyDatatypeService
+            description: 查询数据类型引用明细（被哪些数据属性作派生值域引用）
+            operationId: OntologyDatatypeService_Usage
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint32
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/EntityUsage'
     /admin/v1/ontology/object-properties:
         get:
             tags:
@@ -10321,6 +10491,39 @@ components:
                     type: integer
                     format: uint32
             description: 创建数据属性 - 回应（新实体 id + 变更后本体版本）
+        CreateDatatypeRequest:
+            type: object
+            properties:
+                ontologyId:
+                    type: integer
+                    format: uint32
+                localName:
+                    type: string
+                displayLabel:
+                    type: string
+                comment:
+                    type: string
+                deprecated:
+                    type: boolean
+                definition:
+                    $ref: '#/components/schemas/DatatypeDefinition'
+                annotations:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/AnnotationAssertionInput'
+            description: |-
+                创建数据类型 - 请求（自定义 RPC：扁平请求体，勿包 { data }——protojson 会把 data 当未知字段丢弃）。
+                 无父级/等价/不相交/特征——OWL 2 不给 datatype 任何逻辑结构（系列管线最短实体）。
+        CreateDatatypeResponse:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: uint32
+                baseVersion:
+                    type: integer
+                    format: uint32
+            description: 创建数据类型 - 回应（新实体 id + 变更后本体版本）
         CreateDictEntryRequest:
             type: object
             properties:
@@ -10932,6 +11135,125 @@ components:
                     description: 空闲连接数
                     format: uint32
             description: 数据库信息
+        Datatype:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    description: 实体ID
+                    format: uint32
+                ontologyId:
+                    type: integer
+                    description: 所属本体ID
+                    format: uint32
+                iri:
+                    type: string
+                    description: 完整 IRI（本体 base_iri 命名空间下）
+                localName:
+                    type: string
+                    description: 局部名（创建后不可变）
+                displayLabel:
+                    type: string
+                    description: 显示名（rdfs:label 渲染缓存）
+                deprecated:
+                    type: boolean
+                    description: 是否废弃（owl:deprecated）
+                comment:
+                    type: string
+                    description: 注释（rdfs:comment 注解公理聚合）
+                definitionSummary:
+                    type: string
+                    description: 定义摘要（如 integer [0 ≤ x ≤ 100]；仅声明未定义时为空）
+                referenceCount:
+                    type: integer
+                    description: 被引用数（42 行派生轨 object_id 命中的数据属性数）
+                    format: uint32
+                baseIri:
+                    type: string
+                    description: 定义基类型 IRI（未定义为空）
+                createdBy:
+                    type: integer
+                    description: 创建者用户ID
+                    format: uint32
+                updatedBy:
+                    type: integer
+                    description: 更新者用户ID
+                    format: uint32
+                deletedBy:
+                    type: integer
+                    description: 删除者用户ID
+                    format: uint32
+                createdAt:
+                    type: string
+                    description: 创建时间
+                    format: date-time
+                updatedAt:
+                    type: string
+                    description: 更新时间
+                    format: date-time
+                deletedAt:
+                    type: string
+                    description: 删除时间
+                    format: date-time
+            description: 数据类型（列表项，含定义与聚合列）
+        DatatypeDefinition:
+            type: object
+            properties:
+                baseIri:
+                    type: string
+                    description: 内建基类型 IRI（白名单 31 项内；datatype 实体不作基类型——V1 单层派生）
+                facets:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/DatatypeFacet'
+            description: |-
+                datatype 定义（46 行 AXIOM_DATATYPE_DEFINITION 的 proto 形态；单层派生：内建基类型 + facet 约束）。
+                 optional message 字段 presence 可靠：definition 未提交/JSON null = 跳过定义区 diff；
+                 显式空定义（base_iri 未设且 facets 空）= 清空存量定义（05 号文档 §4.3 两段语义）。
+        DatatypeFacet:
+            type: object
+            properties:
+                facet:
+                    type: string
+                    description: facet 本地名（minInclusive/maxLength/pattern 等，白名单 10 种）
+                value:
+                    type: string
+                    description: 约束值词形（非负整数/正则/基类型词法空间内的字面量）
+            description: facet 定义项（46 行定义 JSON 的 proto 形态：{"facet":"minInclusive","value":"0"}）
+        DatatypeFrame:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: uint32
+                ontologyId:
+                    type: integer
+                    format: uint32
+                iri:
+                    type: string
+                localName:
+                    type: string
+                displayLabel:
+                    type: string
+                comment:
+                    type: string
+                deprecated:
+                    type: boolean
+                definition:
+                    $ref: '#/components/schemas/DatatypeDefinition'
+                annotations:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/AnnotationAssertion'
+                baseVersion:
+                    type: integer
+                    format: uint32
+                updatedAt:
+                    type: string
+                    format: date-time
+            description: |-
+                数据类型 frame 详情（Protégé OWLDatatypeDescriptionFrame 对应物；仅"类型定义"一节——
+                 OWL 2 不给 datatype 层级/特征/成对关系。base_version 供乐观锁回传）
         DeleteNotificationFromInboxRequest:
             type: object
             properties:
@@ -12191,6 +12513,16 @@ components:
                 total:
                     type: string
             description: 查询数据属性列表 - 回应
+        ListDatatypesResponse:
+            type: object
+            properties:
+                items:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Datatype'
+                total:
+                    type: string
+            description: 查询数据类型列表 - 回应
         ListDictEntryByTypeCodeResponse:
             type: object
             properties:
@@ -15410,6 +15742,31 @@ components:
                     description: 删除时间
                     format: date-time
             description: 一站式服务类型
+        SimpleDatatype:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: uint32
+                iri:
+                    type: string
+                localName:
+                    type: string
+                displayLabel:
+                    type: string
+                deprecated:
+                    type: boolean
+                baseIri:
+                    type: string
+            description: 简化数据类型（值域双源下拉数据源；对应 Protégé getKnownDatatypes 的自定义半边）
+        SimpleDatatypeListResponse:
+            type: object
+            properties:
+                items:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/SimpleDatatype'
+            description: 查询数据类型简况列表 - 回应
         SlowLogEntry:
             type: object
             properties:
@@ -16096,6 +16453,30 @@ components:
                     items:
                         $ref: '#/components/schemas/AnnotationAssertionInput'
             description: 更新数据属性 - 请求（frame 全量提交语义；local_name 忽略——不可变；base_version 缺省 = 跳过乐观锁比对，仅限内部路径）
+        UpdateDatatypeRequest:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: uint32
+                displayLabel:
+                    type: string
+                comment:
+                    type: string
+                deprecated:
+                    type: boolean
+                definition:
+                    $ref: '#/components/schemas/DatatypeDefinition'
+                baseVersion:
+                    type: integer
+                    format: uint32
+                annotations:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/AnnotationAssertionInput'
+            description: |-
+                更新数据类型 - 请求（frame 全量提交语义；local_name 忽略——不可变；base_version 缺省 = 跳过乐观锁比对）。
+                 definition 为 optional message：未提交/JSON null = 跳过定义区 diff；显式空定义 = 清空（§4.3 两段语义）
         UpdateDictEntryRequest:
             type: object
             properties:
@@ -17106,6 +17487,16 @@ tags:
          body: "*" 收扁平请求体——不是通用 CRUD，勿按惯例包 { data: {...} }
          （protojson 会把 data 当未知字段丢弃，接口 200 但字段全空，仓库已知坑）。
          GET/DELETE 的标量参数由 Kratos 从 query string 按 proto 字段 json 名（camelCase）绑定。
+    - name: OntologyDatatypeService
+      description: |-
+        数据类型管理服务（admin 门面）
+
+         系列首个无 tree 端点、有 simple-list 端点的实体（OWL 2 无 subDatatypeOf 层级，
+         Protégé OWLDataTypeViewComponent 同构平铺；simple-list 供数据属性值域双源下拉）。
+         create/update/delete 是自定义 RPC（公理事务管线），body: "*" 收扁平请求体——
+         不是通用 CRUD，勿按惯例包 { data: {...} }（protojson 会把 data 当未知字段丢弃）。
+         definition 为 optional message 字段（presence 可靠）：JSON null/缺失 = 跳过定义区 diff，
+         显式空定义 = 清空。
     - name: OntologyObjectPropertyService
       description: |-
         对象属性管理服务（admin 门面）

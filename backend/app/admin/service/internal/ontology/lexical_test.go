@@ -166,14 +166,27 @@ func TestValidateLexical_UnknownDatatype(t *testing.T) {
 }
 
 func TestBuiltinDatatypes_Whitelist(t *testing.T) {
-	// 白名单 15 项（03 号文档 §3.2；§10 的"14"系笔误以实列为准）
-	if len(BuiltinDatatypes) != 15 {
-		t.Fatalf("白名单应为 15 项：%d", len(BuiltinDatatypes))
+	// 白名单 31 项（05 期接管扩展 15→31，05 号文档 §3.2；03 期既有 15 项 IRI/Kind 不变）
+	if len(BuiltinDatatypes) != 31 {
+		t.Fatalf("白名单应为 31 项：%d", len(BuiltinDatatypes))
 	}
 	if dt, ok := IsBuiltinDatatype(IRIXSDNamespace + "integer"); !ok || dt.Kind != KindInteger {
 		t.Fatalf("integer 应命中且 Kind=Integer：%+v %v", dt, ok)
 	}
+	if dt, ok := IsBuiltinDatatype(IRIXSDNamespace + "unsignedByte"); !ok || dt.Family != FamilyNumericDecimal {
+		t.Fatalf("05 期新增 unsignedByte 应命中且族=NUMERIC_DECIMAL：%+v %v", dt, ok)
+	}
 	if _, ok := IsBuiltinDatatype(IRIOWLTopDataProperty); ok {
 		t.Fatal("非 datatype IRI 不应命中")
+	}
+	// 刻意剔除项记档（05 号文档 §2.4）：rdfs:Literal / rdf:langString 不进值域白名单
+	for _, iri := range []string{
+		"http://www.w3.org/2000/01/rdf-schema#Literal",
+		"http://www.w3.org/1999/02/22-rdf-syntax-ns#langString",
+		"http://www.w3.org/2002/07/owl#real",
+	} {
+		if _, ok := IsBuiltinDatatype(iri); ok {
+			t.Fatalf("%s 应被刻意剔除", iri)
+		}
 	}
 }

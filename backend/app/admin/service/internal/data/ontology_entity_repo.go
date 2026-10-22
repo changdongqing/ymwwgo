@@ -128,6 +128,33 @@ func (r *OntEntityRepo) ListAnnotationProperties(ctx context.Context, filter Cla
 	return r.listEntitiesOfType(ctx, filter, ontology.EntityTypeAnnotationProperty)
 }
 
+// ListDatatypes 分页查询数据类型列表（铁律 3 contains；无树——OWL 2 无 subDatatypeOf，05 号文档 §2.5）
+func (r *OntEntityRepo) ListDatatypes(ctx context.Context, filter ClassListFilter) ([]*ent.OntEntity, int, error) {
+	filter.SubtreeIDs = nil
+	return r.listEntitiesOfType(ctx, filter, ontology.EntityTypeDatatype)
+}
+
+// ListSimpleDatatypes 全量查询数据类型简况（值域双源下拉数据源；按局部名排序保证下拉稳定）
+func (r *OntEntityRepo) ListSimpleDatatypes(ctx context.Context, ontologyID uint32) ([]*ent.OntEntity, error) {
+	return r.entClient.Client().OntEntity.Query().
+		Where(
+			ontentity.OntologyIDEQ(ontologyID),
+			ontentity.EntityTypeEQ(ontology.EntityTypeDatatype),
+			ontentity.DeletedAtIsNil(),
+		).
+		Order(ent.Asc(ontentity.FieldLocalName), ent.Asc(ontentity.FieldID)).
+		All(ctx)
+}
+
+// GetEntityByIRI 全局 IRI 反查（未删；跨本体判定需要全局视野——同一 IRI 可能在多个本体注册，
+// 调用方按"同本体命中优先"扫描。值域三分支解析与 42 派生轨校验共用）
+func (r *OntEntityRepo) GetEntityByIRI(ctx context.Context, iri string) ([]*ent.OntEntity, error) {
+	return r.entClient.Client().OntEntity.Query().
+		Where(ontentity.IriEQ(iri), ontentity.DeletedAtIsNil()).
+		Order(ent.Asc(ontentity.FieldID)).
+		All(ctx)
+}
+
 // listEntitiesOfType 分页查询指定实体类型列表（ListClasses 的泛化底座）
 func (r *OntEntityRepo) listEntitiesOfType(ctx context.Context, filter ClassListFilter, entityType uint32) ([]*ent.OntEntity, int, error) {
 	q := r.entClient.Client().OntEntity.Query().
@@ -502,16 +529,33 @@ func (r *OntEntityRepo) AggregateDataPropertyInfo(ctx context.Context, ontologyI
 		return nil, err
 	}
 	bySubject := make(map[uint32][]*ent.OntAxiom, len(entityIDs))
+	rangeObjectIDs := make([]uint32, 0)
 	for _, ax := range axioms {
 		if ax.SubjectID == nil {
 			continue
 		}
 		bySubject[*ax.SubjectID] = append(bySubject[*ax.SubjectID], ax)
 	}
+	for id := range bySubject {
+		rangeObjectIDs = append(rangeObjectIDs, RangeObjectIDsOf(bySubject[id])...)
+	}
+	// 42 派生轨反查 datatype 实体 IRI（跨 id 批量；悬空行投影时防御跳过）
+	datatypeIRIs := make(map[uint32]string, len(rangeObjectIDs))
+	if len(rangeObjectIDs) > 0 {
+		datatypeEntities, err := r.GetEntitiesByIDs(ctx, ontologyID, rangeObjectIDs)
+		if err != nil {
+			return nil, err
+		}
+		for _, e := range datatypeEntities {
+			if e.Iri != nil {
+				datatypeIRIs[e.ID] = *e.Iri
+			}
+		}
+	}
 	for id, agg := range out {
 		agg.Comment = ontology.PickAnnotationPreferred(bySubject[id], ontology.PredicateRDFSComment)
 		agg.Characteristics = orderDataPropertyCharacteristics(bySubject[id])
-		agg.RangeIRIs = rangeIRIsOf(bySubject[id])
+		agg.RangeIRIs = RangeIRIsOf(bySubject[id], datatypeIRIs)
 	}
 	return out, nil
 }
@@ -542,11 +586,39 @@ func orderDataPropertyCharacteristics(axioms []*ent.OntAxiom) []string {
 	return out
 }
 
-// rangeIRIsOf 值域 datatype IRI 列表（42 型 value_text，按 sort_order → id 保序；空值行跳过）
-func rangeIRIsOf(axioms []*ent.OntAxiom) []string {
+// RangeObjectIDsOf 收集 42 行派生轨 object_id（保序去重；批量反查 datatype 实体 IRI 的输入）。
+func RangeObjectIDsOf(axioms []*ent.OntAxiom) []uint32 {
+	out := make([]uint32, 0, 1)
+	seen := make(map[uint32]struct{}, 1)
+	for _, ax := range axioms {
+		if ax.AxiomType == nil || *ax.AxiomType != ontology.AxiomDataPropertyRange || ax.ObjectID == nil {
+			continue
+		}
+		if *ax.ObjectID == 0 {
+			continue
+		}
+		if _, ok := seen[*ax.ObjectID]; ok {
+			continue
+		}
+		seen[*ax.ObjectID] = struct{}{}
+		out = append(out, *ax.ObjectID)
+	}
+	return out
+}
+
+// RangeIRIsOf 42 行双轨投影为 IRI 序列（05 期增量，frame 与 page 聚合共用投影——05 号文档 §4.4）：
+// 内建轨 value_text 原样、派生轨 object_id 经 entityIRIByID 反查实体 IRI；悬空 object_id 行
+// （实体已删，直改库场景）防御跳过。axioms 须按 sort_order → id 保序（ListBySubject/聚合查询序）。
+func RangeIRIsOf(axioms []*ent.OntAxiom, entityIRIByID map[uint32]string) []string {
 	out := make([]string, 0, 1)
 	for _, ax := range axioms {
 		if ax.AxiomType == nil || *ax.AxiomType != ontology.AxiomDataPropertyRange {
+			continue
+		}
+		if ax.ObjectID != nil && *ax.ObjectID != 0 {
+			if iri, ok := entityIRIByID[*ax.ObjectID]; ok {
+				out = append(out, iri)
+			}
 			continue
 		}
 		if ax.ValueText != nil && *ax.ValueText != "" {
@@ -554,6 +626,45 @@ func rangeIRIsOf(axioms []*ent.OntAxiom) []string {
 		}
 	}
 	return out
+}
+
+// RangeRowsOf 42 行投影为双轨 diff 行（DiffRangeRefs 输入；axioms 按 sort_order → id 保序）：
+// 内建轨 IRI=value_text；派生轨 IRI=实体 IRI 反查——悬空行 IRI 置空，由 diff 删除侧清理自愈。
+func RangeRowsOf(axioms []*ent.OntAxiom, entityIRIByID map[uint32]string) []ontology.RangeRow {
+	out := make([]ontology.RangeRow, 0, len(axioms))
+	for _, ax := range axioms {
+		if ax.AxiomType == nil || *ax.AxiomType != ontology.AxiomDataPropertyRange {
+			continue
+		}
+		row := ontology.RangeRow{
+			AxiomID:   ax.ID,
+			ValueText: nilStringAx(ax.ValueText),
+			ObjectID:  nilUintAx(ax.ObjectID),
+			SortOrder: int32(nilUintAx(ax.SortOrder)),
+		}
+		if row.ObjectID != 0 {
+			row.IRI = entityIRIByID[row.ObjectID] // 悬空行取零值空串
+		} else {
+			row.IRI = row.ValueText
+		}
+		out = append(out, row)
+	}
+	return out
+}
+
+// nilStringAx / nilUintAx / nilInt32Ax 公理可空列读取（data 包本地版，避免循环依赖服务层辅助）
+func nilStringAx(p *string) string {
+	if p == nil {
+		return ""
+	}
+	return *p
+}
+
+func nilUintAx(p *uint32) uint32 {
+	if p == nil {
+		return 0
+	}
+	return *p
 }
 
 // EntEntityToDataPropertyDTO 实体行 + 聚合 → DataProperty DTO（服务层组装用）
@@ -687,6 +798,119 @@ func EntEntityToClassDTO(e *ent.OntEntity, agg *ClassAggregate) *ontologyV1.Onto
 		dto.DisjointCount = trans.Ptr(agg.DisjointCount)
 		dto.Comment = agg.Comment
 		dto.Notation = agg.Notation
+	}
+	return dto
+}
+
+// DatatypeAggregate 数据类型列表聚合列（一次分页批量计算；05 期）
+type DatatypeAggregate struct {
+	Comment        *string
+	DefinitionJSON *string // 46 行 value_text（首行；多行脏数据由服务层 diff 自愈，聚合防御取首行）
+	ReferenceCount uint32 // 被 42 行派生轨引用的数据属性数
+}
+
+// AggregateDatatypeInfo 批量计算数据类型聚合列：定义 JSON（46 型首行）+ 被引用数
+// （42 行派生轨 object_id 命中的数据属性数）+ 注释首选值。definition summary / base_iri
+// 的 JSON 解析在 DTO 投影完成（损坏 JSON 列表防御降级，不阻塞——05 号文档 §7 #11）。
+func (r *OntEntityRepo) AggregateDatatypeInfo(ctx context.Context, ontologyID uint32, entityIDs []uint32) (map[uint32]*DatatypeAggregate, error) {
+	out := make(map[uint32]*DatatypeAggregate, len(entityIDs))
+	if len(entityIDs) == 0 {
+		return out, nil
+	}
+	for _, id := range entityIDs {
+		out[id] = &DatatypeAggregate{}
+	}
+
+	type countRow struct {
+		SubjectID uint32 `json:"subject_id"`
+		ObjectID  uint32 `json:"object_id"`
+		Count     int    `json:"count"`
+	}
+
+	// 定义 JSON：46 型公理以我为主语（按 sort_order → id 取首行）
+	definitions, err := r.entClient.Client().OntAxiom.Query().
+		Where(ontaxiom.OntologyIDEQ(ontologyID), ontaxiom.AxiomTypeEQ(ontology.AxiomDatatypeDefinition),
+			ontaxiom.SubjectIDIn(entityIDs...), ontaxiom.DeletedAtIsNil()).
+		Order(ent.Asc(ontaxiom.FieldSortOrder), ent.Asc(ontaxiom.FieldID)).
+		All(ctx)
+	if err != nil {
+		return nil, err
+	}
+	for _, ax := range definitions {
+		if ax.SubjectID == nil {
+			continue
+		}
+		if agg, ok := out[*ax.SubjectID]; ok && agg.DefinitionJSON == nil && ax.ValueText != nil {
+			agg.DefinitionJSON = ax.ValueText
+		}
+	}
+
+	// 被引用数：42 行派生轨以我为宾语（distinct subject 计数——同属性多值域行不会重复计）
+	var refRows []countRow
+	if err := r.entClient.Client().OntAxiom.Query().
+		Where(ontaxiom.OntologyIDEQ(ontologyID), ontaxiom.AxiomTypeEQ(ontology.AxiomDataPropertyRange),
+			ontaxiom.ObjectIDIn(entityIDs...), ontaxiom.DeletedAtIsNil()).
+		GroupBy(ontaxiom.FieldObjectID, ontaxiom.FieldSubjectID).
+		Aggregate(ent.As(ent.Count(), "count")).
+		Scan(ctx, &refRows); err != nil {
+		return nil, err
+	}
+	refCount := make(map[uint32]int, len(entityIDs))
+	seenPair := make(map[[2]uint32]struct{}, len(refRows))
+	for _, row := range refRows {
+		pair := [2]uint32{row.ObjectID, row.SubjectID}
+		if _, ok := seenPair[pair]; ok {
+			continue
+		}
+		seenPair[pair] = struct{}{}
+		refCount[row.ObjectID]++
+	}
+	for id, agg := range out {
+		agg.ReferenceCount = uint32(refCount[id])
+	}
+
+	// 注释首选值：100 型注解公理（内建谓词行）
+	axioms, err := r.entClient.Client().OntAxiom.Query().
+		Where(ontaxiom.OntologyIDEQ(ontologyID), ontaxiom.AxiomTypeEQ(ontology.AxiomAnnotationAssertion),
+			ontaxiom.SubjectIDIn(entityIDs...), ontaxiom.DeletedAtIsNil()).
+		All(ctx)
+	if err != nil {
+		return nil, err
+	}
+	bySubject := make(map[uint32][]*ent.OntAxiom, len(entityIDs))
+	for _, ax := range axioms {
+		if ax.SubjectID == nil {
+			continue
+		}
+		bySubject[*ax.SubjectID] = append(bySubject[*ax.SubjectID], ax)
+	}
+	for id, agg := range out {
+		agg.Comment = ontology.PickAnnotationPreferred(bySubject[id], ontology.PredicateRDFSComment)
+	}
+	return out, nil
+}
+
+// EntEntityToDatatypeDTO 实体行 + 聚合 → Datatype DTO（服务层组装用；定义摘要由
+// ontology.DefinitionSummary 统一投影，损坏 JSON 防御降级为"未定义"形态）
+func EntEntityToDatatypeDTO(e *ent.OntEntity, agg *DatatypeAggregate) *ontologyV1.Datatype {
+	dto := &ontologyV1.Datatype{
+		Id:           &e.ID,
+		OntologyId:   e.OntologyID,
+		Iri:          e.Iri,
+		LocalName:    e.LocalName,
+		DisplayLabel: e.DisplayLabel,
+		Deprecated:   e.Deprecated,
+	}
+	if agg == nil {
+		return dto
+	}
+	dto.Comment = agg.Comment
+	dto.ReferenceCount = trans.Ptr(agg.ReferenceCount)
+	if agg.DefinitionJSON != nil {
+		if def, err := ontology.ParseDefinition(*agg.DefinitionJSON); err == nil && !def.IsEmpty() {
+			dto.BaseIri = trans.Ptr(strings.TrimSpace(def.BaseIRI))
+			dto.DefinitionSummary = trans.Ptr(ontology.DefinitionSummary(def))
+		}
 	}
 	return dto
 }

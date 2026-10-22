@@ -107,12 +107,13 @@ const (
 	OntologyAxiomType_AXIOM_SUB_PROPERTY_CHAIN_OF          OntologyAxiomType = 37 // 02：属性链（subject=超属性，value_text=链成员实体 id 的 JSON 数组，保序）
 	OntologyAxiomType_AXIOM_SUB_DATA_PROPERTY_OF           OntologyAxiomType = 40 // 03：子数据属性（subject=子属性，object_id=父属性）
 	OntologyAxiomType_AXIOM_DATA_PROPERTY_DOMAIN           OntologyAxiomType = 41 // 03：数据属性定义域（subject=属性，object_id=类；多行=多定义域，OWL 交集语义）
-	OntologyAxiomType_AXIOM_DATA_PROPERTY_RANGE            OntologyAxiomType = 42 // 03：数据属性值域（object_id=NULL，value_text=内建 datatype IRI；多行=多值域；05 期双轨 object_id 预留）
+	OntologyAxiomType_AXIOM_DATA_PROPERTY_RANGE            OntologyAxiomType = 42 // 03：数据属性值域（多行=多值域；05 期双轨激活：内建轨 value_text=内建 datatype IRI / 派生轨 object_id=datatype 实体 id，二选一）
 	OntologyAxiomType_AXIOM_DATA_PROPERTY_CHARACTERISTIC   OntologyAxiomType = 43 // 03：数据属性特征（泛型，predicate_iri 区分；V1 仅函数性）
 	OntologyAxiomType_AXIOM_EQUIVALENT_DATA_PROPERTIES     OntologyAxiomType = 44 // 03：等价数据属性（成对 (P,Q)+(Q,P)）
 	OntologyAxiomType_AXIOM_DISJOINT_DATA_PROPERTIES       OntologyAxiomType = 45 // 03：不相交数据属性（成对）
+	OntologyAxiomType_AXIOM_DATATYPE_DEFINITION            OntologyAxiomType = 46 // 05：数据类型定义（subject=datatype 实体，value_text=定义 JSON：{"baseIri","facets"}，至多一行）
 	OntologyAxiomType_AXIOM_SUB_ANNOTATION_PROPERTY_OF     OntologyAxiomType = 50 // 04：子注解属性（subject=子属性，object_id=父属性；多行=多父）
-	// 46~49 预留 05 数据类型
+	// 47~49 继续预留（05 数据类型后续 DataRange 形态：oneOf/组合 datatype）
 	// 60~62 预留 06 个体（60 断型 / 61 对象断言 / 62 数据断言）
 	OntologyAxiomType_AXIOM_ANNOTATION_ASSERTION OntologyAxiomType = 100 // 阶段0：注解断言，全功能共用
 )
@@ -139,6 +140,7 @@ var (
 		43:  "AXIOM_DATA_PROPERTY_CHARACTERISTIC",
 		44:  "AXIOM_EQUIVALENT_DATA_PROPERTIES",
 		45:  "AXIOM_DISJOINT_DATA_PROPERTIES",
+		46:  "AXIOM_DATATYPE_DEFINITION",
 		50:  "AXIOM_SUB_ANNOTATION_PROPERTY_OF",
 		100: "AXIOM_ANNOTATION_ASSERTION",
 	}
@@ -162,6 +164,7 @@ var (
 		"AXIOM_DATA_PROPERTY_CHARACTERISTIC":   43,
 		"AXIOM_EQUIVALENT_DATA_PROPERTIES":     44,
 		"AXIOM_DISJOINT_DATA_PROPERTIES":       45,
+		"AXIOM_DATATYPE_DEFINITION":            46,
 		"AXIOM_SUB_ANNOTATION_PROPERTY_OF":     50,
 		"AXIOM_ANNOTATION_ASSERTION":           100,
 	}
@@ -1149,7 +1152,7 @@ const file_ontology_service_v1_ontology_proto_rawDesc = "" +
 	"\x19ENTITY_TYPE_DATA_PROPERTY\x10\x1e\x12#\n" +
 	"\x1fENTITY_TYPE_ANNOTATION_PROPERTY\x10(\x12\x18\n" +
 	"\x14ENTITY_TYPE_DATATYPE\x102\x12\x1a\n" +
-	"\x16ENTITY_TYPE_INDIVIDUAL\x10<*\xbf\x05\n" +
+	"\x16ENTITY_TYPE_INDIVIDUAL\x10<*\xde\x05\n" +
 	"\x11OntologyAxiomType\x12\x1a\n" +
 	"\x16AXIOM_TYPE_UNSPECIFIED\x10\x00\x12\x15\n" +
 	"\x11AXIOM_DECLARATION\x10\n" +
@@ -1170,7 +1173,8 @@ const file_ontology_service_v1_ontology_proto_rawDesc = "" +
 	"\x19AXIOM_DATA_PROPERTY_RANGE\x10*\x12&\n" +
 	"\"AXIOM_DATA_PROPERTY_CHARACTERISTIC\x10+\x12$\n" +
 	" AXIOM_EQUIVALENT_DATA_PROPERTIES\x10,\x12\"\n" +
-	"\x1eAXIOM_DISJOINT_DATA_PROPERTIES\x10-\x12$\n" +
+	"\x1eAXIOM_DISJOINT_DATA_PROPERTIES\x10-\x12\x1d\n" +
+	"\x19AXIOM_DATATYPE_DEFINITION\x10.\x12$\n" +
 	" AXIOM_SUB_ANNOTATION_PROPERTY_OF\x102\x12\x1e\n" +
 	"\x1aAXIOM_ANNOTATION_ASSERTION\x10d2\xff\x03\n" +
 	"\x0fOntologyService\x12P\n" +
