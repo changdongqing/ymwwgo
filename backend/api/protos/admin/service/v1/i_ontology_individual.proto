@@ -1,0 +1,75 @@
+syntax = "proto3";
+
+package admin.service.v1;
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+
+import "ontology/service/v1/ontology.proto";
+import "ontology/service/v1/ontology_individual.proto";
+
+// 个体管理服务（admin 门面）
+//
+// 个体 create/update/delete 是自定义 RPC（取号 + 公理事务管线：取号器同事务 + diff + 乐观锁 + 校验 + 变更日志），
+// body: "*" 收扁平请求体——不是通用 CRUD，勿按惯例包 { data: {...} }
+// （protojson 会把 data 当未知字段丢弃，接口 200 但字段全空，仓库已知坑）。
+// GET/DELETE 的标量参数由 Kratos 从 query string 按 proto 字段 json 名（camelCase）绑定。
+service OntologyIndividualService {
+    // 分页查询个体列表（两段式查询；keyword/code/class_id 过滤）
+    rpc List (ontology.service.v1.ListIndividualsRequest) returns (ontology.service.v1.ListIndividualsResponse) {
+        option (google.api.http) = {
+            get: "/admin/v1/ontology/individuals"
+        };
+    }
+
+    // 查询个体 frame 详情
+    rpc Frame (ontology.service.v1.GetIndividualFrameRequest) returns (ontology.service.v1.IndividualFrame) {
+        option (google.api.http) = {
+            get: "/admin/v1/ontology/individuals/{id}/frame"
+        };
+    }
+
+    // 预计编码（预览不加锁，并发下实际号可能 +N）
+    rpc CodePreview (ontology.service.v1.GetIndividualCodePreviewRequest) returns (ontology.service.v1.IndividualCodePreview) {
+        option (google.api.http) = {
+            get: "/admin/v1/ontology/individuals/code-preview"
+        };
+    }
+
+    // 类实例计数（类树节点直接实例数徽标）
+    rpc CountByClass (ontology.service.v1.GetIndividualCountByClassRequest) returns (ontology.service.v1.IndividualCountByClassResponse) {
+        option (google.api.http) = {
+            get: "/admin/v1/ontology/individuals/count-by-class"
+        };
+    }
+
+    // 查询个体引用明细（61 断言宾语侧反查）
+    rpc Usage (ontology.service.v1.GetIndividualUsageRequest) returns (ontology.service.v1.EntityUsage) {
+        option (google.api.http) = {
+            get: "/admin/v1/ontology/individuals/{id}/usage"
+        };
+    }
+
+    // 创建个体（取号 + 公理事务管线；返回新实体 id + 变更后版本 + 落定编码）
+    rpc Create (ontology.service.v1.CreateIndividualRequest) returns (ontology.service.v1.CreateIndividualResponse) {
+        option (google.api.http) = {
+            post: "/admin/v1/ontology/individuals"
+            body: "*"
+        };
+    }
+
+    // 更新个体（frame 全量提交，公理事务管线；类型区专用全量替换 diff，主类目变更不触发改码）
+    rpc Update (ontology.service.v1.UpdateIndividualRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            put: "/admin/v1/ontology/individuals/{id}"
+            body: "*"
+        };
+    }
+
+    // 删除个体（usage 保护：61 宾语命中；force=true 级联删引用行；号不回收）
+    rpc Delete (ontology.service.v1.DeleteIndividualRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            delete: "/admin/v1/ontology/individuals/{id}"
+        };
+    }
+}

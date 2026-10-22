@@ -70,6 +70,14 @@ const (
 	OntologyErrorReason_DATATYPE_RANGE_TARGET_INVALID OntologyErrorReason = 73 // 数据属性值域引用必须是已声明的数据类型：{}
 	// 42 行派生轨：IRI 命中实体但类型不符（类/属性实体）或跨本体
 	OntologyErrorReason_DATATYPE_DEFINITION_JSON_INVALID OntologyErrorReason = 74 // 数据类型定义解析失败：{}
+	// ===== 个体与赋码（源 1-071-006 段，06 期；01 号文档预留段恰 7 槽）=====
+	OntologyErrorReason_INDIVIDUAL_MAIN_CLASS_REQUIRED OntologyErrorReason = 60 // 个体必须指定主类目
+	OntologyErrorReason_INDIVIDUAL_CODE_SOURCE_INVALID OntologyErrorReason = 61 // 主类目无编码，无法自动赋码，请手输编码或改选手动模式
+	OntologyErrorReason_INDIVIDUAL_CODE_DUPLICATE      OntologyErrorReason = 62 // 个体编码已存在：{}
+	OntologyErrorReason_INDIVIDUAL_CODE_PREFIX_INVALID OntologyErrorReason = 63 // 编码含非法字符：{}（允许字母/数字/点/下划线/连字符，首字符为字母或数字）
+	OntologyErrorReason_INDIVIDUAL_CODE_REQUIRED       OntologyErrorReason = 64 // 个体编码不能为空（MANUAL 空码）
+	OntologyErrorReason_INDIVIDUAL_SERIAL_CONFLICT     OntologyErrorReason = 65 // 取号并发冲突，请重试（重试耗尽）
+	OntologyErrorReason_INDIVIDUAL_TARGET_INVALID      OntologyErrorReason = 66 // 目标 {} 不是个体（61 断言目标校验）
 )
 
 // Enum value maps for OntologyErrorReason.
@@ -106,6 +114,13 @@ var (
 		72: "DATATYPE_FACET_CONFLICT",
 		73: "DATATYPE_RANGE_TARGET_INVALID",
 		74: "DATATYPE_DEFINITION_JSON_INVALID",
+		60: "INDIVIDUAL_MAIN_CLASS_REQUIRED",
+		61: "INDIVIDUAL_CODE_SOURCE_INVALID",
+		62: "INDIVIDUAL_CODE_DUPLICATE",
+		63: "INDIVIDUAL_CODE_PREFIX_INVALID",
+		64: "INDIVIDUAL_CODE_REQUIRED",
+		65: "INDIVIDUAL_SERIAL_CONFLICT",
+		66: "INDIVIDUAL_TARGET_INVALID",
 	}
 	OntologyErrorReason_value = map[string]int32{
 		"ONTOLOGY_NOT_FOUND":                   0,
@@ -139,6 +154,13 @@ var (
 		"DATATYPE_FACET_CONFLICT":              72,
 		"DATATYPE_RANGE_TARGET_INVALID":        73,
 		"DATATYPE_DEFINITION_JSON_INVALID":     74,
+		"INDIVIDUAL_MAIN_CLASS_REQUIRED":       60,
+		"INDIVIDUAL_CODE_SOURCE_INVALID":       61,
+		"INDIVIDUAL_CODE_DUPLICATE":            62,
+		"INDIVIDUAL_CODE_PREFIX_INVALID":       63,
+		"INDIVIDUAL_CODE_REQUIRED":             64,
+		"INDIVIDUAL_SERIAL_CONFLICT":           65,
+		"INDIVIDUAL_TARGET_INVALID":            66,
 	}
 )
 
@@ -173,7 +195,7 @@ var File_ontology_service_v1_ontology_error_proto protoreflect.FileDescriptor
 
 const file_ontology_service_v1_ontology_error_proto_rawDesc = "" +
 	"\n" +
-	"(ontology/service/v1/ontology_error.proto\x12\x13ontology.service.v1\x1a\x13errors/errors.proto*\xfd\b\n" +
+	"(ontology/service/v1/ontology_error.proto\x12\x13ontology.service.v1\x1a\x13errors/errors.proto*\x8f\v\n" +
 	"\x13OntologyErrorReason\x12\x1c\n" +
 	"\x12ONTOLOGY_NOT_FOUND\x10\x00\x1a\x04\xa8E\x94\x03\x12!\n" +
 	"\x17ONTOLOGY_NAME_DUPLICATE\x10\x01\x1a\x04\xa8E\x99\x03\x12#\n" +
@@ -206,7 +228,14 @@ const file_ontology_service_v1_ontology_error_proto_rawDesc = "" +
 	"\x16DATATYPE_FACET_INVALID\x10G\x1a\x04\xa8E\xa6\x03\x12!\n" +
 	"\x17DATATYPE_FACET_CONFLICT\x10H\x1a\x04\xa8E\xa6\x03\x12'\n" +
 	"\x1dDATATYPE_RANGE_TARGET_INVALID\x10I\x1a\x04\xa8E\xa6\x03\x12*\n" +
-	" DATATYPE_DEFINITION_JSON_INVALID\x10J\x1a\x04\xa8E\xa6\x03\x1a\x04\xa0E\xf4\x03B\xd4\x01\n" +
+	" DATATYPE_DEFINITION_JSON_INVALID\x10J\x1a\x04\xa8E\xa6\x03\x12(\n" +
+	"\x1eINDIVIDUAL_MAIN_CLASS_REQUIRED\x10<\x1a\x04\xa8E\xa6\x03\x12(\n" +
+	"\x1eINDIVIDUAL_CODE_SOURCE_INVALID\x10=\x1a\x04\xa8E\xa6\x03\x12#\n" +
+	"\x19INDIVIDUAL_CODE_DUPLICATE\x10>\x1a\x04\xa8E\x99\x03\x12(\n" +
+	"\x1eINDIVIDUAL_CODE_PREFIX_INVALID\x10?\x1a\x04\xa8E\xa6\x03\x12\"\n" +
+	"\x18INDIVIDUAL_CODE_REQUIRED\x10@\x1a\x04\xa8E\xa6\x03\x12$\n" +
+	"\x1aINDIVIDUAL_SERIAL_CONFLICT\x10A\x1a\x04\xa8E\x99\x03\x12#\n" +
+	"\x19INDIVIDUAL_TARGET_INVALID\x10B\x1a\x04\xa8E\xa6\x03\x1a\x04\xa0E\xf4\x03B\xd4\x01\n" +
 	"\x17com.ontology.service.v1B\x12OntologyErrorProtoP\x01Z7go-wind-admin/api/gen/go/ontology/service/v1;ontologyv1\xa2\x02\x03OSX\xaa\x02\x13Ontology.Service.V1\xca\x02\x13Ontology\\Service\\V1\xe2\x02\x1fOntology\\Service\\V1\\GPBMetadata\xea\x02\x15Ontology::Service::V1b\x06proto3"
 
 var (

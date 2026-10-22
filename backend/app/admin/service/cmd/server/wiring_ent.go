@@ -136,6 +136,7 @@ func initApp(ctx *bootstrap.Context) (*kratos.App, func(), error) {
 	ontologyRepo := data.NewOntologyRepo(ctx, entClient)
 	ontologyEntityRepo := data.NewOntEntityRepo(ctx, entClient)
 	ontologyAxiomRepo := data.NewOntAxiomRepo(ctx, entClient)
+	ontologySerialRepo := data.NewOntSerialRepo(ctx, entClient)
 
 	// 套餐与计费
 	planRepo := data.NewPlanRepo(ctx, entClient)
@@ -264,6 +265,8 @@ func initApp(ctx *bootstrap.Context) (*kratos.App, func(), error) {
 	ontologyDataPropertyService := service.NewOntologyDataPropertyService(ctx, ontologyRepo, ontologyEntityRepo, ontologyAxiomRepo)
 	ontologyAnnotationPropertyService := service.NewOntologyAnnotationPropertyService(ctx, ontologyRepo, ontologyEntityRepo, ontologyAxiomRepo)
 	ontologyDatatypeService := service.NewOntologyDatatypeService(ctx, ontologyRepo, ontologyEntityRepo, ontologyAxiomRepo)
+	// 06 期个体（取号 + 公理事务管线）：serialRepo 注入，取号与公理写同事务（ApplyInTx）
+	ontologyIndividualService := service.NewOntologyIndividualService(ctx, ontologyRepo, ontologyEntityRepo, ontologyAxiomRepo, ontologySerialRepo)
 
 	// 文件与任务
 	fileService := service.NewFileService(ctx, fileRepo, minioClient)
@@ -367,6 +370,7 @@ func initApp(ctx *bootstrap.Context) (*kratos.App, func(), error) {
 		dictTypeService, dictEntryService, languageService,
 		ontologyService, ontologyClassService, ontologyObjectPropertyService, ontologyDataPropertyService,
 		ontologyAnnotationPropertyService, ontologyDatatypeService,
+		ontologyIndividualService,
 		tenantService, planService, planQuotaService, planModuleService,
 		userService, userProfileService, roleService, positionService, orgUnitService,
 		menuService, apiService, permissionService, permissionGroupService,

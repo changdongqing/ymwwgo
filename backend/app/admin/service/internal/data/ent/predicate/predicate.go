@@ -120,6 +120,9 @@ type OntEntity func(*sql.Selector)
 // OntOntology is the predicate function for ontontology builders.
 type OntOntology func(*sql.Selector)
 
+// OntSerial is the predicate function for ontserial builders.
+type OntSerial func(*sql.Selector)
+
 // OperationAuditLog is the predicate function for operationauditlog builders.
 type OperationAuditLog func(*sql.Selector)
 

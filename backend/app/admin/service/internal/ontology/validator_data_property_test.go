@@ -40,6 +40,8 @@ func fullScenario() ([]*ent.OntEntity, []*ent.OntAxiom) {
 		axiomRow(21, AxiomDataPropertyDomain, 2, 1, "", "", "", 0),         // P domain A
 		axiomRow(22, AxiomDataPropertyRange, 2, 0, "", IRIXSDNamespace+"integer", "", 0), // P range xsd:integer
 		axiomRow(23, AxiomDataPropertyCharacteristic, 2, 0, IRIOWLFunctionalProperty, "", "", 0),
+		// 06 期创建不变量：个体必须有型（个体 I 挂类 A）
+		axiomRow(24, AxiomTypeAssertion, 4, 1, "", "", "", 0),
 	}
 	return entities, axioms
 }

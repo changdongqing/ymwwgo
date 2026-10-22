@@ -36,6 +36,7 @@ const USAGE_TYPE_LABEL_KEYS: Record<number, string> = {
   40: 'dataProperty.usageType.superProperty',
   44: 'dataProperty.usageType.equivalent',
   45: 'dataProperty.usageType.disjoint',
+  62: 'dataProperty.usageType.individualAssertion',
 };
 
 /**

@@ -94,7 +94,9 @@ func (OntAxiom) Indexes() []ent.Index {
 		index.Fields("ontology_id", "object_id").
 			StorageKey("idx_ont_axioms_object"),
 
-		// 06 期个体赋码需要 (ontology_id, axiom_type, value_text text_pattern_ops) 前缀检索索引，
-		// 届时随 000NN_ontology_serial.sql 一并新增，本期不建。
+		// 06 期编码前缀检索索引（06 号文档 §3.4）：text_pattern_ops 让 LIKE '前缀-%' 走索引扫描
+		index.Fields("ontology_id", "axiom_type", "value_text").
+			StorageKey("idx_ont_axioms_type_value").
+			Annotations(entsql.OpClassColumn("value_text", "text_pattern_ops")),
 	}
 }

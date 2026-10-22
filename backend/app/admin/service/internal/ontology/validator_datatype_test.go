@@ -119,8 +119,13 @@ func TestValidator_DataPropertyAssertion_LexicalChain(t *testing.T) {
 			individualEntity(1, "I"),
 			dataPropEntity(2, "P"),
 			datatypeEntity(3, "Age"),
+			classEntity(4, "A"),
 		}
-		axioms := []*ent.OntAxiom{declAxiom(10, 1), declAxiom(11, 2), declAxiom(12, 3)}
+		axioms := []*ent.OntAxiom{
+			declAxiom(10, 1), declAxiom(11, 2), declAxiom(12, 3), declAxiom(13, 4),
+			// 06 期创建不变量：个体必须有型（个体 I 挂类 A）
+			axiomRow(20, AxiomTypeAssertion, 1, 4, "", "", "", 0),
+		}
 		axioms = append(axioms, rangeRows...)
 		return entities, axioms
 	}

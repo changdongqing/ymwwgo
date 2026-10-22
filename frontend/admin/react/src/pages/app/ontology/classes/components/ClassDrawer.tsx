@@ -35,8 +35,8 @@ interface ClassDrawerProps {
 
 /** 与后端同口径的局部名正则（NCName 宽松版，允许中文/字母/下划线/连字符，首字符非数字） */
 const LOCAL_NAME_PATTERN = /^[\p{L}_][\p{L}\p{N}_-]*$/u;
-/** skos:notation 字符集（编码取号机制归 06 期，本期仅手工录入 + 校验） */
-const NOTATION_PATTERN = /^[A-Za-z0-9_-]+$/;
+/** skos:notation 字符集（06 号文档 §3.3 定案回填：允许点号、首字符须字母/数字，与个体编码同一正则） */
+const NOTATION_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
 
 /**
  * 本体类表单（DrawerForm + formRef）：父类 TreeSelect（多选 treeCheckStrictly，数据源全量树按需加载，

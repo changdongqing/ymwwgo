@@ -86,6 +86,117 @@ func (r *OntAxiomRepo) CountReferencesByTypes(ctx context.Context, ontologyID ui
 		Count(ctx)
 }
 
+// ---- 06 期个体查询辅助（两段式 List 的第一段 / usage / 计数徽标） ----
+
+// ListSubjectIDsByCodeValue 编码过滤的第一段（62 行 object_id=编码属性、value_text 精确/前缀命中
+// → 去重主语个体 id 集；prefix=true 走 HasPrefix，命中 idx_ont_axioms_type_value 前缀索引）
+func (r *OntAxiomRepo) ListSubjectIDsByCodeValue(ctx context.Context, ontologyID, propertyID uint32, value string, prefix bool) ([]uint32, error) {
+	valueCond := ontaxiom.ValueTextEQ(value)
+	if prefix {
+		valueCond = ontaxiom.ValueTextHasPrefix(value)
+	}
+	rows, err := r.entClient.Client().OntAxiom.Query().
+		Where(
+			ontaxiom.OntologyIDEQ(ontologyID),
+			ontaxiom.AxiomTypeEQ(ontology.AxiomDataPropertyAssertion),
+			ontaxiom.ObjectIDEQ(propertyID),
+			ontaxiom.DeletedAtIsNil(),
+			valueCond,
+		).
+		All(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return distinctSubjectIDs(rows), nil
+}
+
+// ListSubjectIDsByClassInstances 类目过滤的第一段（60 行 object_id ∈ 类目集合 → 去重主语个体 id 集）
+func (r *OntAxiomRepo) ListSubjectIDsByClassInstances(ctx context.Context, ontologyID uint32, classIDs []uint32) ([]uint32, error) {
+	if len(classIDs) == 0 {
+		return nil, nil
+	}
+	rows, err := r.entClient.Client().OntAxiom.Query().
+		Where(
+			ontaxiom.OntologyIDEQ(ontologyID),
+			ontaxiom.AxiomTypeEQ(ontology.AxiomTypeAssertion),
+			ontaxiom.ObjectIDIn(classIDs...),
+			ontaxiom.DeletedAtIsNil(),
+		).
+		All(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return distinctSubjectIDs(rows), nil
+}
+
+// CountDirectInstancesByClass 类树实例数徽标（60 行 group by object_id → 直接实例计数，不含子类实例）
+func (r *OntAxiomRepo) CountDirectInstancesByClass(ctx context.Context, ontologyID uint32) (map[uint32]int, error) {
+	rows, err := r.entClient.Client().OntAxiom.Query().
+		Where(
+			ontaxiom.OntologyIDEQ(ontologyID),
+			ontaxiom.AxiomTypeEQ(ontology.AxiomTypeAssertion),
+			ontaxiom.DeletedAtIsNil(),
+		).
+		All(ctx)
+	if err != nil {
+		return nil, err
+	}
+	counts := make(map[uint32]int, len(rows))
+	for _, ax := range rows {
+		if ax.ObjectID == nil || *ax.ObjectID == 0 {
+			continue
+		}
+		counts[*ax.ObjectID]++
+	}
+	return counts, nil
+}
+
+// ListByPredicateIRI 谓词 IRI 命中的公理行（61 断言谓词走 predicate_iri，usage 反查/级联删除专用；
+// 不走 object_id 索引，量级 = 该属性的断言数，可接受）
+func (r *OntAxiomRepo) ListByPredicateIRI(ctx context.Context, ontologyID uint32, axiomType uint32, predicateIRI string) ([]*ent.OntAxiom, error) {
+	return r.entClient.Client().OntAxiom.Query().
+		Where(
+			ontaxiom.OntologyIDEQ(ontologyID),
+			ontaxiom.AxiomTypeEQ(axiomType),
+			ontaxiom.PredicateIriEQ(predicateIRI),
+			ontaxiom.DeletedAtIsNil(),
+		).
+		Order(ent.Asc(ontaxiom.FieldSortOrder), ent.Asc(ontaxiom.FieldID)).
+		All(ctx)
+}
+
+// ListBySubjects 一组主语的全部未删公理（个体列表聚合列批量填充）
+func (r *OntAxiomRepo) ListBySubjects(ctx context.Context, ontologyID uint32, subjectIDs []uint32) ([]*ent.OntAxiom, error) {
+	if len(subjectIDs) == 0 {
+		return nil, nil
+	}
+	return r.entClient.Client().OntAxiom.Query().
+		Where(
+			ontaxiom.OntologyIDEQ(ontologyID),
+			ontaxiom.SubjectIDIn(subjectIDs...),
+			ontaxiom.DeletedAtIsNil(),
+		).
+		Order(ent.Asc(ontaxiom.FieldSortOrder), ent.Asc(ontaxiom.FieldID)).
+		All(ctx)
+}
+
+// distinctSubjectIDs 公理行 → 去重主语 id 集（保序）
+func distinctSubjectIDs(rows []*ent.OntAxiom) []uint32 {
+	seen := make(map[uint32]struct{}, len(rows))
+	out := make([]uint32, 0, len(rows))
+	for _, ax := range rows {
+		if ax.SubjectID == nil || *ax.SubjectID == 0 {
+			continue
+		}
+		if _, ok := seen[*ax.SubjectID]; ok {
+			continue
+		}
+		seen[*ax.SubjectID] = struct{}{}
+		out = append(out, *ax.SubjectID)
+	}
+	return out
+}
+
 // ---- ontology.AxiomStore：事务工厂 ----
 
 // WithTx 在单一 ent 事务内执行管线（任何一步出错回滚）
@@ -280,6 +391,12 @@ func (t *ontologyTx) InsertChangeLog(ctx context.Context, entry *ontology.Change
 		return err
 	}
 	return nil
+}
+
+// NextNo 号池两段式取号（实现 ontology.SerialTx：ApplyInTx 回调内以接口断言取用——
+// 取号与公理写同事务，06 号文档 §2.3/§4.1；实现复用 OntSerialRepo 的 nextSerialNo）
+func (t *ontologyTx) NextNo(ctx context.Context, ontologyID uint32, purpose, prefix string) (uint64, error) {
+	return nextSerialNo(ctx, t.tx, t.log, ontologyID, purpose, prefix)
 }
 
 // sortOrderToUint32 AxiomChange.SortOrder（int32）→ ent uint32 列

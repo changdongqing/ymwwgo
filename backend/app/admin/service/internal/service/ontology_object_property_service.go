@@ -392,6 +392,23 @@ func (s *OntologyObjectPropertyService) Usage(ctx context.Context, req *ontology
 		seen[key] = struct{}{}
 		refKeys = append(refKeys, key)
 	}
+	// 06 期增量：61 对象属性断言（predicate_iri 命中本属性 IRI，引用方为主语个体——
+	// 02 号文档 §4.3 预告的"06 期追加"兑现）
+	assertionRows, err := s.axiomRepo.ListByPredicateIRI(ctx, ontologyID, ontology.AxiomObjectPropertyAssertion, derefStr(e.Iri))
+	if err != nil {
+		return nil, adminV1.ErrorInternalServerError("query assertion references failed")
+	}
+	for _, ax := range assertionRows {
+		if ax.SubjectID == nil {
+			continue
+		}
+		key := refKey{entityID: *ax.SubjectID, axiomType: ontology.AxiomObjectPropertyAssertion}
+		if _, ok := seen[key]; ok {
+			continue
+		}
+		seen[key] = struct{}{}
+		refKeys = append(refKeys, key)
+	}
 
 	usage := &ontologyV1.EntityUsage{EntityId: &e.ID}
 	if len(refKeys) > 0 {
@@ -644,8 +661,13 @@ func (s *OntologyObjectPropertyService) Delete(ctx context.Context, req *ontolog
 		return nil, adminV1.ErrorInternalServerError("query axioms failed")
 	}
 	chainRefs := ontology.ChainReferrers(ctx, allAxioms, req.GetId(), s.log)
-	if refsCount+len(chainRefs) > 0 && !force {
-		return nil, ontologyV1.ErrorEntityInUse("实体被 %d 处引用，无法删除", refsCount+len(chainRefs))
+	// 06 期增量：61 断言谓词行计数（force=false 拒绝；force=true 随下文级联删除）
+	assertionRows, err := s.axiomRepo.ListByPredicateIRI(ctx, ontologyID, ontology.AxiomObjectPropertyAssertion, derefStr(e.Iri))
+	if err != nil {
+		return nil, adminV1.ErrorInternalServerError("count assertion references failed")
+	}
+	if refsCount+len(chainRefs)+len(assertionRows) > 0 && !force {
+		return nil, ontologyV1.ErrorEntityInUse("实体被 %d 处引用，无法删除", refsCount+len(chainRefs)+len(assertionRows))
 	}
 
 	// 收集删除变更：主语侧全部公理（声明/子属性/域值域/特征/对称/链/注解）
@@ -668,6 +690,14 @@ func (s *OntologyObjectPropertyService) Delete(ctx context.Context, req *ontolog
 		return nil, adminV1.ErrorInternalServerError("query axioms failed")
 	}
 	for _, ax := range objectAxioms {
+		if _, ok := deleted[ax.ID]; ok {
+			continue
+		}
+		deleted[ax.ID] = struct{}{}
+		changes = append(changes, ontology.AxiomChange{Op: ontology.AxiomOpDelete, AxiomID: ax.ID, SubjectID: derefU32(ax.SubjectID)})
+	}
+	// 06 期增量：以本属性为谓词的 61 断言行级联删除（引用方个体的 frame 内断言随之消失）
+	for _, ax := range assertionRows {
 		if _, ok := deleted[ax.ID]; ok {
 			continue
 		}

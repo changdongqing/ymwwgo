@@ -44,6 +44,7 @@ import (
 	"go-wind-admin/app/admin/service/internal/data/ent/ontchangelog"
 	"go-wind-admin/app/admin/service/internal/data/ent/ontentity"
 	"go-wind-admin/app/admin/service/internal/data/ent/ontontology"
+	"go-wind-admin/app/admin/service/internal/data/ent/ontserial"
 	"go-wind-admin/app/admin/service/internal/data/ent/operationauditlog"
 	"go-wind-admin/app/admin/service/internal/data/ent/orgunit"
 	"go-wind-admin/app/admin/service/internal/data/ent/permission"
@@ -177,6 +178,7 @@ func checkColumn(t, c string) error {
 			ontchangelog.Table:             ontchangelog.ValidColumn,
 			ontentity.Table:                ontentity.ValidColumn,
 			ontontology.Table:              ontontology.ValidColumn,
+			ontserial.Table:                ontserial.ValidColumn,
 			operationauditlog.Table:        operationauditlog.ValidColumn,
 			orgunit.Table:                  orgunit.ValidColumn,
 			permission.Table:               permission.ValidColumn,

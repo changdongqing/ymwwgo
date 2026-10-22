@@ -88,6 +88,8 @@ type Tx struct {
 	OntEntity *OntEntityClient
 	// OntOntology is the client for interacting with the OntOntology builders.
 	OntOntology *OntOntologyClient
+	// OntSerial is the client for interacting with the OntSerial builders.
+	OntSerial *OntSerialClient
 	// OperationAuditLog is the client for interacting with the OperationAuditLog builders.
 	OperationAuditLog *OperationAuditLogClient
 	// OrgUnit is the client for interacting with the OrgUnit builders.
@@ -315,6 +317,7 @@ func (tx *Tx) init() {
 	tx.OntChangeLog = NewOntChangeLogClient(tx.config)
 	tx.OntEntity = NewOntEntityClient(tx.config)
 	tx.OntOntology = NewOntOntologyClient(tx.config)
+	tx.OntSerial = NewOntSerialClient(tx.config)
 	tx.OperationAuditLog = NewOperationAuditLogClient(tx.config)
 	tx.OrgUnit = NewOrgUnitClient(tx.config)
 	tx.Permission = NewPermissionClient(tx.config)

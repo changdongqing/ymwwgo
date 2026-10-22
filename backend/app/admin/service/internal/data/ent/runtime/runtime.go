@@ -43,6 +43,7 @@ import (
 	"go-wind-admin/app/admin/service/internal/data/ent/ontchangelog"
 	"go-wind-admin/app/admin/service/internal/data/ent/ontentity"
 	"go-wind-admin/app/admin/service/internal/data/ent/ontontology"
+	"go-wind-admin/app/admin/service/internal/data/ent/ontserial"
 	"go-wind-admin/app/admin/service/internal/data/ent/operationauditlog"
 	"go-wind-admin/app/admin/service/internal/data/ent/orgunit"
 	"go-wind-admin/app/admin/service/internal/data/ent/permission"
@@ -1170,6 +1171,55 @@ func init() {
 	ontontologyDescID := ontontologyMixinFields0[0].Descriptor()
 	// ontontology.IDValidator is a validator for the "id" field. It is called by the builders before save.
 	ontontology.IDValidator = ontontologyDescID.Validators[0].(func(uint32) error)
+	ontserialMixin := schema.OntSerial{}.Mixin()
+	ontserialMixinFields0 := ontserialMixin[0].Fields()
+	_ = ontserialMixinFields0
+	ontserialFields := schema.OntSerial{}.Fields()
+	_ = ontserialFields
+	// ontserialDescPurpose is the schema descriptor for purpose field.
+	ontserialDescPurpose := ontserialFields[1].Descriptor()
+	// ontserial.PurposeValidator is a validator for the "purpose" field. It is called by the builders before save.
+	ontserial.PurposeValidator = func() func(string) error {
+		validators := ontserialDescPurpose.Validators
+		fns := [...]func(string) error{
+			validators[0].(func(string) error),
+			validators[1].(func(string) error),
+		}
+		return func(purpose string) error {
+			for _, fn := range fns {
+				if err := fn(purpose); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	// ontserialDescPrefix is the schema descriptor for prefix field.
+	ontserialDescPrefix := ontserialFields[2].Descriptor()
+	// ontserial.PrefixValidator is a validator for the "prefix" field. It is called by the builders before save.
+	ontserial.PrefixValidator = func() func(string) error {
+		validators := ontserialDescPrefix.Validators
+		fns := [...]func(string) error{
+			validators[0].(func(string) error),
+			validators[1].(func(string) error),
+		}
+		return func(prefix string) error {
+			for _, fn := range fns {
+				if err := fn(prefix); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	// ontserialDescNextNo is the schema descriptor for next_no field.
+	ontserialDescNextNo := ontserialFields[3].Descriptor()
+	// ontserial.DefaultNextNo holds the default value on creation for the next_no field.
+	ontserial.DefaultNextNo = ontserialDescNextNo.Default.(uint64)
+	// ontserialDescID is the schema descriptor for id field.
+	ontserialDescID := ontserialMixinFields0[0].Descriptor()
+	// ontserial.IDValidator is a validator for the "id" field. It is called by the builders before save.
+	ontserial.IDValidator = ontserialDescID.Validators[0].(func(uint32) error)
 	operationauditlogMixin := schema.OperationAuditLog{}.Mixin()
 	operationauditlog.Policy = privacy.NewPolicies(operationauditlogMixin[2], schema.OperationAuditLog{})
 	operationauditlog.Hooks[0] = func(next ent.Mutator) ent.Mutator {

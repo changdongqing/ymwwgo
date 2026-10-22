@@ -159,6 +159,22 @@ func mapDomainError(err error) error {
 		return ontologyV1.ErrorDatatypeRangeTargetInvalid("%s", de.Message)
 	case ontology.ReasonDatatypeDefinitionJSONInvalid:
 		return ontologyV1.ErrorDatatypeDefinitionJsonInvalid("%s", de.Message)
+
+	// 06 期个体与赋码（源 1-071-006 段）
+	case ontology.ReasonIndividualMainClassRequired:
+		return ontologyV1.ErrorIndividualMainClassRequired("%s", de.Message)
+	case ontology.ReasonIndividualCodeSourceInvalid:
+		return ontologyV1.ErrorIndividualCodeSourceInvalid("%s", de.Message)
+	case ontology.ReasonIndividualCodeDuplicate:
+		return ontologyV1.ErrorIndividualCodeDuplicate("%s", de.Message)
+	case ontology.ReasonIndividualCodePrefixInvalid:
+		return ontologyV1.ErrorIndividualCodePrefixInvalid("%s", de.Message)
+	case ontology.ReasonIndividualCodeRequired:
+		return ontologyV1.ErrorIndividualCodeRequired("%s", de.Message)
+	case ontology.ReasonIndividualSerialConflict:
+		return ontologyV1.ErrorIndividualSerialConflict("%s", de.Message)
+	case ontology.ReasonIndividualTargetInvalid:
+		return ontologyV1.ErrorIndividualTargetInvalid("%s", de.Message)
 	default:
 		return adminV1.ErrorInternalServerError("%s", de.Message)
 	}

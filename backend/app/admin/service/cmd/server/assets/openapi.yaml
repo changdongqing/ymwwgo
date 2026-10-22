@@ -5831,6 +5831,213 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/EntityUsage'
+    /admin/v1/ontology/individuals:
+        get:
+            tags:
+                - OntologyIndividualService
+            description: 分页查询个体列表（两段式查询；keyword/code/class_id 过滤）
+            operationId: OntologyIndividualService_List
+            parameters:
+                - name: page
+                  in: query
+                  schema:
+                    type: integer
+                    format: uint32
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: uint32
+                - name: ontologyId
+                  in: query
+                  schema:
+                    type: integer
+                    format: uint32
+                - name: keyword
+                  in: query
+                  schema:
+                    type: string
+                - name: code
+                  in: query
+                  schema:
+                    type: string
+                - name: codeQueryType
+                  in: query
+                  schema:
+                    type: string
+                - name: classId
+                  in: query
+                  schema:
+                    type: integer
+                    format: uint32
+                - name: includeDescendants
+                  in: query
+                  schema:
+                    type: boolean
+                - name: deprecated
+                  in: query
+                  schema:
+                    type: boolean
+                - name: orderBy
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListIndividualsResponse'
+        post:
+            tags:
+                - OntologyIndividualService
+            description: 创建个体（取号 + 公理事务管线；返回新实体 id + 变更后版本 + 落定编码）
+            operationId: OntologyIndividualService_Create
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/CreateIndividualRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/CreateIndividualResponse'
+    /admin/v1/ontology/individuals/code-preview:
+        get:
+            tags:
+                - OntologyIndividualService
+            description: 预计编码（预览不加锁，并发下实际号可能 +N）
+            operationId: OntologyIndividualService_CodePreview
+            parameters:
+                - name: ontologyId
+                  in: query
+                  schema:
+                    type: integer
+                    format: uint32
+                - name: mainClassId
+                  in: query
+                  schema:
+                    type: integer
+                    format: uint32
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/IndividualCodePreview'
+    /admin/v1/ontology/individuals/count-by-class:
+        get:
+            tags:
+                - OntologyIndividualService
+            description: 类实例计数（类树节点直接实例数徽标）
+            operationId: OntologyIndividualService_CountByClass
+            parameters:
+                - name: ontologyId
+                  in: query
+                  schema:
+                    type: integer
+                    format: uint32
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/IndividualCountByClassResponse'
+    /admin/v1/ontology/individuals/{id}:
+        put:
+            tags:
+                - OntologyIndividualService
+            description: 更新个体（frame 全量提交，公理事务管线；类型区专用全量替换 diff，主类目变更不触发改码）
+            operationId: OntologyIndividualService_Update
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint32
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/UpdateIndividualRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+        delete:
+            tags:
+                - OntologyIndividualService
+            description: 删除个体（usage 保护：61 宾语命中；force=true 级联删引用行；号不回收）
+            operationId: OntologyIndividualService_Delete
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint32
+                - name: baseVersion
+                  in: query
+                  schema:
+                    type: integer
+                    format: uint32
+                - name: force
+                  in: query
+                  schema:
+                    type: boolean
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+    /admin/v1/ontology/individuals/{id}/frame:
+        get:
+            tags:
+                - OntologyIndividualService
+            description: 查询个体 frame 详情
+            operationId: OntologyIndividualService_Frame
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint32
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/IndividualFrame'
+    /admin/v1/ontology/individuals/{id}/usage:
+        get:
+            tags:
+                - OntologyIndividualService
+            description: 查询个体引用明细（61 断言宾语侧反查）
+            operationId: OntologyIndividualService_Usage
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint32
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/EntityUsage'
     /admin/v1/ontology/object-properties:
         get:
             tags:
@@ -10542,6 +10749,52 @@ components:
                 data:
                     $ref: '#/components/schemas/File'
             description: 创建 - 请求
+        CreateIndividualRequest:
+            type: object
+            properties:
+                ontologyId:
+                    type: integer
+                    format: uint32
+                mainClassId:
+                    type: integer
+                    format: uint32
+                typeIds:
+                    type: array
+                    items:
+                        type: integer
+                        format: uint32
+                codeSource:
+                    type: string
+                code:
+                    type: string
+                codePropertyId:
+                    type: integer
+                    format: uint32
+                localName:
+                    type: string
+                displayLabel:
+                    type: string
+                comment:
+                    type: string
+                deprecated:
+                    type: boolean
+                annotations:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/AnnotationAssertionInput'
+            description: 创建个体 - 请求（自定义 RPC：扁平请求体，勿包 { data }——protojson 会把 data 当未知字段丢弃）
+        CreateIndividualResponse:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: uint32
+                baseVersion:
+                    type: integer
+                    format: uint32
+                code:
+                    type: string
+            description: 创建个体 - 回应（新实体 id + 变更后本体版本 + 落定的编码）
         CreateInternalMessageCategoryRequest:
             type: object
             properties:
@@ -10934,6 +11187,36 @@ components:
                     description: 日志创建时间
                     format: date-time
             description: 数据访问审计日志
+        DataAssertion:
+            type: object
+            properties:
+                propertyId:
+                    type: integer
+                    description: 数据属性实体ID（谓词）
+                    format: uint32
+                property:
+                    $ref: '#/components/schemas/EntityBrief'
+                value:
+                    type: string
+                    description: 字面量词形
+                lang:
+                    type: string
+                    description: 语言标签（空 = 无语言字面量）
+            description: 数据属性断言（62 行 frame 回显；编码行在 code 字段单独回显）
+        DataAssertionInput:
+            type: object
+            properties:
+                propertyId:
+                    type: integer
+                    description: 数据属性实体ID（谓词）
+                    format: uint32
+                value:
+                    type: string
+                    description: 字面量词形（按属性值域词法校验）
+                lang:
+                    type: string
+                    description: 语言标签（可空）
+            description: 数据属性断言提交载荷（62 提交；全量替换语义：nil/空 = 清空断言区；编码行由 code_source/code 字段承载，不参与本区提交）
         DataProperty:
             type: object
             properties:
@@ -11993,6 +12276,146 @@ components:
                     type: string
                     description: 主机名
             description: 主机信息
+        Individual:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    description: 实体ID
+                    format: uint32
+                ontologyId:
+                    type: integer
+                    description: 所属本体ID
+                    format: uint32
+                iri:
+                    type: string
+                    description: 完整 IRI（哑的稳定标识，与业务编码分离）
+                localName:
+                    type: string
+                    description: 局部名（创建后不可变；缺省由取号器自动生成 i000001 形态）
+                displayLabel:
+                    type: string
+                    description: 显示名（rdfs:label 渲染缓存）
+                deprecated:
+                    type: boolean
+                    description: 是否废弃（owl:deprecated）
+                code:
+                    type: string
+                    description: 业务编码（编码数据属性断言 62 行聚合；未赋码为空）
+                mainClass:
+                    $ref: '#/components/schemas/EntityBrief'
+                typeCount:
+                    type: integer
+                    description: 类型断言数（含主类目）
+                    format: uint32
+                comment:
+                    type: string
+                    description: 注释（rdfs:comment 注解公理聚合）
+                createdBy:
+                    type: integer
+                    description: 创建者用户ID
+                    format: uint32
+                updatedBy:
+                    type: integer
+                    description: 更新者用户ID
+                    format: uint32
+                deletedBy:
+                    type: integer
+                    description: 删除者用户ID
+                    format: uint32
+                createdAt:
+                    type: string
+                    description: 创建时间
+                    format: date-time
+                updatedAt:
+                    type: string
+                    description: 更新时间
+                    format: date-time
+                deletedAt:
+                    type: string
+                    description: 删除时间
+                    format: date-time
+            description: 个体（列表项，含聚合列）
+        IndividualCode:
+            type: object
+            properties:
+                propertyId:
+                    type: integer
+                    description: 编码数据属性实体ID（本体级约定 localName=code；缺省懒创建）
+                    format: uint32
+                value:
+                    type: string
+                    description: 编码值（如 A0111-0001）
+            description: 个体编码（frame 回显；载体 = 编码数据属性断言 62 行）
+        IndividualCodePreview:
+            type: object
+            properties:
+                prefix:
+                    type: string
+                previewCode:
+                    type: string
+            description: 预计编码 - 回应
+        IndividualCountByClassResponse:
+            type: object
+            properties:
+                items:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/IndividualCountByClassResponse_ClassInstanceCount'
+            description: 类实例计数 - 回应（60 行 group by object_id → 直接实例计数）
+        IndividualCountByClassResponse_ClassInstanceCount:
+            type: object
+            properties:
+                classId:
+                    type: integer
+                    format: uint32
+                directCount:
+                    type: integer
+                    format: uint32
+        IndividualFrame:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: uint32
+                ontologyId:
+                    type: integer
+                    format: uint32
+                iri:
+                    type: string
+                localName:
+                    type: string
+                displayLabel:
+                    type: string
+                comment:
+                    type: string
+                deprecated:
+                    type: boolean
+                types:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/EntityBrief'
+                code:
+                    $ref: '#/components/schemas/IndividualCode'
+                objectAssertions:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/ObjectAssertion'
+                dataAssertions:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/DataAssertion'
+                annotations:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/AnnotationAssertion'
+                baseVersion:
+                    type: integer
+                    format: uint32
+                updatedAt:
+                    type: string
+                    format: date-time
+            description: 个体 frame 详情（Protégé Individuals 标签页选中个体四信息区对应物；base_version 供乐观锁回传）
         InfoEntry:
             type: object
             properties:
@@ -12580,6 +13003,16 @@ components:
                         type: string
                     description: 引擎支持的语言列表（如 lua / javascript）
             description: 列出钩子点 - 回应
+        ListIndividualsResponse:
+            type: object
+            properties:
+                items:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Individual'
+                total:
+                    type: string
+            description: 查询个体列表 - 回应
         ListInternalMessageCategoryResponse:
             type: object
             properties:
@@ -13896,6 +14329,28 @@ components:
                     type: string
                     format: date-time
             description: 通知模板：可复用的标题/正文占位模板（{{var}}），平台全局、code 全局唯一。
+        ObjectAssertion:
+            type: object
+            properties:
+                predicateIri:
+                    type: string
+                    description: 对象属性 IRI（62 期已声明的对象属性）
+                predicate:
+                    $ref: '#/components/schemas/EntityBrief'
+                target:
+                    $ref: '#/components/schemas/EntityBrief'
+            description: 对象属性断言（61 行 frame 回显）
+        ObjectAssertionInput:
+            type: object
+            properties:
+                predicateIri:
+                    type: string
+                    description: 对象属性 IRI（须为本本体已声明对象属性）
+                targetId:
+                    type: integer
+                    description: 宾语个体ID
+                    format: uint32
+            description: 对象属性断言提交载荷（61 提交；全量替换语义：nil/空 = 清空断言区）
         ObjectProperty:
             type: object
             properties:
@@ -16528,6 +16983,47 @@ components:
                     type: boolean
                     description: 如果设置为true的时候，资源不存在则会新增(插入)，并且在这种情况下`updateMask`字段将会被忽略。
             description: 更新 - 请求
+        UpdateIndividualRequest:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: uint32
+                mainClassId:
+                    type: integer
+                    format: uint32
+                typeIds:
+                    type: array
+                    items:
+                        type: integer
+                        format: uint32
+                code:
+                    type: string
+                codePropertyId:
+                    type: integer
+                    format: uint32
+                displayLabel:
+                    type: string
+                comment:
+                    type: string
+                deprecated:
+                    type: boolean
+                objectAssertions:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/ObjectAssertionInput'
+                dataAssertions:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/DataAssertionInput'
+                baseVersion:
+                    type: integer
+                    format: uint32
+                annotations:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/AnnotationAssertionInput'
+            description: 更新个体 - 请求（frame 全量提交语义；local_name 忽略——不可变；主类目变更不触发改码）
         UpdateInternalMessageCategoryRequest:
             type: object
             properties:
@@ -17497,6 +17993,14 @@ tags:
          不是通用 CRUD，勿按惯例包 { data: {...} }（protojson 会把 data 当未知字段丢弃）。
          definition 为 optional message 字段（presence 可靠）：JSON null/缺失 = 跳过定义区 diff，
          显式空定义 = 清空。
+    - name: OntologyIndividualService
+      description: |-
+        个体管理服务（admin 门面）
+
+         个体 create/update/delete 是自定义 RPC（取号 + 公理事务管线：取号器同事务 + diff + 乐观锁 + 校验 + 变更日志），
+         body: "*" 收扁平请求体——不是通用 CRUD，勿按惯例包 { data: {...} }
+         （protojson 会把 data 当未知字段丢弃，接口 200 但字段全空，仓库已知坑）。
+         GET/DELETE 的标量参数由 Kratos 从 query string 按 proto 字段 json 名（camelCase）绑定。
     - name: OntologyObjectPropertyService
       description: |-
         对象属性管理服务（admin 门面）

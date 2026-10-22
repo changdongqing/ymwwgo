@@ -1023,6 +1023,30 @@ func (f OntOntologyMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mut
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.OntOntologyMutation", m)
 }
 
+// The OntSerialQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type OntSerialQueryRuleFunc func(context.Context, *ent.OntSerialQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f OntSerialQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.OntSerialQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.OntSerialQuery", q)
+}
+
+// The OntSerialMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type OntSerialMutationRuleFunc func(context.Context, *ent.OntSerialMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f OntSerialMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.OntSerialMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.OntSerialMutation", m)
+}
+
 // The OperationAuditLogQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
 type OperationAuditLogQueryRuleFunc func(context.Context, *ent.OperationAuditLogQuery) error
@@ -1830,6 +1854,8 @@ func queryFilter(q ent.Query) (Filter, error) {
 		return q.Filter(), nil
 	case *ent.OntOntologyQuery:
 		return q.Filter(), nil
+	case *ent.OntSerialQuery:
+		return q.Filter(), nil
 	case *ent.OperationAuditLogQuery:
 		return q.Filter(), nil
 	case *ent.OrgUnitQuery:
@@ -1970,6 +1996,8 @@ func mutationFilter(m ent.Mutation) (Filter, error) {
 	case *ent.OntEntityMutation:
 		return m.Filter(), nil
 	case *ent.OntOntologyMutation:
+		return m.Filter(), nil
+	case *ent.OntSerialMutation:
 		return m.Filter(), nil
 	case *ent.OperationAuditLogMutation:
 		return m.Filter(), nil

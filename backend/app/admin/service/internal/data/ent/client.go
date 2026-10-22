@@ -49,6 +49,7 @@ import (
 	"go-wind-admin/app/admin/service/internal/data/ent/ontchangelog"
 	"go-wind-admin/app/admin/service/internal/data/ent/ontentity"
 	"go-wind-admin/app/admin/service/internal/data/ent/ontontology"
+	"go-wind-admin/app/admin/service/internal/data/ent/ontserial"
 	"go-wind-admin/app/admin/service/internal/data/ent/operationauditlog"
 	"go-wind-admin/app/admin/service/internal/data/ent/orgunit"
 	"go-wind-admin/app/admin/service/internal/data/ent/permission"
@@ -166,6 +167,8 @@ type Client struct {
 	OntEntity *OntEntityClient
 	// OntOntology is the client for interacting with the OntOntology builders.
 	OntOntology *OntOntologyClient
+	// OntSerial is the client for interacting with the OntSerial builders.
+	OntSerial *OntSerialClient
 	// OperationAuditLog is the client for interacting with the OperationAuditLog builders.
 	OperationAuditLog *OperationAuditLogClient
 	// OrgUnit is the client for interacting with the OrgUnit builders.
@@ -273,6 +276,7 @@ func (c *Client) init() {
 	c.OntChangeLog = NewOntChangeLogClient(c.config)
 	c.OntEntity = NewOntEntityClient(c.config)
 	c.OntOntology = NewOntOntologyClient(c.config)
+	c.OntSerial = NewOntSerialClient(c.config)
 	c.OperationAuditLog = NewOperationAuditLogClient(c.config)
 	c.OrgUnit = NewOrgUnitClient(c.config)
 	c.Permission = NewPermissionClient(c.config)
@@ -432,6 +436,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		OntChangeLog:             NewOntChangeLogClient(cfg),
 		OntEntity:                NewOntEntityClient(cfg),
 		OntOntology:              NewOntOntologyClient(cfg),
+		OntSerial:                NewOntSerialClient(cfg),
 		OperationAuditLog:        NewOperationAuditLogClient(cfg),
 		OrgUnit:                  NewOrgUnitClient(cfg),
 		Permission:               NewPermissionClient(cfg),
@@ -518,6 +523,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		OntChangeLog:             NewOntChangeLogClient(cfg),
 		OntEntity:                NewOntEntityClient(cfg),
 		OntOntology:              NewOntOntologyClient(cfg),
+		OntSerial:                NewOntSerialClient(cfg),
 		OperationAuditLog:        NewOperationAuditLogClient(cfg),
 		OrgUnit:                  NewOrgUnitClient(cfg),
 		Permission:               NewPermissionClient(cfg),
@@ -584,13 +590,13 @@ func (c *Client) Use(hooks ...Hook) {
 		c.Membership, c.MembershipOrgUnit, c.MembershipPosition, c.MembershipRole,
 		c.Menu, c.MonitorAlertRule, c.NotificationChannel, c.NotificationDelivery,
 		c.NotificationPreference, c.NotificationRule, c.NotificationTemplate,
-		c.OntAxiom, c.OntChangeLog, c.OntEntity, c.OntOntology, c.OperationAuditLog,
-		c.OrgUnit, c.Permission, c.PermissionApi, c.PermissionAuditLog,
-		c.PermissionGroup, c.PermissionMenu, c.PermissionPolicy, c.Plan, c.PlanModule,
-		c.PlanQuota, c.PolicyEvaluationLog, c.Position, c.Role, c.RoleFieldPermission,
-		c.RoleMetadata, c.RoleOrgUnit, c.RolePermission, c.Script, c.ScriptLog,
-		c.SysConfig, c.Task, c.Tenant, c.User, c.UserCredential, c.UserMfaFactor,
-		c.UserOrgUnit, c.UserPosition, c.UserRole,
+		c.OntAxiom, c.OntChangeLog, c.OntEntity, c.OntOntology, c.OntSerial,
+		c.OperationAuditLog, c.OrgUnit, c.Permission, c.PermissionApi,
+		c.PermissionAuditLog, c.PermissionGroup, c.PermissionMenu, c.PermissionPolicy,
+		c.Plan, c.PlanModule, c.PlanQuota, c.PolicyEvaluationLog, c.Position, c.Role,
+		c.RoleFieldPermission, c.RoleMetadata, c.RoleOrgUnit, c.RolePermission,
+		c.Script, c.ScriptLog, c.SysConfig, c.Task, c.Tenant, c.User, c.UserCredential,
+		c.UserMfaFactor, c.UserOrgUnit, c.UserPosition, c.UserRole,
 	} {
 		n.Use(hooks...)
 	}
@@ -608,13 +614,13 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 		c.Membership, c.MembershipOrgUnit, c.MembershipPosition, c.MembershipRole,
 		c.Menu, c.MonitorAlertRule, c.NotificationChannel, c.NotificationDelivery,
 		c.NotificationPreference, c.NotificationRule, c.NotificationTemplate,
-		c.OntAxiom, c.OntChangeLog, c.OntEntity, c.OntOntology, c.OperationAuditLog,
-		c.OrgUnit, c.Permission, c.PermissionApi, c.PermissionAuditLog,
-		c.PermissionGroup, c.PermissionMenu, c.PermissionPolicy, c.Plan, c.PlanModule,
-		c.PlanQuota, c.PolicyEvaluationLog, c.Position, c.Role, c.RoleFieldPermission,
-		c.RoleMetadata, c.RoleOrgUnit, c.RolePermission, c.Script, c.ScriptLog,
-		c.SysConfig, c.Task, c.Tenant, c.User, c.UserCredential, c.UserMfaFactor,
-		c.UserOrgUnit, c.UserPosition, c.UserRole,
+		c.OntAxiom, c.OntChangeLog, c.OntEntity, c.OntOntology, c.OntSerial,
+		c.OperationAuditLog, c.OrgUnit, c.Permission, c.PermissionApi,
+		c.PermissionAuditLog, c.PermissionGroup, c.PermissionMenu, c.PermissionPolicy,
+		c.Plan, c.PlanModule, c.PlanQuota, c.PolicyEvaluationLog, c.Position, c.Role,
+		c.RoleFieldPermission, c.RoleMetadata, c.RoleOrgUnit, c.RolePermission,
+		c.Script, c.ScriptLog, c.SysConfig, c.Task, c.Tenant, c.User, c.UserCredential,
+		c.UserMfaFactor, c.UserOrgUnit, c.UserPosition, c.UserRole,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -699,6 +705,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.OntEntity.mutate(ctx, m)
 	case *OntOntologyMutation:
 		return c.OntOntology.mutate(ctx, m)
+	case *OntSerialMutation:
+		return c.OntSerial.mutate(ctx, m)
 	case *OperationAuditLogMutation:
 		return c.OperationAuditLog.mutate(ctx, m)
 	case *OrgUnitMutation:
@@ -6032,6 +6040,139 @@ func (c *OntOntologyClient) mutate(ctx context.Context, m *OntOntologyMutation) 
 	}
 }
 
+// OntSerialClient is a client for the OntSerial schema.
+type OntSerialClient struct {
+	config
+}
+
+// NewOntSerialClient returns a client for the OntSerial from the given config.
+func NewOntSerialClient(c config) *OntSerialClient {
+	return &OntSerialClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `ontserial.Hooks(f(g(h())))`.
+func (c *OntSerialClient) Use(hooks ...Hook) {
+	c.hooks.OntSerial = append(c.hooks.OntSerial, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `ontserial.Intercept(f(g(h())))`.
+func (c *OntSerialClient) Intercept(interceptors ...Interceptor) {
+	c.inters.OntSerial = append(c.inters.OntSerial, interceptors...)
+}
+
+// Create returns a builder for creating a OntSerial entity.
+func (c *OntSerialClient) Create() *OntSerialCreate {
+	mutation := newOntSerialMutation(c.config, OpCreate)
+	return &OntSerialCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of OntSerial entities.
+func (c *OntSerialClient) CreateBulk(builders ...*OntSerialCreate) *OntSerialCreateBulk {
+	return &OntSerialCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *OntSerialClient) MapCreateBulk(slice any, setFunc func(*OntSerialCreate, int)) *OntSerialCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &OntSerialCreateBulk{err: fmt.Errorf("calling to OntSerialClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*OntSerialCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &OntSerialCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for OntSerial.
+func (c *OntSerialClient) Update() *OntSerialUpdate {
+	mutation := newOntSerialMutation(c.config, OpUpdate)
+	return &OntSerialUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *OntSerialClient) UpdateOne(_m *OntSerial) *OntSerialUpdateOne {
+	mutation := newOntSerialMutation(c.config, OpUpdateOne, withOntSerial(_m))
+	return &OntSerialUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *OntSerialClient) UpdateOneID(id uint32) *OntSerialUpdateOne {
+	mutation := newOntSerialMutation(c.config, OpUpdateOne, withOntSerialID(id))
+	return &OntSerialUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for OntSerial.
+func (c *OntSerialClient) Delete() *OntSerialDelete {
+	mutation := newOntSerialMutation(c.config, OpDelete)
+	return &OntSerialDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *OntSerialClient) DeleteOne(_m *OntSerial) *OntSerialDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *OntSerialClient) DeleteOneID(id uint32) *OntSerialDeleteOne {
+	builder := c.Delete().Where(ontserial.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &OntSerialDeleteOne{builder}
+}
+
+// Query returns a query builder for OntSerial.
+func (c *OntSerialClient) Query() *OntSerialQuery {
+	return &OntSerialQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeOntSerial},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a OntSerial entity by its id.
+func (c *OntSerialClient) Get(ctx context.Context, id uint32) (*OntSerial, error) {
+	return c.Query().Where(ontserial.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *OntSerialClient) GetX(ctx context.Context, id uint32) *OntSerial {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *OntSerialClient) Hooks() []Hook {
+	return c.hooks.OntSerial
+}
+
+// Interceptors returns the client interceptors.
+func (c *OntSerialClient) Interceptors() []Interceptor {
+	return c.inters.OntSerial
+}
+
+func (c *OntSerialClient) mutate(ctx context.Context, m *OntSerialMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&OntSerialCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&OntSerialUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&OntSerialUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&OntSerialDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown OntSerial mutation op: %q", m.Op())
+	}
+}
+
 // OperationAuditLogClient is a client for the OperationAuditLog schema.
 type OperationAuditLogClient struct {
 	config
@@ -10076,8 +10217,8 @@ type (
 		LoginPolicy, Membership, MembershipOrgUnit, MembershipPosition, MembershipRole,
 		Menu, MonitorAlertRule, NotificationChannel, NotificationDelivery,
 		NotificationPreference, NotificationRule, NotificationTemplate, OntAxiom,
-		OntChangeLog, OntEntity, OntOntology, OperationAuditLog, OrgUnit, Permission,
-		PermissionApi, PermissionAuditLog, PermissionGroup, PermissionMenu,
+		OntChangeLog, OntEntity, OntOntology, OntSerial, OperationAuditLog, OrgUnit,
+		Permission, PermissionApi, PermissionAuditLog, PermissionGroup, PermissionMenu,
 		PermissionPolicy, Plan, PlanModule, PlanQuota, PolicyEvaluationLog, Position,
 		Role, RoleFieldPermission, RoleMetadata, RoleOrgUnit, RolePermission, Script,
 		ScriptLog, SysConfig, Task, Tenant, User, UserCredential, UserMfaFactor,
@@ -10091,8 +10232,8 @@ type (
 		LoginPolicy, Membership, MembershipOrgUnit, MembershipPosition, MembershipRole,
 		Menu, MonitorAlertRule, NotificationChannel, NotificationDelivery,
 		NotificationPreference, NotificationRule, NotificationTemplate, OntAxiom,
-		OntChangeLog, OntEntity, OntOntology, OperationAuditLog, OrgUnit, Permission,
-		PermissionApi, PermissionAuditLog, PermissionGroup, PermissionMenu,
+		OntChangeLog, OntEntity, OntOntology, OntSerial, OperationAuditLog, OrgUnit,
+		Permission, PermissionApi, PermissionAuditLog, PermissionGroup, PermissionMenu,
 		PermissionPolicy, Plan, PlanModule, PlanQuota, PolicyEvaluationLog, Position,
 		Role, RoleFieldPermission, RoleMetadata, RoleOrgUnit, RolePermission, Script,
 		ScriptLog, SysConfig, Task, Tenant, User, UserCredential, UserMfaFactor,

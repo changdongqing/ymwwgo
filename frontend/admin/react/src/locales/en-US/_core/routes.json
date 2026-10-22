@@ -142,7 +142,8 @@
       "objectProperty": "Object Properties",
       "dataProperty": "Data Properties",
       "annotationProperty": "Annotation Properties",
-      "datatype": "Data Types"
+      "datatype": "Data Types",
+      "individual": "Individuals"
     }
   },
   "page": {
@@ -158,5 +159,6 @@
   "ontology-object-properties": "Object Properties",
   "ontology-data-properties": "Data Properties",
   "annotation-properties": "Annotation Properties",
-  "datatypes": "Data Types"
+  "datatypes": "Data Types",
+  "individuals": "Individuals"
 }

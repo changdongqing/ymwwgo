@@ -158,6 +158,13 @@ func RenderAxiom(ax *ent.OntAxiom, entityNames map[uint32]string) string {
 		// 62 数据断言（06 期个体 frame 复用）：RenderAxiom 单行入口不带值域上下文，
 		// 字面量渲染为裸词形（带 lang 则 @lang）；^^datatype 后缀走 RenderDataPropertyAssertion
 		return RenderDataPropertyAssertion(ax, entityNames, nil)
+	case AxiomTypeAssertion:
+		// 60 类型断言（06 期）：ClassAssertion(张三, 学生)
+		return "ClassAssertion(" + entityName(subject) + " " + entityName(nilUint(ax.ObjectID)) + ")"
+	case AxiomObjectPropertyAssertion:
+		// 61 对象属性断言（06 期）：ObjectPropertyAssertion(张三, locatedIn, 华东区)
+		return "ObjectPropertyAssertion(" + entityName(subject) + ", " +
+			ShortFormPredicate(nilString(ax.PredicateIri)) + ", " + entityName(nilUint(ax.ObjectID)) + ")"
 	default:
 		// 未知号段（03~06 期启用后各自补渲染分支）
 		return "Axiom(type=" + strconvFormatUint(*ax.AxiomType) + " subject=" + entityName(subject) + ")"

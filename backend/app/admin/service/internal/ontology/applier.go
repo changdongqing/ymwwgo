@@ -74,6 +74,62 @@ func (a *ChangeApplier) Apply(ctx context.Context, set *EntityChangeSet, operato
 	return result, nil
 }
 
+// ApplyInTx 事务模板（06 号文档 §2.3）：取号等前置动作必须与公理写同一事务的场景。
+//
+// 锁本体行 → 乐观锁比对 → 回调（Tx 内取号/读取主类目 notation 前缀快照/组装变更集）→
+// 统一管线（公理增删 → 注解缓存同步 → 结构校验 → 版本自增 → 变更日志）。
+// 乐观锁冲突/校验失败整体回滚时号池一并回退，号不损耗——"同事务取号"优于独立事务计数器。
+// Apply 保持既有签名与七步管线不变；个体创建/改码走本模板，其余实体保持 Apply。
+//
+// 与设计文档签名的适配（实现修订记档）：回调收 AxiomTx 接口（域内核不依赖 *ent.Tx 具体类型），
+// 返回组装完成的 EntityChangeSet（含懒创建实体的 NewEntities 草稿，框架统一落库并解析 ref）。
+func (a *ChangeApplier) ApplyInTx(ctx context.Context, operatorID, ontologyID uint32, baseVersion *uint32,
+	operation string, fn func(tx AxiomTx) (*EntityChangeSet, error),
+) (*ApplyResult, error) {
+	if ontologyID == 0 {
+		return nil, NewError(ReasonOntologyNotFound, "本体不存在")
+	}
+
+	var result *ApplyResult
+	err := a.store.WithTx(ctx, func(ctx context.Context, tx AxiomTx) error {
+		// 乐观锁比对先行（FOR UPDATE 行锁下比对；冲突整体回滚，回调尚未执行、号未发放）
+		ont, err := tx.LockOntology(ctx, ontologyID)
+		if err != nil {
+			if ent.IsNotFound(err) {
+				return NewError(ReasonOntologyNotFound, "本体不存在")
+			}
+			return err
+		}
+		if ont.BaseIri == nil || ont.Version == nil {
+			return NewError(ReasonOntologyNotFound, "本体数据不完整：%d", ontologyID)
+		}
+		if baseVersion != nil && *baseVersion != *ont.Version {
+			return NewError(ReasonOntologyVersionConflict,
+				"本体已被他人修改（当前版本 %d），请刷新后重试", *ont.Version)
+		}
+
+		set, err := fn(tx)
+		if err != nil {
+			return err
+		}
+		if set == nil || set.OntologyID == 0 {
+			return NewError(ReasonAxiomInvalid, "事务回调未返回变更集")
+		}
+
+		// 统一管线复用（applyInTx 内的再次锁行/比对为同事务重入，FOR UPDATE 已持锁、版本未动，恒通过）
+		r, err := a.applyInTx(ctx, tx, set, operatorID)
+		if err != nil {
+			return err
+		}
+		result = r
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
 func (a *ChangeApplier) applyInTx(ctx context.Context, tx AxiomTx, set *EntityChangeSet, operatorID uint32) (*ApplyResult, error) {
 	// 1. 本体行 SELECT ... FOR UPDATE（本仓首个乐观锁先例，设计文档 §2.4）
 	ont, err := tx.LockOntology(ctx, set.OntologyID)

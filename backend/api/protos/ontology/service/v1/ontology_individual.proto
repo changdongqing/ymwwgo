@@ -1,0 +1,287 @@
+syntax = "proto3";
+
+package ontology.service.v1;
+
+option go_package = "go-wind-admin/api/gen/go/ontology/service/v1;ontologyv1";
+
+import "gnostic/openapi/v3/annotations.proto";
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+import "ontology/service/v1/ontology.proto";
+
+// 个体（列表项，含聚合列）
+message Individual {
+    optional uint32 id = 1 [
+        json_name = "id",
+        (gnostic.openapi.v3.property) = { description: "实体ID" }
+    ]; // 实体ID
+    optional uint32 ontology_id = 2 [
+        json_name = "ontologyId",
+        (gnostic.openapi.v3.property) = { description: "所属本体ID" }
+    ]; // 所属本体ID
+    optional string iri = 3 [
+        json_name = "iri",
+        (gnostic.openapi.v3.property) = { description: "完整 IRI（哑的稳定标识，与业务编码分离）" }
+    ]; // 完整 IRI
+    optional string local_name = 4 [
+        json_name = "localName",
+        (gnostic.openapi.v3.property) = { description: "局部名（创建后不可变；缺省由取号器自动生成 i000001 形态）" }
+    ]; // 局部名
+    optional string display_label = 5 [
+        json_name = "displayLabel",
+        (gnostic.openapi.v3.property) = { description: "显示名（rdfs:label 渲染缓存）" }
+    ]; // 显示名
+    optional bool deprecated = 6 [
+        json_name = "deprecated",
+        (gnostic.openapi.v3.property) = { description: "是否废弃（owl:deprecated）" }
+    ]; // 是否废弃
+    optional string code = 7 [
+        json_name = "code",
+        (gnostic.openapi.v3.property) = { description: "业务编码（编码数据属性断言 62 行聚合；未赋码为空）" }
+    ]; // 业务编码
+    optional EntityBrief main_class = 8 [
+        json_name = "mainClass",
+        (gnostic.openapi.v3.property) = { description: "主类目（60 行 sort_order=0 的类型类简况）" }
+    ]; // 主类目
+    optional uint32 type_count = 9 [
+        json_name = "typeCount",
+        (gnostic.openapi.v3.property) = { description: "类型断言数（含主类目）" }
+    ]; // 类型断言数
+    optional string comment = 10 [
+        json_name = "comment",
+        (gnostic.openapi.v3.property) = { description: "注释（rdfs:comment 注解公理聚合）" }
+    ]; // 注释
+
+    optional uint32 created_by = 100 [json_name = "createdBy", (gnostic.openapi.v3.property) = { description: "创建者用户ID" }]; // 创建者用户ID
+    optional uint32 updated_by = 101 [json_name = "updatedBy", (gnostic.openapi.v3.property) = { description: "更新者用户ID" }]; // 更新者用户ID
+    optional uint32 deleted_by = 102 [json_name = "deletedBy", (gnostic.openapi.v3.property) = { description: "删除者用户ID" }]; // 删除者用户ID
+
+    optional google.protobuf.Timestamp created_at = 200 [json_name = "createdAt", (gnostic.openapi.v3.property) = { description: "创建时间" }]; // 创建时间
+    optional google.protobuf.Timestamp updated_at = 201 [json_name = "updatedAt", (gnostic.openapi.v3.property) = { description: "更新时间" }]; // 更新时间
+    optional google.protobuf.Timestamp deleted_at = 202 [json_name = "deletedAt", (gnostic.openapi.v3.property) = { description: "删除时间" }]; // 删除时间
+}
+
+// 个体编码（frame 回显；载体 = 编码数据属性断言 62 行）
+message IndividualCode {
+    optional uint32 property_id = 1 [
+        json_name = "propertyId",
+        (gnostic.openapi.v3.property) = { description: "编码数据属性实体ID（本体级约定 localName=code；缺省懒创建）" }
+    ]; // 编码数据属性实体ID
+    optional string value = 2 [
+        json_name = "value",
+        (gnostic.openapi.v3.property) = { description: "编码值（如 A0111-0001）" }
+    ]; // 编码值
+}
+
+// 对象属性断言（61 行 frame 回显）
+message ObjectAssertion {
+    optional string predicate_iri = 1 [
+        json_name = "predicateIri",
+        (gnostic.openapi.v3.property) = { description: "对象属性 IRI（62 期已声明的对象属性）" }
+    ]; // 对象属性 IRI
+    optional EntityBrief predicate = 2 [
+        json_name = "predicate",
+        (gnostic.openapi.v3.property) = { description: "对象属性简况（IRI 反查实体）" }
+    ]; // 对象属性简况
+    optional EntityBrief target = 3 [
+        json_name = "target",
+        (gnostic.openapi.v3.property) = { description: "宾语个体简况" }
+    ]; // 宾语个体简况
+}
+
+// 数据属性断言（62 行 frame 回显；编码行在 code 字段单独回显）
+message DataAssertion {
+    optional uint32 property_id = 1 [
+        json_name = "propertyId",
+        (gnostic.openapi.v3.property) = { description: "数据属性实体ID（谓词）" }
+    ]; // 数据属性实体ID
+    optional EntityBrief property = 2 [
+        json_name = "property",
+        (gnostic.openapi.v3.property) = { description: "数据属性简况" }
+    ]; // 数据属性简况
+    optional string value = 3 [
+        json_name = "value",
+        (gnostic.openapi.v3.property) = { description: "字面量词形" }
+    ]; // 字面量词形
+    optional string lang = 4 [
+        json_name = "lang",
+        (gnostic.openapi.v3.property) = { description: "语言标签（空 = 无语言字面量）" }
+    ]; // 语言标签
+}
+
+// 对象属性断言提交载荷（61 提交；全量替换语义：nil/空 = 清空断言区）
+message ObjectAssertionInput {
+    string predicate_iri = 1 [
+        json_name = "predicateIri",
+        (gnostic.openapi.v3.property) = { description: "对象属性 IRI（须为本本体已声明对象属性）" }
+    ]; // 对象属性 IRI
+    uint32 target_id = 2 [
+        json_name = "targetId",
+        (gnostic.openapi.v3.property) = { description: "宾语个体ID" }
+    ]; // 宾语个体ID
+}
+
+// 数据属性断言提交载荷（62 提交；全量替换语义：nil/空 = 清空断言区；编码行由 code_source/code 字段承载，不参与本区提交）
+message DataAssertionInput {
+    uint32 property_id = 1 [
+        json_name = "propertyId",
+        (gnostic.openapi.v3.property) = { description: "数据属性实体ID（谓词）" }
+    ]; // 数据属性实体ID
+    string value = 2 [
+        json_name = "value",
+        (gnostic.openapi.v3.property) = { description: "字面量词形（按属性值域词法校验）" }
+    ]; // 字面量词形
+    optional string lang = 3 [
+        json_name = "lang",
+        (gnostic.openapi.v3.property) = { description: "语言标签（可空）" }
+    ]; // 语言标签
+}
+
+// 查询个体列表 - 请求（GET query 绑定；两段式查询：先行按索引解析过滤 id 集 → 实体分页 IN → 聚合列批量填充）
+message ListIndividualsRequest {
+    uint32 page = 1 [json_name = "page"];                       // 页码，1 起
+    uint32 page_size = 2 [json_name = "pageSize"];              // 每页条数
+    uint32 ontology_id = 3 [json_name = "ontologyId"];          // 本体ID（必填）
+    string keyword = 4 [json_name = "keyword"];                 // 局部名/显示名 contains（61 编辑器远程搜索共用通道）
+    string code = 5 [json_name = "code"];                       // 编码过滤（按懒创建规则解析编码属性；属性不存在返回空页）
+    string code_query_type = 6 [json_name = "codeQueryType"];   // EXACT | PREFIX（默认 EXACT；前缀走 idx_ont_axioms_type_value）
+    uint32 class_id = 7 [json_name = "classId"];                // 直接实例过滤（60 行 object_id 命中）
+    bool include_descendants = 8 [json_name = "includeDescendants"]; // 类子树展开（hierarchy.SubtreeIDs 复用）
+    optional bool deprecated = 9 [json_name = "deprecated"];    // 是否废弃，精确
+    string order_by = 10 [json_name = "orderBy"];               // JSON 数组字符串，默认 '["-updated_at"]'
+}
+
+// 查询个体列表 - 回应
+message ListIndividualsResponse {
+    repeated Individual items = 1;
+    uint64 total = 2;
+}
+
+// 查询个体 frame 详情 - 请求
+message GetIndividualFrameRequest {
+    uint32 id = 1 [json_name = "id"]; // 实体ID
+}
+
+// 个体 frame 详情（Protégé Individuals 标签页选中个体四信息区对应物；base_version 供乐观锁回传）
+message IndividualFrame {
+    optional uint32 id = 1 [json_name = "id"];                       // 实体ID
+    optional uint32 ontology_id = 2 [json_name = "ontologyId"];      // 所属本体ID
+    optional string iri = 3 [json_name = "iri"];                     // 完整 IRI
+    optional string local_name = 4 [json_name = "localName"];        // 局部名
+    optional string display_label = 5 [json_name = "displayLabel"];  // 显示名
+    optional string comment = 6 [json_name = "comment"];             // 注释（rdfs:comment）
+    optional bool deprecated = 8 [json_name = "deprecated"];         // 是否废弃（owl:deprecated）
+    repeated EntityBrief types = 9 [json_name = "types"];            // 类型类简况（60 行 sort_order 升序，首位 = 主类目）
+    optional IndividualCode code = 10 [json_name = "code"];          // 业务编码（编码数据属性断言）
+    repeated ObjectAssertion object_assertions = 11 [json_name = "objectAssertions"];  // 对象属性断言（61 行，保序）
+    repeated DataAssertion data_assertions = 12 [json_name = "dataAssertions"];        // 数据属性断言（62 行，编码行除外，保序）
+    repeated AnnotationAssertion annotations = 13 [json_name = "annotations"];         // 自定义注解（内建字段之外，保序）
+    optional uint32 base_version = 14 [json_name = "baseVersion"];   // 本体当前版本，下次提交回传（乐观锁基准）
+
+    optional google.protobuf.Timestamp updated_at = 201 [json_name = "updatedAt"]; // 更新时间
+}
+
+// 预计编码 - 请求（预览不加锁，并发下实际号可能 +N；文案必须写"预计"）
+message GetIndividualCodePreviewRequest {
+    uint32 ontology_id = 1 [json_name = "ontologyId"];   // 本体ID
+    uint32 main_class_id = 2 [json_name = "mainClassId"]; // 主类目ID（取 skos:notation 作前缀）
+}
+
+// 预计编码 - 回应
+message IndividualCodePreview {
+    optional string prefix = 1 [json_name = "prefix"];          // 前缀（主类目 skos:notation）
+    optional string preview_code = 2 [json_name = "previewCode"]; // 预计编码（前缀 + "-" + 下一流水号）
+}
+
+// 类实例计数 - 请求（类树实例数徽标）
+message GetIndividualCountByClassRequest {
+    uint32 ontology_id = 1 [json_name = "ontologyId"]; // 本体ID
+}
+
+// 类实例计数 - 回应（60 行 group by object_id → 直接实例计数）
+message IndividualCountByClassResponse {
+    message ClassInstanceCount {
+        optional uint32 class_id = 1 [json_name = "classId"];     // 类实体ID
+        optional uint32 direct_count = 2 [json_name = "directCount"]; // 直接实例数（不含子类实例）
+    }
+    repeated ClassInstanceCount items = 1;
+}
+
+// 查询个体引用 - 请求（61 断言宾语侧反查）
+message GetIndividualUsageRequest {
+    uint32 id = 1 [json_name = "id"]; // 实体ID
+}
+
+// 创建个体 - 请求（自定义 RPC：扁平请求体，勿包 { data }——protojson 会把 data 当未知字段丢弃）
+message CreateIndividualRequest {
+    uint32 ontology_id = 1 [json_name = "ontologyId"];             // 本体ID（必填）
+    uint32 main_class_id = 2 [json_name = "mainClassId"];          // 主类目（必填，赋码依据；60 行 sort_order=0）
+    repeated uint32 type_ids = 3 [json_name = "typeIds"];          // 其余类型类（按提交序 sort_order=1..n）
+    string code_source = 4 [json_name = "codeSource"];             // 编码来源：AUTO（按主类目编码前缀取号）| MANUAL（手输）
+    optional string code = 5 [json_name = "code"];                 // 编码（MANUAL 必填）
+    optional uint32 code_property_id = 6 [json_name = "codePropertyId"]; // 高级：编码数据属性实体，缺省懒创建 base#code
+    optional string local_name = 7 [json_name = "localName"];      // 局部名（缺省自动生成 i000001 形态；高级模式手输）
+    optional string display_label = 8 [json_name = "displayLabel"]; // 显示名 → rdfs:label（zh）
+    optional string comment = 9 [json_name = "comment"];           // 注释 → rdfs:comment（zh）
+    optional bool deprecated = 10 [json_name = "deprecated"];      // 废弃 → owl:deprecated
+    repeated AnnotationAssertionInput annotations = 11 [json_name = "annotations"]; // 自定义注解（全量提交语义）
+}
+
+// 创建个体 - 回应（新实体 id + 变更后本体版本 + 落定的编码）
+message CreateIndividualResponse {
+    optional uint32 id = 1 [json_name = "id"];                     // 新实体ID
+    optional uint32 base_version = 2 [json_name = "baseVersion"];  // 变更后本体版本
+    optional string code = 3 [json_name = "code"];                 // 落定的业务编码（AUTO 取号 / MANUAL 原样）
+}
+
+// 更新个体 - 请求（frame 全量提交语义；local_name 忽略——不可变；主类目变更不触发改码）
+message UpdateIndividualRequest {
+    uint32 id = 1 [json_name = "id"];                              // 实体ID
+    uint32 main_class_id = 2 [json_name = "mainClassId"];          // 主类目全量（专用全量替换 diff，顺序变化即重建 sort_order）
+    repeated uint32 type_ids = 3 [json_name = "typeIds"];          // 其余类型类全量
+    optional string code = 4 [json_name = "code"];                 // 改码（显式「改码」动作提交；缺省 = 不变；空串拒绝——编码不可清空）
+    optional uint32 code_property_id = 5 [json_name = "codePropertyId"]; // 高级：既有编码断言归属的属性（缺省 = 沿用 frame 回显）
+    optional string display_label = 6 [json_name = "displayLabel"]; // 显示名（缺省 = 不变；空串 = 清空）
+    optional string comment = 7 [json_name = "comment"];           // 注释（缺省 = 不变；空串 = 清空）
+    optional bool deprecated = 8 [json_name = "deprecated"];       // 废弃（缺省 = 不变；false = 移除断言）
+    repeated ObjectAssertionInput object_assertions = 9 [json_name = "objectAssertions"];  // 对象属性断言全量（nil/空 = 清空）
+    repeated DataAssertionInput data_assertions = 10 [json_name = "dataAssertions"];       // 数据属性断言全量（nil/空 = 清空；编码行不参与本区）
+    optional uint32 base_version = 11 [json_name = "baseVersion"]; // 乐观锁基准
+    repeated AnnotationAssertionInput annotations = 12 [json_name = "annotations"]; // 自定义注解全量（nil/缺失/空数组统一 = 清空）
+}
+
+// 删除个体 - 请求（usage 保护：61 宾语命中；force=true 级联删"以我为宾语"的 61 行；号不回收）
+message DeleteIndividualRequest {
+    uint32 id = 1 [json_name = "id"];                     // 实体ID
+    optional uint32 base_version = 2 [json_name = "baseVersion"]; // 乐观锁基准
+    optional bool force = 3 [json_name = "force"];        // 强制删除（默认 false：被引用即拒绝 ENTITY_IN_USE）
+}
+
+// 个体管理服务（源领域：只定义消息与 rpc，HTTP 路由在 admin 门面挂载）
+service OntologyIndividualService {
+    // 分页查询个体列表（两段式查询）
+    rpc List (ListIndividualsRequest) returns (ListIndividualsResponse) {}
+
+    // 查询个体 frame 详情
+    rpc Frame (GetIndividualFrameRequest) returns (IndividualFrame) {}
+
+    // 预计编码（预览不加锁）
+    rpc CodePreview (GetIndividualCodePreviewRequest) returns (IndividualCodePreview) {}
+
+    // 类实例计数（类树徽标）
+    rpc CountByClass (GetIndividualCountByClassRequest) returns (IndividualCountByClassResponse) {}
+
+    // 查询个体引用明细（61 断言宾语侧反查）
+    rpc Usage (GetIndividualUsageRequest) returns (EntityUsage) {}
+
+    // 创建个体（取号 + 公理事务管线，同事务 ApplyInTx）
+    rpc Create (CreateIndividualRequest) returns (CreateIndividualResponse) {}
+
+    // 更新个体（frame 全量提交，公理事务管线；类型区专用全量替换 diff）
+    rpc Update (UpdateIndividualRequest) returns (google.protobuf.Empty) {}
+
+    // 删除个体（公理事务管线；号不回收）
+    rpc Delete (DeleteIndividualRequest) returns (google.protobuf.Empty) {}
+}

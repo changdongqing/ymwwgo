@@ -30,8 +30,8 @@ enum OntologyErrorReason {
     ENTITY_IN_USE = 22 [(errors.code) = 409];               // 实体被 {} 处引用，无法删除
 
     // 30~39 对象属性（源 1-071-003 段，02 期启用）；40~44 数据属性（源 1-071-004 段，03 期启用）；
-    // 60~66 预留 06 个体与赋码；70~74 预留 05 数据类型；80~88 预留 07 OWL 导入导出。
-    // 号段对齐源 1-071-003~008 子段，各期文档落地时启用。
+    // 60~66 个体与赋码（源 1-071-006 段，06 期启用）；70~74 数据类型（源 1-071-007 段，05 期启用）；
+    // 80~88 预留 07 OWL 导入导出。号段对齐源 1-071-003~008 子段，各期文档落地时启用。
 
     // ===== 对象属性（源 1-071-003 段）=====
     PROPERTY_DOMAIN_INVALID = 30 [(errors.code) = 422];         // 对象属性定义域必须是本体类：{}
@@ -66,4 +66,13 @@ enum OntologyErrorReason {
         // 42 行派生轨：IRI 命中实体但类型不符（类/属性实体）或跨本体
     DATATYPE_DEFINITION_JSON_INVALID = 74 [(errors.code) = 422]; // 数据类型定义解析失败：{}
         // 46 行 value_text 非 JSON / 形态不符（直改库脏数据；frame 读取与校验器双拦）
+
+    // ===== 个体与赋码（源 1-071-006 段，06 期；01 号文档预留段恰 7 槽）=====
+    INDIVIDUAL_MAIN_CLASS_REQUIRED = 60 [(errors.code) = 422];   // 个体必须指定主类目
+    INDIVIDUAL_CODE_SOURCE_INVALID = 61 [(errors.code) = 422];   // 主类目无编码，无法自动赋码，请手输编码或改选手动模式
+    INDIVIDUAL_CODE_DUPLICATE = 62 [(errors.code) = 409];        // 个体编码已存在：{}
+    INDIVIDUAL_CODE_PREFIX_INVALID = 63 [(errors.code) = 422];   // 编码含非法字符：{}（允许字母/数字/点/下划线/连字符，首字符为字母或数字）
+    INDIVIDUAL_CODE_REQUIRED = 64 [(errors.code) = 422];         // 个体编码不能为空（MANUAL 空码）
+    INDIVIDUAL_SERIAL_CONFLICT = 65 [(errors.code) = 409];       // 取号并发冲突，请重试（重试耗尽）
+    INDIVIDUAL_TARGET_INVALID = 66 [(errors.code) = 422];        // 目标 {} 不是个体（61 断言目标校验）
 }

@@ -444,3 +444,101 @@ func IsDatatypeDefinitionJsonInvalid(err error) bool {
 func ErrorDatatypeDefinitionJsonInvalid(format string, args ...interface{}) *errors.Error {
 	return errors.New(422, OntologyErrorReason_DATATYPE_DEFINITION_JSON_INVALID.String(), fmt.Sprintf(format, args...))
 }
+
+// ===== 个体与赋码（源 1-071-006 段，06 期；01 号文档预留段恰 7 槽）=====
+func IsIndividualMainClassRequired(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == OntologyErrorReason_INDIVIDUAL_MAIN_CLASS_REQUIRED.String() && e.Code == 422
+}
+
+// ===== 个体与赋码（源 1-071-006 段，06 期；01 号文档预留段恰 7 槽）=====
+func ErrorIndividualMainClassRequired(format string, args ...interface{}) *errors.Error {
+	return errors.New(422, OntologyErrorReason_INDIVIDUAL_MAIN_CLASS_REQUIRED.String(), fmt.Sprintf(format, args...))
+}
+
+// 主类目无编码，无法自动赋码，请手输编码或改选手动模式
+func IsIndividualCodeSourceInvalid(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == OntologyErrorReason_INDIVIDUAL_CODE_SOURCE_INVALID.String() && e.Code == 422
+}
+
+// 主类目无编码，无法自动赋码，请手输编码或改选手动模式
+func ErrorIndividualCodeSourceInvalid(format string, args ...interface{}) *errors.Error {
+	return errors.New(422, OntologyErrorReason_INDIVIDUAL_CODE_SOURCE_INVALID.String(), fmt.Sprintf(format, args...))
+}
+
+// 个体编码已存在：{}
+func IsIndividualCodeDuplicate(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == OntologyErrorReason_INDIVIDUAL_CODE_DUPLICATE.String() && e.Code == 409
+}
+
+// 个体编码已存在：{}
+func ErrorIndividualCodeDuplicate(format string, args ...interface{}) *errors.Error {
+	return errors.New(409, OntologyErrorReason_INDIVIDUAL_CODE_DUPLICATE.String(), fmt.Sprintf(format, args...))
+}
+
+// 编码含非法字符：{}（允许字母/数字/点/下划线/连字符，首字符为字母或数字）
+func IsIndividualCodePrefixInvalid(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == OntologyErrorReason_INDIVIDUAL_CODE_PREFIX_INVALID.String() && e.Code == 422
+}
+
+// 编码含非法字符：{}（允许字母/数字/点/下划线/连字符，首字符为字母或数字）
+func ErrorIndividualCodePrefixInvalid(format string, args ...interface{}) *errors.Error {
+	return errors.New(422, OntologyErrorReason_INDIVIDUAL_CODE_PREFIX_INVALID.String(), fmt.Sprintf(format, args...))
+}
+
+// 个体编码不能为空（MANUAL 空码）
+func IsIndividualCodeRequired(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == OntologyErrorReason_INDIVIDUAL_CODE_REQUIRED.String() && e.Code == 422
+}
+
+// 个体编码不能为空（MANUAL 空码）
+func ErrorIndividualCodeRequired(format string, args ...interface{}) *errors.Error {
+	return errors.New(422, OntologyErrorReason_INDIVIDUAL_CODE_REQUIRED.String(), fmt.Sprintf(format, args...))
+}
+
+// 取号并发冲突，请重试（重试耗尽）
+func IsIndividualSerialConflict(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == OntologyErrorReason_INDIVIDUAL_SERIAL_CONFLICT.String() && e.Code == 409
+}
+
+// 取号并发冲突，请重试（重试耗尽）
+func ErrorIndividualSerialConflict(format string, args ...interface{}) *errors.Error {
+	return errors.New(409, OntologyErrorReason_INDIVIDUAL_SERIAL_CONFLICT.String(), fmt.Sprintf(format, args...))
+}
+
+// 目标 {} 不是个体（61 断言目标校验）
+func IsIndividualTargetInvalid(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == OntologyErrorReason_INDIVIDUAL_TARGET_INVALID.String() && e.Code == 422
+}
+
+// 目标 {} 不是个体（61 断言目标校验）
+func ErrorIndividualTargetInvalid(format string, args ...interface{}) *errors.Error {
+	return errors.New(422, OntologyErrorReason_INDIVIDUAL_TARGET_INVALID.String(), fmt.Sprintf(format, args...))
+}

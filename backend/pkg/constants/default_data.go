@@ -108,7 +108,7 @@ var DefaultPermissions = []*permissionV1.Permission{
 			72, 73, 74,
 			80, 81, 82, 83, 84,
 			101, 102,
-			110, 111, 112, 113, 114, 115, 116,
+			110, 111, 112, 113, 114, 115, 116, 117,
 		},
 		ApiIds: []uint32{
 			1, 2, 3, 4, 5, 6, 7, 8, 9,
@@ -1349,6 +1349,23 @@ var DefaultMenus = []*permissionV1.Menu{
 			Title:     trans.Ptr("menu.ontology.datatype"),
 			Icon:      trans.Ptr("lucide:filter"),
 			Order:     trans.Ptr(int32(6)),
+			Authority: []string{"sys:platform_admin"},
+		},
+	},
+	{
+		// 个体：左右联动（06 期，身份与赋码；取号器 + ApplyInTx 同事务管线）。
+		// 设计文档原文 Order 6 与 116 数据类型撞号，按系列惯例顺延为 7（实现修订记档）。
+		Id:        trans.Ptr(uint32(117)),
+		ParentId:  trans.Ptr(uint32(110)),
+		Type:      permissionV1.Menu_MENU.Enum(),
+		Name:      trans.Ptr("OntologyIndividuals"),
+		Path:      trans.Ptr("individuals"),
+		Component: trans.Ptr("app/ontology/individuals/index.tsx"),
+		CreatedAt: timeutil.TimeToTimestamppb(trans.Ptr(time.Now())),
+		Meta: &permissionV1.MenuMeta{
+			Title:     trans.Ptr("menu.ontology.individual"),
+			Icon:      trans.Ptr("lucide:user"),
+			Order:     trans.Ptr(int32(7)),
 			Authority: []string{"sys:platform_admin"},
 		},
 	},

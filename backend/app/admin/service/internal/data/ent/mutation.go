@@ -47,6 +47,7 @@ import (
 	"go-wind-admin/app/admin/service/internal/data/ent/ontchangelog"
 	"go-wind-admin/app/admin/service/internal/data/ent/ontentity"
 	"go-wind-admin/app/admin/service/internal/data/ent/ontontology"
+	"go-wind-admin/app/admin/service/internal/data/ent/ontserial"
 	"go-wind-admin/app/admin/service/internal/data/ent/operationauditlog"
 	"go-wind-admin/app/admin/service/internal/data/ent/orgunit"
 	"go-wind-admin/app/admin/service/internal/data/ent/permission"
@@ -131,6 +132,7 @@ const (
 	TypeOntChangeLog             = "OntChangeLog"
 	TypeOntEntity                = "OntEntity"
 	TypeOntOntology              = "OntOntology"
+	TypeOntSerial                = "OntSerial"
 	TypeOperationAuditLog        = "OperationAuditLog"
 	TypeOrgUnit                  = "OrgUnit"
 	TypePermission               = "Permission"
@@ -58971,6 +58973,1190 @@ func (m *OntOntologyMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *OntOntologyMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown OntOntology edge %s", name)
+}
+
+// OntSerialMutation represents an operation that mutates the OntSerial nodes in the graph.
+type OntSerialMutation struct {
+	config
+	op             Op
+	typ            string
+	id             *uint32
+	created_at     *time.Time
+	updated_at     *time.Time
+	deleted_at     *time.Time
+	created_by     *uint32
+	addcreated_by  *int32
+	updated_by     *uint32
+	addupdated_by  *int32
+	deleted_by     *uint32
+	adddeleted_by  *int32
+	ontology_id    *uint32
+	addontology_id *int32
+	purpose        *string
+	prefix         *string
+	next_no        *uint64
+	addnext_no     *int64
+	clearedFields  map[string]struct{}
+	done           bool
+	oldValue       func(context.Context) (*OntSerial, error)
+	predicates     []predicate.OntSerial
+}
+
+var _ ent.Mutation = (*OntSerialMutation)(nil)
+
+// ontserialOption allows management of the mutation configuration using functional options.
+type ontserialOption func(*OntSerialMutation)
+
+// newOntSerialMutation creates new mutation for the OntSerial entity.
+func newOntSerialMutation(c config, op Op, opts ...ontserialOption) *OntSerialMutation {
+	m := &OntSerialMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeOntSerial,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withOntSerialID sets the ID field of the mutation.
+func withOntSerialID(id uint32) ontserialOption {
+	return func(m *OntSerialMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *OntSerial
+		)
+		m.oldValue = func(ctx context.Context) (*OntSerial, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().OntSerial.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withOntSerial sets the old OntSerial of the mutation.
+func withOntSerial(node *OntSerial) ontserialOption {
+	return func(m *OntSerialMutation) {
+		m.oldValue = func(context.Context) (*OntSerial, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m OntSerialMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m OntSerialMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of OntSerial entities.
+func (m *OntSerialMutation) SetID(id uint32) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *OntSerialMutation) ID() (id uint32, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *OntSerialMutation) IDs(ctx context.Context) ([]uint32, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uint32{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().OntSerial.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *OntSerialMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *OntSerialMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the OntSerial entity.
+// If the OntSerial object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OntSerialMutation) OldCreatedAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ClearCreatedAt clears the value of the "created_at" field.
+func (m *OntSerialMutation) ClearCreatedAt() {
+	m.created_at = nil
+	m.clearedFields[ontserial.FieldCreatedAt] = struct{}{}
+}
+
+// CreatedAtCleared returns if the "created_at" field was cleared in this mutation.
+func (m *OntSerialMutation) CreatedAtCleared() bool {
+	_, ok := m.clearedFields[ontserial.FieldCreatedAt]
+	return ok
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *OntSerialMutation) ResetCreatedAt() {
+	m.created_at = nil
+	delete(m.clearedFields, ontserial.FieldCreatedAt)
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *OntSerialMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *OntSerialMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the OntSerial entity.
+// If the OntSerial object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OntSerialMutation) OldUpdatedAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ClearUpdatedAt clears the value of the "updated_at" field.
+func (m *OntSerialMutation) ClearUpdatedAt() {
+	m.updated_at = nil
+	m.clearedFields[ontserial.FieldUpdatedAt] = struct{}{}
+}
+
+// UpdatedAtCleared returns if the "updated_at" field was cleared in this mutation.
+func (m *OntSerialMutation) UpdatedAtCleared() bool {
+	_, ok := m.clearedFields[ontserial.FieldUpdatedAt]
+	return ok
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *OntSerialMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+	delete(m.clearedFields, ontserial.FieldUpdatedAt)
+}
+
+// SetDeletedAt sets the "deleted_at" field.
+func (m *OntSerialMutation) SetDeletedAt(t time.Time) {
+	m.deleted_at = &t
+}
+
+// DeletedAt returns the value of the "deleted_at" field in the mutation.
+func (m *OntSerialMutation) DeletedAt() (r time.Time, exists bool) {
+	v := m.deleted_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeletedAt returns the old "deleted_at" field's value of the OntSerial entity.
+// If the OntSerial object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OntSerialMutation) OldDeletedAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeletedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeletedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeletedAt: %w", err)
+	}
+	return oldValue.DeletedAt, nil
+}
+
+// ClearDeletedAt clears the value of the "deleted_at" field.
+func (m *OntSerialMutation) ClearDeletedAt() {
+	m.deleted_at = nil
+	m.clearedFields[ontserial.FieldDeletedAt] = struct{}{}
+}
+
+// DeletedAtCleared returns if the "deleted_at" field was cleared in this mutation.
+func (m *OntSerialMutation) DeletedAtCleared() bool {
+	_, ok := m.clearedFields[ontserial.FieldDeletedAt]
+	return ok
+}
+
+// ResetDeletedAt resets all changes to the "deleted_at" field.
+func (m *OntSerialMutation) ResetDeletedAt() {
+	m.deleted_at = nil
+	delete(m.clearedFields, ontserial.FieldDeletedAt)
+}
+
+// SetCreatedBy sets the "created_by" field.
+func (m *OntSerialMutation) SetCreatedBy(u uint32) {
+	m.created_by = &u
+	m.addcreated_by = nil
+}
+
+// CreatedBy returns the value of the "created_by" field in the mutation.
+func (m *OntSerialMutation) CreatedBy() (r uint32, exists bool) {
+	v := m.created_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedBy returns the old "created_by" field's value of the OntSerial entity.
+// If the OntSerial object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OntSerialMutation) OldCreatedBy(ctx context.Context) (v *uint32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedBy: %w", err)
+	}
+	return oldValue.CreatedBy, nil
+}
+
+// AddCreatedBy adds u to the "created_by" field.
+func (m *OntSerialMutation) AddCreatedBy(u int32) {
+	if m.addcreated_by != nil {
+		*m.addcreated_by += u
+	} else {
+		m.addcreated_by = &u
+	}
+}
+
+// AddedCreatedBy returns the value that was added to the "created_by" field in this mutation.
+func (m *OntSerialMutation) AddedCreatedBy() (r int32, exists bool) {
+	v := m.addcreated_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearCreatedBy clears the value of the "created_by" field.
+func (m *OntSerialMutation) ClearCreatedBy() {
+	m.created_by = nil
+	m.addcreated_by = nil
+	m.clearedFields[ontserial.FieldCreatedBy] = struct{}{}
+}
+
+// CreatedByCleared returns if the "created_by" field was cleared in this mutation.
+func (m *OntSerialMutation) CreatedByCleared() bool {
+	_, ok := m.clearedFields[ontserial.FieldCreatedBy]
+	return ok
+}
+
+// ResetCreatedBy resets all changes to the "created_by" field.
+func (m *OntSerialMutation) ResetCreatedBy() {
+	m.created_by = nil
+	m.addcreated_by = nil
+	delete(m.clearedFields, ontserial.FieldCreatedBy)
+}
+
+// SetUpdatedBy sets the "updated_by" field.
+func (m *OntSerialMutation) SetUpdatedBy(u uint32) {
+	m.updated_by = &u
+	m.addupdated_by = nil
+}
+
+// UpdatedBy returns the value of the "updated_by" field in the mutation.
+func (m *OntSerialMutation) UpdatedBy() (r uint32, exists bool) {
+	v := m.updated_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedBy returns the old "updated_by" field's value of the OntSerial entity.
+// If the OntSerial object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OntSerialMutation) OldUpdatedBy(ctx context.Context) (v *uint32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedBy: %w", err)
+	}
+	return oldValue.UpdatedBy, nil
+}
+
+// AddUpdatedBy adds u to the "updated_by" field.
+func (m *OntSerialMutation) AddUpdatedBy(u int32) {
+	if m.addupdated_by != nil {
+		*m.addupdated_by += u
+	} else {
+		m.addupdated_by = &u
+	}
+}
+
+// AddedUpdatedBy returns the value that was added to the "updated_by" field in this mutation.
+func (m *OntSerialMutation) AddedUpdatedBy() (r int32, exists bool) {
+	v := m.addupdated_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearUpdatedBy clears the value of the "updated_by" field.
+func (m *OntSerialMutation) ClearUpdatedBy() {
+	m.updated_by = nil
+	m.addupdated_by = nil
+	m.clearedFields[ontserial.FieldUpdatedBy] = struct{}{}
+}
+
+// UpdatedByCleared returns if the "updated_by" field was cleared in this mutation.
+func (m *OntSerialMutation) UpdatedByCleared() bool {
+	_, ok := m.clearedFields[ontserial.FieldUpdatedBy]
+	return ok
+}
+
+// ResetUpdatedBy resets all changes to the "updated_by" field.
+func (m *OntSerialMutation) ResetUpdatedBy() {
+	m.updated_by = nil
+	m.addupdated_by = nil
+	delete(m.clearedFields, ontserial.FieldUpdatedBy)
+}
+
+// SetDeletedBy sets the "deleted_by" field.
+func (m *OntSerialMutation) SetDeletedBy(u uint32) {
+	m.deleted_by = &u
+	m.adddeleted_by = nil
+}
+
+// DeletedBy returns the value of the "deleted_by" field in the mutation.
+func (m *OntSerialMutation) DeletedBy() (r uint32, exists bool) {
+	v := m.deleted_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeletedBy returns the old "deleted_by" field's value of the OntSerial entity.
+// If the OntSerial object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OntSerialMutation) OldDeletedBy(ctx context.Context) (v *uint32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeletedBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeletedBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeletedBy: %w", err)
+	}
+	return oldValue.DeletedBy, nil
+}
+
+// AddDeletedBy adds u to the "deleted_by" field.
+func (m *OntSerialMutation) AddDeletedBy(u int32) {
+	if m.adddeleted_by != nil {
+		*m.adddeleted_by += u
+	} else {
+		m.adddeleted_by = &u
+	}
+}
+
+// AddedDeletedBy returns the value that was added to the "deleted_by" field in this mutation.
+func (m *OntSerialMutation) AddedDeletedBy() (r int32, exists bool) {
+	v := m.adddeleted_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearDeletedBy clears the value of the "deleted_by" field.
+func (m *OntSerialMutation) ClearDeletedBy() {
+	m.deleted_by = nil
+	m.adddeleted_by = nil
+	m.clearedFields[ontserial.FieldDeletedBy] = struct{}{}
+}
+
+// DeletedByCleared returns if the "deleted_by" field was cleared in this mutation.
+func (m *OntSerialMutation) DeletedByCleared() bool {
+	_, ok := m.clearedFields[ontserial.FieldDeletedBy]
+	return ok
+}
+
+// ResetDeletedBy resets all changes to the "deleted_by" field.
+func (m *OntSerialMutation) ResetDeletedBy() {
+	m.deleted_by = nil
+	m.adddeleted_by = nil
+	delete(m.clearedFields, ontserial.FieldDeletedBy)
+}
+
+// SetOntologyID sets the "ontology_id" field.
+func (m *OntSerialMutation) SetOntologyID(u uint32) {
+	m.ontology_id = &u
+	m.addontology_id = nil
+}
+
+// OntologyID returns the value of the "ontology_id" field in the mutation.
+func (m *OntSerialMutation) OntologyID() (r uint32, exists bool) {
+	v := m.ontology_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldOntologyID returns the old "ontology_id" field's value of the OntSerial entity.
+// If the OntSerial object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OntSerialMutation) OldOntologyID(ctx context.Context) (v *uint32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldOntologyID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldOntologyID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldOntologyID: %w", err)
+	}
+	return oldValue.OntologyID, nil
+}
+
+// AddOntologyID adds u to the "ontology_id" field.
+func (m *OntSerialMutation) AddOntologyID(u int32) {
+	if m.addontology_id != nil {
+		*m.addontology_id += u
+	} else {
+		m.addontology_id = &u
+	}
+}
+
+// AddedOntologyID returns the value that was added to the "ontology_id" field in this mutation.
+func (m *OntSerialMutation) AddedOntologyID() (r int32, exists bool) {
+	v := m.addontology_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearOntologyID clears the value of the "ontology_id" field.
+func (m *OntSerialMutation) ClearOntologyID() {
+	m.ontology_id = nil
+	m.addontology_id = nil
+	m.clearedFields[ontserial.FieldOntologyID] = struct{}{}
+}
+
+// OntologyIDCleared returns if the "ontology_id" field was cleared in this mutation.
+func (m *OntSerialMutation) OntologyIDCleared() bool {
+	_, ok := m.clearedFields[ontserial.FieldOntologyID]
+	return ok
+}
+
+// ResetOntologyID resets all changes to the "ontology_id" field.
+func (m *OntSerialMutation) ResetOntologyID() {
+	m.ontology_id = nil
+	m.addontology_id = nil
+	delete(m.clearedFields, ontserial.FieldOntologyID)
+}
+
+// SetPurpose sets the "purpose" field.
+func (m *OntSerialMutation) SetPurpose(s string) {
+	m.purpose = &s
+}
+
+// Purpose returns the value of the "purpose" field in the mutation.
+func (m *OntSerialMutation) Purpose() (r string, exists bool) {
+	v := m.purpose
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPurpose returns the old "purpose" field's value of the OntSerial entity.
+// If the OntSerial object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OntSerialMutation) OldPurpose(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPurpose is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPurpose requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPurpose: %w", err)
+	}
+	return oldValue.Purpose, nil
+}
+
+// ClearPurpose clears the value of the "purpose" field.
+func (m *OntSerialMutation) ClearPurpose() {
+	m.purpose = nil
+	m.clearedFields[ontserial.FieldPurpose] = struct{}{}
+}
+
+// PurposeCleared returns if the "purpose" field was cleared in this mutation.
+func (m *OntSerialMutation) PurposeCleared() bool {
+	_, ok := m.clearedFields[ontserial.FieldPurpose]
+	return ok
+}
+
+// ResetPurpose resets all changes to the "purpose" field.
+func (m *OntSerialMutation) ResetPurpose() {
+	m.purpose = nil
+	delete(m.clearedFields, ontserial.FieldPurpose)
+}
+
+// SetPrefix sets the "prefix" field.
+func (m *OntSerialMutation) SetPrefix(s string) {
+	m.prefix = &s
+}
+
+// Prefix returns the value of the "prefix" field in the mutation.
+func (m *OntSerialMutation) Prefix() (r string, exists bool) {
+	v := m.prefix
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPrefix returns the old "prefix" field's value of the OntSerial entity.
+// If the OntSerial object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OntSerialMutation) OldPrefix(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPrefix is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPrefix requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPrefix: %w", err)
+	}
+	return oldValue.Prefix, nil
+}
+
+// ClearPrefix clears the value of the "prefix" field.
+func (m *OntSerialMutation) ClearPrefix() {
+	m.prefix = nil
+	m.clearedFields[ontserial.FieldPrefix] = struct{}{}
+}
+
+// PrefixCleared returns if the "prefix" field was cleared in this mutation.
+func (m *OntSerialMutation) PrefixCleared() bool {
+	_, ok := m.clearedFields[ontserial.FieldPrefix]
+	return ok
+}
+
+// ResetPrefix resets all changes to the "prefix" field.
+func (m *OntSerialMutation) ResetPrefix() {
+	m.prefix = nil
+	delete(m.clearedFields, ontserial.FieldPrefix)
+}
+
+// SetNextNo sets the "next_no" field.
+func (m *OntSerialMutation) SetNextNo(u uint64) {
+	m.next_no = &u
+	m.addnext_no = nil
+}
+
+// NextNo returns the value of the "next_no" field in the mutation.
+func (m *OntSerialMutation) NextNo() (r uint64, exists bool) {
+	v := m.next_no
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldNextNo returns the old "next_no" field's value of the OntSerial entity.
+// If the OntSerial object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OntSerialMutation) OldNextNo(ctx context.Context) (v *uint64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldNextNo is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldNextNo requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldNextNo: %w", err)
+	}
+	return oldValue.NextNo, nil
+}
+
+// AddNextNo adds u to the "next_no" field.
+func (m *OntSerialMutation) AddNextNo(u int64) {
+	if m.addnext_no != nil {
+		*m.addnext_no += u
+	} else {
+		m.addnext_no = &u
+	}
+}
+
+// AddedNextNo returns the value that was added to the "next_no" field in this mutation.
+func (m *OntSerialMutation) AddedNextNo() (r int64, exists bool) {
+	v := m.addnext_no
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearNextNo clears the value of the "next_no" field.
+func (m *OntSerialMutation) ClearNextNo() {
+	m.next_no = nil
+	m.addnext_no = nil
+	m.clearedFields[ontserial.FieldNextNo] = struct{}{}
+}
+
+// NextNoCleared returns if the "next_no" field was cleared in this mutation.
+func (m *OntSerialMutation) NextNoCleared() bool {
+	_, ok := m.clearedFields[ontserial.FieldNextNo]
+	return ok
+}
+
+// ResetNextNo resets all changes to the "next_no" field.
+func (m *OntSerialMutation) ResetNextNo() {
+	m.next_no = nil
+	m.addnext_no = nil
+	delete(m.clearedFields, ontserial.FieldNextNo)
+}
+
+// Where appends a list predicates to the OntSerialMutation builder.
+func (m *OntSerialMutation) Where(ps ...predicate.OntSerial) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the OntSerialMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *OntSerialMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.OntSerial, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *OntSerialMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *OntSerialMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (OntSerial).
+func (m *OntSerialMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *OntSerialMutation) Fields() []string {
+	fields := make([]string, 0, 10)
+	if m.created_at != nil {
+		fields = append(fields, ontserial.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, ontserial.FieldUpdatedAt)
+	}
+	if m.deleted_at != nil {
+		fields = append(fields, ontserial.FieldDeletedAt)
+	}
+	if m.created_by != nil {
+		fields = append(fields, ontserial.FieldCreatedBy)
+	}
+	if m.updated_by != nil {
+		fields = append(fields, ontserial.FieldUpdatedBy)
+	}
+	if m.deleted_by != nil {
+		fields = append(fields, ontserial.FieldDeletedBy)
+	}
+	if m.ontology_id != nil {
+		fields = append(fields, ontserial.FieldOntologyID)
+	}
+	if m.purpose != nil {
+		fields = append(fields, ontserial.FieldPurpose)
+	}
+	if m.prefix != nil {
+		fields = append(fields, ontserial.FieldPrefix)
+	}
+	if m.next_no != nil {
+		fields = append(fields, ontserial.FieldNextNo)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *OntSerialMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case ontserial.FieldCreatedAt:
+		return m.CreatedAt()
+	case ontserial.FieldUpdatedAt:
+		return m.UpdatedAt()
+	case ontserial.FieldDeletedAt:
+		return m.DeletedAt()
+	case ontserial.FieldCreatedBy:
+		return m.CreatedBy()
+	case ontserial.FieldUpdatedBy:
+		return m.UpdatedBy()
+	case ontserial.FieldDeletedBy:
+		return m.DeletedBy()
+	case ontserial.FieldOntologyID:
+		return m.OntologyID()
+	case ontserial.FieldPurpose:
+		return m.Purpose()
+	case ontserial.FieldPrefix:
+		return m.Prefix()
+	case ontserial.FieldNextNo:
+		return m.NextNo()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *OntSerialMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case ontserial.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case ontserial.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	case ontserial.FieldDeletedAt:
+		return m.OldDeletedAt(ctx)
+	case ontserial.FieldCreatedBy:
+		return m.OldCreatedBy(ctx)
+	case ontserial.FieldUpdatedBy:
+		return m.OldUpdatedBy(ctx)
+	case ontserial.FieldDeletedBy:
+		return m.OldDeletedBy(ctx)
+	case ontserial.FieldOntologyID:
+		return m.OldOntologyID(ctx)
+	case ontserial.FieldPurpose:
+		return m.OldPurpose(ctx)
+	case ontserial.FieldPrefix:
+		return m.OldPrefix(ctx)
+	case ontserial.FieldNextNo:
+		return m.OldNextNo(ctx)
+	}
+	return nil, fmt.Errorf("unknown OntSerial field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *OntSerialMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case ontserial.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case ontserial.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	case ontserial.FieldDeletedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeletedAt(v)
+		return nil
+	case ontserial.FieldCreatedBy:
+		v, ok := value.(uint32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedBy(v)
+		return nil
+	case ontserial.FieldUpdatedBy:
+		v, ok := value.(uint32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedBy(v)
+		return nil
+	case ontserial.FieldDeletedBy:
+		v, ok := value.(uint32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeletedBy(v)
+		return nil
+	case ontserial.FieldOntologyID:
+		v, ok := value.(uint32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetOntologyID(v)
+		return nil
+	case ontserial.FieldPurpose:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPurpose(v)
+		return nil
+	case ontserial.FieldPrefix:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPrefix(v)
+		return nil
+	case ontserial.FieldNextNo:
+		v, ok := value.(uint64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetNextNo(v)
+		return nil
+	}
+	return fmt.Errorf("unknown OntSerial field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *OntSerialMutation) AddedFields() []string {
+	var fields []string
+	if m.addcreated_by != nil {
+		fields = append(fields, ontserial.FieldCreatedBy)
+	}
+	if m.addupdated_by != nil {
+		fields = append(fields, ontserial.FieldUpdatedBy)
+	}
+	if m.adddeleted_by != nil {
+		fields = append(fields, ontserial.FieldDeletedBy)
+	}
+	if m.addontology_id != nil {
+		fields = append(fields, ontserial.FieldOntologyID)
+	}
+	if m.addnext_no != nil {
+		fields = append(fields, ontserial.FieldNextNo)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *OntSerialMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case ontserial.FieldCreatedBy:
+		return m.AddedCreatedBy()
+	case ontserial.FieldUpdatedBy:
+		return m.AddedUpdatedBy()
+	case ontserial.FieldDeletedBy:
+		return m.AddedDeletedBy()
+	case ontserial.FieldOntologyID:
+		return m.AddedOntologyID()
+	case ontserial.FieldNextNo:
+		return m.AddedNextNo()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *OntSerialMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case ontserial.FieldCreatedBy:
+		v, ok := value.(int32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddCreatedBy(v)
+		return nil
+	case ontserial.FieldUpdatedBy:
+		v, ok := value.(int32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddUpdatedBy(v)
+		return nil
+	case ontserial.FieldDeletedBy:
+		v, ok := value.(int32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddDeletedBy(v)
+		return nil
+	case ontserial.FieldOntologyID:
+		v, ok := value.(int32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddOntologyID(v)
+		return nil
+	case ontserial.FieldNextNo:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddNextNo(v)
+		return nil
+	}
+	return fmt.Errorf("unknown OntSerial numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *OntSerialMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(ontserial.FieldCreatedAt) {
+		fields = append(fields, ontserial.FieldCreatedAt)
+	}
+	if m.FieldCleared(ontserial.FieldUpdatedAt) {
+		fields = append(fields, ontserial.FieldUpdatedAt)
+	}
+	if m.FieldCleared(ontserial.FieldDeletedAt) {
+		fields = append(fields, ontserial.FieldDeletedAt)
+	}
+	if m.FieldCleared(ontserial.FieldCreatedBy) {
+		fields = append(fields, ontserial.FieldCreatedBy)
+	}
+	if m.FieldCleared(ontserial.FieldUpdatedBy) {
+		fields = append(fields, ontserial.FieldUpdatedBy)
+	}
+	if m.FieldCleared(ontserial.FieldDeletedBy) {
+		fields = append(fields, ontserial.FieldDeletedBy)
+	}
+	if m.FieldCleared(ontserial.FieldOntologyID) {
+		fields = append(fields, ontserial.FieldOntologyID)
+	}
+	if m.FieldCleared(ontserial.FieldPurpose) {
+		fields = append(fields, ontserial.FieldPurpose)
+	}
+	if m.FieldCleared(ontserial.FieldPrefix) {
+		fields = append(fields, ontserial.FieldPrefix)
+	}
+	if m.FieldCleared(ontserial.FieldNextNo) {
+		fields = append(fields, ontserial.FieldNextNo)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *OntSerialMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *OntSerialMutation) ClearField(name string) error {
+	switch name {
+	case ontserial.FieldCreatedAt:
+		m.ClearCreatedAt()
+		return nil
+	case ontserial.FieldUpdatedAt:
+		m.ClearUpdatedAt()
+		return nil
+	case ontserial.FieldDeletedAt:
+		m.ClearDeletedAt()
+		return nil
+	case ontserial.FieldCreatedBy:
+		m.ClearCreatedBy()
+		return nil
+	case ontserial.FieldUpdatedBy:
+		m.ClearUpdatedBy()
+		return nil
+	case ontserial.FieldDeletedBy:
+		m.ClearDeletedBy()
+		return nil
+	case ontserial.FieldOntologyID:
+		m.ClearOntologyID()
+		return nil
+	case ontserial.FieldPurpose:
+		m.ClearPurpose()
+		return nil
+	case ontserial.FieldPrefix:
+		m.ClearPrefix()
+		return nil
+	case ontserial.FieldNextNo:
+		m.ClearNextNo()
+		return nil
+	}
+	return fmt.Errorf("unknown OntSerial nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *OntSerialMutation) ResetField(name string) error {
+	switch name {
+	case ontserial.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case ontserial.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	case ontserial.FieldDeletedAt:
+		m.ResetDeletedAt()
+		return nil
+	case ontserial.FieldCreatedBy:
+		m.ResetCreatedBy()
+		return nil
+	case ontserial.FieldUpdatedBy:
+		m.ResetUpdatedBy()
+		return nil
+	case ontserial.FieldDeletedBy:
+		m.ResetDeletedBy()
+		return nil
+	case ontserial.FieldOntologyID:
+		m.ResetOntologyID()
+		return nil
+	case ontserial.FieldPurpose:
+		m.ResetPurpose()
+		return nil
+	case ontserial.FieldPrefix:
+		m.ResetPrefix()
+		return nil
+	case ontserial.FieldNextNo:
+		m.ResetNextNo()
+		return nil
+	}
+	return fmt.Errorf("unknown OntSerial field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *OntSerialMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *OntSerialMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *OntSerialMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *OntSerialMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *OntSerialMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *OntSerialMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *OntSerialMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown OntSerial unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *OntSerialMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown OntSerial edge %s", name)
 }
 
 // OperationAuditLogMutation represents an operation that mutates the OperationAuditLog nodes in the graph.

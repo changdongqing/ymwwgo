@@ -142,7 +142,8 @@
       "objectProperty": "对象属性",
       "dataProperty": "数据属性",
       "annotationProperty": "注解属性",
-      "datatype": "数据类型"
+      "datatype": "数据类型",
+      "individual": "个体"
     }
   },
   "page": {
@@ -158,5 +159,6 @@
   "ontology-object-properties": "对象属性",
   "ontology-data-properties": "数据属性",
   "annotation-properties": "注解属性",
-  "datatypes": "数据类型"
+  "datatypes": "数据类型",
+  "individuals": "个体"
 }

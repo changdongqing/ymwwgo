@@ -216,16 +216,16 @@ func (s *OntologyClassService) Frame(ctx context.Context, req *ontologyV1.GetOnt
 	}
 
 	frame := &ontologyV1.OntologyClassFrame{
-		Id:            &e.ID,
-		OntologyId:    &ontologyID,
-		Iri:           e.Iri,
-		LocalName:     e.LocalName,
-		DisplayLabel:  e.DisplayLabel,
-		Deprecated:    e.Deprecated,
-		Comment:       ontology.PickAnnotationPreferred(subjectAxioms, ontology.PredicateRDFSComment),
-		Notation:      ontology.PickAnnotationPreferred(subjectAxioms, ontology.PredicateSKOSNotation),
-		BaseVersion:   ont.Version,
-		UpdatedAt:     timePtrToTimestamp(e.UpdatedAt),
+		Id:           &e.ID,
+		OntologyId:   &ontologyID,
+		Iri:          e.Iri,
+		LocalName:    e.LocalName,
+		DisplayLabel: e.DisplayLabel,
+		Deprecated:   e.Deprecated,
+		Comment:      ontology.PickAnnotationPreferred(subjectAxioms, ontology.PredicateRDFSComment),
+		Notation:     ontology.PickAnnotationPreferred(subjectAxioms, ontology.PredicateSKOSNotation),
+		BaseVersion:  ont.Version,
+		UpdatedAt:    timePtrToTimestamp(e.UpdatedAt),
 	}
 
 	// 父类（保序 sort_order）
@@ -551,10 +551,21 @@ func (s *OntologyClassService) Delete(ctx context.Context, req *ontologyV1.Delet
 
 	force := req.Force != nil && *req.Force
 
-	// 删除保护：存在引用且未 force → ENTITY_IN_USE（409，前端拉 usage 明细弹窗）
+	// 删除保护：存在引用且未 force → ENTITY_IN_USE（409，前端拉 usage 明细弹窗）。
+	// 06 期增量：CountReferences 的类型集已并入 60（个体断型）。
 	refsCount, err := s.axiomRepo.CountReferences(ctx, ontologyID, req.GetId())
 	if err != nil {
 		return nil, adminV1.ErrorInternalServerError("count references failed")
+	}
+	// 06 期增量（双态拒绝）：有实例断言（60）的类 force=true 亦拒绝——级联删 60 行产出
+	// "无型个体"破坏创建不变量、级联删个体则把单实体删除放大为批量删除，均不可接受；
+	// 非 60 引用（20/21/22/31/32/41）保持 force=true 级联既有语义（06 号文档 §4.4）。
+	instanceCount, err := s.axiomRepo.CountReferencesByTypes(ctx, ontologyID, req.GetId(), []uint32{ontology.AxiomTypeAssertion})
+	if err != nil {
+		return nil, adminV1.ErrorInternalServerError("count instances failed")
+	}
+	if instanceCount > 0 {
+		return nil, ontologyV1.ErrorEntityInUse("该类存在 %d 个实例个体，请先删除或改挂他类", instanceCount)
 	}
 	if refsCount > 0 && !force {
 		return nil, ontologyV1.ErrorEntityInUse("实体被 %d 处引用，无法删除", refsCount)

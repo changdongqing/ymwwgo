@@ -46,6 +46,8 @@ const (
 	AxiomDisjointDataProperties       uint32 = 45  // 不相交数据属性（成对）
 	AxiomDatatypeDefinition           uint32 = 46  // 数据类型定义（05 期：subject=datatype 实体，value_text=定义 JSON，至多一行；47~49 继续预留）
 	AxiomSubAnnotationPropertyOf      uint32 = 50  // 04：子注解属性（subject=子属性，object_id=父属性；多行=多父）
+	AxiomTypeAssertion                uint32 = 60  // 06：类型断言（subject=个体，object_id=类型类实体 id，sort_order=类型序，0=主类目）
+	AxiomObjectPropertyAssertion      uint32 = 61  // 06：对象属性断言（subject=主语个体，predicate_iri=对象属性 IRI，object_id=宾语个体；不成对存储）
 	AxiomDataPropertyAssertion        uint32 = 62  // 数据属性断言（06 期写入方：subject=个体，object_id=数据属性实体，value_text=字面量词形；03 期定稿行语义 + 校验器分支）
 	AxiomAnnotationAssertion          uint32 = 100 // 注解断言，全功能共用
 )
@@ -79,13 +81,13 @@ const IRIOWLFunctionalProperty = "http://www.w3.org/2002/07/owl#FunctionalProper
 
 // 特征谓词 IRI（OWL 2 词汇表；有序：page/frame 的 characteristics 输出按此声明序——源修订 #5 内化）
 var PropertyCharacteristicIRIs = []string{
-	IRIOWLFunctionalProperty,                                                  // 函数性
-	"http://www.w3.org/2002/07/owl#InverseFunctionalProperty",                 // 逆函数性
-	"http://www.w3.org/2002/07/owl#TransitiveProperty",                        // 传递性
-	"http://www.w3.org/2002/07/owl#SymmetricProperty",                         // 对称性
-	"http://www.w3.org/2002/07/owl#AsymmetricProperty",                        // 反对称性
-	"http://www.w3.org/2002/07/owl#ReflexiveProperty",                         // 自反性
-	"http://www.w3.org/2002/07/owl#IrreflexiveProperty",                       // 反自反性
+	IRIOWLFunctionalProperty,                                  // 函数性
+	"http://www.w3.org/2002/07/owl#InverseFunctionalProperty", // 逆函数性
+	"http://www.w3.org/2002/07/owl#TransitiveProperty",        // 传递性
+	"http://www.w3.org/2002/07/owl#SymmetricProperty",         // 对称性
+	"http://www.w3.org/2002/07/owl#AsymmetricProperty",        // 反对称性
+	"http://www.w3.org/2002/07/owl#ReflexiveProperty",         // 自反性
+	"http://www.w3.org/2002/07/owl#IrreflexiveProperty",       // 反自反性
 }
 
 // XSD 命名空间前缀（内建 datatype IRI 与渲染短名共用）
@@ -101,33 +103,33 @@ const IRIRDFLangString = "http://www.w3.org/1999/02/22-rdf-syntax-ns#langString"
 type DatatypeKind uint8
 
 const (
-	KindString       DatatypeKind = iota // xsd:string：任意 Unicode 文本
-	KindBoolean                          // xsd:boolean：true/false/1/0
-	KindDecimal                          // xsd:decimal：可选符号 + 数字 + 可选小数
-	KindInteger                          // xsd:integer 族（integer/long/int/short/byte）：64 位整数解析
-	KindNonNegInteger                    // xsd:nonNegativeInteger：整数且 ≥ 0
-	KindFloat                            // xsd:float / xsd:double：ParseFloat（含科学计数）
-	KindDate                             // xsd:date：YYYY-MM-DD 可选时区后缀
-	KindDateTime                         // xsd:dateTime：RFC3339 同构（要求时区）
-	KindTime                             // xsd:time：HH:MM:SS(.fff)?(Z|±HH:MM)?
-	KindAnyURI                           // xsd:anyURI：非空且无控制字符
+	KindString        DatatypeKind = iota // xsd:string：任意 Unicode 文本
+	KindBoolean                           // xsd:boolean：true/false/1/0
+	KindDecimal                           // xsd:decimal：可选符号 + 数字 + 可选小数
+	KindInteger                           // xsd:integer 族（integer/long/int/short/byte）：64 位整数解析
+	KindNonNegInteger                     // xsd:nonNegativeInteger：整数且 ≥ 0
+	KindFloat                             // xsd:float / xsd:double：ParseFloat（含科学计数）
+	KindDate                              // xsd:date：YYYY-MM-DD 可选时区后缀
+	KindDateTime                          // xsd:dateTime：RFC3339 同构（要求时区）
+	KindTime                              // xsd:time：HH:MM:SS(.fff)?(Z|±HH:MM)?
+	KindAnyURI                            // xsd:anyURI：非空且无控制字符
 	// 05 期新增（词法实现见 lexical.go）
-	KindNonPosInteger                    // xsd:nonPositiveInteger：整数且 ≤ 0
-	KindPositiveInteger                  // xsd:positiveInteger：整数且 > 0
-	KindNegativeInteger                  // xsd:negativeInteger：整数且 < 0
-	KindUnsignedLong                     // xsd:unsignedLong：ParseUint 64 位（0 ~ 2^64-1）
-	KindUnsignedInt                      // xsd:unsignedInt：≤ 2^32-1
-	KindUnsignedShort                    // xsd:unsignedShort：≤ 65535
-	KindUnsignedByte                     // xsd:unsignedByte：≤ 255
-	KindNormalizedString                 // xsd:normalizedString：无换行/回车/制表
-	KindToken                            // xsd:token：normalizedString 且首尾无空白、无连续空白
-	KindLanguage                         // xsd:language：[a-zA-Z]{1,8}(-[a-zA-Z0-9]{1,8})*
-	KindName                             // xsd:Name：NCName 放宽冒号（首字符 字母/_/:）
-	KindNCName                           // xsd:NCName：首字符 字母/_，后续 字母/数字/./-/_
-	KindNMTOKEN                          // xsd:NMTOKEN：名称字符任意混合
-	KindHexBinary                        // xsd:hexBinary：[0-9A-Fa-f]* 且偶长度
-	KindBase64Binary                     // xsd:base64Binary：RFC 2045 词法（可夹空白）
-	KindDateTimeStamp                    // xsd:dateTimeStamp：RFC3339 且必须带时区（03 期 dateTime 同口径）
+	KindNonPosInteger    // xsd:nonPositiveInteger：整数且 ≤ 0
+	KindPositiveInteger  // xsd:positiveInteger：整数且 > 0
+	KindNegativeInteger  // xsd:negativeInteger：整数且 < 0
+	KindUnsignedLong     // xsd:unsignedLong：ParseUint 64 位（0 ~ 2^64-1）
+	KindUnsignedInt      // xsd:unsignedInt：≤ 2^32-1
+	KindUnsignedShort    // xsd:unsignedShort：≤ 65535
+	KindUnsignedByte     // xsd:unsignedByte：≤ 255
+	KindNormalizedString // xsd:normalizedString：无换行/回车/制表
+	KindToken            // xsd:token：normalizedString 且首尾无空白、无连续空白
+	KindLanguage         // xsd:language：[a-zA-Z]{1,8}(-[a-zA-Z0-9]{1,8})*
+	KindName             // xsd:Name：NCName 放宽冒号（首字符 字母/_/:）
+	KindNCName           // xsd:NCName：首字符 字母/_，后续 字母/数字/./-/_
+	KindNMTOKEN          // xsd:NMTOKEN：名称字符任意混合
+	KindHexBinary        // xsd:hexBinary：[0-9A-Fa-f]* 且偶长度
+	KindBase64Binary     // xsd:base64Binary：RFC 2045 词法（可夹空白）
+	KindDateTimeStamp    // xsd:dateTimeStamp：RFC3339 且必须带时区（03 期 dateTime 同口径）
 )
 
 // DatatypeFamily 内建 datatype 的词法族（05 号文档 §3.2）：facet 适用族矩阵的判定键，
@@ -220,7 +222,7 @@ var DisplayLabelPredicates = []string{
 
 // ClassUsageAxiomTypes 类删除保护（usage 反查）的引用公理类型集。
 // 02 期对象属性定义域/值域（31/32）、03 期数据属性定义域（41）已并入；
-// 06 期个体断型（60）落地时再往切片加号段（源修订 #12/#14 的缺口已在本仓前置内化）。
+// 06 期个体断型（60）兑现预埋点并入（01 号文档 §4.5"06 期个体断型（60）落地时往切片加号段"）。
 var ClassUsageAxiomTypes = []uint32{
 	AxiomSubClassOf,
 	AxiomDisjointWith,
@@ -228,11 +230,12 @@ var ClassUsageAxiomTypes = []uint32{
 	AxiomObjectPropertyDomain,
 	AxiomObjectPropertyRange,
 	AxiomDataPropertyDomain,
+	AxiomTypeAssertion,
 }
 
 // ObjectPropertyUsageAxiomTypes 对象属性删除保护（usage 反查）object 侧的引用公理类型集。
 // 链成员（37）按 value_text 包含判定、06 期个体断言（61）按 predicate_iri 等值，
-// 不走 object_id 命中，各自单独处理（02 号文档 §4.3）。
+// 不走 object_id 命中，各自单独处理（02 号文档 §4.3；61 行处理在对象属性服务 06 期增量）。
 var ObjectPropertyUsageAxiomTypes = []uint32{
 	AxiomSubObjectPropertyOf,
 	AxiomInverseOf,
@@ -241,13 +244,13 @@ var ObjectPropertyUsageAxiomTypes = []uint32{
 }
 
 // DataPropertyUsageAxiomTypes 数据属性删除保护（usage 反查）object 侧的引用公理类型集：
-// 40 子属性边 / 44 等价 / 45 不相交。数据属性没有属性链（无 37 对应物）；
-// 06 期数据断言（62）的谓词走 object_id=属性实体，命中同一索引，届时往切片追加 62 即可
-// （03 号文档 §4.3）。
+// 40 子属性边 / 44 等价 / 45 不相交 / 06 期个体数据断言（62，object_id=属性实体路径命中——
+// 03 号文档 §4.3 预告兑现）。
 var DataPropertyUsageAxiomTypes = []uint32{
 	AxiomSubDataPropertyOf,
 	AxiomEquivalentDataProperties,
 	AxiomDisjointDataProperties,
+	AxiomDataPropertyAssertion,
 }
 
 // AnnotationPropertyUsageAxiomTypes 注解属性删除保护（usage 反查）object 侧的引用公理类型集：
@@ -288,6 +291,10 @@ const (
 	OpCreateDatatype = "CREATE_DATATYPE"
 	OpUpdateDatatype = "UPDATE_DATATYPE"
 	OpDeleteDatatype = "DELETE_DATATYPE"
+
+	OpCreateIndividual = "CREATE_INDIVIDUAL"
+	OpUpdateIndividual = "UPDATE_INDIVIDUAL"
+	OpDeleteIndividual = "DELETE_INDIVIDUAL"
 )
 
 // NavKeepDepth 骨架树无条件保留深度：1=根类、2=域入口；更深的"有父类且无子类"叶子剪掉
@@ -336,6 +343,15 @@ const (
 	ReasonDatatypeFacetConflict         = "DATATYPE_FACET_CONFLICT"          // 静态冲突五规则（§3.2）
 	ReasonDatatypeRangeTargetInvalid    = "DATATYPE_RANGE_TARGET_INVALID"    // 42 派生轨：IRI 命中实体但类型不符或跨本体
 	ReasonDatatypeDefinitionJSONInvalid = "DATATYPE_DEFINITION_JSON_INVALID" // 46 行 value_text 非 JSON / 形态不符
+
+	// 06 期个体与赋码（源 1-071-006 段）
+	ReasonIndividualMainClassRequired = "INDIVIDUAL_MAIN_CLASS_REQUIRED" // 个体必须指定主类目
+	ReasonIndividualCodeSourceInvalid = "INDIVIDUAL_CODE_SOURCE_INVALID" // 主类目无编码，无法自动赋码
+	ReasonIndividualCodeDuplicate     = "INDIVIDUAL_CODE_DUPLICATE"      // 个体编码已存在
+	ReasonIndividualCodePrefixInvalid = "INDIVIDUAL_CODE_PREFIX_INVALID" // 编码含非法字符
+	ReasonIndividualCodeRequired      = "INDIVIDUAL_CODE_REQUIRED"       // 个体编码不能为空（MANUAL 空码）
+	ReasonIndividualSerialConflict    = "INDIVIDUAL_SERIAL_CONFLICT"     // 取号并发冲突（重试耗尽）
+	ReasonIndividualTargetInvalid     = "INDIVIDUAL_TARGET_INVALID"      // 目标不是个体（61 断言目标校验）
 )
 
 // DomainError 域内核错误：携带 reason 与用户可读明细。

@@ -1938,6 +1938,16 @@ var (
 				Unique:  false,
 				Columns: []*schema.Column{OntAxiomsColumns[8], OntAxiomsColumns[11]},
 			},
+			{
+				Name:    "idx_ont_axioms_type_value",
+				Unique:  false,
+				Columns: []*schema.Column{OntAxiomsColumns[8], OntAxiomsColumns[9], OntAxiomsColumns[13]},
+				Annotation: &entsql.IndexAnnotation{
+					OpClassColumns: map[string]string{
+						OntAxiomsColumns[13].Name: "text_pattern_ops",
+					},
+				},
+			},
 		},
 	}
 	// OntChangeLogsColumns holds the columns for the "ont_change_logs" table.
@@ -2047,6 +2057,34 @@ var (
 				Annotation: &entsql.IndexAnnotation{
 					Where: "deleted_at IS NULL",
 				},
+			},
+		},
+	}
+	// OntSerialsColumns holds the columns for the "ont_serials" table.
+	OntSerialsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUint32, Increment: true, Comment: "id"},
+		{Name: "created_at", Type: field.TypeTime, Nullable: true, Comment: "创建时间"},
+		{Name: "updated_at", Type: field.TypeTime, Nullable: true, Comment: "更新时间"},
+		{Name: "deleted_at", Type: field.TypeTime, Nullable: true, Comment: "删除时间"},
+		{Name: "created_by", Type: field.TypeUint32, Nullable: true, Comment: "创建者ID"},
+		{Name: "updated_by", Type: field.TypeUint32, Nullable: true, Comment: "更新者ID"},
+		{Name: "deleted_by", Type: field.TypeUint32, Nullable: true, Comment: "删除者ID"},
+		{Name: "ontology_id", Type: field.TypeUint32, Nullable: true, Comment: "所属本体 id"},
+		{Name: "purpose", Type: field.TypeString, Nullable: true, Size: 16, Comment: "用途域：ind=个体 localName 自动生成伪前缀($ind)；code=业务编码流水(prefix=主类目编码)"},
+		{Name: "prefix", Type: field.TypeString, Nullable: true, Size: 128, Comment: "code 时=主类目 skos:notation（如 A0111）；ind 时固定 $ind"},
+		{Name: "next_no", Type: field.TypeUint64, Nullable: true, Comment: "下一个流水号；已发放最大号 = next_no - 1；行不删除、只前进（编码/局部名不回收）", Default: 1},
+	}
+	// OntSerialsTable holds the schema information for the "ont_serials" table.
+	OntSerialsTable = &schema.Table{
+		Name:       "ont_serials",
+		Comment:    "本体建模-取号计数表（个体 localName 流水 / 业务编码流水）",
+		Columns:    OntSerialsColumns,
+		PrimaryKey: []*schema.Column{OntSerialsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "uix_ont_serials_key",
+				Unique:  true,
+				Columns: []*schema.Column{OntSerialsColumns[7], OntSerialsColumns[8], OntSerialsColumns[9]},
 			},
 		},
 	}
@@ -3904,6 +3942,7 @@ var (
 		OntChangeLogsTable,
 		OntEntitiesTable,
 		OntOntologiesTable,
+		OntSerialsTable,
 		SysOperationAuditLogsTable,
 		SysOrgUnitsTable,
 		SysPermissionsTable,
@@ -4124,6 +4163,9 @@ func init() {
 	}
 	OntOntologiesTable.Annotation = &entsql.Annotation{
 		Table: "ont_ontologies",
+	}
+	OntSerialsTable.Annotation = &entsql.Annotation{
+		Table: "ont_serials",
 	}
 	SysOperationAuditLogsTable.Annotation = &entsql.Annotation{
 		Table:     "sys_operation_audit_logs",

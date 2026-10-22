@@ -464,6 +464,18 @@ func (f OntOntologyFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value,
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.OntOntologyMutation", m)
 }
 
+// The OntSerialFunc type is an adapter to allow the use of ordinary
+// function as OntSerial mutator.
+type OntSerialFunc func(context.Context, *ent.OntSerialMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f OntSerialFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.OntSerialMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.OntSerialMutation", m)
+}
+
 // The OperationAuditLogFunc type is an adapter to allow the use of ordinary
 // function as OperationAuditLog mutator.
 type OperationAuditLogFunc func(context.Context, *ent.OperationAuditLogMutation) (ent.Value, error)

@@ -276,7 +276,7 @@ func (r *OntologyRepo) Delete(ctx context.Context, ids []uint32, deletedBy uint3
 
 	now := time.Now()
 	deletedByPtr := trans.Ptr(deletedBy)
-	// 级联顺序：日志 → 公理 → 实体 → 本体行
+	// 级联顺序：日志 → 公理 → 实体 → 号池 → 本体行
 	if _, err = tx.OntChangeLog.Update().
 		Where(ontchangelog.OntologyIDIn(ids...), ontchangelog.DeletedAtIsNil()).
 		SetDeletedAt(now).SetNillableDeletedBy(deletedByPtr).SetUpdatedAt(now).
@@ -296,6 +296,11 @@ func (r *OntologyRepo) Delete(ctx context.Context, ids []uint32, deletedBy uint3
 		SetDeletedAt(now).SetNillableDeletedBy(deletedByPtr).SetUpdatedAt(now).
 		Save(ctx); err != nil {
 		r.log.Errorf(ctx, "cascade delete entities failed: %s", err.Error())
+		return adminV1.ErrorInternalServerError("delete ontology failed")
+	}
+	// 06 期增量：级联软删号池行（号池行是本体下无实体时的唯一残留；重建同名本体 = 全新编号空间）
+	if err = DeleteByOntologies(ctx, tx, ids, deletedBy, now); err != nil {
+		r.log.Errorf(ctx, "cascade delete serials failed: %s", err.Error())
 		return adminV1.ErrorInternalServerError("delete ontology failed")
 	}
 	if _, err = tx.OntOntology.Update().

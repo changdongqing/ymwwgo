@@ -80,6 +80,18 @@ export const ontologyRoutes: AppRouteObject[] = [
           authority: ['sys:platform_admin'],
         },
       },
+      {
+        // 个体（06 期，左右联动：左类树 + 右实例列表，身份与赋码/取号器）
+        name: 'individuals',
+        path: 'individuals',
+        element: createLazyRoute(() => import('@/pages/app/ontology/individuals')),
+        meta: {
+          title: 'routes:individuals',
+          icon: 'lucide:user',
+          order: 7,
+          authority: ['sys:platform_admin'],
+        },
+      },
     ],
   },
 ];

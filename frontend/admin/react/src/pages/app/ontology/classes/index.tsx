@@ -30,7 +30,7 @@ interface DrawerState {
   parentKey: string | null;
 }
 
-/** 引用类型 → 展示标签（02 期起含 31 定义域 / 32 值域；03 期起含 41 数据属性定义域；60 个体断型标签位归 06 期） */
+/** 引用类型 → 展示标签（02 期起含 31 定义域 / 32 值域；03 期起含 41 数据属性定义域；06 期补 60 个体断型） */
 const USAGE_TYPE_LABEL_KEYS: Record<number, string> = {
   20: 'class.usageType.parent',
   21: 'class.usageType.disjoint',
@@ -38,6 +38,7 @@ const USAGE_TYPE_LABEL_KEYS: Record<number, string> = {
   31: 'class.usageType.objectPropertyDomain',
   32: 'class.usageType.objectPropertyRange',
   41: 'class.usageType.dataPropertyDomain',
+  60: 'class.usageType.individualType',
 };
 
 /**
