@@ -10100,6 +10100,142 @@ export type ontologyservicev1_DeleteObjectPropertyRequest = {
   id: number | undefined;
 };
 
+// OWL 导入导出服务（admin 门面）
+//
+// 三个自定义 RPC 全部 body: "*" 收扁平请求体——不是通用 CRUD，勿按惯例包 { data: {...} }
+// （protojson 会把 data 当未知字段丢弃，接口 200 但字段全空，仓库已知坑）。
+// 导出经 google.api.HttpBody 二进制响应（进 openapi 生成与 Api 表同步管线，租户闸门按
+// (path, method) 匹配）；导入两步式 preview → execute（reportId 一次性消费）。
+export interface OntologyOwlIOService {
+  // 导出本体为 OWL 文件（RDF/XML 默认 / Turtle 可选；只读操作；bytes 响应——HttpBody
+  // 在 Kratos v2 下会被 protojson JSON 化，§7 #19 预案回退）
+  Export(
+    request: ontologyservicev1_OwlExportRequest,
+  ): Promise<ontologyservicev1_OwlExportResponse>;
+  // 导入预检（解析 + 反向映射 + 逐行预校验；不落库）
+  ImportPreview(
+    request: ontologyservicev1_OwlImportPreviewRequest,
+  ): Promise<ontologyservicev1_OwlImportReport>;
+  // 导入执行（新建本体 + 批量落库 + 号池回填；reportId 一次性消费）
+  ImportExecute(
+    request: ontologyservicev1_OwlImportExecuteRequest,
+  ): Promise<ontologyservicev1_OwlImportExecuteResponse>;
+}
+
+export function createOntologyOwlIOServiceClient(
+  transport: ClientTransport,
+): OntologyOwlIOService {
+  return {
+    Export(request) {
+      const path = `/admin/v1/ontology/owl:export`;
+      const body = JSON.stringify(request);
+      return transport.unary(path, 'POST', body, {
+        service: 'OntologyOwlIOService',
+        method: 'Export',
+      }) as Promise<ontologyservicev1_OwlExportResponse>;
+    },
+    ImportPreview(request) {
+      const path = `/admin/v1/ontology/owl:import-preview`;
+      const body = JSON.stringify(request);
+      return transport.unary(path, 'POST', body, {
+        service: 'OntologyOwlIOService',
+        method: 'ImportPreview',
+      }) as Promise<ontologyservicev1_OwlImportReport>;
+    },
+    ImportExecute(request) {
+      const path = `/admin/v1/ontology/owl:import-execute`;
+      const body = JSON.stringify(request);
+      return transport.unary(path, 'POST', body, {
+        service: 'OntologyOwlIOService',
+        method: 'ImportExecute',
+      }) as Promise<ontologyservicev1_OwlImportExecuteResponse>;
+    },
+  };
+}
+// 导出 - 请求
+export type ontologyservicev1_OwlExportRequest = {
+  format: string | undefined;
+  ontologyId: number | undefined;
+};
+
+// 导出 - 回应（bytes 经 protojson 即 base64 字符串；文件名随响应体下发，
+// Content-Disposition 头不可用故不承担文件名传递）
+export type ontologyservicev1_OwlExportResponse = {
+  content: string | undefined;
+  contentType: string | undefined;
+  fileName: string | undefined;
+};
+
+// 导入预检 - 请求（文件字节经 protojson 即 base64 字符串传输——对齐 ai-knowledge 上传先例）
+export type ontologyservicev1_OwlImportPreviewRequest = {
+  fileContent: string | undefined;
+  fileName: string | undefined;
+};
+
+// 预检报告
+export type ontologyservicev1_OwlImportReport = {
+  autoDeclared: ontologyservicev1_OwlAutoDeclaredRef[] | undefined;
+  axiomStats: { [key: string]: number } | undefined;
+  entityStats: { [key: string]: number } | undefined;
+  ignored: ontologyservicev1_OwlIgnoredSummary | undefined;
+  importsCount: number | undefined;
+  renamedLocalNames: ontologyservicev1_OwlRenamedLocalName[] | undefined;
+  reportId: string | undefined;
+  sourceFormat: string | undefined;
+  suggested: ontologyservicev1_OwlImportSuggested | undefined;
+  warnings: string[] | undefined;
+};
+
+// 推断默认值（均可在执行前编辑；本体 IRI 缺省取文件 header，已占用时可改）
+export type ontologyservicev1_OwlImportSuggested = {
+  baseIri: string | undefined;
+  description?: string;
+  ontologyIri?: string;
+  ontologyName: string | undefined;
+};
+
+// 自动补声明明细（上限 200 条）
+export type ontologyservicev1_OwlAutoDeclaredRef = {
+  entityType: string | undefined;
+  iri: string | undefined;
+  reason: string | undefined;
+};
+
+// 局部名替补明细
+export type ontologyservicev1_OwlRenamedLocalName = {
+  iri: string | undefined;
+  localName: string | undefined;
+  original: string | undefined;
+};
+
+// 忽略清单汇总（count > 0 时 execute 必须携带 confirmed_ignore=true——两段式确认）
+export type ontologyservicev1_OwlIgnoredSummary = {
+  byReason: { [key: string]: number } | undefined;
+  count: number | undefined;
+  samples: ontologyservicev1_OwlIgnoredSample[] | undefined;
+};
+
+// 忽略清单样例
+export type ontologyservicev1_OwlIgnoredSample = {
+  detail: string | undefined;
+  reason: string | undefined;
+};
+
+// 导入执行 - 请求
+export type ontologyservicev1_OwlImportExecuteRequest = {
+  baseIri: string | undefined;
+  confirmedIgnore: boolean | undefined;
+  description?: string;
+  ontologyIri?: string;
+  ontologyName: string | undefined;
+  reportId: string | undefined;
+};
+
+// 导入执行 - 回应
+export type ontologyservicev1_OwlImportExecuteResponse = {
+  ontologyId: number | undefined;
+};
+
 // 操作审计日志管理服务
 export interface OperationAuditLogService {
   // 查询操作审计日志列表
@@ -14366,6 +14502,7 @@ export class ApiClient {
   private _ontologyDatatypeService?: OntologyDatatypeService;
   private _ontologyIndividualService?: OntologyIndividualService;
   private _ontologyObjectPropertyService?: OntologyObjectPropertyService;
+  private _ontologyOwlIOService?: OntologyOwlIOService;
   private _ontologyService?: OntologyService;
   private _operationAuditLogService?: OperationAuditLogService;
   private _orgUnitService?: OrgUnitService;
@@ -14567,6 +14704,10 @@ export class ApiClient {
 
   get ontologyObjectPropertyService(): OntologyObjectPropertyService {
     return this._ontologyObjectPropertyService ??= createOntologyObjectPropertyServiceClient(this._transport);
+  }
+
+  get ontologyOwlIOService(): OntologyOwlIOService {
+    return this._ontologyOwlIOService ??= createOntologyOwlIOServiceClient(this._transport);
   }
 
   get ontologyService(): OntologyService {

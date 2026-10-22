@@ -267,6 +267,8 @@ func initApp(ctx *bootstrap.Context) (*kratos.App, func(), error) {
 	ontologyDatatypeService := service.NewOntologyDatatypeService(ctx, ontologyRepo, ontologyEntityRepo, ontologyAxiomRepo)
 	// 06 期个体（取号 + 公理事务管线）：serialRepo 注入，取号与公理写同事务（ApplyInTx）
 	ontologyIndividualService := service.NewOntologyIndividualService(ctx, ontologyRepo, ontologyEntityRepo, ontologyAxiomRepo, ontologySerialRepo)
+	// 07 期 OWL 导入导出（owlio 读写层 + 三元组映射层；导入 plan 内存暂存）
+	ontologyOwlIOService := service.NewOntologyOwlIOService(ctx, ontologyRepo, ontologyEntityRepo, ontologyAxiomRepo)
 
 	// 文件与任务
 	fileService := service.NewFileService(ctx, fileRepo, minioClient)
@@ -370,7 +372,7 @@ func initApp(ctx *bootstrap.Context) (*kratos.App, func(), error) {
 		dictTypeService, dictEntryService, languageService,
 		ontologyService, ontologyClassService, ontologyObjectPropertyService, ontologyDataPropertyService,
 		ontologyAnnotationPropertyService, ontologyDatatypeService,
-		ontologyIndividualService,
+		ontologyIndividualService, ontologyOwlIOService,
 		tenantService, planService, planQuotaService, planModuleService,
 		userService, userProfileService, roleService, positionService, orgUnitService,
 		menuService, apiService, permissionService, permissionGroupService,

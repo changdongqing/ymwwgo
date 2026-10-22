@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
-import { App, Button, Modal, Popconfirm, Space, Tag } from 'antd';
-import { PlusOutlined } from '@ant-design/icons';
+import { App, Button, Dropdown, Modal, Popconfirm, Space, Tag } from 'antd';
+import { ImportOutlined, PlusOutlined } from '@ant-design/icons';
 import { useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 
@@ -12,8 +12,11 @@ import { PaginationQuery } from '@/core';
 import { TABLE } from '@/config/constants';
 import type { ontologyservicev1_Ontology } from '@/api/generated/admin/service/v1';
 import { fetchListOntologies, useDeleteOntology } from '@/api/hooks/ontology';
+import { downloadOwlExport } from '@/api/hooks/ontologyOwlIO';
+import { AccessControl } from '@/core/access/access-control';
 import OntologySwitcher from '../components/OntologySwitcher';
 import OntologyDrawer from './components/OntologyDrawer';
+import OwlImportDrawer from './components/OwlImportDrawer';
 
 /**
  * 本体文档管理页（owl:Ontology，标准通用 CRUD，镜像 DictTypeList + DictTypeDrawer）。
@@ -30,6 +33,17 @@ const OntologyManagement = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [drawerMode, setDrawerMode] = useState<'create' | 'edit'>('create');
   const [editingOntology, setEditingOntology] = useState<ontologyservicev1_Ontology | null>(null);
+  const [importOpen, setImportOpen] = useState(false);
+
+  const handleExport = async (record: ontologyservicev1_Ontology, format: 'rdfxml' | 'turtle') => {
+    try {
+      await downloadOwlExport(record.id ?? 0, format, record.ontologyName ?? 'ontology');
+      message.success(t('owl.export.success'));
+    } catch (error) {
+      console.error('owl export failed:', error);
+      message.error((error as Error).message || t('owl.export.failed'));
+    }
+  };
 
   const refreshList = () => {
     actionRef.current?.reload();
@@ -85,7 +99,7 @@ const OntologyManagement = () => {
     {
       title: t('ontology.action'),
       valueType: 'option',
-      width: 120,
+      width: 170,
       fixed: 'right',
       render: (_, record) => [
         <a
@@ -98,6 +112,20 @@ const OntologyManagement = () => {
         >
           {t('common:button.edit')}
         </a>,
+        <AccessControl key="export" codes={['ontology:ontology:export']} type="code">
+          <Dropdown
+            key="export"
+            menu={{
+              items: [
+                { key: 'rdfxml', label: t('owl.export.rdfxml') },
+                { key: 'turtle', label: t('owl.export.turtle') },
+              ],
+              onClick: ({ key }) => handleExport(record, key as 'rdfxml' | 'turtle'),
+            }}
+          >
+            <a>{t('owl.export.action')}</a>
+          </Dropdown>
+        </AccessControl>,
         <Popconfirm
           key="delete"
           title={t('ontology.deleteConfirmTitle')}
@@ -145,6 +173,11 @@ const OntologyManagement = () => {
           actions={
             <Space>
               <OntologySwitcher />
+              <AccessControl codes={['ontology:ontology:import']} type="code">
+                <Button icon={<ImportOutlined />} onClick={() => setImportOpen(true)}>
+                  {t('owl.import.action')}
+                </Button>
+              </AccessControl>
               <Button
                 type="primary"
                 icon={<PlusOutlined />}
@@ -175,6 +208,8 @@ const OntologyManagement = () => {
         }}
         onSuccess={refreshList}
       />
+
+      <OwlImportDrawer open={importOpen} onClose={() => setImportOpen(false)} onSuccess={refreshList} />
     </ContentContainer>
   );
 };

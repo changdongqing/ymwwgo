@@ -542,3 +542,129 @@ func IsIndividualTargetInvalid(err error) bool {
 func ErrorIndividualTargetInvalid(format string, args ...interface{}) *errors.Error {
 	return errors.New(422, OntologyErrorReason_INDIVIDUAL_TARGET_INVALID.String(), fmt.Sprintf(format, args...))
 }
+
+// ===== OWL 导入导出（源 1-071-008 段，07 期；01 号文档预留段恰 9 槽）=====
+func IsOwlImportFileInvalid(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == OntologyErrorReason_OWL_IMPORT_FILE_INVALID.String() && e.Code == 422
+}
+
+// ===== OWL 导入导出（源 1-071-008 段，07 期；01 号文档预留段恰 9 槽）=====
+func ErrorOwlImportFileInvalid(format string, args ...interface{}) *errors.Error {
+	return errors.New(422, OntologyErrorReason_OWL_IMPORT_FILE_INVALID.String(), fmt.Sprintf(format, args...))
+}
+
+// 文件超过导入上限（5MB），请拆分后导入
+func IsOwlImportFileTooLarge(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == OntologyErrorReason_OWL_IMPORT_FILE_TOO_LARGE.String() && e.Code == 422
+}
+
+// 文件超过导入上限（5MB），请拆分后导入
+func ErrorOwlImportFileTooLarge(format string, args ...interface{}) *errors.Error {
+	return errors.New(422, OntologyErrorReason_OWL_IMPORT_FILE_TOO_LARGE.String(), fmt.Sprintf(format, args...))
+}
+
+// 预检报告已过期，请重新上传文件
+func IsOwlImportReportExpired(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == OntologyErrorReason_OWL_IMPORT_REPORT_EXPIRED.String() && e.Code == 409
+}
+
+// 预检报告已过期，请重新上传文件
+func ErrorOwlImportReportExpired(format string, args ...interface{}) *errors.Error {
+	return errors.New(409, OntologyErrorReason_OWL_IMPORT_REPORT_EXPIRED.String(), fmt.Sprintf(format, args...))
+}
+
+// 存在将被忽略的公理，请确认忽略清单后重试
+func IsOwlImportNotConfirmed(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == OntologyErrorReason_OWL_IMPORT_NOT_CONFIRMED.String() && e.Code == 422
+}
+
+// 存在将被忽略的公理，请确认忽略清单后重试
+func ErrorOwlImportNotConfirmed(format string, args ...interface{}) *errors.Error {
+	return errors.New(422, OntologyErrorReason_OWL_IMPORT_NOT_CONFIRMED.String(), fmt.Sprintf(format, args...))
+}
+
+// 文件中未发现可导入的实体
+func IsOwlImportEmpty(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == OntologyErrorReason_OWL_IMPORT_EMPTY.String() && e.Code == 422
+}
+
+// 文件中未发现可导入的实体
+func ErrorOwlImportEmpty(format string, args ...interface{}) *errors.Error {
+	return errors.New(422, OntologyErrorReason_OWL_IMPORT_EMPTY.String(), fmt.Sprintf(format, args...))
+}
+
+// 文件中实体 {} 的类型声明冲突，无法导入
+func IsOwlImportTypeConflict(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == OntologyErrorReason_OWL_IMPORT_TYPE_CONFLICT.String() && e.Code == 422
+}
+
+// 文件中实体 {} 的类型声明冲突，无法导入
+func ErrorOwlImportTypeConflict(format string, args ...interface{}) *errors.Error {
+	return errors.New(422, OntologyErrorReason_OWL_IMPORT_TYPE_CONFLICT.String(), fmt.Sprintf(format, args...))
+}
+
+// 文件内容超过导入上限（实体 {} / 公理 {}）
+func IsOwlImportLimitExceeded(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == OntologyErrorReason_OWL_IMPORT_LIMIT_EXCEEDED.String() && e.Code == 422
+}
+
+// 文件内容超过导入上限（实体 {} / 公理 {}）
+func ErrorOwlImportLimitExceeded(format string, args ...interface{}) *errors.Error {
+	return errors.New(422, OntologyErrorReason_OWL_IMPORT_LIMIT_EXCEEDED.String(), fmt.Sprintf(format, args...))
+}
+
+// 不支持的导出格式：{}
+func IsOwlExportFormatInvalid(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == OntologyErrorReason_OWL_EXPORT_FORMAT_INVALID.String() && e.Code == 422
+}
+
+// 不支持的导出格式：{}
+func ErrorOwlExportFormatInvalid(format string, args ...interface{}) *errors.Error {
+	return errors.New(422, OntologyErrorReason_OWL_EXPORT_FORMAT_INVALID.String(), fmt.Sprintf(format, args...))
+}
+
+// 导出序列化失败：{}（writer 兜底）
+func IsOwlExportFailed(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == OntologyErrorReason_OWL_EXPORT_FAILED.String() && e.Code == 500
+}
+
+// 导出序列化失败：{}（writer 兜底）
+func ErrorOwlExportFailed(format string, args ...interface{}) *errors.Error {
+	return errors.New(500, OntologyErrorReason_OWL_EXPORT_FAILED.String(), fmt.Sprintf(format, args...))
+}

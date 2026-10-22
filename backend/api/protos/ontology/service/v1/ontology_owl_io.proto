@@ -1,0 +1,221 @@
+syntax = "proto3";
+
+package ontology.service.v1;
+
+option go_package = "go-wind-admin/api/gen/go/ontology/service/v1;ontologyv1";
+
+import "gnostic/openapi/v3/annotations.proto";
+
+import "google/api/annotations.proto";
+
+// OWL 导入导出（07 期：本体互操作；07 号文档 §5）。
+// 导出走 google.api.HttpBody 二进制响应（Kratos 原生 blob，随 proto 进 openapi 生成与
+// Api 表同步管线）；导入两步式：preview（解析+映射+校验，产出报告不落库）→ execute（按
+// reportId 落库，reportId 一次性消费）。全部为自定义 RPC，body: "*" 收扁平请求体——
+// 不是通用 CRUD，勿按惯例包 { data: {...} }（铁律 3 已知坑）。
+service OntologyOwlIOService {
+    // 导出本体为 OWL 文件（RDF/XML 默认 / Turtle 可选；只读操作，不 +version）。
+    // 响应载体实现修订：设计原定 google.api.HttpBody，实现期验证发现 Kratos v2 的
+    // DefaultResponseEncoder 无二进制特判（HttpBody 会被 protojson JSON 化），按 §7 #19
+    // 预案回退 bytes 响应（protojson 下 content 即 base64 字符串，与 ai-knowledge 上传同款）。
+    rpc Export (OwlExportRequest) returns (OwlExportResponse) {
+        option (google.api.http) = {
+            post: "/admin/v1/ontology/owl:export"
+            body: "*"
+        };
+    }
+
+    // 导入预检（解析文件 + 反向映射 + 逐行预校验；不落库、不占乐观锁）
+    rpc ImportPreview (OwlImportPreviewRequest) returns (OwlImportReport) {
+        option (google.api.http) = {
+            post: "/admin/v1/ontology/owl:import-preview"
+            body: "*"
+        };
+    }
+
+    // 导入执行（新建本体 + 批量落库 + 号池回填；reportId 一次性消费）
+    rpc ImportExecute (OwlImportExecuteRequest) returns (OwlImportExecuteResponse) {
+        option (google.api.http) = {
+            post: "/admin/v1/ontology/owl:import-execute"
+            body: "*"
+        };
+    }
+}
+
+// ===== 导出 =====
+
+// 导出 - 回应（bytes 经 protojson 即 base64 字符串；文件名随响应体下发，
+// Content-Disposition 头不可用故不承担文件名传递）
+message OwlExportResponse {
+    string file_name = 1 [
+        json_name = "fileName",
+        (gnostic.openapi.v3.property) = { description: "文件名（本体名_v版本.owl/.ttl）" }
+    ]; // 文件名
+
+    string content_type = 2 [
+        json_name = "contentType",
+        (gnostic.openapi.v3.property) = { description: "MIME 类型（application/octet-stream）" }
+    ]; // MIME 类型
+
+    bytes content = 3 [
+        json_name = "content",
+        (gnostic.openapi.v3.property) = { description: "OWL 文件内容" }
+    ]; // 文件内容
+}
+
+// 导出 - 请求
+message OwlExportRequest {
+    uint32 ontology_id = 1 [
+        json_name = "ontologyId",
+        (gnostic.openapi.v3.property) = { description: "本体ID" }
+    ]; // 本体ID
+
+    string format = 2 [
+        json_name = "format",
+        (gnostic.openapi.v3.property) = { description: "导出格式：rdfxml（默认）/ turtle" }
+    ]; // 导出格式
+}
+
+// ===== 导入预检报告（07 号文档 §4.3 前端展示契约）=====
+
+// 推断默认值（均可在执行前编辑；本体 IRI 缺省取文件 header，已占用时可改）
+message OwlImportSuggested {
+    string ontology_name = 1 [
+        json_name = "ontologyName",
+        (gnostic.openapi.v3.property) = { description: "本体名称（推断默认：ontology IRI 尾段 / 文件名）" }
+    ]; // 本体名称
+
+    string base_iri = 2 [
+        json_name = "baseIri",
+        (gnostic.openapi.v3.property) = { description: "实体命名空间（推断默认：实体 IRI 命名空间众数）" }
+    ]; // 实体命名空间
+
+    optional string description = 3 [
+        json_name = "description",
+        (gnostic.openapi.v3.property) = { description: "描述（header rdfs:comment）" }
+    ]; // 描述
+
+    optional string ontology_iri = 4 [
+        json_name = "ontologyIri",
+        (gnostic.openapi.v3.property) = { description: "本体 IRI（文件 owl:Ontology 主体；全局唯一，被占用时需修改）" }
+    ]; // 本体 IRI
+}
+
+// 自动补声明明细（上限 200 条）
+message OwlAutoDeclaredRef {
+    string iri = 1 [json_name = "iri"];          // 实体 IRI
+    string entity_type = 2 [json_name = "entityType"]; // 补声明类型（CLASS/OBJECT_PROPERTY/...）
+    string reason = 3 [json_name = "reason"];    // 依据（公理位置类型上下文）
+}
+
+// 局部名替补明细
+message OwlRenamedLocalName {
+    string iri = 1 [json_name = "iri"];               // 实体 IRI
+    string local_name = 2 [json_name = "localName"];  // 替补后局部名（e1/e2/...）
+    string original = 3 [json_name = "original"];     // 原始提取结果（提取失败/非法）
+}
+
+// 忽略清单样例
+message OwlIgnoredSample {
+    string reason = 1 [json_name = "reason"]; // 忽略原因分类
+    string detail = 2 [json_name = "detail"]; // 明细（公理形态/IRI）
+}
+
+// 忽略清单汇总（count > 0 时 execute 必须携带 confirmed_ignore=true——两段式确认）
+message OwlIgnoredSummary {
+    int32 count = 1 [json_name = "count"]; // 忽略总数
+    map<string, int32> by_reason = 2 [json_name = "byReason"]; // 按原因聚合
+    repeated OwlIgnoredSample samples = 3 [json_name = "samples"]; // 样例（上限 50）
+}
+
+// 预检报告
+message OwlImportReport {
+    string report_id = 1 [
+        json_name = "reportId",
+        (gnostic.openapi.v3.property) = { description: "预检报告ID（execute 凭此落库，TTL 30 分钟）" }
+    ]; // 预检报告ID
+
+    string source_format = 2 [
+        json_name = "sourceFormat",
+        (gnostic.openapi.v3.property) = { description: "探测结果（RDF/XML / Turtle）" }
+    ]; // 探测结果
+
+    OwlImportSuggested suggested = 3 [json_name = "suggested"]; // 推断默认值
+
+    map<string, int32> entity_stats = 4 [
+        json_name = "entityStats",
+        (gnostic.openapi.v3.property) = { description: "六类实体统计（CLASS/OBJECT_PROPERTY/... → 行数）" }
+    ]; // 实体统计
+
+    map<uint32, int32> axiom_stats = 5 [
+        json_name = "axiomStats",
+        (gnostic.openapi.v3.property) = { description: "公理统计（axiom_type → 行数）" }
+    ]; // 公理统计
+
+    repeated OwlAutoDeclaredRef auto_declared = 6 [json_name = "autoDeclared"];       // 自动补声明明细
+    repeated OwlRenamedLocalName renamed_local_names = 7 [json_name = "renamedLocalNames"]; // 局部名替补明细
+    repeated string warnings = 8 [json_name = "warnings"]; // 告警（datatype 偏差/剥 lang 等）
+
+    OwlIgnoredSummary ignored = 9 [json_name = "ignored"]; // 忽略清单
+
+    int32 imports_count = 10 [
+        json_name = "importsCount",
+        (gnostic.openapi.v3.property) = { description: "检测到的 owl:imports 数（V1 不解析依赖文档）" }
+    ]; // imports 数
+}
+
+// ===== 导入预检/执行 =====
+
+// 导入预检 - 请求（文件字节经 protojson 即 base64 字符串传输——对齐 ai-knowledge 上传先例）
+message OwlImportPreviewRequest {
+    string file_name = 1 [
+        json_name = "fileName",
+        (gnostic.openapi.v3.property) = { description: "原始文件名（缺省本体名回退推断）" }
+    ]; // 原始文件名
+
+    bytes file_content = 2 [
+        json_name = "fileContent",
+        (gnostic.openapi.v3.property) = { description: "文件内容（≤5MB）" }
+    ]; // 文件内容
+}
+
+// 导入执行 - 请求
+message OwlImportExecuteRequest {
+    string report_id = 1 [
+        json_name = "reportId",
+        (gnostic.openapi.v3.property) = { description: "预检报告ID（一次性消费）" }
+    ]; // 预检报告ID
+
+    string ontology_name = 2 [
+        json_name = "ontologyName",
+        (gnostic.openapi.v3.property) = { description: "本体名称（必填 ≤64）" }
+    ]; // 本体名称
+
+    string base_iri = 3 [
+        json_name = "baseIri",
+        (gnostic.openapi.v3.property) = { description: "实体命名空间（必填，尾部规范化补 #；不约束导入实体的 IRI）" }
+    ]; // 实体命名空间
+
+    optional string ontology_iri = 6 [
+        json_name = "ontologyIri",
+        (gnostic.openapi.v3.property) = { description: "本体 IRI（缺省取文件 header 主体；全局唯一，被占用时可改）" }
+    ]; // 本体 IRI
+
+    optional string description = 4 [
+        json_name = "description",
+        (gnostic.openapi.v3.property) = { description: "描述（可选 ≤255）" }
+    ]; // 描述
+
+    bool confirmed_ignore = 5 [
+        json_name = "confirmedIgnore",
+        (gnostic.openapi.v3.property) = { description: "已确认忽略清单（ignored.count > 0 时必填）" }
+    ]; // 已确认忽略清单
+}
+
+// 导入执行 - 回应
+message OwlImportExecuteResponse {
+    uint32 ontology_id = 1 [
+        json_name = "ontologyId",
+        (gnostic.openapi.v3.property) = { description: "新建本体ID（前端刷新列表并切换活动本体）" }
+    ]; // 新建本体ID
+}

@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+package admin.service.v1;
+
+import "google/api/annotations.proto";
+
+import "ontology/service/v1/ontology_owl_io.proto";
+
+// OWL 导入导出服务（admin 门面）
+//
+// 三个自定义 RPC 全部 body: "*" 收扁平请求体——不是通用 CRUD，勿按惯例包 { data: {...} }
+// （protojson 会把 data 当未知字段丢弃，接口 200 但字段全空，仓库已知坑）。
+// 导出经 google.api.HttpBody 二进制响应（进 openapi 生成与 Api 表同步管线，租户闸门按
+// (path, method) 匹配）；导入两步式 preview → execute（reportId 一次性消费）。
+service OntologyOwlIOService {
+    // 导出本体为 OWL 文件（RDF/XML 默认 / Turtle 可选；只读操作；bytes 响应——HttpBody
+    // 在 Kratos v2 下会被 protojson JSON 化，§7 #19 预案回退）
+    rpc Export (ontology.service.v1.OwlExportRequest) returns (ontology.service.v1.OwlExportResponse) {
+        option (google.api.http) = {
+            post: "/admin/v1/ontology/owl:export"
+            body: "*"
+        };
+    }
+
+    // 导入预检（解析 + 反向映射 + 逐行预校验；不落库）
+    rpc ImportPreview (ontology.service.v1.OwlImportPreviewRequest) returns (ontology.service.v1.OwlImportReport) {
+        option (google.api.http) = {
+            post: "/admin/v1/ontology/owl:import-preview"
+            body: "*"
+        };
+    }
+
+    // 导入执行（新建本体 + 批量落库 + 号池回填；reportId 一次性消费）
+    rpc ImportExecute (ontology.service.v1.OwlImportExecuteRequest) returns (ontology.service.v1.OwlImportExecuteResponse) {
+        option (google.api.http) = {
+            post: "/admin/v1/ontology/owl:import-execute"
+            body: "*"
+        };
+    }
+}

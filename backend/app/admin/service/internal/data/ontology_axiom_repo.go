@@ -14,6 +14,7 @@ import (
 	"go-wind-admin/app/admin/service/internal/data/ent/ontaxiom"
 	"go-wind-admin/app/admin/service/internal/data/ent/ontentity"
 	"go-wind-admin/app/admin/service/internal/data/ent/ontontology"
+	"go-wind-admin/app/admin/service/internal/data/ent/ontserial"
 	"go-wind-admin/app/admin/service/internal/ontology"
 )
 
@@ -224,6 +225,74 @@ func (r *OntAxiomRepo) WithTx(ctx context.Context, fn func(ctx context.Context, 
 		return err
 	}
 	committed = true
+	return nil
+}
+
+// WithRawTx 导入批量通道（07 期 OWL 导入专用）：单一 ent 事务内同时提供域内核
+// AxiomTx 抽象（渲染缓存同步/校验器读全量/变更日志）与原生 *ent.Tx（本体行插入、
+// 公理 CreateBulk、号池 upsert——批量直插不走 AxiomTx 逐条语义，07 号文档 §2.4）。
+func (r *OntAxiomRepo) WithRawTx(ctx context.Context, fn func(ctx context.Context, tx ontology.AxiomTx, raw *ent.Tx) error) error {
+	tx, err := r.entClient.Client().Tx(ctx)
+	if err != nil {
+		r.log.Errorf(ctx, "start transaction failed: %s", err.Error())
+		return err
+	}
+	committed := false
+	defer func() {
+		if !committed {
+			if rollbackErr := tx.Rollback(); rollbackErr != nil {
+				r.log.Errorf(ctx, "transaction rollback failed: %s", rollbackErr.Error())
+			}
+		}
+	}()
+
+	if err = fn(ctx, &ontologyTx{tx: tx, log: r.log}, tx); err != nil {
+		return err
+	}
+
+	if err = tx.Commit(); err != nil {
+		r.log.Errorf(ctx, "transaction commit failed: %s", err.Error())
+		return err
+	}
+	committed = true
+	return nil
+}
+
+// UpsertSerialPool 号池回填 upsert（07 号文档 §2.7）：池行存在则 UPDATE next_no，
+// 不存在则 INSERT（导入事务持有该本体全部行的写权，无并发对手方——不需要 06 期取号的
+// 两段式重试）。nextNo ≤ 0 时不建行（无匹配前缀不建池）。
+func (r *OntAxiomRepo) UpsertSerialPool(ctx context.Context, tx *ent.Tx, ontologyID uint32, purpose, prefix string, nextNo uint64) error {
+	if nextNo <= 1 {
+		return nil
+	}
+	n, err := tx.OntSerial.Update().
+		Where(
+			ontserial.OntologyIDEQ(ontologyID),
+			ontserial.PurposeEQ(purpose),
+			ontserial.PrefixEQ(prefix),
+			ontserial.DeletedAtIsNil(),
+		).
+		SetNextNo(nextNo).
+		Save(ctx)
+	if err != nil {
+		r.log.Errorf(ctx, "upsert serial pool failed: %s", err.Error())
+		return err
+	}
+	if n > 0 {
+		return nil
+	}
+	if err := tx.OntSerial.Create().
+		SetOntologyID(ontologyID).
+		SetPurpose(purpose).
+		SetPrefix(prefix).
+		SetNextNo(nextNo).
+		Exec(ctx); err != nil {
+		if ent.IsConstraintError(err) {
+			return nil // 极端并发：回填与取号同事务赛跑时保留既有行
+		}
+		r.log.Errorf(ctx, "insert serial pool failed: %s", err.Error())
+		return err
+	}
 	return nil
 }
 

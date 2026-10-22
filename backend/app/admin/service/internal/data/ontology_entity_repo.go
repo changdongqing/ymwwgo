@@ -95,6 +95,14 @@ func (r *OntEntityRepo) GetEntity(ctx context.Context, id uint32) (*ent.OntEntit
 }
 
 // ListEntitiesByType 本体下指定类型的全部未删实体（树构建输入）
+// ListAllEntities 本体下全部未删实体（07 期 OWL 导出快照读；type=0 过滤无意义的 EntityTypeEQ(0)）
+func (r *OntEntityRepo) ListAllEntities(ctx context.Context, ontologyID uint32) ([]*ent.OntEntity, error) {
+	return r.entClient.Client().OntEntity.Query().
+		Where(ontentity.OntologyIDEQ(ontologyID), ontentity.DeletedAtIsNil()).
+		Order(ent.Asc(ontentity.FieldID)).
+		All(ctx)
+}
+
 func (r *OntEntityRepo) ListEntitiesByType(ctx context.Context, ontologyID uint32, entityType uint32) ([]*ent.OntEntity, error) {
 	return r.entClient.Client().OntEntity.Query().
 		Where(

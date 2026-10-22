@@ -78,6 +78,16 @@ const (
 	OntologyErrorReason_INDIVIDUAL_CODE_REQUIRED       OntologyErrorReason = 64 // 个体编码不能为空（MANUAL 空码）
 	OntologyErrorReason_INDIVIDUAL_SERIAL_CONFLICT     OntologyErrorReason = 65 // 取号并发冲突，请重试（重试耗尽）
 	OntologyErrorReason_INDIVIDUAL_TARGET_INVALID      OntologyErrorReason = 66 // 目标 {} 不是个体（61 断言目标校验）
+	// ===== OWL 导入导出（源 1-071-008 段，07 期；01 号文档预留段恰 9 槽）=====
+	OntologyErrorReason_OWL_IMPORT_FILE_INVALID   OntologyErrorReason = 80 // OWL 文件解析失败：{}（带解析器原始消息，截断 500 字符）
+	OntologyErrorReason_OWL_IMPORT_FILE_TOO_LARGE OntologyErrorReason = 81 // 文件超过导入上限（5MB），请拆分后导入
+	OntologyErrorReason_OWL_IMPORT_REPORT_EXPIRED OntologyErrorReason = 82 // 预检报告已过期，请重新上传文件
+	OntologyErrorReason_OWL_IMPORT_NOT_CONFIRMED  OntologyErrorReason = 83 // 存在将被忽略的公理，请确认忽略清单后重试
+	OntologyErrorReason_OWL_IMPORT_EMPTY          OntologyErrorReason = 84 // 文件中未发现可导入的实体
+	OntologyErrorReason_OWL_IMPORT_TYPE_CONFLICT  OntologyErrorReason = 85 // 文件中实体 {} 的类型声明冲突，无法导入
+	OntologyErrorReason_OWL_IMPORT_LIMIT_EXCEEDED OntologyErrorReason = 86 // 文件内容超过导入上限（实体 {} / 公理 {}）
+	OntologyErrorReason_OWL_EXPORT_FORMAT_INVALID OntologyErrorReason = 87 // 不支持的导出格式：{}
+	OntologyErrorReason_OWL_EXPORT_FAILED         OntologyErrorReason = 88 // 导出序列化失败：{}（writer 兜底）
 )
 
 // Enum value maps for OntologyErrorReason.
@@ -121,6 +131,15 @@ var (
 		64: "INDIVIDUAL_CODE_REQUIRED",
 		65: "INDIVIDUAL_SERIAL_CONFLICT",
 		66: "INDIVIDUAL_TARGET_INVALID",
+		80: "OWL_IMPORT_FILE_INVALID",
+		81: "OWL_IMPORT_FILE_TOO_LARGE",
+		82: "OWL_IMPORT_REPORT_EXPIRED",
+		83: "OWL_IMPORT_NOT_CONFIRMED",
+		84: "OWL_IMPORT_EMPTY",
+		85: "OWL_IMPORT_TYPE_CONFLICT",
+		86: "OWL_IMPORT_LIMIT_EXCEEDED",
+		87: "OWL_EXPORT_FORMAT_INVALID",
+		88: "OWL_EXPORT_FAILED",
 	}
 	OntologyErrorReason_value = map[string]int32{
 		"ONTOLOGY_NOT_FOUND":                   0,
@@ -161,6 +180,15 @@ var (
 		"INDIVIDUAL_CODE_REQUIRED":             64,
 		"INDIVIDUAL_SERIAL_CONFLICT":           65,
 		"INDIVIDUAL_TARGET_INVALID":            66,
+		"OWL_IMPORT_FILE_INVALID":              80,
+		"OWL_IMPORT_FILE_TOO_LARGE":            81,
+		"OWL_IMPORT_REPORT_EXPIRED":            82,
+		"OWL_IMPORT_NOT_CONFIRMED":             83,
+		"OWL_IMPORT_EMPTY":                     84,
+		"OWL_IMPORT_TYPE_CONFLICT":             85,
+		"OWL_IMPORT_LIMIT_EXCEEDED":            86,
+		"OWL_EXPORT_FORMAT_INVALID":            87,
+		"OWL_EXPORT_FAILED":                    88,
 	}
 )
 
@@ -195,7 +223,7 @@ var File_ontology_service_v1_ontology_error_proto protoreflect.FileDescriptor
 
 const file_ontology_service_v1_ontology_error_proto_rawDesc = "" +
 	"\n" +
-	"(ontology/service/v1/ontology_error.proto\x12\x13ontology.service.v1\x1a\x13errors/errors.proto*\x8f\v\n" +
+	"(ontology/service/v1/ontology_error.proto\x12\x13ontology.service.v1\x1a\x13errors/errors.proto*\xc7\r\n" +
 	"\x13OntologyErrorReason\x12\x1c\n" +
 	"\x12ONTOLOGY_NOT_FOUND\x10\x00\x1a\x04\xa8E\x94\x03\x12!\n" +
 	"\x17ONTOLOGY_NAME_DUPLICATE\x10\x01\x1a\x04\xa8E\x99\x03\x12#\n" +
@@ -235,7 +263,16 @@ const file_ontology_service_v1_ontology_error_proto_rawDesc = "" +
 	"\x1eINDIVIDUAL_CODE_PREFIX_INVALID\x10?\x1a\x04\xa8E\xa6\x03\x12\"\n" +
 	"\x18INDIVIDUAL_CODE_REQUIRED\x10@\x1a\x04\xa8E\xa6\x03\x12$\n" +
 	"\x1aINDIVIDUAL_SERIAL_CONFLICT\x10A\x1a\x04\xa8E\x99\x03\x12#\n" +
-	"\x19INDIVIDUAL_TARGET_INVALID\x10B\x1a\x04\xa8E\xa6\x03\x1a\x04\xa0E\xf4\x03B\xd4\x01\n" +
+	"\x19INDIVIDUAL_TARGET_INVALID\x10B\x1a\x04\xa8E\xa6\x03\x12!\n" +
+	"\x17OWL_IMPORT_FILE_INVALID\x10P\x1a\x04\xa8E\xa6\x03\x12#\n" +
+	"\x19OWL_IMPORT_FILE_TOO_LARGE\x10Q\x1a\x04\xa8E\xa6\x03\x12#\n" +
+	"\x19OWL_IMPORT_REPORT_EXPIRED\x10R\x1a\x04\xa8E\x99\x03\x12\"\n" +
+	"\x18OWL_IMPORT_NOT_CONFIRMED\x10S\x1a\x04\xa8E\xa6\x03\x12\x1a\n" +
+	"\x10OWL_IMPORT_EMPTY\x10T\x1a\x04\xa8E\xa6\x03\x12\"\n" +
+	"\x18OWL_IMPORT_TYPE_CONFLICT\x10U\x1a\x04\xa8E\xa6\x03\x12#\n" +
+	"\x19OWL_IMPORT_LIMIT_EXCEEDED\x10V\x1a\x04\xa8E\xa6\x03\x12#\n" +
+	"\x19OWL_EXPORT_FORMAT_INVALID\x10W\x1a\x04\xa8E\xa6\x03\x12\x1b\n" +
+	"\x11OWL_EXPORT_FAILED\x10X\x1a\x04\xa8E\xf4\x03\x1a\x04\xa0E\xf4\x03B\xd4\x01\n" +
 	"\x17com.ontology.service.v1B\x12OntologyErrorProtoP\x01Z7go-wind-admin/api/gen/go/ontology/service/v1;ontologyv1\xa2\x02\x03OSX\xaa\x02\x13Ontology.Service.V1\xca\x02\x13Ontology\\Service\\V1\xe2\x02\x1fOntology\\Service\\V1\\GPBMetadata\xea\x02\x15Ontology::Service::V1b\x06proto3"
 
 var (

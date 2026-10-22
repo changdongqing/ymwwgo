@@ -295,6 +295,9 @@ const (
 	OpCreateIndividual = "CREATE_INDIVIDUAL"
 	OpUpdateIndividual = "UPDATE_INDIVIDUAL"
 	OpDeleteIndividual = "DELETE_INDIVIDUAL"
+
+	// OpImportOwl 07 期 OWL 导入的变更日志操作名（一条摘要日志，不含逐条明细 diff）
+	OpImportOwl = "IMPORT_OWL"
 )
 
 // NavKeepDepth 骨架树无条件保留深度：1=根类、2=域入口；更深的"有父类且无子类"叶子剪掉
@@ -352,6 +355,17 @@ const (
 	ReasonIndividualCodeRequired      = "INDIVIDUAL_CODE_REQUIRED"       // 个体编码不能为空（MANUAL 空码）
 	ReasonIndividualSerialConflict    = "INDIVIDUAL_SERIAL_CONFLICT"     // 取号并发冲突（重试耗尽）
 	ReasonIndividualTargetInvalid     = "INDIVIDUAL_TARGET_INVALID"      // 目标不是个体（61 断言目标校验）
+
+	// 07 期 OWL 导入导出（源 1-071-008 段，错误码 80~88）
+	ReasonOWLImportFileInvalid   = "OWL_IMPORT_FILE_INVALID"   // OWL 文件解析失败：{}（带解析器原始消息，截断 500 字符）
+	ReasonOWLImportFileTooLarge  = "OWL_IMPORT_FILE_TOO_LARGE" // 文件超过导入上限（5MB），请拆分后导入
+	ReasonOWLImportReportExpired = "OWL_IMPORT_REPORT_EXPIRED" // 预检报告已过期，请重新上传文件
+	ReasonOWLImportNotConfirmed  = "OWL_IMPORT_NOT_CONFIRMED"  // 存在将被忽略的公理，请确认忽略清单后重试
+	ReasonOWLImportEmpty         = "OWL_IMPORT_EMPTY"          // 文件中未发现可导入的实体
+	ReasonOWLImportTypeConflict  = "OWL_IMPORT_TYPE_CONFLICT"  // 文件中实体 {} 的类型声明冲突，无法导入
+	ReasonOWLImportLimitExceeded = "OWL_IMPORT_LIMIT_EXCEEDED" // 文件内容超过导入上限（实体 {} / 公理 {}）
+	ReasonOWLExportFormatInvalid = "OWL_EXPORT_FORMAT_INVALID" // 不支持的导出格式：{}
+	ReasonOWLExportFailed        = "OWL_EXPORT_FAILED"         // 导出序列化失败：{}（writer 兜底）
 )
 
 // DomainError 域内核错误：携带 reason 与用户可读明细。

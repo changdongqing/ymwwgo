@@ -261,6 +261,13 @@ func (a *ChangeApplier) applyInTx(ctx context.Context, tx AxiomTx, set *EntityCh
 	return &ApplyResult{NewEntityIDs: newEntityIDs, NewVersion: afterVersion}, nil
 }
 
+// SyncAnnotationCache 批量渲染缓存同步（07 期导入批量通道导出；与 applyInTx 步骤 4
+// 同款语义——display_label / deprecated 按注解公理重算。原私有 syncRenderCache 行为零变化，
+// 本方法是其导入批量入口：execute 落库后对全部实体 id 调用一次）。
+func (a *ChangeApplier) SyncAnnotationCache(ctx context.Context, tx AxiomTx, ontologyID uint32, subjects map[uint32]struct{}) error {
+	return a.syncRenderCache(ctx, tx, ontologyID, subjects)
+}
+
 // syncRenderCache 重算受影响主语的渲染缓存列（设计文档 §3.3 同步规则）：
 // display_label 取 rdfs:label 候选中按 lang 优先级 zh > 无 lang > 其它、再按 sort_order、id
 // 稳定排序的首条，全空则显式置 NULL；deprecated 取 owl:deprecated 值为 "true" 的断言存在性。

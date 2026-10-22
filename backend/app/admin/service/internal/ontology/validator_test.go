@@ -48,18 +48,13 @@ func TestValidator_IRISyntax(t *testing.T) {
 		t.Fatalf("应报 IRI 语法问题：%v", problems)
 	}
 
+	// 07 期 IRI 保真定案：绝对 IRI 即通过，不再要求以 base_iri 为前缀（导入实体可来自任意命名空间）
 	e2 := classEntity(2, "B")
-	e2.Iri = strPtr("http://other.com/#B") // 绝对但不以 base_iri 为前缀
+	e2.Iri = strPtr("http://other.com/#B") // 绝对 IRI、跨命名空间
 	problems = validate(t, []*ent.OntEntity{classEntity(1, "A"), e2},
 		[]*ent.OntAxiom{declAxiom(10, 1), declAxiom(11, 2)})
-	var hasPrefix bool
-	for _, p := range problems {
-		if strings.Contains(p.Error(), "不以本体命名空间") {
-			hasPrefix = true
-		}
-	}
-	if !hasPrefix {
-		t.Fatalf("应报命名空间前缀问题：%v", problems)
+	if len(problems) != 0 {
+		t.Fatalf("跨命名空间绝对 IRI 应通过（07 期 IRI 保真）：%v", problems)
 	}
 }
 

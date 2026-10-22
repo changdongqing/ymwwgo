@@ -637,5 +637,48 @@
     "targetInvalid": "Assertion target must be an individual",
     "targetRequired": "Select a target individual",
     "valueRequired": "Enter a literal value"
+  },
+  "owl": {
+    "export": {
+      "action": "Export",
+      "rdfxml": "Export RDF/XML (.owl)",
+      "turtle": "Export Turtle (.ttl)",
+      "success": "Export succeeded",
+      "failed": "Export failed"
+    },
+    "import": {
+      "action": "Import OWL",
+      "title": "Import OWL Ontology",
+      "stepUpload": "Upload",
+      "stepReport": "Preview Report",
+      "stepMeta": "Basic Info",
+      "stepExecute": "Execute",
+      "uploadHint": "Supports OWL files in RDF/XML and Turtle formats",
+      "uploadLimit": "Single file ≤ 5MB, entities ≤ 10,000, axioms ≤ 20,000; owl:imports dependencies are not resolved",
+      "uploadText": "Click or drag an OWL file here (.owl / .rdf / .ttl / .xml)",
+      "parsing": "Parsing…",
+      "previewFailed": "Preview failed",
+      "reportSummary": "Format {format}: entities {entities}, axioms {axioms}, ignored {ignored}",
+      "suggestedName": "Ontology name (inferred)",
+      "suggestedBaseIri": "Entity namespace (inferred)",
+      "entityStats": "Entity statistics ({count} types)",
+      "autoDeclared": "Auto-declared ({count}, first 50 shown)",
+      "renamedLocalNames": "Renamed local names ({count})",
+      "original": "Original",
+      "warnings": "Warnings ({count})",
+      "ignored": "Axioms to be ignored ({count})",
+      "confirmIgnore": "I acknowledge that {count} axioms will be ignored",
+      "axiomType": "Axiom type",
+      "axiomLabel": "Label",
+      "axiomCount": "Count",
+      "back": "Back",
+      "next": "Next",
+      "metaHint": "The entity namespace only governs IRI generation for entities created in this system later; imported IRIs are preserved as-is",
+      "requiredFields": "Ontology name and entity namespace are required",
+      "executeConfirm": "Confirm import",
+      "executeSummary": "A new ontology will be created: entities {entities}, axioms {axioms}, ignored {ignored}",
+      "execute": "Start import",
+      "executeSuccess": "Import completed"
+    }
   }
 }

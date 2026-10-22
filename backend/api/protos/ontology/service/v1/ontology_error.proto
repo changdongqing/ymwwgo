@@ -75,4 +75,15 @@ enum OntologyErrorReason {
     INDIVIDUAL_CODE_REQUIRED = 64 [(errors.code) = 422];         // 个体编码不能为空（MANUAL 空码）
     INDIVIDUAL_SERIAL_CONFLICT = 65 [(errors.code) = 409];       // 取号并发冲突，请重试（重试耗尽）
     INDIVIDUAL_TARGET_INVALID = 66 [(errors.code) = 422];        // 目标 {} 不是个体（61 断言目标校验）
+
+    // ===== OWL 导入导出（源 1-071-008 段，07 期；01 号文档预留段恰 9 槽）=====
+    OWL_IMPORT_FILE_INVALID = 80 [(errors.code) = 422];   // OWL 文件解析失败：{}（带解析器原始消息，截断 500 字符）
+    OWL_IMPORT_FILE_TOO_LARGE = 81 [(errors.code) = 422]; // 文件超过导入上限（5MB），请拆分后导入
+    OWL_IMPORT_REPORT_EXPIRED = 82 [(errors.code) = 409]; // 预检报告已过期，请重新上传文件
+    OWL_IMPORT_NOT_CONFIRMED = 83 [(errors.code) = 422];  // 存在将被忽略的公理，请确认忽略清单后重试
+    OWL_IMPORT_EMPTY = 84 [(errors.code) = 422];          // 文件中未发现可导入的实体
+    OWL_IMPORT_TYPE_CONFLICT = 85 [(errors.code) = 422];  // 文件中实体 {} 的类型声明冲突，无法导入
+    OWL_IMPORT_LIMIT_EXCEEDED = 86 [(errors.code) = 422]; // 文件内容超过导入上限（实体 {} / 公理 {}）
+    OWL_EXPORT_FORMAT_INVALID = 87 [(errors.code) = 422]; // 不支持的导出格式：{}
+    OWL_EXPORT_FAILED = 88 [(errors.code) = 500];         // 导出序列化失败：{}（writer 兜底）
 }

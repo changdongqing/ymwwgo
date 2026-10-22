@@ -42,17 +42,14 @@ func ValidateAxioms(ctx context.Context, baseIRI string, entities []*ent.OntEnti
 		}
 	}
 
-	// 1. IRI 语法
+	// 1. IRI 语法（07 期 IRI 保真定案放宽：不再要求以本体 base_iri 为前缀——导入的实体
+	//    IRI 原样落库，base_iri 只服务"本系统新建实体时的 IRI 生成"；01 号文档"实体 IRI =
+	//    base_iri + local_name"是新建路径的生成规则，非结构校验项）
 	for _, e := range entities {
 		iri := nilString(e.Iri)
 		if u, err := url.Parse(iri); err != nil || !u.IsAbs() {
 			problems = append(problems, NewError(ReasonAxiomInvalid,
 				"实体 %s 的 IRI %s 不是绝对 IRI", entityLabel(e), iri))
-			continue
-		}
-		if !strings.HasPrefix(iri, baseIRI) {
-			problems = append(problems, NewError(ReasonAxiomInvalid,
-				"实体 %s 的 IRI %s 不以本体命名空间 %s 为前缀", entityLabel(e), iri, baseIRI))
 		}
 	}
 

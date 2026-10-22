@@ -86,6 +86,7 @@ var ServiceTagToBusinessModule = map[string]identityV1.Module{
 	"OntologyAnnotationPropertyService": identityV1.Module_SYSTEM,
 	"OntologyDatatypeService":           identityV1.Module_SYSTEM,
 	"OntologyIndividualService":         identityV1.Module_SYSTEM,
+	"OntologyOwlIOService":              identityV1.Module_SYSTEM,
 
 	"AuthenticationService": identityV1.Module_DASHBOARD,
 }

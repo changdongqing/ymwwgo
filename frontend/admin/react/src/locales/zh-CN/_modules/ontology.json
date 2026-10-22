@@ -637,5 +637,48 @@
     "targetInvalid": "断言目标必须是个体",
     "targetRequired": "请选择目标个体",
     "valueRequired": "请输入字面量值"
+  },
+  "owl": {
+    "export": {
+      "action": "导出",
+      "rdfxml": "导出 RDF/XML (.owl)",
+      "turtle": "导出 Turtle (.ttl)",
+      "success": "导出成功",
+      "failed": "导出失败"
+    },
+    "import": {
+      "action": "导入 OWL",
+      "title": "导入 OWL 本体",
+      "stepUpload": "上传",
+      "stepReport": "预检报告",
+      "stepMeta": "基本信息",
+      "stepExecute": "执行",
+      "uploadHint": "支持 RDF/XML 与 Turtle 格式的 OWL 文件",
+      "uploadLimit": "单文件 ≤ 5MB，实体 ≤ 10 000，公理 ≤ 20 000；owl:imports 依赖文档不解析",
+      "uploadText": "点击或拖拽 OWL 文件到此处（.owl / .rdf / .ttl / .xml）",
+      "parsing": "解析中…",
+      "previewFailed": "预检失败",
+      "reportSummary": "格式 {format}：实体 {entities}、公理 {axioms}、忽略 {ignored}",
+      "suggestedName": "本体名称（推断）",
+      "suggestedBaseIri": "实体命名空间（推断）",
+      "entityStats": "六类实体统计（{count} 类）",
+      "autoDeclared": "自动补声明（{count} 条，仅展示前 50 条）",
+      "renamedLocalNames": "局部名替补（{count} 条）",
+      "original": "原提取",
+      "warnings": "告警（{count} 条）",
+      "ignored": "将被忽略的公理（{count} 条）",
+      "confirmIgnore": "我已知晓 {count} 条公理将被忽略",
+      "axiomType": "公理类型",
+      "axiomLabel": "说明",
+      "axiomCount": "行数",
+      "back": "上一步",
+      "next": "下一步",
+      "metaHint": "实体命名空间只约束今后在本系统新建实体时的 IRI 生成，不约束导入内容",
+      "requiredFields": "本体名称与实体命名空间为必填",
+      "executeConfirm": "确认导入",
+      "executeSummary": "将新建本体：实体 {entities}、公理 {axioms}、忽略 {ignored}",
+      "execute": "开始导入",
+      "executeSuccess": "导入完成"
+    }
   }
 }

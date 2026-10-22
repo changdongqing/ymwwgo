@@ -6378,6 +6378,65 @@ paths:
                 "200":
                     description: OK
                     content: {}
+    /admin/v1/ontology/owl:export:
+        post:
+            tags:
+                - OntologyOwlIOService
+            description: |-
+                导出本体为 OWL 文件（RDF/XML 默认 / Turtle 可选；只读操作；bytes 响应——HttpBody
+                 在 Kratos v2 下会被 protojson JSON 化，§7 #19 预案回退）
+            operationId: OntologyOwlIOService_Export
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/OwlExportRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/OwlExportResponse'
+    /admin/v1/ontology/owl:import-execute:
+        post:
+            tags:
+                - OntologyOwlIOService
+            description: 导入执行（新建本体 + 批量落库 + 号池回填；reportId 一次性消费）
+            operationId: OntologyOwlIOService_ImportExecute
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/OwlImportExecuteRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/OwlImportExecuteResponse'
+    /admin/v1/ontology/owl:import-preview:
+        post:
+            tags:
+                - OntologyOwlIOService
+            description: 导入预检（解析 + 反向映射 + 逐行预校验；不落库）
+            operationId: OntologyOwlIOService_ImportPreview
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/OwlImportPreviewRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/OwlImportReport'
     /admin/v1/operation-audit-logs:
         get:
             tags:
@@ -15058,6 +15117,176 @@ components:
                     description: 删除时间
                     format: date-time
             description: 组织单元
+        OwlAutoDeclaredRef:
+            type: object
+            properties:
+                iri:
+                    type: string
+                entityType:
+                    type: string
+                reason:
+                    type: string
+            description: 自动补声明明细（上限 200 条）
+        OwlExportRequest:
+            type: object
+            properties:
+                ontologyId:
+                    type: integer
+                    description: 本体ID
+                    format: uint32
+                format:
+                    type: string
+                    description: 导出格式：rdfxml（默认）/ turtle
+            description: 导出 - 请求
+        OwlExportResponse:
+            type: object
+            properties:
+                fileName:
+                    type: string
+                    description: 文件名（本体名_v版本.owl/.ttl）
+                contentType:
+                    type: string
+                    description: MIME 类型（application/octet-stream）
+                content:
+                    type: string
+                    description: OWL 文件内容
+                    format: bytes
+            description: |-
+                导出 - 回应（bytes 经 protojson 即 base64 字符串；文件名随响应体下发，
+                 Content-Disposition 头不可用故不承担文件名传递）
+        OwlIgnoredSample:
+            type: object
+            properties:
+                reason:
+                    type: string
+                detail:
+                    type: string
+            description: 忽略清单样例
+        OwlIgnoredSummary:
+            type: object
+            properties:
+                count:
+                    type: integer
+                    format: int32
+                byReason:
+                    type: object
+                    additionalProperties:
+                        type: integer
+                        format: int32
+                samples:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/OwlIgnoredSample'
+            description: 忽略清单汇总（count > 0 时 execute 必须携带 confirmed_ignore=true——两段式确认）
+        OwlImportExecuteRequest:
+            type: object
+            properties:
+                reportId:
+                    type: string
+                    description: 预检报告ID（一次性消费）
+                ontologyName:
+                    type: string
+                    description: 本体名称（必填 ≤64）
+                baseIri:
+                    type: string
+                    description: '实体命名空间（必填，尾部规范化补 #；不约束导入实体的 IRI）'
+                ontologyIri:
+                    type: string
+                    description: 本体 IRI（缺省取文件 header 主体；全局唯一，被占用时可改）
+                description:
+                    type: string
+                    description: 描述（可选 ≤255）
+                confirmedIgnore:
+                    type: boolean
+                    description: 已确认忽略清单（ignored.count > 0 时必填）
+            description: 导入执行 - 请求
+        OwlImportExecuteResponse:
+            type: object
+            properties:
+                ontologyId:
+                    type: integer
+                    description: 新建本体ID（前端刷新列表并切换活动本体）
+                    format: uint32
+            description: 导入执行 - 回应
+        OwlImportPreviewRequest:
+            type: object
+            properties:
+                fileName:
+                    type: string
+                    description: 原始文件名（缺省本体名回退推断）
+                fileContent:
+                    type: string
+                    description: 文件内容（≤5MB）
+                    format: bytes
+            description: 导入预检 - 请求（文件字节经 protojson 即 base64 字符串传输——对齐 ai-knowledge 上传先例）
+        OwlImportReport:
+            type: object
+            properties:
+                reportId:
+                    type: string
+                    description: 预检报告ID（execute 凭此落库，TTL 30 分钟）
+                sourceFormat:
+                    type: string
+                    description: 探测结果（RDF/XML / Turtle）
+                suggested:
+                    $ref: '#/components/schemas/OwlImportSuggested'
+                entityStats:
+                    type: object
+                    additionalProperties:
+                        type: integer
+                        format: int32
+                    description: 六类实体统计（CLASS/OBJECT_PROPERTY/... → 行数）
+                axiomStats:
+                    type: object
+                    additionalProperties:
+                        type: integer
+                        format: int32
+                    description: 公理统计（axiom_type → 行数）
+                autoDeclared:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/OwlAutoDeclaredRef'
+                renamedLocalNames:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/OwlRenamedLocalName'
+                warnings:
+                    type: array
+                    items:
+                        type: string
+                ignored:
+                    $ref: '#/components/schemas/OwlIgnoredSummary'
+                importsCount:
+                    type: integer
+                    description: 检测到的 owl:imports 数（V1 不解析依赖文档）
+                    format: int32
+            description: 预检报告
+        OwlImportSuggested:
+            type: object
+            properties:
+                ontologyName:
+                    type: string
+                    description: 本体名称（推断默认：ontology IRI 尾段 / 文件名）
+                baseIri:
+                    type: string
+                    description: 实体命名空间（推断默认：实体 IRI 命名空间众数）
+                description:
+                    type: string
+                    description: 描述（header rdfs:comment）
+                ontologyIri:
+                    type: string
+                    description: 本体 IRI（文件 owl:Ontology 主体；全局唯一，被占用时需修改）
+            description: 推断默认值（均可在执行前编辑；本体 IRI 缺省取文件 header，已占用时可改）
+        OwlRenamedLocalName:
+            type: object
+            properties:
+                iri:
+                    type: string
+                localName:
+                    type: string
+                original:
+                    type: string
+            description: 局部名替补明细
         Permission:
             type: object
             properties:
@@ -18009,6 +18238,14 @@ tags:
          body: "*" 收扁平请求体——不是通用 CRUD，勿按惯例包 { data: {...} }
          （protojson 会把 data 当未知字段丢弃，接口 200 但字段全空，仓库已知坑）。
          GET/DELETE 的标量参数由 Kratos 从 query string 按 proto 字段 json 名（camelCase）绑定。
+    - name: OntologyOwlIOService
+      description: |-
+        OWL 导入导出服务（admin 门面）
+
+         三个自定义 RPC 全部 body: "*" 收扁平请求体——不是通用 CRUD，勿按惯例包 { data: {...} }
+         （protojson 会把 data 当未知字段丢弃，接口 200 但字段全空，仓库已知坑）。
+         导出经 google.api.HttpBody 二进制响应（进 openapi 生成与 Api 表同步管线，租户闸门按
+         (path, method) 匹配）；导入两步式 preview → execute（reportId 一次性消费）。
     - name: OntologyService
       description: |-
         本体文档管理服务（admin 门面）

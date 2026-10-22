@@ -2,13 +2,13 @@
 
 | 项 | 内容 |
 |---|---|
-| 文档版本 | V1.0（2026-10-22 设计定稿，待实现；实现后按 01 号文档 §8 惯例补修订记录） |
+| 文档版本 | V1.1（2026-10-22 设计定稿 V1.0；同日实现落地并回填实现修订记录 §12.1） |
 | 系列文档 | 01 阶段0 + 本体类（V1.0）→ 02 对象属性 → 03 数据属性 → 04 注解属性 → 05 数据类型 → 06 个体 → **07 OWL 导入导出（本文，系列收官）** |
 | 定位 | 六项建模能力齐备后的**互操作门槛**：兑现 01 号文档决策五的预留承诺（"07 期 OWL 导入导出需要 RDF/XML / Turtle 序列化，届时再评估轻量 RDF 库或自写序列化器，由 07 号文档定案"），把本体从"系统内闭环的建模器"变为"可与 Protégé / 任意 OWL 2 工具互通的文档化知识资产" |
 | 设计来源 | 源项目 youmingwanwu `docs/ontology/07-OWL导入导出详细设计.md`（V1.1，已实现并验证：17 项新增单测 + 模块全量回归 106 项全绿、export→import→export round-trip 闭环 ×2，含 §12 十项实现修订——**已全部内化进本文正文**）；上游分析依据为 Protégé `protege-editor-owl` 源码（`OntologySaver` / `OntologyLoader` / `UserResolvedIRIMapper`）与 OWL 2 RDF Mapping 规范 |
 | 前置文档 | 本文默认 01~06 号文档已定稿；六期行语义总表（各期 §3.1）是本文映射层的唯一口径来源；06 号文档 §10 已预告"60/61/62 行语义均已定稿，RDF 三元组映射的行级契约齐备" |
 | 全仓约束 | 铁律 3/4/6 与 01 号文档 §8 转译差异记录对本文全量生效；本期零 DDL、零菜单种子增量 |
-| 实现状态 | **设计定稿，未实现** |
+| 实现状态 | **已实现并验证**（owlio 单测全绿 + 双格式 round-trip 零漂移 + 本地端到端：导出/预检/两段式确认/导入/号池回填/AUTO 赋码不撞号/round-trip 统计全等） |
 
 ---
 
@@ -127,7 +127,7 @@ header 注解由导出侧在三元组层追加（不属于公理范畴）：`rdf
 V1 导入的唯一形态是**新建一个本体文档**并灌入文件内容。三个定案（与源同款，含其修订 #2）：
 
 1. **IRI 保真**：`ont_entities.iri` 本就存完整 IRI（不要求 = base_iri + local_name），导入的实体 IRI 原样落库。`base_iri` 只服务"今后在本系统新建实体时的 IRI 生成"，不约束导入内容——文件里实体 IRI 是任意命名空间都能导进来，不需要"改写外部 IRI"这类有损操作；
-2. **base_iri / 本体名推断**（preview 推断默认值，三者均可在执行前编辑，校验沿用本体创建规则）：
+2. **base_iri / 本体名推断**（preview 推断默认值，均可在执行前编辑，校验沿用本体创建规则；**实现修订 R4：本体 IRI 亦可编辑**——文件 header IRI 被既有本体占用时（全局唯一约束）用户改参重跑，plan 未消费（§4.4 两段式））：
    - `ontology_iri` = 文件 `owl:Ontology` 主体的 IRI（有则用）；
    - `base_iri` = **实体 IRI 命名空间的众数**（按计数取最长，并列取更长）——源实现修订 #2 定案：最长公共前缀会被单个跨命名空间实体（如 RDF/XML 写出器为 skos:notation 补的 Declaration）拉塌到 `http://`，众数对离群实体稳健；无实体时回退 `https://{域名}/ontology/{ontologyName 拼音或 slug}#`；
    - `ontology_name` 默认 = ontology_iri 尾段，缺省 = 文件名去扩展名；
@@ -168,13 +168,15 @@ OWL 文件允许"用了未声明"（property assertion 的谓词、domain/range 
 | 46 主语、42 派生轨宾语 | DATATYPE(50) |
 | 60/61/62 主语 | INDIVIDUAL(60) |
 
-例外与边界：① **内建谓词不补**：`rdfs:label` / `rdfs:comment` / `owl:deprecated` / `skos:notation` 走 100 行内建谓词轨，不注册实体（04 号文档决策三"内建谓词不入库"）；② **内建 datatype 不补**：IRI ∈ `BuiltinDatatypes` 白名单 → 跳过不建实体（05 号文档口径）；③ **同 IRI 类型冲突**（同一 IRI 既被声明为类又被当数据属性引用）：文件自身不一致，preview 报 **error 阻断**（`OWL_IMPORT_TYPE_CONFLICT`，不属于宽容范围）；④ **owl:imports 目标里的实体**：统一按"出现即补声明"——报告单列"因 imports 未解析而补声明的引用"计数。
+例外与边界：① **内建谓词不补**：`rdfs:label` / `rdfs:comment` / `owl:deprecated` / `skos:notation` 走 100 行内建谓词轨，不注册实体（04 号文档决策三"内建谓词不入库"）；② **内建 datatype 不补**：IRI ∈ `BuiltinDatatypes` 白名单 → 跳过不建实体（05 号文档口径）；③ **同 IRI 类型冲突**（同一 IRI 既被声明为类又被当数据属性引用）：文件自身不一致，preview 报 **error 阻断**（`OWL_IMPORT_TYPE_CONFLICT`，不属于宽容范围）；④ **owl:imports 目标里的实体**：统一按"出现即补声明"——报告单列"因 imports 未解析而补声明的引用"计数。**实现修订 R3（冲突口径细化与缺省推断）**：
+   - 冲突判定仅对**未显式声明的 IRI** 的"多类型位置证据"生效（如同一 IRI 既被 62 当数据属性又被 61 当对象属性引用）；**显式声明与位置证据冲突不阻断**——该公理行由预校验按"引用类型不符"进忽略清单（对齐"OWL 2 Full 不拦截、只做结构校验"的 §7 #3 口径）；
+   - `rdfs:subPropertyOf` 两端经连通分量传导共享类型证据（一端显式属性类型则另一端跟随）；传导与证据后仍无类型的属性端点（只被 domain/range 主语、subPropertyOf 无证据分量引用）**缺省补声明为对象属性 + 报告 autoDeclared 说明**——设计原表未给出这些位置的兜底，不补则行模型无法分派 30/31/32 与 40/41/42。
 
 自动补声明与 06 期"编码属性懒创建"是同一机制的泛化，语义上等价于 Protégé "出现在文件中即存在"的开放世界行为。
 
 ### 2.6 决策六：n-ary 展开、成对存储、词法偏差告警与"零校验失败不变式"
 
-1. **n-ary 展开**：`owl:AllDisjointClasses(A,B,C)` / `owl:AllDisjointProperties` / n-ary `owl:equivalentClass` 链（RDF 集合形态，解析侧展开 Collection）→ **全部两两有序对**展开落行（(A,B)+(B,A)+…），对齐既有"对称关系成对存储"惯例。展开只发生在导入方向；**导出方向逐对输出**（`C owl:disjointWith D` 等，语义等价、实现最简，不聚合回 n-ary）；
+1. **n-ary 展开**：`owl:AllDisjointClasses(A,B,C)` / `owl:AllDisjointProperties` / n-ary `owl:equivalentClass` 链（RDF 集合形态，解析侧展开 Collection）→ **全部两两有序对**展开落行（(A,B)+(B,A)+…），对齐既有"对称关系成对存储"惯例。展开只发生在导入方向；**导出方向逐对输出**（`C owl:disjointWith D` 等，语义等价、实现最简，不聚合回 n-ary）。**实现修订 R2：单条二元 triple 与 n-ary 展开共用同一"无序对集合"去重后再统一展开**——否则 round-trip 漂移（存量成对两行 → 导出两条 triple → 若各自双行落库则翻倍成四行）；无序对集合键 = (axiom_type, min(a,b), max(a,b))，自引用对丢弃进忽略清单；
 2. **成对公理**（InverseOf / Equivalent(Obj/Data)Properties / Disjoint(Obj/Data)Properties）：按 (A,B)+(B,A) 双行落库（与 02/03 期服务层写法一致）；
 3. **62 字面量 datatype 偏差**：typed literal 的 datatype ≠ 按首条 42 行推断的 datatype（05 号文档三段分派）时——**按推断 datatype 落行**（62 行模型无 datatype 列，值文本保真），warning 报告列出（"字面量声明 xsd:int，按值域 xsd:integer 落行"）。语义等价或子超类关系场景无损；真正冲突场景进入下一条的预校验兜底；
 4. **导入零校验失败不变式**：preview 对每条待落行公理做**预校验**（与校验器同口径：`lexical.go` 词形、白名单、引用存在性、`datatype.go` facet 合法性）。任何一条过不了 → 该行进**忽略清单**（带原因），不落行。忽略清单在执行前强制展示，用户勾选确认（`confirmed_ignore=true`）方可执行——与 06 期 `force=true` 同款"两段式确认"语义；
@@ -387,8 +389,8 @@ backfillSerialPools(tx, ontologyID):
 | POST | `/admin/v1/ontology/owl:import-preview` | `ImportPreview` | `{file_name, file_content: bytes}`（multipart，绑定形态参照 `i_ai_knowledge.proto` 的 docs/file 端点先例）→ `ImportReport` |
 | POST | `/admin/v1/ontology/owl:import-execute` | `ImportExecute` | `{report_id, ontology_name, base_iri, description?, confirmed_ignore}` → `{ontology_id}` |
 
-- **导出响应载体定案**：`google.api.HttpBody`（Kratos v2 原生二进制响应，随 proto 进 openapi 生成与 Api 表同步管线——租户闸门按 (path, method) 匹配，这是不走手动路由的理由）；实现期若发现 HttpBody 与 openapi 生成不兼容，回退手动 `srv.Route` 注册并在 `make openapi` 产物中**手工补录**该路由（接口同步纪律：手动路由不进 proto 管线，须人工确保进 Api 表，否则 fail-closed 403）；
-- 导出不用 GET：走 POST + blob 下载（规避 querystring 中文与鉴权令牌传递问题）；
+- **导出响应载体定案（实现修订 R1）**：设计原定 `google.api.HttpBody`，实现期验证发现 Kratos v2 的 `DefaultResponseEncoder` 对 HttpBody **无二进制特判**（会走 protojson 把 body JSON 化；生成 handler 对 typed-nil 也会输出空 JSON 前缀），且 Content-Disposition 响应头在 proto 管线内不可设。按 §7 #19 预案回退为 **bytes 响应消息** `OwlExportResponse{file_name, content_type, content}`（protojson 下 content 即 base64 字符串，与 ai-knowledge 上传先例同款）——路由保留在 proto 管线（openapi/Api 表/租户闸门完备），文件名随响应体下发；
+- 导出不用 GET：走 POST + 响应体带文件名下载（规避 querystring 中文与鉴权令牌传递问题）；
 - preview 不落库、不占乐观锁；execute 是唯一写路径，幂等保护 = reportId 一次性消费（get/remove 两段，§4.4）；
 - VO 校验：`ontology_name` 必填 ≤64、`base_iri` 必填（规范化补 `#`）、`description` 可选 ≤255——对齐本体创建规则；
 - 权限码：`ontology:ontology:export` / `ontology:ontology:import`（权限点管理页登记；服务 tag `OntologyOwlIOService` 进 `module_mapping.go`，挂 SYSTEM）。
@@ -401,7 +403,7 @@ backfillSerialPools(tx, ontologyID):
 
 `pages/app/ontology/ontology/index.tsx` 操作列追加"导出"下拉按钮（`Dropdown`：`导出 RDF/XML (.owl)` / `导出 Turtle (.ttl)`）：
 
-- 点击调 `useExportOwl`（`apiClient.ontologyOwlIOService.Export({ontologyId, format}, {responseType: 'blob'})`）→ 前端从响应头取文件名落盘（`URL.createObjectURL` + `<a download>`）；
+- 点击调 `downloadOwlExport`（`hooks/ontologyOwlIO.ts`：fetch 直连 POST → 响应 JSON 的 `content`（base64）解码为 Blob → `URL.createObjectURL` + `<a download>`；文件名取响应体 `file_name`——实现修订 R1 的 bytes 响应载体）；
 - `AccessControl codes={['ontology:ontology:export']}` 控制显隐。
 
 ### 6.2 导入向导 Drawer（`pages/app/ontology/ontology/components/OwlImportDrawer.tsx`）
@@ -445,7 +447,7 @@ backfillSerialPools(tx, ontologyID):
 | 16 | 导入个体无任何类型断言 | 不可能（§2.5 类型上下文：60 行主语必为个体；纯 100 注解的 IRI 不补个体声明）——防御：preview 的 INDIVIDUAL 统计仅来自 60 行主语与 Declaration |
 | 17 | 超大文件 / 超限 | 5MB / 10000 实体 / 20000 公理上限（§2.1），提示拆分 |
 | 18 | Turtle 语法边界（数字缩写、三引号多行、转义、嵌套集合/空白节点） | 解析器单测全形态覆盖（§8）；未覆盖形态解析失败走 #1 报错路径，不静默丢行 |
-| 19 | 导出 HttpBody 与 openapi 兼容性 | 实现期验证；不兼容则回退手动路由 + openapi 手工补录（§5） |
+| 19 | 导出 HttpBody 与 openapi 兼容性 | **已验证不兼容（实现修订 R1）**：Kratos v2 无 HttpBody 二进制特判；回退 bytes 响应消息（proto 管线内），见 §5 |
 | 20 | 乐观锁 / 缓存漂移 / 本体停用 / 误包 `{ data }` | 同系列既有行为（导入不占乐观锁；导出只读；hooks 扁平封装） |
 
 ---
@@ -508,29 +510,38 @@ backfillSerialPools(tx, ontologyID):
 ## 11. 开发任务分解（07 期 checklist）
 
 **owlio 包（核心，单测先行）**
-- [ ] `triple.go` / `detect.go`（中间表示 + 格式探测）
-- [ ] `turtle_parser.go`（§2.1 子集，单测以 Protégé 导出形态为语料）+ `turtle_writer.go`
-- [ ] `rdfxml_parser.go` + `rdfxml_writer.go`
-- [ ] `mapper.go`（§3.2 总表双向 + n-ary/成对展开 + 表达式识别 + 预校验接入）
-- [ ] `plan.go` / `planstore.go`（ImportPlan/ImportReport 模型 + 内存 TTL Store）
-- [ ] 单测五组（§8，含 round-trip 零漂移断言）
+- [x] `triple.go` / `detect.go`（中间表示 + 格式探测）
+- [x] `turtle_parser.go`（§2.1 子集）+ `turtle_writer.go`
+- [x] `rdfxml_parser.go` + `rdfxml_writer.go`
+- [x] `mapper.go` + `mapper_import.go` + `mapper_import2.go`（§3.2 总表双向 + n-ary/成对展开 + 表达式识别 + 预校验接入）
+- [x] `plan.go` / `planstore.go`（ImportPlan/ImportReport 模型 + 内存 TTL Store）
+- [x] 单测三组 `parse_test.go` / `mapper_test.go`（§8，含双格式 round-trip 零漂移断言）
 
 **服务与契约**
-- [ ] 源领域 proto `ontology_owl_io.proto` + 门面 `i_ontology_owl_io.proto`（HttpBody 导出）+ `ontology_error.proto` 追加 80~88
-- [ ] `applier.go`：`SyncAnnotationCache` 导出（回归守护）
-- [ ] `service/owl_interop_service.go`：Export / Preview / Execute（§4.2~§4.4，含号池回填与摘要日志）
-- [ ] `wiring_ent.go` 三锚点 + `rest_server.go` 注册 + `module_mapping.go` 登记 tag
-- [ ] `make api` + `make openapi`（HttpBody 路由核验；不兼容则手动路由 + 补录）
+- [x] 源领域 proto `ontology_owl_io.proto` + 门面 `i_ontology_owl_io.proto`（导出为 bytes 响应——R1）+ `ontology_error.proto` 追加 80~88
+- [x] `applier.go`：`SyncAnnotationCache` 导出（私有 syncRenderCache 的批量入口，行为零变化）
+- [x] `service/owl_interop_service.go`：Export / Preview / Execute（§4.2~§4.4，含号池回填与摘要日志）+ data 层 `WithRawTx` / `UpsertSerialPool` 导入事务端
+- [x] `wiring_ent.go` 三锚点 + `rest_server.go` 注册 + `module_mapping.go` 登记 tag（含 test 钉死表）
+- [x] `make api` + `make openapi`（owl:export / owl:import-preview / owl:import-execute 三路由核验）
+- [x] 校验器 IRI 前缀规则放宽（R5；07 IRI 保真与 01 期结构校验的冲突消解）
 
 **前端（react）**
-- [ ] `make ts` → 验证 `apiClient.ontologyOwlIOService` getter
-- [ ] `api/hooks/ontologyOwlIO.ts`（blob / multipart / execute）
-- [ ] 本体文档页增量：操作列导出下拉 + 工具栏"导入 OWL" + `OwlImportDrawer`（Steps 四步）
-- [ ] 权限码 `ontology:ontology:export|import` 权限点登记说明（README/运维手册）
+- [x] `buf generate`（react 模板）→ `apiClient.ontologyOwlIOService` getter 验证
+- [x] `api/hooks/ontologyOwlIO.ts`（fetch blob 下载 / base64 preview / execute）
+- [x] 本体文档页增量：操作列导出下拉（AccessControl）+ 工具栏"导入 OWL" + `OwlImportDrawer`（Steps 四步）+ zh/en i18n
+- [x] 权限码 `ontology:ontology:export|import`——权限点管理页登记（本期无菜单种子增量，118 闲置）
 
-**联调验收**
-- [ ] §8 单测 + 端到端 10 项 + 门禁
-- [ ] Protégé 互操作实测（人工）；文档 §12 修订回填
+**联调验收（2026-10-23 本地栈实测）**
+- [x] §8 单测（owlio 三组全绿；`go test ./app/admin/service/... ./pkg/...` 23 包全绿，pkg/oss 的 MinIO live 测试失败为本机环境性既有问题、与本期无关）
+- [x] 导出 RDF/XML 与 Turtle：文件名 `{本体名}_v{version}.owl/.ttl`、中文经 base64 随响应体下发
+- [x] 垃圾文件 preview → `OWL_IMPORT_FILE_INVALID`（带解析器原始消息）
+- [x] preview 报告：格式探测 / 六类实体与公理统计 / 众数命名空间推断 / header 注解进忽略
+- [x] execute：未勾选忽略 → `OWL_IMPORT_NOT_CONFIRMED`（422）；勾选后**同一 reportId** 重跑成功（get/remove 两段式实证）；本体 IRI 被占用 → 409 且 plan 未消费（R4 改参重跑）
+- [x] **round-trip 闭环**：export → import → export → preview 实体/公理统计全等（0 漂移），忽略项仅 header 注解（versionInfo known-diff）
+- [x] `ont_change_logs` 一条 `IMPORT_OWL`：摘要 JSON、before 0 → after 1
+- [x] 号池回填：code 池 B0222→9002 / B0999→4（按前缀聚合 max+1）、$ind→20；未匹配前缀形态的编码（A0111-xxxx）warning 不建池；导入后 AUTO 赋码 `B0222-9002` 不撞号（06 期闭环）
+- [x] `pnpm run typecheck` 全绿
+- [ ] Protégé 互操作实测（人工抽检项：导出文件桌面版打开 / Protégé 导出文件导入本系统）
 
 依赖序：owlio（triple → writers → parsers → mapper）→ applier 改造 → 服务 → 前端；**mapper 是核心风险项**（映射总表完备性 + Turtle 解析边界），单测先行。
 
@@ -552,6 +563,20 @@ backfillSerialPools(tx, ontologyID):
 | 8 | 菜单种子 | Flyway 按钮 13254~13255 | **零种子**：按钮权限码走权限点管理页登记；预留菜单号 118 闲置 | 01 号文档 §3.8 机制（本仓无按钮型菜单种子先例） |
 | 9 | round-trip 测试载体 | OWLAPI loadOntology 再解析（依赖库） | `owlio` 自身 parser 再解析 + 三元组集合相等断言——纯单测闭环，不依赖外部工具 | 自建读写层的副产品优势；Protégé 实测降为人工抽检项 |
 | 10 | OWLAPI 事实确认项（源修订 #9） | Rio 格式类名 / MissingImportHandlingStrategy / getOWLLiteral(int) 产出 xsd:integer 等四个库事实 | 不适用；对应 Go 事实预记：Turtle 数字缩写解析为 `xsd:integer`/`xsd:decimal`/`xsd:double` typed literal（按词形分流），RDF/XML 必须显式 `rdf:datatype` | 语言/库差异记档免复查 |
+
+### 12.1 本仓实现修订记录（V1.1，2026-10-22 实现落地回填）
+
+| # | 主题 | 设计定稿 | 实现修订与理由 |
+|---|---|---|---|
+| R1 | 导出响应载体 | `google.api.HttpBody`（§5） | **回退 bytes 响应** `OwlExportResponse{fileName, contentType, content}`：Kratos v2 `DefaultResponseEncoder` 对 HttpBody 无二进制特判（protojson JSON 化；typed-nil 输出空 JSON 前缀），Content-Disposition 头在 proto 管线内不可设；bytes 响应保留 proto/openapi/Api 表管线，文件名随响应体下发，前端 base64 解码落盘 |
+| R2 | 成对公理导入展开 | 单条落 (A,B)+(B,A) 双行、n-ary 全有序对展开（§2.6 #1/#2） | 单条与 n-ary **共用无序对集合去重后统一展开**：设计口径下 round-trip 漂移（存量成对两行导出两条 triple、各自双行落库翻倍为四行）；无序对集合使 2 行 → 2 triples → 2 行零漂移（自引用对丢弃 + warning） |
+| R3 | 类型冲突口径与缺省推断 | §2.5 类型上下文表 | ① 冲突仅判**未声明 IRI** 的多类型证据；显式声明与证据冲突由行级预校验拒绝（不阻断）；② subPropertyOf 连通分量传导 + domain/range 主语与无证据属性端点**缺省补声明为对象属性**（autoDeclared 说明）——否则无法分派 30/31/32 vs 40/41/42 |
+| R4 | 本体 IRI 可编辑 | execute 入参仅 name/baseIri/description（§5） | execute 补 optional `ontology_iri`（缺省取文件 header 主体）：本体 IRI 全局唯一，header 被占用时导入必然 409 且无路可走；plan 未消费语义下改参重跑 |
+| R5 | 校验器 IRI 前缀规则 | §2.3 #1 IRI 保真（base_iri 不约束导入内容） | **放宽 01 期校验器规则 1**：实体 IRI 只要求绝对 IRI，删除"以本体 base_iri 为前缀"检查（该检查与 IRI 保真冲突，导入离群命名空间实体会被防御性校验整体回滚）；"IRI = base_iri + localName"降级为新建路径的生成规则；validator_test 同步 |
+| R6 | 62 行导出谓词 | 行语义 object_id=数据属性实体 | 导出按**实体 IRI** 产三元组（62 行 predicate_iri 为 NULL，谓词取 object_id 实体）；导入侧 62/100 自定义轨的谓词实体下标引用（AxiomDraft.PredicateRef）与 61 的 predicate_iri 双形态并存 |
+| R7 | 46 等价类分派顺序 | 46 定义唯一放行形态（§3.2） | `owl:equivalentClass` 宾语为 blank 时**先判 46 放行形态再走类对分派**（主语为 datatype 实体 + blank 命中 onDatatype）；混合表达式词即保守进忽略清单 |
+| R8 | OWL 词汇事实 | —— | OWL 2 规范词汇为 **owl:DatatypeProperty**（非 "owl:DataProperty"）；Turtle 数字缩写解析为 xsd:integer/xsd:decimal/xsd:double typed literal（按词形分流，§12 #10 预记兑现）；RDF/XML 无 datatype 属性即 plain literal |
+| R9 | 草稿引用零值语义 | plan.go AxiomDraft refs | ObjectRef/PredicateRef 的 **0 是合法实体下标**，"无"必须显式 -1——mapper 全部构造点显式写 -1（42 内建轨曾因漏写落成引用首实体，单测 round-trip 抓住后修复） |
 
 ---
 
