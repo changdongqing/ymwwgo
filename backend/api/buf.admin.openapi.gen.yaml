@@ -19,6 +19,9 @@ managed:
       value: go-wind-admin/api/gen/go
 
 inputs:
+  # admin 门面（含 i_onestop_service_type 等 BFF proto）：单组输入，
+  # protoc-gen-openapi merged 模式在组内合并出全量 openapi.yaml。
+  # 注意不要按 paths 拆多组——buf 逐组调插件，同名产物只保留一组，会丢端点。
   - directory: protos
     paths:
       - protos/admin/service/v1

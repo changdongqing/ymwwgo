@@ -21,6 +21,7 @@ require (
 	github.com/mileusna/useragent v1.3.5
 	github.com/minio/minio-go/v7 v7.3.0
 	github.com/pquerna/otp v1.5.0
+	github.com/pressly/goose/v3 v3.29.0
 	github.com/redis/go-redis/v9 v9.22.0
 	github.com/sashabaranov/go-openai v1.41.2
 	github.com/stretchr/testify v1.12.1
@@ -70,20 +71,28 @@ require (
 	github.com/tx7do/kratos-transport/transport/sse v1.3.8
 	github.com/xuri/excelize/v2 v2.9.1
 	github.com/yuin/gopher-lua v1.1.2
-	go.opentelemetry.io/otel/trace v1.46.0
+	go-wind-admin/onestop v0.0.0
+	go.opentelemetry.io/otel/trace v1.47.0
 	google.golang.org/genproto v0.0.0-20260908043556-f8649ddbbfe6
-	google.golang.org/genproto/googleapis/api v0.0.0-20260908043556-f8649ddbbfe6
-	google.golang.org/grpc v1.83.2
+	google.golang.org/genproto/googleapis/api v0.0.0-20261005182115-fad411399dd8
+	google.golang.org/grpc v1.84.0
 	google.golang.org/protobuf v1.36.12
 	gorm.io/datatypes v1.2.7
 	gorm.io/gorm v1.31.2
-	modernc.org/sqlite v1.58.0
+	modernc.org/sqlite v1.60.1
 )
 
+// 一站式服务业务域：独立 Go module（backend/onestop/），由 admin 服务本地引入装配
+replace go-wind-admin/onestop => ./onestop
+
 require (
+	github.com/mfridman/interpolate v0.0.2 // indirect
+	github.com/sethvargo/go-retry v0.5.0 // indirect
 	github.com/tx7do/go-crud/vector v0.0.1 // indirect
 	github.com/tx7do/kratos-authz/engine/casbin v1.1.12 // indirect
 	github.com/tx7do/kratos-authz/engine/opa v1.1.15 // indirect
+	go.opentelemetry.io/otel/log v1.47.0 // indirect
+	go.uber.org/multierr v1.11.0 // indirect
 )
 
 require (
@@ -101,12 +110,12 @@ require (
 	dario.cat/mergo v1.0.2 // indirect
 	filippo.io/edwards25519 v1.2.0 // indirect
 	github.com/ClickHouse/ch-go v0.74.0 // indirect
-	github.com/ClickHouse/clickhouse-go/v2 v2.48.0 // indirect
+	github.com/ClickHouse/clickhouse-go/v2 v2.49.0 // indirect
 	github.com/HuaweiCloudDeveloper/gaussdb-go v1.0.0-rc1 // indirect
 	github.com/XSAM/otelsql v0.44.0 // indirect
 	github.com/agext/levenshtein v1.2.3 // indirect
 	github.com/agnivade/levenshtein v1.2.1 // indirect
-	github.com/andybalholm/brotli v1.2.3 // indirect
+	github.com/andybalholm/brotli v1.2.6 // indirect
 	github.com/antlr4-go/antlr/v4 v4.13.1 // indirect
 	github.com/apache/arrow/go/v15 v15.0.2 // indirect
 	github.com/apparentlymart/go-textseg/v15 v15.0.0 // indirect
@@ -126,7 +135,7 @@ require (
 	github.com/dlclark/regexp2/v2 v2.6.0 // indirect
 	github.com/dop251/goja v0.0.0-20260806115107-493f22071ef6 // indirect
 	github.com/dop251/goja_nodejs v0.0.0-20260212111938-1f56ff5bcf14 // indirect
-	github.com/dustin/go-humanize v1.0.1 // indirect
+	github.com/dustin/go-humanize v1.1.0 // indirect
 	github.com/fatih/color v1.19.0 // indirect
 	github.com/felixge/httpsnoop v1.1.0 // indirect
 	github.com/fsnotify/fsnotify v1.10.1 // indirect
@@ -166,10 +175,10 @@ require (
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
-	github.com/jackc/puddle/v2 v2.2.2 // indirect
+	github.com/jackc/puddle/v2 v2.2.3 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
-	github.com/klauspost/compress v1.20.0 // indirect
+	github.com/klauspost/compress v1.20.1 // indirect
 	github.com/klauspost/cpuid/v2 v2.4.0 // indirect
 	github.com/klauspost/crc32 v1.3.0 // indirect
 	github.com/ledongthuc/pdf v0.0.0-20260907135840-6c8c28e0e8a0 // indirect
@@ -186,14 +195,14 @@ require (
 	github.com/mattn/go-isatty v0.0.24 // indirect
 	github.com/mattn/go-runewidth v0.0.28 // indirect
 	github.com/mattn/go-sqlite3 v1.14.52 // indirect
-	github.com/microsoft/go-mssqldb v1.11.0 // indirect
+	github.com/microsoft/go-mssqldb v1.11.2 // indirect
 	github.com/minio/crc64nvme v1.1.1 // indirect
 	github.com/minio/md5-simd v1.1.2 // indirect
 	github.com/mitchellh/go-wordwrap v1.0.1 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/mojocn/base64Captcha v1.3.8 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
-	github.com/ncruces/go-strftime v1.0.0 // indirect
+	github.com/ncruces/go-strftime v1.1.0 // indirect
 	github.com/oasdiff/yaml v0.1.1 // indirect
 	github.com/oasdiff/yaml3 v0.0.14 // indirect
 	github.com/olekukonko/cat v0.0.0-20250911104152-50322a0618f6 // indirect
@@ -206,7 +215,7 @@ require (
 	github.com/oschwald/maxminddb-golang v1.13.1 // indirect
 	github.com/paulmach/orb v0.13.0 // indirect
 	github.com/philhofer/fwd v1.2.0 // indirect
-	github.com/pierrec/lz4/v4 v4.1.29 // indirect
+	github.com/pierrec/lz4/v4 v4.1.33 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/power-devops/perfstat v0.0.0-20260805114148-88456608a4f6 // indirect
 	github.com/prometheus/client_golang v1.24.1 // indirect
@@ -226,7 +235,7 @@ require (
 	github.com/segmentio/ksuid v1.0.4 // indirect
 	github.com/shirou/gopsutil/v3 v3.24.5 // indirect
 	github.com/shoenig/go-m1cpu v0.2.2 // indirect
-	github.com/shopspring/decimal v1.4.0 // indirect
+	github.com/shopspring/decimal v1.5.0 // indirect
 	github.com/sirupsen/logrus v1.10.2 // indirect
 	github.com/sony/sonyflake v1.3.0 // indirect
 	github.com/spf13/cast v1.10.0 // indirect
@@ -275,34 +284,34 @@ require (
 	go.mongodb.org/mongo-driver/v2 v2.9.0 // indirect
 	go.opentelemetry.io/auto/sdk v1.2.1 // indirect
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.71.0 // indirect
-	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.71.0 // indirect
-	go.opentelemetry.io/otel v1.46.0 // indirect
+	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.72.0 // indirect
+	go.opentelemetry.io/otel v1.47.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.46.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.46.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp v1.46.0 // indirect
 	go.opentelemetry.io/otel/exporters/stdout/stdouttrace v1.46.0 // indirect
 	go.opentelemetry.io/otel/exporters/zipkin v1.45.0 // indirect
-	go.opentelemetry.io/otel/metric v1.46.0 // indirect
-	go.opentelemetry.io/otel/sdk v1.46.0 // indirect
+	go.opentelemetry.io/otel/metric v1.47.0 // indirect
+	go.opentelemetry.io/otel/sdk v1.47.0 // indirect
 	go.opentelemetry.io/proto/otlp v1.11.0 // indirect
 	go.uber.org/atomic v1.11.0 // indirect
 	go.yaml.in/yaml/v2 v2.4.4 // indirect
 	go.yaml.in/yaml/v3 v3.0.5 // indirect
-	golang.org/x/crypto v0.56.0 // indirect
-	golang.org/x/exp v0.0.0-20260824195058-e88cd73687aa // indirect
+	golang.org/x/crypto v0.58.0 // indirect
+	golang.org/x/exp v0.0.0-20261011100332-faecfb24eb49 // indirect
 	golang.org/x/image v0.40.0 // indirect
-	golang.org/x/mod v0.40.0 // indirect
-	golang.org/x/net v0.58.0 // indirect
+	golang.org/x/mod v0.42.0 // indirect
+	golang.org/x/net v0.61.0 // indirect
 	golang.org/x/oauth2 v0.36.0 // indirect
-	golang.org/x/sync v0.22.0 // indirect
-	golang.org/x/sys v0.47.0 // indirect
-	golang.org/x/telemetry v0.0.0-20260902144106-3ef544be8421 // indirect
-	golang.org/x/text v0.41.0 // indirect
+	golang.org/x/sync v0.24.0 // indirect
+	golang.org/x/sys v0.49.0 // indirect
+	golang.org/x/telemetry v0.0.0-20261009151841-97e8ea77aa2a // indirect
+	golang.org/x/text v0.43.0 // indirect
 	golang.org/x/time v0.15.0 // indirect
-	golang.org/x/tools v0.49.0 // indirect
+	golang.org/x/tools v0.52.0 // indirect
 	golang.org/x/xerrors v0.0.0-20240903120638-7835f813f4da // indirect
 	google.golang.org/api v0.297.0 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20260908043556-f8649ddbbfe6 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20261005182115-fad411399dd8 // indirect
 	gopkg.in/cenkalti/backoff.v1 v1.1.0 // indirect
 	gopkg.in/ini.v1 v1.67.3 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
@@ -317,7 +326,7 @@ require (
 	gorm.io/plugin/opentelemetry v0.1.16 // indirect
 	gorm.io/plugin/prometheus v0.1.0 // indirect
 	layeh.com/gopher-luar v1.0.11 // indirect
-	modernc.org/libc v1.75.7 // indirect
+	modernc.org/libc v1.78.0 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
 	modernc.org/memory v1.12.1 // indirect
 	sigs.k8s.io/yaml v1.6.0 // indirect

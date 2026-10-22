@@ -72,5 +72,10 @@ var ServiceTagToBusinessModule = map[string]identityV1.Module{
 	"InternalMessageRecipientService": identityV1.Module_INTERNAL_MESSAGE,
 	"NotificationPreferenceService":   identityV1.Module_INTERNAL_MESSAGE,
 
+	// 一站式服务（独立 Go module go-wind-admin/onestop）。
+	// 服务类型是平台级全局字典，暂挂 SYSTEM 模块（菜单侧以 sys:platform_admin 收权）；
+	// 后续工单等租户态业务实体应在该 module 下新增服务并单独评估业务模块归属。
+	"OneStopServiceTypeService": identityV1.Module_SYSTEM,
+
 	"AuthenticationService": identityV1.Module_DASHBOARD,
 }

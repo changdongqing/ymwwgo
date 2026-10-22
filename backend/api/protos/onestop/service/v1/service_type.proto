@@ -1,0 +1,175 @@
+syntax = "proto3";
+
+package onestop.service.v1;
+
+import "gnostic/openapi/v3/annotations.proto";
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/field_mask.proto";
+import "google/protobuf/timestamp.proto";
+
+import "pagination/v1/pagination.proto";
+
+// 一站式服务类型管理服务
+//
+// 服务类型是四级分类字典（大类 → 中类 → 小类 → 细类），编码规则见
+// docs/leixing/biaodan/README.md：编码为 2/4/6/8 位数字字符串，位数即层级，
+// 上级编码 = 本编码去掉末两位。本服务是一站式服务（onestop）独立 Go module
+// 的第一个功能，后续服务对象、工单对象及其跟进都在该 module 内扩展。
+service OneStopServiceTypeService {
+  // 查询服务类型列表
+  rpc List (pagination.PagingRequest) returns (ListServiceTypeResponse) {
+    option (google.api.http) = {
+      get: "/admin/v1/onestop/service-types"
+    };
+  }
+
+  // 查询服务类型详情
+  rpc Get (GetServiceTypeRequest) returns (ServiceType) {
+    option (google.api.http) = {
+      get: "/admin/v1/onestop/service-types/{id}"
+    };
+  }
+
+  // 创建服务类型
+  rpc Create (CreateServiceTypeRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/admin/v1/onestop/service-types"
+      body: "*"
+    };
+  }
+
+  // 更新服务类型
+  rpc Update (UpdateServiceTypeRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      put: "/admin/v1/onestop/service-types/{id}"
+      body: "*"
+    };
+  }
+
+  // 删除服务类型
+  rpc Delete (DeleteServiceTypeRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete: "/admin/v1/onestop/service-types/{id}"
+    };
+  }
+}
+
+// 服务层级：大类 / 中类 / 小类 / 细类（与编码位数 2/4/6/8 一一对应）
+enum Level {
+  LEVEL_UNSPECIFIED = 0; // 未指定
+  LEVEL_MAJOR = 1; // 大类，2 位编码
+  LEVEL_MIDDLE = 2; // 中类，4 位编码
+  LEVEL_MINOR = 3; // 小类，6 位编码
+  LEVEL_DETAIL = 4; // 细类，8 位编码
+}
+
+// 一站式服务类型
+message ServiceType {
+  optional uint32 id = 1 [
+    json_name = "id",
+    (gnostic.openapi.v3.property) = { description: "服务类型ID" }
+  ]; // 服务类型ID
+
+  optional string code = 2 [
+    json_name = "code",
+    (gnostic.openapi.v3.property) = { description: "服务编码，2/4/6/8 位数字字符串，位数即层级" }
+  ]; // 服务编码
+
+  optional string name = 3 [
+    json_name = "name",
+    (gnostic.openapi.v3.property) = { description: "服务名称" }
+  ]; // 服务名称
+
+  optional Level level = 4 [
+    json_name = "level",
+    (gnostic.openapi.v3.property) = { description: "服务层级（大类/中类/小类/细类）" }
+  ]; // 服务层级
+
+  optional uint32 parent_id = 5 [
+    json_name = "parentId",
+    (gnostic.openapi.v3.property) = { description: "上级服务类型ID，大类为空" }
+  ]; // 上级服务类型ID
+
+  optional string description = 6 [
+    json_name = "description",
+    (gnostic.openapi.v3.property) = { description: "描述" }
+  ]; // 描述
+
+  optional bool is_enabled = 7 [
+    json_name = "isEnabled",
+    (gnostic.openapi.v3.property) = {description: "是否启用"}
+  ]; // 是否启用
+
+  optional uint32 sort_order = 8 [
+    json_name = "sortOrder",
+    (gnostic.openapi.v3.property) = {description: "排序顺序，值越小越靠前"}
+  ]; // 排序顺序，值越小越靠前
+
+  optional uint32 created_by = 100 [json_name = "createdBy", (gnostic.openapi.v3.property) = {description: "创建者ID"}]; // 创建者ID
+  optional uint32 updated_by = 101 [json_name = "updatedBy", (gnostic.openapi.v3.property) = {description: "更新者ID"}]; // 更新者ID
+  optional uint32 deleted_by = 102 [json_name = "deletedBy", (gnostic.openapi.v3.property) = {description: "删除者用户ID"}]; // 删除者用户ID
+
+  optional google.protobuf.Timestamp created_at = 200 [json_name = "createdAt", (gnostic.openapi.v3.property) = {description: "创建时间"}];// 创建时间
+  optional google.protobuf.Timestamp updated_at = 201 [json_name = "updatedAt", (gnostic.openapi.v3.property) = {description: "更新时间"}];// 更新时间
+  optional google.protobuf.Timestamp deleted_at = 202 [json_name = "deletedAt", (gnostic.openapi.v3.property) = {description: "删除时间"}];// 删除时间
+}
+
+// 查询服务类型列表 - 回应
+message ListServiceTypeResponse {
+  repeated ServiceType items = 1;
+  uint64 total = 2;
+}
+
+// 查询服务类型详情 - 请求
+message GetServiceTypeRequest {
+  oneof query_by {
+    uint32 id = 1 [
+      (gnostic.openapi.v3.property) = {description: "ID", read_only: true},
+      json_name = "id"
+    ]; // ID
+  }
+
+  optional google.protobuf.FieldMask view_mask = 100 [
+    json_name = "viewMask",
+    (gnostic.openapi.v3.property) = {
+      description: "视图字段过滤器，用于控制返回的字段"
+    }
+  ]; // 视图字段过滤器，用于控制返回的字段
+}
+
+// 创建服务类型 - 请求
+message CreateServiceTypeRequest {
+  ServiceType data = 1;
+}
+
+// 更新服务类型 - 请求
+message UpdateServiceTypeRequest {
+  uint32 id = 1;
+
+  ServiceType data = 2;
+
+  google.protobuf.FieldMask update_mask = 3 [
+    (gnostic.openapi.v3.property) = {
+      description: "要更新的字段列表",
+      example: {yaml : "id,code,name,level"}
+    },
+    json_name = "updateMask"
+  ]; // 要更新的字段列表
+
+  optional bool allow_missing = 4 [
+    (gnostic.openapi.v3.property) = {description: "如果设置为true的时候，资源不存在则会新增(插入)，并且在这种情况下`updateMask`字段将会被忽略。"},
+    json_name = "allowMissing"
+  ]; // 资源不存在时是否新增
+}
+
+// 删除服务类型 - 请求
+message DeleteServiceTypeRequest {
+  oneof query_by {
+    uint32 id = 1 [
+      (gnostic.openapi.v3.property) = {description: "ID", read_only: true},
+      json_name = "id"
+    ]; // ID
+  }
+}

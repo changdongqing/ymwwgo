@@ -311,6 +311,9 @@ func ComponentToModule(component string) identityV1.Module {
 		return identityV1.Module_TASK
 	case len(component) >= 7 && component[:7] == "app/ai/":
 		return identityV1.Module_AI
+	case len(component) >= 11 && component[:11] == "app/onestop/":
+		// 一站式服务（独立 Go module）：当前均为平台级全局数据，暂挂 SYSTEM
+		return identityV1.Module_SYSTEM
 	default:
 		return identityV1.Module_MODULE_UNSPECIFIED
 	}
@@ -1172,6 +1175,40 @@ var DefaultMenus = []*permissionV1.Menu{
 			Title: trans.Ptr("menu.ai.usage"),
 			Icon:  trans.Ptr("lucide:bar-chart-3"),
 			Order: trans.Ptr(int32(4)),
+		},
+	},
+	{
+		// 一站式服务（独立 Go module go-wind-admin/onestop）：目录
+		Id:        trans.Ptr(uint32(90)),
+		ParentId:  nil,
+		Type:      permissionV1.Menu_CATALOG.Enum(),
+		Name:      trans.Ptr("OneStopService"),
+		Path:      trans.Ptr("/onestop"),
+		Redirect:  trans.Ptr("/onestop/service-types"),
+		Component: trans.Ptr("BasicLayout"),
+		Status:    permissionV1.Menu_ON.Enum(),
+		CreatedAt: timeutil.TimeToTimestamppb(trans.Ptr(time.Now())),
+		Meta: &permissionV1.MenuMeta{
+			Order:     trans.Ptr(int32(21)),
+			Title:     trans.Ptr("menu.onestop.title"),
+			Icon:      trans.Ptr("lucide:concierge-bell"),
+			Authority: []string{"sys:platform_admin", "sys:tenant_manager"},
+		},
+	},
+	{
+		// 服务类型：四级分类字典（大/中/小/细），平台管理员专属
+		Id:        trans.Ptr(uint32(91)),
+		ParentId:  trans.Ptr(uint32(90)),
+		Type:      permissionV1.Menu_MENU.Enum(),
+		Name:      trans.Ptr("OneStopServiceTypes"),
+		Path:      trans.Ptr("service-types"),
+		Component: trans.Ptr("app/onestop/service_type/index.vue"),
+		CreatedAt: timeutil.TimeToTimestamppb(trans.Ptr(time.Now())),
+		Meta: &permissionV1.MenuMeta{
+			Title:     trans.Ptr("menu.onestop.serviceTypes"),
+			Icon:      trans.Ptr("lucide:layout-list"),
+			Order:     trans.Ptr(int32(1)),
+			Authority: []string{"sys:platform_admin"},
 		},
 	},
 }

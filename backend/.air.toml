@@ -11,7 +11,7 @@ bin = "tmp/admin-server"
 # 指向本地覆盖配置目录（容器编排文件 docker-compose.local.yaml 的配套配置）
 full_bin = "tmp/admin-server -c /home/chdq/src/github/changdongqing/ymwwgo/backend/app/admin/service/configs.local"
 include_ext = ["go", "yaml", "proto"]
-include_dir = ["app", "pkg", "api"]
+include_dir = ["app", "pkg", "api", "onestop"]
 exclude_dir = ["tmp"]
 delay = 1000
 stop_on_error = true

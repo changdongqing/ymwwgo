@@ -1,0 +1,38 @@
+/**
+ * 服务类型页页签式布局（列表 / 新增 / 编辑各一个页签）：
+ * 页签条固定，内容区撑满剩余高度；列表页签内部由表格自身的滚动方案接管，
+ * 表单页签超高时页签内滚动。
+ */
+
+.service-type-tabs {
+  height: 100%;
+}
+
+.service-type-tabs > .ant-tabs-nav {
+  margin-bottom: 12px;
+}
+
+.service-type-tabs > .ant-tabs-content-holder {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.service-type-tabs .ant-tabs-content,
+.service-type-tabs .ant-tabs-tabpane {
+  height: 100%;
+}
+
+/* 仅激活页签转纵向 flex：列表面板里的 .page-container-content 靠 flex:1 撑满，
+   useProTableScrollY 才能测到真实容器高度，表格自适应、分页器钉底。
+   不能作用于全部页签——会覆盖 antd 隐藏非激活页签的 display:none */
+.service-type-tabs .ant-tabs-tabpane-active {
+  display: flex;
+  flex-direction: column;
+}
+
+.service-type-form-pane {
+  height: 100%;
+  overflow: auto;
+  padding-top: 8px;
+}

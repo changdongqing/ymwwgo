@@ -2,6 +2,33 @@ version: v2
 
 clean: true
 
+# onestop（protos/onestop）是独立 Go module go-wind-admin/onestop 的源 proto，
+# 其 Go 代码由 buf.onestop.gen.yaml 生成进 onestop/api/gen/go（包 onestopv1），
+# 不落入主 module 的 gen/go——这里显式枚举其余各域。
+# 注意：新增 proto 顶层域时必须在此追加，否则 make api 不会生成（编译期即报缺包）。
+inputs:
+  - directory: protos
+    paths:
+      - protos/access_key
+      - protos/admin
+      - protos/ai
+      - protos/audit
+      - protos/authentication
+      - protos/config
+      - protos/dict
+      - protos/identity
+      - protos/internal_message
+      - protos/monitor_alert
+      - protos/notification
+      - protos/notification_channel
+      - protos/online_session
+      - protos/permission
+      - protos/redis_cache
+      - protos/script
+      - protos/server_monitor
+      - protos/storage
+      - protos/task
+
 managed:
   enabled: true
 
@@ -67,6 +94,12 @@ managed:
     - file_option: go_package
       path: ai/service/v1
       value: go-wind-admin/api/gen/go/ai/service/v1;aipb
+    # onestop 源领域消息：指向独立 Go module 的 gen 包（不落主 gen），
+    # 使 admin 门面（i_onestop_service_type）生成的 HTTP 接口与
+    # module 内 service 的方法签名一致，可零适配直接注册
+    - file_option: go_package
+      path: onestop/service/v1
+      value: go-wind-admin/onestop/api/gen/go/onestop/service/v1;onestopv1
 
 plugins:
   # generate go code

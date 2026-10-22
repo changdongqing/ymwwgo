@@ -4889,6 +4889,162 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/RenderNotificationTemplateResponse'
+    /admin/v1/onestop/service-types:
+        get:
+            tags:
+                - OneStopServiceTypeService
+            description: 查询服务类型列表
+            operationId: OneStopServiceTypeService_List
+            parameters:
+                - name: page
+                  in: query
+                  description: 当前页码（从1开始，默认1）
+                  schema:
+                    type: integer
+                    format: uint32
+                - name: pageSize
+                  in: query
+                  description: 每页条数（默认10，建议设置上限如100）
+                  schema:
+                    type: integer
+                    format: uint32
+                - name: offset
+                  in: query
+                  description: 跳过的记录数（从0开始，默认0）
+                  schema:
+                    type: string
+                - name: limit
+                  in: query
+                  description: 最多返回的记录数（默认10，建议设置上限如100）
+                  schema:
+                    type: integer
+                    format: uint32
+                - name: token
+                  in: query
+                  description: 上一页最后一条记录的游标（如ID/时间戳+ID，首次请求为空）
+                  schema:
+                    type: string
+                - name: noPaging
+                  in: query
+                  description: 是否不分页，如果为true，则page和pageSize参数无效。
+                  schema:
+                    type: boolean
+                - name: query
+                  in: query
+                  description: JSON字符串过滤条件，基础语法：{"field1":"val1", "field2___icontains":"val2"}，具体请参见：https://github.com/tx7do/go-crud/tree/main/pagination/filter/README.md
+                  schema:
+                    type: string
+                - name: filter
+                  in: query
+                  description: Google AIP规范字符串过滤条件
+                  schema:
+                    type: string
+                - name: filterExpr.type
+                  in: query
+                  description: 过滤表达式类型
+                  schema:
+                    enum:
+                        - EXPR_TYPE_UNSPECIFIED
+                        - AND
+                        - OR
+                    type: string
+                    format: enum
+                - name: orderBy
+                  in: query
+                  description: 排序条件
+                  schema:
+                    type: string
+                - name: fieldMask
+                  in: query
+                  description: 字段掩码，其作用为SELECT中的字段，其语法为使用逗号分隔字段名，例如：id,realName,userName。如果为空则选中所有字段，即SELECT *。
+                  schema:
+                    type: string
+                    format: field-mask
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListServiceTypeResponse'
+        post:
+            tags:
+                - OneStopServiceTypeService
+            description: 创建服务类型
+            operationId: OneStopServiceTypeService_Create
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/CreateServiceTypeRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+    /admin/v1/onestop/service-types/{id}:
+        get:
+            tags:
+                - OneStopServiceTypeService
+            description: 查询服务类型详情
+            operationId: OneStopServiceTypeService_Get
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint32
+                - name: viewMask
+                  in: query
+                  schema:
+                    type: string
+                    format: field-mask
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ServiceType'
+        put:
+            tags:
+                - OneStopServiceTypeService
+            description: 更新服务类型
+            operationId: OneStopServiceTypeService_Update
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint32
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/UpdateServiceTypeRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+        delete:
+            tags:
+                - OneStopServiceTypeService
+            description: 删除服务类型
+            operationId: OneStopServiceTypeService_Delete
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint32
+            responses:
+                "200":
+                    description: OK
+                    content: {}
     /admin/v1/online-session/force-logout:
         post:
             tags:
@@ -9155,6 +9311,12 @@ components:
                 data:
                     $ref: '#/components/schemas/Script'
             description: 创建脚本 - 请求
+        CreateServiceTypeRequest:
+            type: object
+            properties:
+                data:
+                    $ref: '#/components/schemas/ServiceType'
+            description: 创建服务类型 - 请求
         CreateTaskRequest:
             type: object
             properties:
@@ -10868,6 +11030,16 @@ components:
                 total:
                     type: string
             description: 查询脚本列表 - 回应
+        ListServiceTypeResponse:
+            type: object
+            properties:
+                items:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/ServiceType'
+                total:
+                    type: string
+            description: 查询服务类型列表 - 回应
         ListTaskResponse:
             type: object
             properties:
@@ -13230,6 +13402,68 @@ components:
                     description: 采集时间
                     format: date-time
             description: 服务监控聚合信息
+        ServiceType:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    description: 服务类型ID
+                    format: uint32
+                code:
+                    type: string
+                    description: 服务编码，2/4/6/8 位数字字符串，位数即层级
+                name:
+                    type: string
+                    description: 服务名称
+                level:
+                    enum:
+                        - LEVEL_UNSPECIFIED
+                        - LEVEL_MAJOR
+                        - LEVEL_MIDDLE
+                        - LEVEL_MINOR
+                        - LEVEL_DETAIL
+                    type: string
+                    description: 服务层级（大类/中类/小类/细类）
+                    format: enum
+                parentId:
+                    type: integer
+                    description: 上级服务类型ID，大类为空
+                    format: uint32
+                description:
+                    type: string
+                    description: 描述
+                isEnabled:
+                    type: boolean
+                    description: 是否启用
+                sortOrder:
+                    type: integer
+                    description: 排序顺序，值越小越靠前
+                    format: uint32
+                createdBy:
+                    type: integer
+                    description: 创建者ID
+                    format: uint32
+                updatedBy:
+                    type: integer
+                    description: 更新者ID
+                    format: uint32
+                deletedBy:
+                    type: integer
+                    description: 删除者用户ID
+                    format: uint32
+                createdAt:
+                    type: string
+                    description: 创建时间
+                    format: date-time
+                updatedAt:
+                    type: string
+                    description: 更新时间
+                    format: date-time
+                deletedAt:
+                    type: string
+                    description: 删除时间
+                    format: date-time
+            description: 一站式服务类型
         SlowLogEntry:
             type: object
             properties:
@@ -14210,6 +14444,23 @@ components:
                     type: boolean
                     description: 如果设置为true的时候，资源不存在则会新增(插入)，并且在这种情况下`updateMask`字段将会被忽略。
             description: 更新脚本 - 请求
+        UpdateServiceTypeRequest:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: uint32
+                data:
+                    $ref: '#/components/schemas/ServiceType'
+                updateMask:
+                    example: id,code,name,level
+                    type: string
+                    description: 要更新的字段列表
+                    format: field-mask
+                allowMissing:
+                    type: boolean
+                    description: 如果设置为true的时候，资源不存在则会新增(插入)，并且在这种情况下`updateMask`字段将会被忽略。
+            description: 更新服务类型 - 请求
         UpdateTaskRequest:
             type: object
             properties:
@@ -14697,6 +14948,15 @@ tags:
          渠道配置页的 send-test-email，与路由规则页的 notification-rules/{id}/test-dispatch。
     - name: NotificationTemplateService
       description: 通知模板管理服务（平台管理员；租户由 notification_platform_guard 拒绝）
+    - name: OneStopServiceTypeService
+      description: |-
+        一站式服务类型管理服务（admin 门面）
+
+         源领域 proto 在 onestop/service/v1（独立 Go module go-wind-admin/onestop 拥有
+         自己的同名生成包 onestopv1）；本门面只挂 HTTP 路由，消息类型直接引用源领域，
+         生成时 onestop/service/v1 的 go_package 被指到 module 的 gen 包
+         （go-wind-admin/onestop/api/gen/go/onestop/service/v1;onestopv1，见 buf.gen.yaml），
+         因此本服务生成的 HTTP 接口与 module 内 service 的方法签名完全一致，可直接注册。
     - name: OnlineSessionService
       description: 在线会话管理服务（在线用户列表 + 强制下线）
     - name: OperationAuditLogService

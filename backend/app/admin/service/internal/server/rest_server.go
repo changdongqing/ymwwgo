@@ -23,6 +23,8 @@ import (
 	"go-wind-admin/app/admin/service/internal/data"
 	"go-wind-admin/app/admin/service/internal/service"
 
+	onestopService "go-wind-admin/onestop/service"
+
 	adminV1 "go-wind-admin/api/gen/go/admin/service/v1"
 	auditV1 "go-wind-admin/api/gen/go/audit/service/v1"
 
@@ -197,6 +199,9 @@ func NewRestServer(
 	aiQueryService *service.AiQueryService,
 	aiContentService *service.AiContentService,
 	aiAgentService *service.AiAgentService,
+
+	// 一站式服务（独立 Go module go-wind-admin/onestop）
+	oneStopServiceTypeService *onestopService.ServiceTypeService,
 ) (*http.Server, error) {
 	cfg := ctx.GetConfig()
 
@@ -310,6 +315,12 @@ func NewRestServer(
 	adminV1.RegisterAiContentServiceHTTPServer(srv, aiContentService)
 	adminV1.RegisterAiChatServiceHTTPServer(srv, aiChatService)
 	adminV1.RegisterAiAgentServiceHTTPServer(srv, aiAgentService)
+
+	// 一站式服务（独立 Go module go-wind-admin/onestop）：BFF 门面（adminV1）的
+	// 消息类型经 buf.gen.yaml go_package 覆盖直指 module 的 onestopv1 包，
+	// 接口签名与 module service 完全一致，零适配直接注册；
+	// 认证/鉴权/审计/租户闸门走本 server 的统一中间件链。
+	adminV1.RegisterOneStopServiceTypeServiceHTTPServer(srv, oneStopServiceTypeService)
 
 	if cfg.GetServer().GetRest().GetEnableSwagger() {
 		swaggerUI.RegisterSwaggerUIServerWithOption(

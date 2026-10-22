@@ -16,6 +16,11 @@ import (
 	"go-wind-admin/app/admin/service/internal/data/channel"
 	"go-wind-admin/app/admin/service/internal/server"
 	"go-wind-admin/app/admin/service/internal/service"
+
+	onestopData "go-wind-admin/onestop/data"
+	onestopService "go-wind-admin/onestop/service"
+
+	"go-wind-admin/pkg/middleware/auth"
 )
 
 // initApp 手写装配整个应用,是 Ent 后端构建(!gorm_backend)的依赖注入点。
@@ -179,6 +184,23 @@ func initApp(ctx *bootstrap.Context) (*kratos.App, func(), error) {
 	authz := authorizer.NewAuthorizer(ctx.Context(), ctx.GetLogger(), authzEngineCfg, authorizerProvider)
 
 	// ═══════════════════════ 四、服务层(internal/service) ═══════════════════════
+
+	// 一站式服务（独立 Go module go-wind-admin/onestop）：独立 ent 客户端 + 仓储 + 服务。
+	// 结构迁移不在 module 内执行（goose 链在 admin 服务），operator 提取由宿主注入。
+	oneStopEntClient, cleanupOneStopEnt, err := onestopData.NewEntClient(ctx)
+	if err != nil {
+		rollback()
+		return nil, nil, err
+	}
+	cleanups = append(cleanups, cleanupOneStopEnt)
+	oneStopServiceTypeRepo := onestopData.NewServiceTypeRepo(ctx, oneStopEntClient)
+	oneStopServiceTypeService := onestopService.NewServiceTypeService(ctx, oneStopServiceTypeRepo, func(ctx context.Context) (uint32, error) {
+		operator, err := auth.FromContext(ctx)
+		if err != nil {
+			return 0, err
+		}
+		return operator.UserId, nil
+	})
 
 	// 通知投递：渠道注册表（EMAIL / WEBHOOK / SMS / INTERNAL）→ NotificationService → 各业务 service 只拿 Notifier。
 	// 注册顺序即装配位置：新增一种渠道 = 在这里多 Register 一个 Sender，业务调用方不动。
@@ -359,6 +381,7 @@ func initApp(ctx *bootstrap.Context) (*kratos.App, func(), error) {
 		aiQueryService,
 		aiContentService,
 		aaAiAgentService,
+		oneStopServiceTypeService,
 	)
 	if err != nil {
 		rollback()

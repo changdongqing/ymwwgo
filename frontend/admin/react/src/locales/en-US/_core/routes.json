@@ -26,6 +26,8 @@
   "internal-message-categories": "Message Categories",
   "internal-message-list": "Message Management",
   "languages": "Language Management",
+  "onestop": "One-Stop Service",
+  "onestop-service-types": "Service Types",
   "log": "Audit Logs",
   "login": "Login",
   "login-audit-log": "Login Logs",

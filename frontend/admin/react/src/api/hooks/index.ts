@@ -90,3 +90,6 @@ export * from './ai-usage';
 
 // AI 内容生成
 export * from './ai-content';
+
+// 一站式服务
+export * from './onestop';
