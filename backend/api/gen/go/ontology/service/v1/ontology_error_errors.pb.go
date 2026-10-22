@@ -178,3 +178,101 @@ func IsEntityInUse(err error) bool {
 func ErrorEntityInUse(format string, args ...interface{}) *errors.Error {
 	return errors.New(409, OntologyErrorReason_ENTITY_IN_USE.String(), fmt.Sprintf(format, args...))
 }
+
+// ===== 对象属性（源 1-071-003 段）=====
+func IsPropertyDomainInvalid(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == OntologyErrorReason_PROPERTY_DOMAIN_INVALID.String() && e.Code == 422
+}
+
+// ===== 对象属性（源 1-071-003 段）=====
+func ErrorPropertyDomainInvalid(format string, args ...interface{}) *errors.Error {
+	return errors.New(422, OntologyErrorReason_PROPERTY_DOMAIN_INVALID.String(), fmt.Sprintf(format, args...))
+}
+
+// 对象属性值域必须是本体类：{}
+func IsPropertyRangeInvalid(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == OntologyErrorReason_PROPERTY_RANGE_INVALID.String() && e.Code == 422
+}
+
+// 对象属性值域必须是本体类：{}
+func ErrorPropertyRangeInvalid(format string, args ...interface{}) *errors.Error {
+	return errors.New(422, OntologyErrorReason_PROPERTY_RANGE_INVALID.String(), fmt.Sprintf(format, args...))
+}
+
+// 属性链不合法：{}（至少两个属性成员，且均为已声明的对象属性）
+func IsPropertyChainInvalid(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == OntologyErrorReason_PROPERTY_CHAIN_INVALID.String() && e.Code == 422
+}
+
+// 属性链不合法：{}（至少两个属性成员，且均为已声明的对象属性）
+func ErrorPropertyChainInvalid(format string, args ...interface{}) *errors.Error {
+	return errors.New(422, OntologyErrorReason_PROPERTY_CHAIN_INVALID.String(), fmt.Sprintf(format, args...))
+}
+
+// 属性不能与自身互为逆属性：{}
+func IsPropertyInverseSelfInvalid(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == OntologyErrorReason_PROPERTY_INVERSE_SELF_INVALID.String() && e.Code == 422
+}
+
+// 属性不能与自身互为逆属性：{}
+func ErrorPropertyInverseSelfInvalid(format string, args ...interface{}) *errors.Error {
+	return errors.New(422, OntologyErrorReason_PROPERTY_INVERSE_SELF_INVALID.String(), fmt.Sprintf(format, args...))
+}
+
+// 属性不能与自身建立该关系：{}（等价/不相交自引用）
+func IsPropertySelfReferenceInvalid(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == OntologyErrorReason_PROPERTY_SELF_REFERENCE_INVALID.String() && e.Code == 422
+}
+
+// 属性不能与自身建立该关系：{}（等价/不相交自引用）
+func ErrorPropertySelfReferenceInvalid(format string, args ...interface{}) *errors.Error {
+	return errors.New(422, OntologyErrorReason_PROPERTY_SELF_REFERENCE_INVALID.String(), fmt.Sprintf(format, args...))
+}
+
+// 未知的对象属性特征：{}
+func IsPropertyCharacteristicInvalid(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == OntologyErrorReason_PROPERTY_CHARACTERISTIC_INVALID.String() && e.Code == 422
+}
+
+// 未知的对象属性特征：{}
+func ErrorPropertyCharacteristicInvalid(format string, args ...interface{}) *errors.Error {
+	return errors.New(422, OntologyErrorReason_PROPERTY_CHARACTERISTIC_INVALID.String(), fmt.Sprintf(format, args...))
+}
+
+// 引用目标必须是已声明的对象属性：{}
+func IsPropertyTargetInvalid(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == OntologyErrorReason_PROPERTY_TARGET_INVALID.String() && e.Code == 422
+}
+
+// 引用目标必须是已声明的对象属性：{}
+func ErrorPropertyTargetInvalid(format string, args ...interface{}) *errors.Error {
+	return errors.New(422, OntologyErrorReason_PROPERTY_TARGET_INVALID.String(), fmt.Sprintf(format, args...))
+}

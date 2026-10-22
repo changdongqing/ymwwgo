@@ -29,7 +29,16 @@ enum OntologyErrorReason {
     HIERARCHY_CYCLIC = 21 [(errors.code) = 422];            // 不允许形成继承环：{} 已是 {} 的祖先
     ENTITY_IN_USE = 22 [(errors.code) = 409];               // 实体被 {} 处引用，无法删除
 
-    // 30~39 预留 02 对象属性；40~44 预留 03 数据属性；50~51 预留 04 注解属性；
+    // 30~39 对象属性（源 1-071-003 段，02 期启用）；40~44 预留 03 数据属性；50~51 预留 04 注解属性；
     // 60~66 预留 06 个体与赋码；70~74 预留 05 数据类型；80~88 预留 07 OWL 导入导出。
     // 号段对齐源 1-071-003~008 子段，各期文档落地时启用。
+
+    // ===== 对象属性（源 1-071-003 段）=====
+    PROPERTY_DOMAIN_INVALID = 30 [(errors.code) = 422];         // 对象属性定义域必须是本体类：{}
+    PROPERTY_RANGE_INVALID = 31 [(errors.code) = 422];          // 对象属性值域必须是本体类：{}
+    PROPERTY_CHAIN_INVALID = 32 [(errors.code) = 422];          // 属性链不合法：{}（至少两个属性成员，且均为已声明的对象属性）
+    PROPERTY_INVERSE_SELF_INVALID = 33 [(errors.code) = 422];   // 属性不能与自身互为逆属性：{}
+    PROPERTY_SELF_REFERENCE_INVALID = 34 [(errors.code) = 422]; // 属性不能与自身建立该关系：{}（等价/不相交自引用）
+    PROPERTY_CHARACTERISTIC_INVALID = 35 [(errors.code) = 422]; // 未知的对象属性特征：{}
+    PROPERTY_TARGET_INVALID = 36 [(errors.code) = 422];         // 引用目标必须是已声明的对象属性：{}
 }

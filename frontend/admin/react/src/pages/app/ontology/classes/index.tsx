@@ -8,7 +8,7 @@ import ContentContainer from '@/layouts/components/PageContainer/ContentContaine
 import { useOntologyStore } from '@/stores';
 import type {
   ontologyservicev1_OntologyClass,
-  ontologyservicev1_OntologyClassUsage,
+  ontologyservicev1_EntityUsage,
 } from '@/api/generated/admin/service/v1';
 import {
   getOntologyErrorReason,
@@ -30,11 +30,13 @@ interface DrawerState {
   parentKey: string | null;
 }
 
-/** 引用类型 → 展示标签（预留 31/32 定义域/值域、41 定义域、60 个体断型标签位，02/03/06 期启用） */
+/** 引用类型 → 展示标签（02 期起含 31 定义域 / 32 值域；41 定义域、60 个体断型标签位归 03/06 期） */
 const USAGE_TYPE_LABEL_KEYS: Record<number, string> = {
   20: 'class.usageType.parent',
   21: 'class.usageType.disjoint',
   22: 'class.usageType.equivalent',
+  31: 'class.usageType.objectPropertyDomain',
+  32: 'class.usageType.objectPropertyRange',
 };
 
 /**
@@ -127,7 +129,7 @@ const OntologyClassManagement = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pendingDelete]);
 
-  const usage: ontologyservicev1_OntologyClassUsage | undefined = usageQuery.data;
+  const usage: ontologyservicev1_EntityUsage | undefined = usageQuery.data;
   const usageVisible = pendingDelete != null && (usage?.refs?.length ?? 0) > 0;
 
   const forceDelete = () => {

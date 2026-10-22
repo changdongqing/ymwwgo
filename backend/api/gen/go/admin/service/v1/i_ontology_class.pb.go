@@ -27,13 +27,13 @@ var File_admin_service_v1_i_ontology_class_proto protoreflect.FileDescriptor
 
 const file_admin_service_v1_i_ontology_class_proto_rawDesc = "" +
 	"\n" +
-	"'admin/service/v1/i_ontology_class.proto\x12\x10admin.service.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a(ontology/service/v1/ontology_class.proto2\x92\t\n" +
+	"'admin/service/v1/i_ontology_class.proto\x12\x10admin.service.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a\"ontology/service/v1/ontology.proto\x1a(ontology/service/v1/ontology_class.proto2\x8b\t\n" +
 	"\x14OntologyClassService\x12\x91\x01\n" +
 	"\x04Tree\x120.ontology.service.v1.GetOntologyClassTreeRequest\x1a..ontology.service.v1.OntologyClassTreeResponse\"'\x82\xd3\xe4\x93\x02!\x12\x1f/admin/v1/ontology/classes/tree\x12\x9b\x01\n" +
 	"\aNavTree\x120.ontology.service.v1.GetOntologyClassTreeRequest\x1a1.ontology.service.v1.OntologyClassNavTreeResponse\"+\x82\xd3\xe4\x93\x02%\x12#/admin/v1/ontology/classes/nav-tree\x12\x8d\x01\n" +
 	"\x04List\x12/.ontology.service.v1.ListOntologyClassesRequest\x1a0.ontology.service.v1.ListOntologyClassesResponse\"\"\x82\xd3\xe4\x93\x02\x1c\x12\x1a/admin/v1/ontology/classes\x12\x92\x01\n" +
-	"\x05Frame\x121.ontology.service.v1.GetOntologyClassFrameRequest\x1a'.ontology.service.v1.OntologyClassFrame\"-\x82\xd3\xe4\x93\x02'\x12%/admin/v1/ontology/classes/{id}/frame\x12\x92\x01\n" +
-	"\x05Usage\x121.ontology.service.v1.GetOntologyClassUsageRequest\x1a'.ontology.service.v1.OntologyClassUsage\"-\x82\xd3\xe4\x93\x02'\x12%/admin/v1/ontology/classes/{id}/usage\x12\x92\x01\n" +
+	"\x05Frame\x121.ontology.service.v1.GetOntologyClassFrameRequest\x1a'.ontology.service.v1.OntologyClassFrame\"-\x82\xd3\xe4\x93\x02'\x12%/admin/v1/ontology/classes/{id}/frame\x12\x8b\x01\n" +
+	"\x05Usage\x121.ontology.service.v1.GetOntologyClassUsageRequest\x1a .ontology.service.v1.EntityUsage\"-\x82\xd3\xe4\x93\x02'\x12%/admin/v1/ontology/classes/{id}/usage\x12\x92\x01\n" +
 	"\x06Create\x12/.ontology.service.v1.CreateOntologyClassRequest\x1a0.ontology.service.v1.CreateOntologyClassResponse\"%\x82\xd3\xe4\x93\x02\x1f:\x01*\"\x1a/admin/v1/ontology/classes\x12}\n" +
 	"\x06Update\x12/.ontology.service.v1.UpdateOntologyClassRequest\x1a\x16.google.protobuf.Empty\"*\x82\xd3\xe4\x93\x02$:\x01*\x1a\x1f/admin/v1/ontology/classes/{id}\x12z\n" +
 	"\x06Delete\x12/.ontology.service.v1.DeleteOntologyClassRequest\x1a\x16.google.protobuf.Empty\"'\x82\xd3\xe4\x93\x02!*\x1f/admin/v1/ontology/classes/{id}B\xc0\x01\n" +
@@ -51,7 +51,7 @@ var file_admin_service_v1_i_ontology_class_proto_goTypes = []any{
 	(*v1.OntologyClassNavTreeResponse)(nil), // 8: ontology.service.v1.OntologyClassNavTreeResponse
 	(*v1.ListOntologyClassesResponse)(nil),  // 9: ontology.service.v1.ListOntologyClassesResponse
 	(*v1.OntologyClassFrame)(nil),           // 10: ontology.service.v1.OntologyClassFrame
-	(*v1.OntologyClassUsage)(nil),           // 11: ontology.service.v1.OntologyClassUsage
+	(*v1.EntityUsage)(nil),                  // 11: ontology.service.v1.EntityUsage
 	(*v1.CreateOntologyClassResponse)(nil),  // 12: ontology.service.v1.CreateOntologyClassResponse
 	(*emptypb.Empty)(nil),                   // 13: google.protobuf.Empty
 }
@@ -68,7 +68,7 @@ var file_admin_service_v1_i_ontology_class_proto_depIdxs = []int32{
 	8,  // 9: admin.service.v1.OntologyClassService.NavTree:output_type -> ontology.service.v1.OntologyClassNavTreeResponse
 	9,  // 10: admin.service.v1.OntologyClassService.List:output_type -> ontology.service.v1.ListOntologyClassesResponse
 	10, // 11: admin.service.v1.OntologyClassService.Frame:output_type -> ontology.service.v1.OntologyClassFrame
-	11, // 12: admin.service.v1.OntologyClassService.Usage:output_type -> ontology.service.v1.OntologyClassUsage
+	11, // 12: admin.service.v1.OntologyClassService.Usage:output_type -> ontology.service.v1.EntityUsage
 	12, // 13: admin.service.v1.OntologyClassService.Create:output_type -> ontology.service.v1.CreateOntologyClassResponse
 	13, // 14: admin.service.v1.OntologyClassService.Update:output_type -> google.protobuf.Empty
 	13, // 15: admin.service.v1.OntologyClassService.Delete:output_type -> google.protobuf.Empty

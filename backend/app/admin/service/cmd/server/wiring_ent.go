@@ -260,6 +260,7 @@ func initApp(ctx *bootstrap.Context) (*kratos.App, func(), error) {
 	// 本体建模（阶段0 + 本体类）
 	ontologyService := service.NewOntologyService(ctx, ontologyRepo)
 	ontologyClassService := service.NewOntologyClassService(ctx, ontologyRepo, ontologyEntityRepo, ontologyAxiomRepo)
+	ontologyObjectPropertyService := service.NewOntologyObjectPropertyService(ctx, ontologyRepo, ontologyEntityRepo, ontologyAxiomRepo)
 
 	// 文件与任务
 	fileService := service.NewFileService(ctx, fileRepo, minioClient)
@@ -361,7 +362,7 @@ func initApp(ctx *bootstrap.Context) (*kratos.App, func(), error) {
 		adminPortalService, taskService,
 		fileService, fileTransferService,
 		dictTypeService, dictEntryService, languageService,
-		ontologyService, ontologyClassService,
+		ontologyService, ontologyClassService, ontologyObjectPropertyService,
 		tenantService, planService, planQuotaService, planModuleService,
 		userService, userProfileService, roleService, positionService, orgUnitService,
 		menuService, apiService, permissionService, permissionGroupService,

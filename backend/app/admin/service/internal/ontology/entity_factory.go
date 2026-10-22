@@ -76,11 +76,12 @@ func (f *EntityFactory) CreateEntityDraft(ctx context.Context, ontologyID uint32
 	return draft, declaration, nil
 }
 
-// ValidateRefEntities 引用实体校验：目标须存在、同本体、指定类型；不符 → ENTITY_TYPE_MISMATCH
-// （源修订 #13 通用化；message 带具体 id）。空列表直接通过。
-// 自引用校验不在本方法（create 时新实体无 id；update 时父类自引用走 AssertNoCycle 捕获为环，
-// 不相交/等价自引用由服务层前置拒绝）。
-func (f *EntityFactory) ValidateRefEntities(ctx context.Context, ontologyID uint32, refIDs []uint32, expected uint32) error {
+// ValidateRefEntities 引用实体校验：目标须存在、同本体、指定类型；不符 → mismatchReason 指定的
+// 错误 reason（源修订 #2/#13 通用化；message 带具体 id——类调用传 ENTITY_TYPE_MISMATCH，
+// 02 期对象属性传 PROPERTY_TARGET_INVALID）。空列表直接通过。
+// 自引用校验不在本方法（create 时新实体无 id；update 时父引用自引用走 AssertNoCycle 捕获为环，
+// 不相交/等价/逆属性自引用由服务层前置拒绝）。
+func (f *EntityFactory) ValidateRefEntities(ctx context.Context, ontologyID uint32, refIDs []uint32, expected uint32, mismatchReason string) error {
 	if len(refIDs) == 0 {
 		return nil
 	}
@@ -98,10 +99,10 @@ func (f *EntityFactory) ValidateRefEntities(ctx context.Context, ontologyID uint
 	for _, id := range refIDs {
 		e, ok := found[id]
 		if !ok {
-			return NewError(ReasonEntityTypeMismatch, "引用实体不存在或不在本本体：%d", id)
+			return NewError(mismatchReason, "引用实体不存在或不在本本体：%d", id)
 		}
 		if e.EntityType == nil || *e.EntityType != expected {
-			return NewError(ReasonEntityTypeMismatch, "引用实体类型不符：%d（期望类型 %d）", id, expected)
+			return NewError(mismatchReason, "引用实体类型不符：%d（期望类型 %d）", id, expected)
 		}
 	}
 	return nil

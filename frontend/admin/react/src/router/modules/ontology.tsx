@@ -35,6 +35,17 @@ export const ontologyRoutes: AppRouteObject[] = [
           authority: ['sys:platform_admin'],
         },
       },
+      {
+        name: 'ontology-object-properties',
+        path: 'ontology-object-properties',
+        element: createLazyRoute(() => import('@/pages/app/ontology/object-properties')),
+        meta: {
+          title: 'routes:ontology-object-properties',
+          icon: 'lucide:arrow-right-left',
+          order: 3,
+          authority: ['sys:platform_admin'],
+        },
+      },
     ],
   },
 ];

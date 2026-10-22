@@ -138,7 +138,8 @@
     "ontology": {
       "moduleName": "Ontology Modeling",
       "doc": "Ontology Documents",
-      "class": "Ontology Classes"
+      "class": "Ontology Classes",
+      "objectProperty": "Object Properties"
     }
   },
   "page": {
@@ -150,5 +151,6 @@
   },
   "ontology": "Ontology Modeling",
   "ontology-docs": "Ontology Documents",
-  "ontology-classes": "Ontology Classes"
+  "ontology-classes": "Ontology Classes",
+  "ontology-object-properties": "Object Properties"
 }

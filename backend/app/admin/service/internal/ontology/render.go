@@ -59,10 +59,54 @@ func RenderAxiom(ax *ent.OntAxiom, entityNames map[uint32]string) string {
 		return "DisjointWith(" + entityName(subject) + " " + entityName(nilUint(ax.ObjectID)) + ")"
 	case AxiomEquivalentClasses:
 		return "EquivalentClasses(" + entityName(subject) + " " + entityName(nilUint(ax.ObjectID)) + ")"
+	case AxiomSubObjectPropertyOf:
+		return "SubPropertyOf(" + entityName(subject) + " " + entityName(nilUint(ax.ObjectID)) + ")"
+	case AxiomObjectPropertyDomain:
+		return "Domain(" + entityName(subject) + " " + entityName(nilUint(ax.ObjectID)) + ")"
+	case AxiomObjectPropertyRange:
+		return "Range(" + entityName(subject) + " " + entityName(nilUint(ax.ObjectID)) + ")"
+	case AxiomObjectPropertyCharacteristic:
+		return "Characteristic(" + entityName(subject) + ", " + CharacteristicShortName(nilString(ax.PredicateIri)) + ")"
+	case AxiomInverseOf, AxiomEquivalentObjectProperties, AxiomDisjointObjectProperties:
+		// 对称成对行按无序对去重展示：仅渲染 subject < object 一侧（两条镜像行只出一条，
+		// 与源 OWLAPI 集合去重语义等价，02 号文档 §4.4）
+		object := nilUint(ax.ObjectID)
+		if subject > object {
+			return ""
+		}
+		name := ""
+		switch *ax.AxiomType {
+		case AxiomInverseOf:
+			name = "InverseOf"
+		case AxiomEquivalentObjectProperties:
+			name = "EquivalentProperties"
+		default:
+			name = "DisjointProperties"
+		}
+		return name + "(" + entityName(subject) + " " + entityName(object) + ")"
+	case AxiomSubPropertyChainOf:
+		// 链按 value_text 保序渲染：SubPropertyChainOf(P1 ∘ P2 P)；成员解析失败回退占位
+		var b strings.Builder
+		b.WriteString("SubPropertyChainOf(")
+		if ax.ValueText != nil {
+			if members, err := ParseChainMemberIDs(*ax.ValueText); err == nil {
+				names := make([]string, 0, len(members))
+				for _, m := range members {
+					names = append(names, entityName(m))
+				}
+				b.WriteString(strings.Join(names, " ∘ "))
+				b.WriteString(" ")
+			} else {
+				b.WriteString("<invalid-chain> ∘ ")
+			}
+		}
+		b.WriteString(entityName(subject))
+		b.WriteString(")")
+		return b.String()
 	case AxiomAnnotationAssertion:
 		return renderAnnotation(entityName(subject), nilString(ax.PredicateIri), nilString(ax.ValueText), nilString(ax.Lang))
 	default:
-		// 未知号段（02~06 期启用后各自补渲染分支）
+		// 未知号段（03~06 期启用后各自补渲染分支）
 		return "Axiom(type=" + strconvFormatUint(*ax.AxiomType) + " subject=" + entityName(subject) + ")"
 	}
 }

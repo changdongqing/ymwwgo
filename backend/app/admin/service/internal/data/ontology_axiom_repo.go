@@ -68,13 +68,19 @@ func (r *OntAxiomRepo) ListByObject(ctx context.Context, ontologyID uint32, obje
 		All(ctx)
 }
 
-// CountReferences 实体被引用数（object 侧、usage 公理类型集内、未删）——删除保护计数
+// CountReferences 实体被引用数（object 侧、类 usage 公理类型集内、未删）——类删除保护计数
 func (r *OntAxiomRepo) CountReferences(ctx context.Context, ontologyID uint32, entityID uint32) (int, error) {
+	return r.CountReferencesByTypes(ctx, ontologyID, entityID, ontology.ClassUsageAxiomTypes)
+}
+
+// CountReferencesByTypes 实体被引用数（object 侧、指定公理类型集内、未删）——删除保护计数
+// （类 20/21/22/31/32；对象属性 30/34/35/36；37 链成员与 61 断言谓词不走 object_id 命中，各自单独算）。
+func (r *OntAxiomRepo) CountReferencesByTypes(ctx context.Context, ontologyID uint32, entityID uint32, axiomTypes []uint32) (int, error) {
 	return r.entClient.Client().OntAxiom.Query().
 		Where(
 			ontaxiom.OntologyIDEQ(ontologyID),
 			ontaxiom.ObjectIDEQ(entityID),
-			ontaxiom.AxiomTypeIn(ontology.ClassUsageAxiomTypes...),
+			ontaxiom.AxiomTypeIn(axiomTypes...),
 			ontaxiom.DeletedAtIsNil(),
 		).
 		Count(ctx)

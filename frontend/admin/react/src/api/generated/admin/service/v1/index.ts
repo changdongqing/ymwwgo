@@ -8096,7 +8096,7 @@ export interface OntologyClassService {
   // 查询本体类引用明细
   Usage(
     request: ontologyservicev1_GetOntologyClassUsageRequest,
-  ): Promise<ontologyservicev1_OntologyClassUsage>;
+  ): Promise<ontologyservicev1_EntityUsage>;
   // 创建本体类（公理事务管线；返回新实体 id + 变更后版本）
   Create(
     request: ontologyservicev1_CreateOntologyClassRequest,
@@ -8224,7 +8224,7 @@ export function createOntologyClassServiceClient(
       return transport.unary(path, 'GET', body, {
         service: 'OntologyClassService',
         method: 'Usage',
-      }) as Promise<ontologyservicev1_OntologyClassUsage>;
+      }) as Promise<ontologyservicev1_EntityUsage>;
     },
     Create(request) {
       const path = `/admin/v1/ontology/classes`;
@@ -8376,13 +8376,14 @@ export type ontologyservicev1_GetOntologyClassUsageRequest = {
   id: number | undefined;
 };
 
-export type ontologyservicev1_OntologyClassUsage = {
+// 实体引用明细（谁引用了我；原 01 期 OntologyClassUsage 上移泛化，类/属性接口共用）
+export type ontologyservicev1_EntityUsage = {
   entityId?: number;
-  refs: ontologyservicev1_OntologyClassUsageRef[] | undefined;
+  refs: ontologyservicev1_EntityUsageRef[] | undefined;
 };
 
-// 本体类引用明细（谁引用了我）
-export type ontologyservicev1_OntologyClassUsageRef = {
+// 实体引用明细行（usage 反查；类/属性各期共用同一消息，axiom_type 语义随各期扩展）
+export type ontologyservicev1_EntityUsageRef = {
   axiomType?: number;
   displayLabel?: string;
   entityId?: number;
@@ -8423,6 +8424,330 @@ export type ontologyservicev1_UpdateOntologyClassRequest = {
 
 // 删除本体类 - 请求（force=true 级联移除引用公理，子类自动变根类）
 export type ontologyservicev1_DeleteOntologyClassRequest = {
+  baseVersion?: number;
+  force?: boolean;
+  id: number | undefined;
+};
+
+// 对象属性管理服务（admin 门面）
+//
+// 对象属性 create/update/delete 是自定义 RPC（公理事务管线：diff + 环检测 + 乐观锁 + 校验 + 变更日志），
+// body: "*" 收扁平请求体——不是通用 CRUD，勿按惯例包 { data: {...} }
+// （protojson 会把 data 当未知字段丢弃，接口 200 但字段全空，仓库已知坑）。
+// GET/DELETE 的标量参数由 Kratos 从 query string 按 proto 字段 json 名（camelCase）绑定。
+export interface OntologyObjectPropertyService {
+  // 查询对象属性全量树
+  Tree(
+    request: ontologyservicev1_GetObjectPropertyTreeRequest,
+  ): Promise<ontologyservicev1_ObjectPropertyTreeResponse>;
+  // 分页查询对象属性列表
+  List(
+    request: ontologyservicev1_ListObjectPropertiesRequest,
+  ): Promise<ontologyservicev1_ListObjectPropertiesResponse>;
+  // 查询对象属性 frame 详情
+  Frame(
+    request: ontologyservicev1_GetObjectPropertyFrameRequest,
+  ): Promise<ontologyservicev1_ObjectPropertyFrame>;
+  // 查询对象属性引用明细
+  Usage(
+    request: ontologyservicev1_GetObjectPropertyUsageRequest,
+  ): Promise<ontologyservicev1_EntityUsage>;
+  // 创建对象属性（公理事务管线；返回新实体 id + 变更后版本）
+  Create(
+    request: ontologyservicev1_CreateObjectPropertyRequest,
+  ): Promise<ontologyservicev1_CreateObjectPropertyResponse>;
+  // 更新对象属性（frame 全量提交，公理事务管线）
+  Update(
+    request: ontologyservicev1_UpdateObjectPropertyRequest,
+  ): Promise<wellKnownEmpty>;
+  // 删除对象属性（force=true 级联移除引用公理，子属性自动变根属性）
+  Delete(
+    request: ontologyservicev1_DeleteObjectPropertyRequest,
+  ): Promise<wellKnownEmpty>;
+}
+
+export function createOntologyObjectPropertyServiceClient(
+  transport: ClientTransport,
+): OntologyObjectPropertyService {
+  return {
+    Tree(request) {
+      const path = `/admin/v1/ontology/object-properties/tree`;
+      const body = null;
+      const queryParams: string[] = [];
+      if (request.ontologyId) {
+        queryParams.push(
+          `ontologyId=${encodeURIComponent(request.ontologyId.toString())}`,
+        );
+      }
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join('&')}`;
+      }
+      return transport.unary(uri, 'GET', body, {
+        service: 'OntologyObjectPropertyService',
+        method: 'Tree',
+      }) as Promise<ontologyservicev1_ObjectPropertyTreeResponse>;
+    },
+    List(request) {
+      const path = `/admin/v1/ontology/object-properties`;
+      const body = null;
+      const queryParams: string[] = [];
+      if (request.page) {
+        queryParams.push(
+          `page=${encodeURIComponent(request.page.toString())}`,
+        );
+      }
+      if (request.pageSize) {
+        queryParams.push(
+          `pageSize=${encodeURIComponent(request.pageSize.toString())}`,
+        );
+      }
+      if (request.ontologyId) {
+        queryParams.push(
+          `ontologyId=${encodeURIComponent(request.ontologyId.toString())}`,
+        );
+      }
+      if (request.localName) {
+        queryParams.push(
+          `localName=${encodeURIComponent(request.localName.toString())}`,
+        );
+      }
+      if (request.displayLabel) {
+        queryParams.push(
+          `displayLabel=${encodeURIComponent(request.displayLabel.toString())}`,
+        );
+      }
+      if (request.deprecated) {
+        queryParams.push(
+          `deprecated=${encodeURIComponent(request.deprecated.toString())}`,
+        );
+      }
+      if (request.orderBy) {
+        queryParams.push(
+          `orderBy=${encodeURIComponent(request.orderBy.toString())}`,
+        );
+      }
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join('&')}`;
+      }
+      return transport.unary(uri, 'GET', body, {
+        service: 'OntologyObjectPropertyService',
+        method: 'List',
+      }) as Promise<ontologyservicev1_ListObjectPropertiesResponse>;
+    },
+    Frame(request) {
+      if (request.id === undefined || request.id === null) {
+        throw new Error('missing required field request.id');
+      }
+      const path = `/admin/v1/ontology/object-properties/${request.id}/frame`;
+      const body = null;
+      return transport.unary(path, 'GET', body, {
+        service: 'OntologyObjectPropertyService',
+        method: 'Frame',
+      }) as Promise<ontologyservicev1_ObjectPropertyFrame>;
+    },
+    Usage(request) {
+      if (request.id === undefined || request.id === null) {
+        throw new Error('missing required field request.id');
+      }
+      const path = `/admin/v1/ontology/object-properties/${request.id}/usage`;
+      const body = null;
+      return transport.unary(path, 'GET', body, {
+        service: 'OntologyObjectPropertyService',
+        method: 'Usage',
+      }) as Promise<ontologyservicev1_EntityUsage>;
+    },
+    Create(request) {
+      const path = `/admin/v1/ontology/object-properties`;
+      const body = JSON.stringify(request);
+      return transport.unary(path, 'POST', body, {
+        service: 'OntologyObjectPropertyService',
+        method: 'Create',
+      }) as Promise<ontologyservicev1_CreateObjectPropertyResponse>;
+    },
+    Update(request) {
+      if (request.id === undefined || request.id === null) {
+        throw new Error('missing required field request.id');
+      }
+      const path = `/admin/v1/ontology/object-properties/${request.id}`;
+      const bodyMap = { ...request } as Record<string, unknown>;
+      delete bodyMap["id"];
+      const body = JSON.stringify(bodyMap);
+      return transport.unary(path, 'PUT', body, {
+        service: 'OntologyObjectPropertyService',
+        method: 'Update',
+      }) as Promise<wellKnownEmpty>;
+    },
+    Delete(request) {
+      if (request.id === undefined || request.id === null) {
+        throw new Error('missing required field request.id');
+      }
+      const path = `/admin/v1/ontology/object-properties/${request.id}`;
+      const body = null;
+      const queryParams: string[] = [];
+      if (request.baseVersion) {
+        queryParams.push(
+          `baseVersion=${encodeURIComponent(request.baseVersion.toString())}`,
+        );
+      }
+      if (request.force) {
+        queryParams.push(
+          `force=${encodeURIComponent(request.force.toString())}`,
+        );
+      }
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join('&')}`;
+      }
+      return transport.unary(uri, 'DELETE', body, {
+        service: 'OntologyObjectPropertyService',
+        method: 'Delete',
+      }) as Promise<wellKnownEmpty>;
+    },
+  };
+}
+// 查询对象属性树 - 请求
+export type ontologyservicev1_GetObjectPropertyTreeRequest = {
+  ontologyId: number | undefined;
+};
+
+// 查询对象属性树 - 回应（根列表；owl:topObjectProperty 虚拟根由前端固定渲染）
+export type ontologyservicev1_ObjectPropertyTreeResponse = {
+  roots: ontologyservicev1_ObjectPropertyTreeNode[] | undefined;
+};
+
+// 对象属性树节点（owl:topObjectProperty 虚拟根由前端固定渲染，不入库）
+export type ontologyservicev1_ObjectPropertyTreeNode = {
+  childCount?: number;
+  children: ontologyservicev1_ObjectPropertyTreeNode[] | undefined;
+  deprecated?: boolean;
+  displayLabel?: string;
+  id?: number;
+  iri?: string;
+  localName?: string;
+};
+
+// 查询对象属性列表 - 请求（自定义分页消息，字段从 query 绑定；搜索条件一律 contains；无 root_id——左树点击=定位高亮右表行）
+export type ontologyservicev1_ListObjectPropertiesRequest = {
+  deprecated?: boolean;
+  displayLabel: string | undefined;
+  localName: string | undefined;
+  ontologyId: number | undefined;
+  orderBy: string | undefined;
+  page: number | undefined;
+  pageSize: number | undefined;
+};
+
+// 查询对象属性列表 - 回应
+export type ontologyservicev1_ListObjectPropertiesResponse = {
+  items: ontologyservicev1_ObjectProperty[] | undefined;
+  total: number | undefined;
+};
+
+// 对象属性（列表项，含注解与聚合列）
+export type ontologyservicev1_ObjectProperty = {
+  characteristics: string[] | undefined;
+  childCount?: number;
+  comment?: string;
+  createdAt?: wellKnownTimestamp;
+  createdBy?: number;
+  deletedAt?: wellKnownTimestamp;
+  deletedBy?: number;
+  deprecated?: boolean;
+  displayLabel?: string;
+  id?: number;
+  iri?: string;
+  localName?: string;
+  ontologyId?: number;
+  parentCount?: number;
+  updatedAt?: wellKnownTimestamp;
+  updatedBy?: number;
+};
+
+// 查询对象属性 frame 详情 - 请求
+export type ontologyservicev1_GetObjectPropertyFrameRequest = {
+  id: number | undefined;
+};
+
+// 对象属性 frame 详情（Protégé Object Property 描述视图对应物；base_version 供乐观锁回传）
+export type ontologyservicev1_ObjectPropertyFrame = {
+  baseVersion?: number;
+  chains: ontologyservicev1_ObjectPropertyChain[] | undefined;
+  characteristics: string[] | undefined;
+  comment?: string;
+  deprecated?: boolean;
+  disjointIds: number[] | undefined;
+  displayLabel?: string;
+  domainIds: number[] | undefined;
+  domains: ontologyservicev1_EntityBrief[] | undefined;
+  equivalentId?: number;
+  id?: number;
+  inverseIds: number[] | undefined;
+  iri?: string;
+  localName?: string;
+  ontologyId?: number;
+  rangeIds: number[] | undefined;
+  ranges: ontologyservicev1_EntityBrief[] | undefined;
+  superProperties: ontologyservicev1_EntityBrief[] | undefined;
+  superPropertyIds: number[] | undefined;
+  updatedAt?: wellKnownTimestamp;
+};
+
+// 属性链（37 型公理行；subject=超属性，成员有序保序、不去重——允许 P∘P）
+export type ontologyservicev1_ObjectPropertyChain = {
+  id?: number;
+  memberIds: number[] | undefined;
+  members: ontologyservicev1_EntityBrief[] | undefined;
+};
+
+// 查询对象属性引用 - 请求
+export type ontologyservicev1_GetObjectPropertyUsageRequest = {
+  id: number | undefined;
+};
+
+// 创建对象属性 - 请求（自定义 RPC：扁平请求体，勿包 { data }——protojson 会把 data 当未知字段丢弃）
+export type ontologyservicev1_CreateObjectPropertyRequest = {
+  chains: ontologyservicev1_ObjectPropertyChain[] | undefined;
+  characteristics: string[] | undefined;
+  comment?: string;
+  deprecated?: boolean;
+  disjointIds: number[] | undefined;
+  displayLabel?: string;
+  domainIds: number[] | undefined;
+  equivalentId?: number;
+  inverseIds: number[] | undefined;
+  localName: string | undefined;
+  ontologyId: number | undefined;
+  rangeIds: number[] | undefined;
+  superPropertyIds: number[] | undefined;
+};
+
+// 创建对象属性 - 回应（新实体 id + 变更后本体版本）
+export type ontologyservicev1_CreateObjectPropertyResponse = {
+  baseVersion?: number;
+  id?: number;
+};
+
+// 更新对象属性 - 请求（frame 全量提交语义；local_name 忽略——不可变；base_version 缺省 = 跳过乐观锁比对，仅限内部路径）
+export type ontologyservicev1_UpdateObjectPropertyRequest = {
+  baseVersion?: number;
+  chains: ontologyservicev1_ObjectPropertyChain[] | undefined;
+  characteristics: string[] | undefined;
+  comment?: string;
+  deprecated?: boolean;
+  disjointIds: number[] | undefined;
+  displayLabel?: string;
+  domainIds: number[] | undefined;
+  equivalentId?: number;
+  id: number | undefined;
+  inverseIds: number[] | undefined;
+  rangeIds: number[] | undefined;
+  superPropertyIds: number[] | undefined;
+};
+
+// 删除对象属性 - 请求（force=true 级联移除引用公理，子属性自动变根属性）
+export type ontologyservicev1_DeleteObjectPropertyRequest = {
   baseVersion?: number;
   force?: boolean;
   id: number | undefined;
@@ -12689,6 +13014,7 @@ export class ApiClient {
   private _oneStopServiceTypeService?: OneStopServiceTypeService;
   private _onlineSessionService?: OnlineSessionService;
   private _ontologyClassService?: OntologyClassService;
+  private _ontologyObjectPropertyService?: OntologyObjectPropertyService;
   private _ontologyService?: OntologyService;
   private _operationAuditLogService?: OperationAuditLogService;
   private _orgUnitService?: OrgUnitService;
@@ -12870,6 +13196,10 @@ export class ApiClient {
 
   get ontologyClassService(): OntologyClassService {
     return this._ontologyClassService ??= createOntologyClassServiceClient(this._transport);
+  }
+
+  get ontologyObjectPropertyService(): OntologyObjectPropertyService {
+    return this._ontologyObjectPropertyService ??= createOntologyObjectPropertyServiceClient(this._transport);
   }
 
   get ontologyService(): OntologyService {

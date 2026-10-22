@@ -113,6 +113,22 @@ func mapDomainError(err error) error {
 		return ontologyV1.ErrorHierarchyCyclic("%s", de.Message)
 	case ontology.ReasonEntityInUse:
 		return ontologyV1.ErrorEntityInUse("%s", de.Message)
+
+	// 02 期对象属性（源 1-071-003 段）
+	case ontology.ReasonPropertyDomainInvalid:
+		return ontologyV1.ErrorPropertyDomainInvalid("%s", de.Message)
+	case ontology.ReasonPropertyRangeInvalid:
+		return ontologyV1.ErrorPropertyRangeInvalid("%s", de.Message)
+	case ontology.ReasonPropertyChainInvalid:
+		return ontologyV1.ErrorPropertyChainInvalid("%s", de.Message)
+	case ontology.ReasonPropertyInverseSelfInvalid:
+		return ontologyV1.ErrorPropertyInverseSelfInvalid("%s", de.Message)
+	case ontology.ReasonPropertySelfReferenceInvalid:
+		return ontologyV1.ErrorPropertySelfReferenceInvalid("%s", de.Message)
+	case ontology.ReasonPropertyCharacteristicInvalid:
+		return ontologyV1.ErrorPropertyCharacteristicInvalid("%s", de.Message)
+	case ontology.ReasonPropertyTargetInvalid:
+		return ontologyV1.ErrorPropertyTargetInvalid("%s", de.Message)
 	default:
 		return adminV1.ErrorInternalServerError("%s", de.Message)
 	}

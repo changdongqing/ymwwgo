@@ -64,10 +64,11 @@ type ChangeLogEntry struct {
 // diff 算法（frame 全量提交语义，设计文档 §4.4.2）
 // ============================================================================
 
-// DiffSubjectSideRelations 单边关系 diff（父类 20 型）：当前公理集合（以 subject 为主语）vs
-// 目标父类集合，删旧增新；保留条目若位置变化（重排）按"删旧行 + 增新行"重写 sort_order，
-// 保证最终排序与提交顺序一致。targetIDs 允许为空（清空全部父类 = 变根类）。
-func DiffSubjectSideRelations(subject uint32, current []*ent.OntAxiom, targetIDs []uint32) []AxiomChange {
+// DiffSubjectSideRelations 单边关系 diff（父类 20 型 / 父属性 30 型 / 定义域 31 / 值域 32）：
+// 当前公理集合（以 subject 为主语）vs 目标实体集合，删旧增新；保留条目若位置变化（重排）
+// 按"删旧行 + 增新行"重写 sort_order，保证最终排序与提交顺序一致。targetIDs 允许为空
+// （清空全部 = 变根/清空域值域）。axiomType 指定公理类型（01 期实现硬编码 20 型，02 期泛化）。
+func DiffSubjectSideRelations(subject uint32, axiomType uint32, current []*ent.OntAxiom, targetIDs []uint32) []AxiomChange {
 	byObject := make(map[uint32][]*ent.OntAxiom, len(current))
 	for _, ax := range current {
 		if ax.ObjectID == nil {
@@ -104,7 +105,7 @@ func DiffSubjectSideRelations(subject uint32, current []*ent.OntAxiom, targetIDs
 		if needAdd {
 			changes = append(changes, AxiomChange{
 				Op:        AxiomOpAdd,
-				AxiomType: AxiomSubClassOf,
+				AxiomType: axiomType,
 				SubjectID: subject,
 				ObjectID:  id,
 				SortOrder: int32(i),
@@ -258,4 +259,121 @@ func builtinPredicateLang(predicate string) string {
 	default:
 		return ""
 	}
+}
+
+// PropertyChain 属性链投影（37 型公理行）与链 diff 见 object_property.go（02 期增量）。
+
+// DiffChains 属性链 diff（37 型，按链内容比对，frame 全量替换语义——02 号文档 §2.4）：
+//   - 提交含 id 且成员序列未变 → 不动；
+//   - 提交含 id 且变更 → 删旧行 + 增新行；
+//   - 提交无 id → 增；
+//   - 现存行未被任何提交引用（缺 id）→ 删。
+//
+// 目标侧 memberIDs 为空且无 id 的行不产出变更（前端空行防御）。成员序列保序比对，不做 distinct。
+func DiffChains(me uint32, current []PropertyChain, targets []PropertyChain) []AxiomChange {
+	currentByID := make(map[uint32]PropertyChain, len(current))
+	for _, c := range current {
+		if c.AxiomID != 0 {
+			currentByID[c.AxiomID] = c
+		}
+	}
+
+	changes := make([]AxiomChange, 0, len(current)+len(targets))
+
+	// 删：现存行未被提交引用
+	kept := make(map[uint32]struct{}, len(targets))
+	for _, t := range targets {
+		if t.AxiomID != 0 {
+			kept[t.AxiomID] = struct{}{}
+		}
+	}
+	for _, c := range current {
+		if c.AxiomID == 0 {
+			continue
+		}
+		if _, ok := kept[c.AxiomID]; !ok {
+			changes = append(changes, AxiomChange{Op: AxiomOpDelete, AxiomID: c.AxiomID, SubjectID: me})
+		}
+	}
+
+	// 增/换行：按提交顺序写 sort_order（同一属性多条链之间用既有 sort_order 排序）
+	for i, t := range targets {
+		if len(t.MemberIDs) == 0 {
+			continue
+		}
+		if t.AxiomID != 0 {
+			cur, ok := currentByID[t.AxiomID]
+			if ok && chainMembersEqual(cur.MemberIDs, t.MemberIDs) {
+				continue // 未变
+			}
+			if ok {
+				// 变更：删旧行 + 增新行
+				changes = append(changes, AxiomChange{Op: AxiomOpDelete, AxiomID: t.AxiomID, SubjectID: me})
+			}
+			// id 不在现状（防御：提交了未知行 id）按新增处理
+		}
+		changes = append(changes, AxiomChange{
+			Op:        AxiomOpAdd,
+			AxiomType: AxiomSubPropertyChainOf,
+			SubjectID: me,
+			ValueText: EncodeChainMemberIDs(t.MemberIDs),
+			SortOrder: int32(i),
+		})
+	}
+	return changes
+}
+
+func chainMembersEqual(a, b []uint32) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i := range a {
+		if a[i] != b[i] {
+			return false
+		}
+	}
+	return true
+}
+
+// DiffCharacteristics 特征 diff（33 型，按 predicate_iri 集合比对——变体：以谓词列而非 object_id
+// 为集合键，02 号文档 §2.4）：现存谓词不在目标中 → 删行；目标谓词无现存行 → 增行。
+// 每特征一行（subject=属性，object_id/value_text 空）。
+func DiffCharacteristics(subject uint32, current []*ent.OntAxiom, targetIRIs []string) []AxiomChange {
+	targetSet := make(map[string]struct{}, len(targetIRIs))
+	for _, iri := range targetIRIs {
+		if iri == "" {
+			continue
+		}
+		targetSet[iri] = struct{}{}
+	}
+
+	changes := make([]AxiomChange, 0, len(current)+len(targetIRIs))
+	existing := make(map[string]struct{}, len(current))
+	for _, ax := range current {
+		p := nilString(ax.PredicateIri)
+		if p == "" {
+			continue
+		}
+		if _, keep := targetSet[p]; keep {
+			existing[p] = struct{}{}
+			continue
+		}
+		changes = append(changes, AxiomChange{Op: AxiomOpDelete, AxiomID: ax.ID, SubjectID: subject})
+	}
+
+	for _, iri := range targetIRIs {
+		if iri == "" {
+			continue
+		}
+		if _, ok := existing[iri]; ok {
+			continue
+		}
+		changes = append(changes, AxiomChange{
+			Op:           AxiomOpAdd,
+			AxiomType:    AxiomObjectPropertyCharacteristic,
+			SubjectID:    subject,
+			PredicateIRI: iri,
+		})
+	}
+	return changes
 }

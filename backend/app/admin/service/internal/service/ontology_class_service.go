@@ -112,7 +112,7 @@ func (s *OntologyClassService) buildTree(ctx context.Context, ontologyID uint32,
 
 	roots := ontology.BuildClassTree(ctx, ontology.ClassHierarchyInput{
 		Entities: entities,
-		Edges:    ontology.CollectHierarchyEdges(axioms),
+		Edges:    ontology.CollectHierarchyEdges(axioms, ontology.AxiomSubClassOf),
 	}, s.log)
 	if nav {
 		roots = ontology.PruneNavTree(roots)
@@ -160,7 +160,7 @@ func (s *OntologyClassService) List(ctx context.Context, req *ontologyV1.ListOnt
 		if err != nil {
 			return nil, adminV1.ErrorInternalServerError("query axioms failed")
 		}
-		subtreeIDs = ontology.SubtreeIDs(req.GetRootId(), ontology.CollectHierarchyEdges(axioms))
+		subtreeIDs = ontology.SubtreeIDs(req.GetRootId(), ontology.CollectHierarchyEdges(axioms, ontology.AxiomSubClassOf))
 	}
 
 	entities, total, err := s.entityRepo.ListClasses(ctx, data.ClassListFilter{
@@ -293,7 +293,7 @@ func symmetricPartners(me uint32, subjectAxioms, objectAxioms []*ent.OntAxiom, a
 
 // ---- usage ----
 
-func (s *OntologyClassService) Usage(ctx context.Context, req *ontologyV1.GetOntologyClassUsageRequest) (*ontologyV1.OntologyClassUsage, error) {
+func (s *OntologyClassService) Usage(ctx context.Context, req *ontologyV1.GetOntologyClassUsageRequest) (*ontologyV1.EntityUsage, error) {
 	e, err := s.requireClassEntity(ctx, req.GetId())
 	if err != nil {
 		return nil, err
@@ -330,7 +330,7 @@ func (s *OntologyClassService) Usage(ctx context.Context, req *ontologyV1.GetOnt
 		refKeys = append(refKeys, key)
 	}
 
-	usage := &ontologyV1.OntologyClassUsage{EntityId: &e.ID}
+	usage := &ontologyV1.EntityUsage{EntityId: &e.ID}
 	if len(refKeys) > 0 {
 		ids := make([]uint32, 0, len(refKeys))
 		for _, k := range refKeys {
@@ -341,9 +341,9 @@ func (s *OntologyClassService) Usage(ctx context.Context, req *ontologyV1.GetOnt
 			return nil, adminV1.ErrorInternalServerError("query referencing entities failed")
 		}
 		byID := entityMap(entities)
-		usage.Refs = make([]*ontologyV1.OntologyClassUsageRef, 0, len(refKeys))
+		usage.Refs = make([]*ontologyV1.EntityUsageRef, 0, len(refKeys))
 		for _, k := range refKeys {
-			ref := &ontologyV1.OntologyClassUsageRef{
+			ref := &ontologyV1.EntityUsageRef{
 				EntityId:  &k.entityID,
 				AxiomType: &k.axiomType,
 			}
@@ -387,16 +387,16 @@ func (s *OntologyClassService) Create(ctx context.Context, req *ontologyV1.Creat
 	// 引用校验：均为本体下已声明的类（create 不做自引用校验——新实体尚无 id）
 	parentIDs := dedupeUint32(req.GetParentIds())
 	disjointIDs := dedupeUint32(req.GetDisjointIds())
-	if err = s.factory.ValidateRefEntities(ctx, req.GetOntologyId(), parentIDs, ontology.EntityTypeClass); err != nil {
+	if err = s.factory.ValidateRefEntities(ctx, req.GetOntologyId(), parentIDs, ontology.EntityTypeClass, ontology.ReasonEntityTypeMismatch); err != nil {
 		return nil, mapDomainError(err)
 	}
-	if err = s.factory.ValidateRefEntities(ctx, req.GetOntologyId(), disjointIDs, ontology.EntityTypeClass); err != nil {
+	if err = s.factory.ValidateRefEntities(ctx, req.GetOntologyId(), disjointIDs, ontology.EntityTypeClass, ontology.ReasonEntityTypeMismatch); err != nil {
 		return nil, mapDomainError(err)
 	}
 	var equivalentID uint32
 	if req.EquivalentId != nil && *req.EquivalentId > 0 {
 		equivalentID = *req.EquivalentId
-		if err = s.factory.ValidateRefEntities(ctx, req.GetOntologyId(), []uint32{equivalentID}, ontology.EntityTypeClass); err != nil {
+		if err = s.factory.ValidateRefEntities(ctx, req.GetOntologyId(), []uint32{equivalentID}, ontology.EntityTypeClass, ontology.ReasonEntityTypeMismatch); err != nil {
 			return nil, mapDomainError(err)
 		}
 	}
@@ -446,10 +446,10 @@ func (s *OntologyClassService) Update(ctx context.Context, req *ontologyV1.Updat
 	// 引用校验（update 时不得自引用：父类自引用走环检测，不相交/等价自引用直接拒绝）
 	parentIDs := dedupeUint32(req.GetParentIds())
 	disjointIDs := dedupeUint32(req.GetDisjointIds())
-	if err = s.factory.ValidateRefEntities(ctx, ontologyID, parentIDs, ontology.EntityTypeClass); err != nil {
+	if err = s.factory.ValidateRefEntities(ctx, ontologyID, parentIDs, ontology.EntityTypeClass, ontology.ReasonEntityTypeMismatch); err != nil {
 		return nil, mapDomainError(err)
 	}
-	if err = s.factory.ValidateRefEntities(ctx, ontologyID, disjointIDs, ontology.EntityTypeClass); err != nil {
+	if err = s.factory.ValidateRefEntities(ctx, ontologyID, disjointIDs, ontology.EntityTypeClass, ontology.ReasonEntityTypeMismatch); err != nil {
 		return nil, mapDomainError(err)
 	}
 	for _, did := range disjointIDs {
@@ -463,7 +463,7 @@ func (s *OntologyClassService) Update(ctx context.Context, req *ontologyV1.Updat
 		if *req.EquivalentId == req.GetId() {
 			return nil, ontologyV1.ErrorEntityTypeMismatch("不能与自身等价：%d", *req.EquivalentId)
 		}
-		if err = s.factory.ValidateRefEntities(ctx, ontologyID, []uint32{*req.EquivalentId}, ontology.EntityTypeClass); err != nil {
+		if err = s.factory.ValidateRefEntities(ctx, ontologyID, []uint32{*req.EquivalentId}, ontology.EntityTypeClass, ontology.ReasonEntityTypeMismatch); err != nil {
 			return nil, mapDomainError(err)
 		}
 		equivalentTarget = []uint32{*req.EquivalentId}
@@ -482,7 +482,7 @@ func (s *OntologyClassService) Update(ctx context.Context, req *ontologyV1.Updat
 	subjectAxioms := filterBySubject(axioms, req.GetId())
 	annotationAxioms := filterByType(subjectAxioms, ontology.AxiomAnnotationAssertion)
 
-	changes := ontology.DiffSubjectSideRelations(req.GetId(), filterByType(subjectAxioms, ontology.AxiomSubClassOf), parentIDs)
+	changes := ontology.DiffSubjectSideRelations(req.GetId(), ontology.AxiomSubClassOf, filterByType(subjectAxioms, ontology.AxiomSubClassOf), parentIDs)
 	changes = append(changes, ontology.DiffSymmetricPairs(req.GetId(), ontology.AxiomDisjointWith,
 		buildSymmetricPairs(req.GetId(), axioms, ontology.AxiomDisjointWith), disjointIDs)...)
 	if equivalentSet {
@@ -641,7 +641,7 @@ func (s *OntologyClassService) assertNoCycleForClass(ctx context.Context, ontolo
 	if err != nil {
 		return adminV1.ErrorInternalServerError("query axioms failed")
 	}
-	edges := ontology.CollectHierarchyEdges(axioms)
+	edges := ontology.CollectHierarchyEdges(axioms, ontology.AxiomSubClassOf)
 	var names map[uint32]string
 	if entities, listErr := s.entityRepo.ListEntitiesByType(ctx, ontologyID, ontology.EntityTypeClass); listErr == nil {
 		names = make(map[uint32]string, len(entities))

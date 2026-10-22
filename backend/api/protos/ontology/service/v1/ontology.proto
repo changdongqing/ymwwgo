@@ -30,7 +30,14 @@ enum OntologyAxiomType {
     AXIOM_SUBCLASS_OF = 20;                 // 01：子类（多继承多条，subject=子类，object=父类）
     AXIOM_DISJOINT_WITH = 21;               // 01：不相交（成对存储：(A,B) 与 (B,A) 各一行）
     AXIOM_EQUIVALENT_CLASSES = 22;          // 01：等价（成对存储，V1 命名类对）
-    // 30~37 预留 02 对象属性（30 子属性 / 31 定义域 / 32 值域 / 33 特征 / 37 属性链）
+    AXIOM_SUB_OBJECT_PROPERTY_OF = 30;      // 02：子对象属性（subject=子属性，object_id=父属性）
+    AXIOM_OBJECT_PROPERTY_DOMAIN = 31;      // 02：定义域（subject=属性，object_id=类；多行=多定义域，OWL 交集语义）
+    AXIOM_OBJECT_PROPERTY_RANGE = 32;       // 02：值域（同上）
+    AXIOM_OBJECT_PROPERTY_CHARACTERISTIC = 33; // 02：特征（泛型，subject=属性，predicate_iri=特征 IRI，每特征一行）
+    AXIOM_INVERSE_OF = 34;                  // 02：逆属性（成对 (P,Q)+(Q,P) 各一行）
+    AXIOM_EQUIVALENT_OBJECT_PROPERTIES = 35; // 02：等价属性（成对；frame 单值暴露，存储为成对）
+    AXIOM_DISJOINT_OBJECT_PROPERTIES = 36;  // 02：不相交属性（成对）
+    AXIOM_SUB_PROPERTY_CHAIN_OF = 37;       // 02：属性链（subject=超属性，value_text=链成员实体 id 的 JSON 数组，保序）
     // 40~45 预留 03 数据属性；46~49 预留 05 数据类型；50 预留 04 注解属性
     // 60~62 预留 06 个体（60 断型 / 61 对象断言 / 62 数据断言）
     AXIOM_ANNOTATION_ASSERTION = 100;       // 阶段0：注解断言，全功能共用
@@ -54,6 +61,35 @@ message EntityBrief {
         json_name = "deprecated",
         (gnostic.openapi.v3.property) = { description: "是否废弃（owl:deprecated）" }
     ]; // 是否废弃
+}
+
+// 实体引用明细行（usage 反查；类/属性各期共用同一消息，axiom_type 语义随各期扩展）
+message EntityUsageRef {
+    optional uint32 entity_id = 1 [
+        json_name = "entityId",
+        (gnostic.openapi.v3.property) = { description: "引用方实体ID" }
+    ]; // 引用方实体ID
+    optional string local_name = 2 [
+        json_name = "localName",
+        (gnostic.openapi.v3.property) = { description: "引用方局部名" }
+    ]; // 引用方局部名
+    optional string display_label = 3 [
+        json_name = "displayLabel",
+        (gnostic.openapi.v3.property) = { description: "引用方显示名" }
+    ]; // 引用方显示名
+    optional uint32 axiom_type = 4 [
+        json_name = "axiomType",
+        (gnostic.openapi.v3.property) = { description: "引用公理类型（类：20 子类/21 不相交/22 等价/31 定义域/32 值域；属性：30 父属性/34 逆属性/35 等价/36 不相交/37 属性链）" }
+    ]; // 引用公理类型
+}
+
+// 实体引用明细（谁引用了我；原 01 期 OntologyClassUsage 上移泛化，类/属性接口共用）
+message EntityUsage {
+    optional uint32 entity_id = 1 [
+        json_name = "entityId",
+        (gnostic.openapi.v3.property) = { description: "被查实体ID" }
+    ]; // 被查实体ID
+    repeated EntityUsageRef refs = 2 [json_name = "refs"]; // 引用明细
 }
 
 // 本体文档（owl:Ontology）

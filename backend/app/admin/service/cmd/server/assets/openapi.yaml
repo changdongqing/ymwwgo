@@ -5320,7 +5320,177 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/OntologyClassUsage'
+                                $ref: '#/components/schemas/EntityUsage'
+    /admin/v1/ontology/object-properties:
+        get:
+            tags:
+                - OntologyObjectPropertyService
+            description: 分页查询对象属性列表
+            operationId: OntologyObjectPropertyService_List
+            parameters:
+                - name: page
+                  in: query
+                  schema:
+                    type: integer
+                    format: uint32
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: uint32
+                - name: ontologyId
+                  in: query
+                  schema:
+                    type: integer
+                    format: uint32
+                - name: localName
+                  in: query
+                  schema:
+                    type: string
+                - name: displayLabel
+                  in: query
+                  schema:
+                    type: string
+                - name: deprecated
+                  in: query
+                  schema:
+                    type: boolean
+                - name: orderBy
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListObjectPropertiesResponse'
+        post:
+            tags:
+                - OntologyObjectPropertyService
+            description: 创建对象属性（公理事务管线；返回新实体 id + 变更后版本）
+            operationId: OntologyObjectPropertyService_Create
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/CreateObjectPropertyRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/CreateObjectPropertyResponse'
+    /admin/v1/ontology/object-properties/tree:
+        get:
+            tags:
+                - OntologyObjectPropertyService
+            description: 查询对象属性全量树
+            operationId: OntologyObjectPropertyService_Tree
+            parameters:
+                - name: ontologyId
+                  in: query
+                  schema:
+                    type: integer
+                    format: uint32
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ObjectPropertyTreeResponse'
+    /admin/v1/ontology/object-properties/{id}:
+        put:
+            tags:
+                - OntologyObjectPropertyService
+            description: 更新对象属性（frame 全量提交，公理事务管线）
+            operationId: OntologyObjectPropertyService_Update
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint32
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/UpdateObjectPropertyRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+        delete:
+            tags:
+                - OntologyObjectPropertyService
+            description: 删除对象属性（force=true 级联移除引用公理，子属性自动变根属性）
+            operationId: OntologyObjectPropertyService_Delete
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint32
+                - name: baseVersion
+                  in: query
+                  schema:
+                    type: integer
+                    format: uint32
+                - name: force
+                  in: query
+                  schema:
+                    type: boolean
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+    /admin/v1/ontology/object-properties/{id}/frame:
+        get:
+            tags:
+                - OntologyObjectPropertyService
+            description: 查询对象属性 frame 详情
+            operationId: OntologyObjectPropertyService_Frame
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint32
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ObjectPropertyFrame'
+    /admin/v1/ontology/object-properties/{id}/usage:
+        get:
+            tags:
+                - OntologyObjectPropertyService
+            description: 查询对象属性引用明细
+            operationId: OntologyObjectPropertyService_Usage
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint32
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/EntityUsage'
     /admin/v1/ontology/ontologies:
         get:
             tags:
@@ -9621,6 +9791,67 @@ components:
             properties:
                 data:
                     $ref: '#/components/schemas/NotificationTemplate'
+        CreateObjectPropertyRequest:
+            type: object
+            properties:
+                ontologyId:
+                    type: integer
+                    format: uint32
+                localName:
+                    type: string
+                displayLabel:
+                    type: string
+                comment:
+                    type: string
+                deprecated:
+                    type: boolean
+                superPropertyIds:
+                    type: array
+                    items:
+                        type: integer
+                        format: uint32
+                domainIds:
+                    type: array
+                    items:
+                        type: integer
+                        format: uint32
+                rangeIds:
+                    type: array
+                    items:
+                        type: integer
+                        format: uint32
+                inverseIds:
+                    type: array
+                    items:
+                        type: integer
+                        format: uint32
+                disjointIds:
+                    type: array
+                    items:
+                        type: integer
+                        format: uint32
+                equivalentId:
+                    type: integer
+                    format: uint32
+                characteristics:
+                    type: array
+                    items:
+                        type: string
+                chains:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/ObjectPropertyChain'
+            description: 创建对象属性 - 请求（自定义 RPC：扁平请求体，勿包 { data }——protojson 会把 data 当未知字段丢弃）
+        CreateObjectPropertyResponse:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: uint32
+                baseVersion:
+                    type: integer
+                    format: uint32
+            description: 创建对象属性 - 回应（新实体 id + 变更后本体版本）
         CreateOntologyClassRequest:
             type: object
             properties:
@@ -10290,6 +10521,36 @@ components:
                     type: boolean
                     description: 是否废弃（owl:deprecated）
             description: 实体简况（树/引用/父类选择器共用）
+        EntityUsage:
+            type: object
+            properties:
+                entityId:
+                    type: integer
+                    description: 被查实体ID
+                    format: uint32
+                refs:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/EntityUsageRef'
+            description: 实体引用明细（谁引用了我；原 01 期 OntologyClassUsage 上移泛化，类/属性接口共用）
+        EntityUsageRef:
+            type: object
+            properties:
+                entityId:
+                    type: integer
+                    description: 引用方实体ID
+                    format: uint32
+                localName:
+                    type: string
+                    description: 引用方局部名
+                displayLabel:
+                    type: string
+                    description: 引用方显示名
+                axiomType:
+                    type: integer
+                    description: 引用公理类型（类：20 子类/21 不相交/22 等价/31 定义域/32 值域；属性：30 父属性/34 逆属性/35 等价/36 不相交/37 属性链）
+                    format: uint32
+            description: 实体引用明细行（usage 反查；类/属性各期共用同一消息，axiom_type 语义随各期扩展）
         EvaluateMonitorAlertsRequest:
             type: object
             properties: {}
@@ -11297,6 +11558,16 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/NotificationTemplate'
+        ListObjectPropertiesResponse:
+            type: object
+            properties:
+                items:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/ObjectProperty'
+                total:
+                    type: string
+            description: 查询对象属性列表 - 回应
         ListOnlineSessionResponse:
             type: object
             properties:
@@ -12487,6 +12758,197 @@ components:
                     type: string
                     format: date-time
             description: 通知模板：可复用的标题/正文占位模板（{{var}}），平台全局、code 全局唯一。
+        ObjectProperty:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    description: 实体ID
+                    format: uint32
+                ontologyId:
+                    type: integer
+                    description: 所属本体ID
+                    format: uint32
+                iri:
+                    type: string
+                    description: 完整 IRI
+                localName:
+                    type: string
+                    description: 局部名（创建后不可变）
+                displayLabel:
+                    type: string
+                    description: 显示名（rdfs:label 渲染缓存）
+                deprecated:
+                    type: boolean
+                    description: 是否废弃（owl:deprecated）
+                comment:
+                    type: string
+                    description: 注释（rdfs:comment 注解公理聚合）
+                parentCount:
+                    type: integer
+                    description: 父属性数（子属性公理以我为主语计数）
+                    format: uint32
+                childCount:
+                    type: integer
+                    description: 直接子属性数（子属性公理以我为宾语计数）
+                    format: uint32
+                characteristics:
+                    type: array
+                    items:
+                        type: string
+                    description: 特征 IRI，按 OntologyPropertyCharacteristic 声明序返回
+                createdBy:
+                    type: integer
+                    description: 创建者用户ID
+                    format: uint32
+                updatedBy:
+                    type: integer
+                    description: 更新者用户ID
+                    format: uint32
+                deletedBy:
+                    type: integer
+                    description: 删除者用户ID
+                    format: uint32
+                createdAt:
+                    type: string
+                    description: 创建时间
+                    format: date-time
+                updatedAt:
+                    type: string
+                    description: 更新时间
+                    format: date-time
+                deletedAt:
+                    type: string
+                    description: 删除时间
+                    format: date-time
+            description: 对象属性（列表项，含注解与聚合列）
+        ObjectPropertyChain:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    description: 链公理行ID（已存在链才有；新增链无 id）
+                    format: uint32
+                memberIds:
+                    type: array
+                    items:
+                        type: integer
+                        format: uint32
+                members:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/EntityBrief'
+            description: 属性链（37 型公理行；subject=超属性，成员有序保序、不去重——允许 P∘P）
+        ObjectPropertyFrame:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: uint32
+                ontologyId:
+                    type: integer
+                    format: uint32
+                iri:
+                    type: string
+                localName:
+                    type: string
+                displayLabel:
+                    type: string
+                comment:
+                    type: string
+                deprecated:
+                    type: boolean
+                superPropertyIds:
+                    type: array
+                    items:
+                        type: integer
+                        format: uint32
+                superProperties:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/EntityBrief'
+                domainIds:
+                    type: array
+                    items:
+                        type: integer
+                        format: uint32
+                domains:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/EntityBrief'
+                rangeIds:
+                    type: array
+                    items:
+                        type: integer
+                        format: uint32
+                ranges:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/EntityBrief'
+                inverseIds:
+                    type: array
+                    items:
+                        type: integer
+                        format: uint32
+                disjointIds:
+                    type: array
+                    items:
+                        type: integer
+                        format: uint32
+                equivalentId:
+                    type: integer
+                    format: uint32
+                characteristics:
+                    type: array
+                    items:
+                        type: string
+                chains:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/ObjectPropertyChain'
+                baseVersion:
+                    type: integer
+                    format: uint32
+                updatedAt:
+                    type: string
+                    format: date-time
+            description: 对象属性 frame 详情（Protégé Object Property 描述视图对应物；base_version 供乐观锁回传）
+        ObjectPropertyTreeNode:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    description: 实体ID
+                    format: uint32
+                iri:
+                    type: string
+                    description: 完整 IRI
+                localName:
+                    type: string
+                    description: 局部名
+                displayLabel:
+                    type: string
+                    description: 显示名（rdfs:label 渲染缓存）
+                deprecated:
+                    type: boolean
+                    description: 是否废弃（owl:deprecated）
+                childCount:
+                    type: integer
+                    description: 真实直接子属性数
+                    format: uint32
+                children:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/ObjectPropertyTreeNode'
+            description: 对象属性树节点（owl:topObjectProperty 虚拟根由前端固定渲染，不入库）
+        ObjectPropertyTreeResponse:
+            type: object
+            properties:
+                roots:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/ObjectPropertyTreeNode'
+            description: 查询对象属性树 - 回应（根列表；owl:topObjectProperty 虚拟根由前端固定渲染）
         OnlineSession:
             type: object
             properties:
@@ -12743,30 +13205,6 @@ components:
                     items:
                         $ref: '#/components/schemas/OntologyClassTreeNode'
             description: 查询本体类树 - 回应（根列表；owl:Thing 虚拟根由前端固定渲染）
-        OntologyClassUsage:
-            type: object
-            properties:
-                entityId:
-                    type: integer
-                    format: uint32
-                refs:
-                    type: array
-                    items:
-                        $ref: '#/components/schemas/OntologyClassUsageRef'
-        OntologyClassUsageRef:
-            type: object
-            properties:
-                entityId:
-                    type: integer
-                    format: uint32
-                localName:
-                    type: string
-                displayLabel:
-                    type: string
-                axiomType:
-                    type: integer
-                    format: uint32
-            description: 本体类引用明细（谁引用了我）
         OperationAuditLog:
             type: object
             properties:
@@ -14985,6 +15423,58 @@ components:
                     type: string
                     description: 字段掩码：留空更新全部字段
                     format: field-mask
+        UpdateObjectPropertyRequest:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: uint32
+                displayLabel:
+                    type: string
+                comment:
+                    type: string
+                deprecated:
+                    type: boolean
+                superPropertyIds:
+                    type: array
+                    items:
+                        type: integer
+                        format: uint32
+                domainIds:
+                    type: array
+                    items:
+                        type: integer
+                        format: uint32
+                rangeIds:
+                    type: array
+                    items:
+                        type: integer
+                        format: uint32
+                inverseIds:
+                    type: array
+                    items:
+                        type: integer
+                        format: uint32
+                disjointIds:
+                    type: array
+                    items:
+                        type: integer
+                        format: uint32
+                equivalentId:
+                    type: integer
+                    format: uint32
+                characteristics:
+                    type: array
+                    items:
+                        type: string
+                chains:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/ObjectPropertyChain'
+                baseVersion:
+                    type: integer
+                    format: uint32
+            description: 更新对象属性 - 请求（frame 全量提交语义；local_name 忽略——不可变；base_version 缺省 = 跳过乐观锁比对，仅限内部路径）
         UpdateOntologyClassRequest:
             type: object
             properties:
@@ -15704,6 +16194,14 @@ tags:
         本体类管理服务（admin 门面）
 
          本体类 create/update/delete 是自定义 RPC（公理事务管线：diff + 环检测 + 乐观锁 + 校验 + 变更日志），
+         body: "*" 收扁平请求体——不是通用 CRUD，勿按惯例包 { data: {...} }
+         （protojson 会把 data 当未知字段丢弃，接口 200 但字段全空，仓库已知坑）。
+         GET/DELETE 的标量参数由 Kratos 从 query string 按 proto 字段 json 名（camelCase）绑定。
+    - name: OntologyObjectPropertyService
+      description: |-
+        对象属性管理服务（admin 门面）
+
+         对象属性 create/update/delete 是自定义 RPC（公理事务管线：diff + 环检测 + 乐观锁 + 校验 + 变更日志），
          body: "*" 收扁平请求体——不是通用 CRUD，勿按惯例包 { data: {...} }
          （protojson 会把 data 当未知字段丢弃，接口 200 但字段全空，仓库已知坑）。
          GET/DELETE 的标量参数由 Kratos 从 query string 按 proto 字段 json 名（camelCase）绑定。

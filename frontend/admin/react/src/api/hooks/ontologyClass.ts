@@ -11,7 +11,7 @@ import {
   type ontologyservicev1_OntologyClassFrame,
   type ontologyservicev1_OntologyClassNavTreeResponse,
   type ontologyservicev1_OntologyClassTreeResponse,
-  type ontologyservicev1_OntologyClassUsage,
+  type ontologyservicev1_EntityUsage,
   type ontologyservicev1_UpdateOntologyClassRequest,
 } from '@/api/generated/admin/service/v1';
 import { queryClient } from '@/core';
@@ -92,7 +92,7 @@ export function useOntologyClassFrame(
 // 引用明细（删除保护弹窗）
 export function useOntologyClassUsage(
   req: ontologyservicev1_GetOntologyClassUsageRequest,
-  options?: Omit<UseQueryOptions<ontologyservicev1_OntologyClassUsage, Error>, 'queryKey' | 'queryFn'>,
+  options?: Omit<UseQueryOptions<ontologyservicev1_EntityUsage, Error>, 'queryKey' | 'queryFn'>,
 ) {
   return useQuery({
     queryKey: ['ontologyClassUsage', req],

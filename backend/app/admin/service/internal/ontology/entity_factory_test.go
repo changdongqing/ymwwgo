@@ -11,7 +11,7 @@ import (
 
 // stubEntityReader EntityReader 桩
 type stubEntityReader struct {
-	iris     map[string]bool        // ontologyID:iri → exists
+	iris     map[string]bool // ontologyID:iri → exists
 	entities map[uint32]*ent.OntEntity
 }
 
@@ -63,12 +63,12 @@ func TestValidateLocalName(t *testing.T) {
 	}
 
 	invalid := []string{
-		"1abc",   // 首字符数字
-		"-lead",  // 首字符连字符
-		"含 空格",   // 保留字符（空格）
-		"a/b",    // 保留字符（斜杠）
-		"a#b",    // 保留字符（#）
-		"",       // 空串
+		"1abc",  // 首字符数字
+		"-lead", // 首字符连字符
+		"含 空格",  // 保留字符（空格）
+		"a/b",   // 保留字符（斜杠）
+		"a#b",   // 保留字符（#）
+		"",      // 空串
 	}
 	for _, name := range invalid {
 		if err := f.ValidateLocalName(name); err == nil {
@@ -127,29 +127,29 @@ func TestValidateRefEntities(t *testing.T) {
 	reader.addEntity(4, 7, EntityTypeObjectProperty, "prop")
 
 	// 通过：类型相符
-	if err := f.ValidateRefEntities(context.Background(), 7, []uint32{1, 2}, EntityTypeClass); err != nil {
+	if err := f.ValidateRefEntities(context.Background(), 7, []uint32{1, 2}, EntityTypeClass, ReasonEntityTypeMismatch); err != nil {
 		t.Fatalf("合法引用不应报错：%v", err)
 	}
 	// 通过：空列表
-	if err := f.ValidateRefEntities(context.Background(), 7, nil, EntityTypeClass); err != nil {
+	if err := f.ValidateRefEntities(context.Background(), 7, nil, EntityTypeClass, ReasonEntityTypeMismatch); err != nil {
 		t.Fatalf("空引用不应报错：%v", err)
 	}
 	// 拒绝：跨本体（3 不在本体 7）
-	if err := f.ValidateRefEntities(context.Background(), 7, []uint32{1, 3}, EntityTypeClass); err == nil {
+	if err := f.ValidateRefEntities(context.Background(), 7, []uint32{1, 3}, EntityTypeClass, ReasonEntityTypeMismatch); err == nil {
 		t.Fatal("跨本体引用应报错")
 	} else if de := err.(*DomainError); de.Reason != ReasonEntityTypeMismatch {
 		t.Fatalf("reason 应为 ENTITY_TYPE_MISMATCH：%v", err)
 	}
 	// 拒绝：类型不符
-	if err := f.ValidateRefEntities(context.Background(), 7, []uint32{4}, EntityTypeClass); err == nil {
+	if err := f.ValidateRefEntities(context.Background(), 7, []uint32{4}, EntityTypeClass, ReasonEntityTypeMismatch); err == nil {
 		t.Fatal("类型不符引用应报错")
 	}
 	// 拒绝：不存在
-	if err := f.ValidateRefEntities(context.Background(), 7, []uint32{99}, EntityTypeClass); err == nil {
+	if err := f.ValidateRefEntities(context.Background(), 7, []uint32{99}, EntityTypeClass, ReasonEntityTypeMismatch); err == nil {
 		t.Fatal("不存在的引用应报错")
 	}
 	// 自身跳过：调用方约定（父类自引用由 AssertNoCycle 捕获），本方法不做自引用拦截
-	if err := f.ValidateRefEntities(context.Background(), 7, []uint32{1}, EntityTypeClass); err != nil {
+	if err := f.ValidateRefEntities(context.Background(), 7, []uint32{1}, EntityTypeClass, ReasonEntityTypeMismatch); err != nil {
 		t.Fatalf("单引用不应报错：%v", err)
 	}
 }

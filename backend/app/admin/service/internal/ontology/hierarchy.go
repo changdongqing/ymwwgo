@@ -34,10 +34,11 @@ type ClassHierarchyInput struct {
 	Edges    []HierarchyEdge  // 未删 20 型公理（指向未声明实体的边在收集侧剔除）
 }
 
-// BuildClassTree 全量树构建（设计文档 §4.3）：
+// BuildClassTree 全量树构建（设计文档 §4.3；算法与实体类型无关——输入为实体与边的投影，
+// 02 期属性树以 entityType=20 的实体集 + 30 型边复用同一实现，函数名沿用 01 期）：
 //   - childMap = edges GROUP BY parent，按 sort_order、display_label、id 排序；
 //   - roots = 无父类边的实体（孤立类成根）；
-//   - 虚拟根 owl:Thing 不入库：服务端返回根列表，Thing 节点由前端固定渲染；
+//   - 虚拟根 owl:Thing / owl:topObjectProperty 不入库：服务端返回根列表，虚拟根节点由前端固定渲染；
 //   - 脏数据成环（历史/手工改库）防御：递归携带 path 集合，成环边跳过 + WARN。
 func BuildClassTree(ctx context.Context, in ClassHierarchyInput, log Logger) []*TreeNode {
 	byID := make(map[uint32]*ent.OntEntity, len(in.Entities))
@@ -260,11 +261,12 @@ func ancestorPath(cur, target uint32, parentOf map[uint32][]uint32, visited map[
 	return nil, false
 }
 
-// CollectHierarchyEdges 从公理行投影建树边（只取未删 20 型；subject/object 任一缺失跳过）。
-func CollectHierarchyEdges(axioms []*ent.OntAxiom) []HierarchyEdge {
+// CollectHierarchyEdges 从公理行投影建树边（只取未删的指定层级边型：类树 20 / 属性树 30；
+// subject/object 任一缺失跳过）。01 期实现硬编码 20 型，02 期参数化（02 号文档 §2.3）。
+func CollectHierarchyEdges(axioms []*ent.OntAxiom, edgeType uint32) []HierarchyEdge {
 	edges := make([]HierarchyEdge, 0, len(axioms))
 	for _, ax := range axioms {
-		if ax.AxiomType == nil || *ax.AxiomType != AxiomSubClassOf {
+		if ax.AxiomType == nil || *ax.AxiomType != edgeType {
 			continue
 		}
 		if ax.SubjectID == nil || ax.ObjectID == nil {

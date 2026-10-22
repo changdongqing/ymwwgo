@@ -46,7 +46,7 @@ type OntologyClassServiceHTTPServer interface {
 	// Update 更新本体类（frame 全量提交，公理事务管线）
 	Update(context.Context, *v1.UpdateOntologyClassRequest) (*emptypb.Empty, error)
 	// Usage 查询本体类引用明细
-	Usage(context.Context, *v1.GetOntologyClassUsageRequest) (*v1.OntologyClassUsage, error)
+	Usage(context.Context, *v1.GetOntologyClassUsageRequest) (*v1.EntityUsage, error)
 }
 
 func RegisterOntologyClassServiceHTTPServer(s *http.Server, srv OntologyClassServiceHTTPServer) {
@@ -157,7 +157,7 @@ func _OntologyClassService_Usage0_HTTP_Handler(srv OntologyClassServiceHTTPServe
 		if err != nil {
 			return err
 		}
-		reply := out.(*v1.OntologyClassUsage)
+		reply := out.(*v1.EntityUsage)
 		return ctx.Result(200, reply)
 	}
 }
@@ -247,7 +247,7 @@ type OntologyClassServiceHTTPClient interface {
 	// Update 更新本体类（frame 全量提交，公理事务管线）
 	Update(ctx context.Context, req *v1.UpdateOntologyClassRequest, opts ...http.CallOption) (rsp *emptypb.Empty, err error)
 	// Usage 查询本体类引用明细
-	Usage(ctx context.Context, req *v1.GetOntologyClassUsageRequest, opts ...http.CallOption) (rsp *v1.OntologyClassUsage, err error)
+	Usage(ctx context.Context, req *v1.GetOntologyClassUsageRequest, opts ...http.CallOption) (rsp *v1.EntityUsage, err error)
 }
 
 type OntologyClassServiceHTTPClientImpl struct {
@@ -357,8 +357,8 @@ func (c *OntologyClassServiceHTTPClientImpl) Update(ctx context.Context, in *v1.
 }
 
 // Usage 查询本体类引用明细
-func (c *OntologyClassServiceHTTPClientImpl) Usage(ctx context.Context, in *v1.GetOntologyClassUsageRequest, opts ...http.CallOption) (*v1.OntologyClassUsage, error) {
-	var out v1.OntologyClassUsage
+func (c *OntologyClassServiceHTTPClientImpl) Usage(ctx context.Context, in *v1.GetOntologyClassUsageRequest, opts ...http.CallOption) (*v1.EntityUsage, error) {
+	var out v1.EntityUsage
 	pattern := "/admin/v1/ontology/classes/{id}/usage"
 	path := binding.EncodeURL(pattern, in, true)
 	opts = append(opts, http.Operation(OperationOntologyClassServiceUsage))

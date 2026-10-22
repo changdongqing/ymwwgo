@@ -5,6 +5,7 @@ package admin.service.v1;
 import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
 
+import "ontology/service/v1/ontology.proto";
 import "ontology/service/v1/ontology_class.proto";
 
 // 本体类管理服务（admin 门面）
@@ -43,7 +44,7 @@ service OntologyClassService {
     }
 
     // 查询本体类引用明细
-    rpc Usage (ontology.service.v1.GetOntologyClassUsageRequest) returns (ontology.service.v1.OntologyClassUsage) {
+    rpc Usage (ontology.service.v1.GetOntologyClassUsageRequest) returns (ontology.service.v1.EntityUsage) {
         option (google.api.http) = {
             get: "/admin/v1/ontology/classes/{id}/usage"
         };

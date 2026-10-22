@@ -184,10 +184,10 @@ func TestValidator_ValueLexical(t *testing.T) {
 
 func TestValidator_UnknownAxiomTypeWarnSkipped(t *testing.T) {
 	e1 := classEntity(1, "A")
-	// 02 期对象属性号段（30 子属性）尚未启用：WARN 跳过、不报错
+	// 03 期之后号段（90）尚未启用：WARN 跳过、不报错（30 已于 02 期启用并被校验）
 	axioms := []*ent.OntAxiom{
 		declAxiom(10, 1),
-		axiomRow(11, 30, 1, 0, "", "", "", 0),
+		axiomRow(11, 90, 1, 0, "", "", "", 0),
 	}
 	warns := &warnRecorder{}
 	problems := ValidateAxioms(context.Background(), testBaseIRI, []*ent.OntEntity{e1}, axioms, warns)

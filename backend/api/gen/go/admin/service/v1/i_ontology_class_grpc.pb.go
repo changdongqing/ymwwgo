@@ -51,7 +51,7 @@ type OntologyClassServiceClient interface {
 	// 查询本体类 frame 详情
 	Frame(ctx context.Context, in *v1.GetOntologyClassFrameRequest, opts ...grpc.CallOption) (*v1.OntologyClassFrame, error)
 	// 查询本体类引用明细
-	Usage(ctx context.Context, in *v1.GetOntologyClassUsageRequest, opts ...grpc.CallOption) (*v1.OntologyClassUsage, error)
+	Usage(ctx context.Context, in *v1.GetOntologyClassUsageRequest, opts ...grpc.CallOption) (*v1.EntityUsage, error)
 	// 创建本体类（公理事务管线；返回新实体 id + 变更后版本）
 	Create(ctx context.Context, in *v1.CreateOntologyClassRequest, opts ...grpc.CallOption) (*v1.CreateOntologyClassResponse, error)
 	// 更新本体类（frame 全量提交，公理事务管线）
@@ -108,9 +108,9 @@ func (c *ontologyClassServiceClient) Frame(ctx context.Context, in *v1.GetOntolo
 	return out, nil
 }
 
-func (c *ontologyClassServiceClient) Usage(ctx context.Context, in *v1.GetOntologyClassUsageRequest, opts ...grpc.CallOption) (*v1.OntologyClassUsage, error) {
+func (c *ontologyClassServiceClient) Usage(ctx context.Context, in *v1.GetOntologyClassUsageRequest, opts ...grpc.CallOption) (*v1.EntityUsage, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(v1.OntologyClassUsage)
+	out := new(v1.EntityUsage)
 	err := c.cc.Invoke(ctx, OntologyClassService_Usage_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -168,7 +168,7 @@ type OntologyClassServiceServer interface {
 	// 查询本体类 frame 详情
 	Frame(context.Context, *v1.GetOntologyClassFrameRequest) (*v1.OntologyClassFrame, error)
 	// 查询本体类引用明细
-	Usage(context.Context, *v1.GetOntologyClassUsageRequest) (*v1.OntologyClassUsage, error)
+	Usage(context.Context, *v1.GetOntologyClassUsageRequest) (*v1.EntityUsage, error)
 	// 创建本体类（公理事务管线；返回新实体 id + 变更后版本）
 	Create(context.Context, *v1.CreateOntologyClassRequest) (*v1.CreateOntologyClassResponse, error)
 	// 更新本体类（frame 全量提交，公理事务管线）
@@ -197,7 +197,7 @@ func (UnimplementedOntologyClassServiceServer) List(context.Context, *v1.ListOnt
 func (UnimplementedOntologyClassServiceServer) Frame(context.Context, *v1.GetOntologyClassFrameRequest) (*v1.OntologyClassFrame, error) {
 	return nil, status.Error(codes.Unimplemented, "method Frame not implemented")
 }
-func (UnimplementedOntologyClassServiceServer) Usage(context.Context, *v1.GetOntologyClassUsageRequest) (*v1.OntologyClassUsage, error) {
+func (UnimplementedOntologyClassServiceServer) Usage(context.Context, *v1.GetOntologyClassUsageRequest) (*v1.EntityUsage, error) {
 	return nil, status.Error(codes.Unimplemented, "method Usage not implemented")
 }
 func (UnimplementedOntologyClassServiceServer) Create(context.Context, *v1.CreateOntologyClassRequest) (*v1.CreateOntologyClassResponse, error) {

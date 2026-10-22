@@ -34,13 +34,13 @@ func TestDiffSubjectSideRelations(t *testing.T) {
 	}
 
 	// 无变化 → 零变更
-	changes := DiffSubjectSideRelations(me, current, []uint32{10, 11})
+	changes := DiffSubjectSideRelations(me, AxiomSubClassOf, current, []uint32{10, 11})
 	if len(changes) != 0 {
 		t.Fatalf("无变化应为零变更，实得 %+v", changes)
 	}
 
 	// 增删：[A(0),B(1)] → [B,C] —— B 位置前移也走重写，删 A、删 B 旧行、增 B(0)、增 C(1)
-	changes = DiffSubjectSideRelations(me, current, []uint32{11, 12})
+	changes = DiffSubjectSideRelations(me, AxiomSubClassOf, current, []uint32{11, 12})
 	if len(changes) != 4 {
 		t.Fatalf("应为 4 条变更（删 A + 重写 B + 增 C），实得 %+v", changes)
 	}
@@ -62,7 +62,7 @@ func TestDiffSubjectSideRelations(t *testing.T) {
 	}
 
 	// 重排：[A,B] → [B,A]，无增删，但按提交顺序重写 sort_order（删旧行 + 增新行）
-	changes = DiffSubjectSideRelations(me, current, []uint32{11, 10})
+	changes = DiffSubjectSideRelations(me, AxiomSubClassOf, current, []uint32{11, 10})
 	addCount, deleteCount := 0, 0
 	reorderAdds := map[uint32]int32{}
 	for _, c := range changes {
@@ -85,7 +85,7 @@ func TestDiffSubjectSideRelations(t *testing.T) {
 	}
 
 	// 清空：全部删除
-	changes = DiffSubjectSideRelations(me, current, nil)
+	changes = DiffSubjectSideRelations(me, AxiomSubClassOf, current, nil)
 	if len(changes) != 2 {
 		t.Fatalf("清空应删 2 行：%+v", changes)
 	}

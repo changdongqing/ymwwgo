@@ -160,19 +160,7 @@ message OntologyClassFrame {
 message GetOntologyClassUsageRequest {
     uint32 id = 1 [json_name = "id"]; // 实体ID
 }
-
-// 本体类引用明细（谁引用了我）
-message OntologyClassUsageRef {
-    optional uint32 entity_id = 1 [json_name = "entityId"];           // 引用方实体ID
-    optional string local_name = 2 [json_name = "localName"];         // 引用方局部名
-    optional string display_label = 3 [json_name = "displayLabel"];   // 引用方显示名
-    optional uint32 axiom_type = 4 [json_name = "axiomType"];         // 引用公理类型（20 子类 / 21 不相交 / 22 等价）
-}
-
-message OntologyClassUsage {
-    optional uint32 entity_id = 1 [json_name = "entityId"];      // 被查实体ID
-    repeated OntologyClassUsageRef refs = 2 [json_name = "refs"]; // 引用明细
-}
+// 引用明细复用公共段 EntityUsage / EntityUsageRef（02 期从本文件上移泛化，类/属性接口共用）。
 
 // 创建本体类 - 请求（自定义 RPC：扁平请求体，勿包 { data }——protojson 会把 data 当未知字段丢弃）
 message CreateOntologyClassRequest {
@@ -227,8 +215,8 @@ service OntologyClassService {
     // 查询本体类 frame 详情
     rpc Frame (GetOntologyClassFrameRequest) returns (OntologyClassFrame) {}
 
-    // 查询本体类引用明细
-    rpc Usage (GetOntologyClassUsageRequest) returns (OntologyClassUsage) {}
+    // 查询本体类引用明细（复用公共段 EntityUsage）
+    rpc Usage (GetOntologyClassUsageRequest) returns (EntityUsage) {}
 
     // 创建本体类（公理事务管线）
     rpc Create (CreateOntologyClassRequest) returns (CreateOntologyClassResponse) {}

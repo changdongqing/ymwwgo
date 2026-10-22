@@ -44,8 +44,8 @@ type OntologyClassServiceClient interface {
 	List(ctx context.Context, in *ListOntologyClassesRequest, opts ...grpc.CallOption) (*ListOntologyClassesResponse, error)
 	// 查询本体类 frame 详情
 	Frame(ctx context.Context, in *GetOntologyClassFrameRequest, opts ...grpc.CallOption) (*OntologyClassFrame, error)
-	// 查询本体类引用明细
-	Usage(ctx context.Context, in *GetOntologyClassUsageRequest, opts ...grpc.CallOption) (*OntologyClassUsage, error)
+	// 查询本体类引用明细（复用公共段 EntityUsage）
+	Usage(ctx context.Context, in *GetOntologyClassUsageRequest, opts ...grpc.CallOption) (*EntityUsage, error)
 	// 创建本体类（公理事务管线）
 	Create(ctx context.Context, in *CreateOntologyClassRequest, opts ...grpc.CallOption) (*CreateOntologyClassResponse, error)
 	// 更新本体类（frame 全量提交，公理事务管线）
@@ -102,9 +102,9 @@ func (c *ontologyClassServiceClient) Frame(ctx context.Context, in *GetOntologyC
 	return out, nil
 }
 
-func (c *ontologyClassServiceClient) Usage(ctx context.Context, in *GetOntologyClassUsageRequest, opts ...grpc.CallOption) (*OntologyClassUsage, error) {
+func (c *ontologyClassServiceClient) Usage(ctx context.Context, in *GetOntologyClassUsageRequest, opts ...grpc.CallOption) (*EntityUsage, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(OntologyClassUsage)
+	out := new(EntityUsage)
 	err := c.cc.Invoke(ctx, OntologyClassService_Usage_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -156,8 +156,8 @@ type OntologyClassServiceServer interface {
 	List(context.Context, *ListOntologyClassesRequest) (*ListOntologyClassesResponse, error)
 	// 查询本体类 frame 详情
 	Frame(context.Context, *GetOntologyClassFrameRequest) (*OntologyClassFrame, error)
-	// 查询本体类引用明细
-	Usage(context.Context, *GetOntologyClassUsageRequest) (*OntologyClassUsage, error)
+	// 查询本体类引用明细（复用公共段 EntityUsage）
+	Usage(context.Context, *GetOntologyClassUsageRequest) (*EntityUsage, error)
 	// 创建本体类（公理事务管线）
 	Create(context.Context, *CreateOntologyClassRequest) (*CreateOntologyClassResponse, error)
 	// 更新本体类（frame 全量提交，公理事务管线）
@@ -186,7 +186,7 @@ func (UnimplementedOntologyClassServiceServer) List(context.Context, *ListOntolo
 func (UnimplementedOntologyClassServiceServer) Frame(context.Context, *GetOntologyClassFrameRequest) (*OntologyClassFrame, error) {
 	return nil, status.Error(codes.Unimplemented, "method Frame not implemented")
 }
-func (UnimplementedOntologyClassServiceServer) Usage(context.Context, *GetOntologyClassUsageRequest) (*OntologyClassUsage, error) {
+func (UnimplementedOntologyClassServiceServer) Usage(context.Context, *GetOntologyClassUsageRequest) (*EntityUsage, error) {
 	return nil, status.Error(codes.Unimplemented, "method Usage not implemented")
 }
 func (UnimplementedOntologyClassServiceServer) Create(context.Context, *CreateOntologyClassRequest) (*CreateOntologyClassResponse, error) {

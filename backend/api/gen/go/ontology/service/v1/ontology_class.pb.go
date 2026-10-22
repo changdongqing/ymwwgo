@@ -818,127 +818,6 @@ func (x *GetOntologyClassUsageRequest) GetId() uint32 {
 	return 0
 }
 
-// 本体类引用明细（谁引用了我）
-type OntologyClassUsageRef struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	EntityId      *uint32                `protobuf:"varint,1,opt,name=entity_id,json=entityId,proto3,oneof" json:"entity_id,omitempty"`            // 引用方实体ID
-	LocalName     *string                `protobuf:"bytes,2,opt,name=local_name,json=localName,proto3,oneof" json:"local_name,omitempty"`          // 引用方局部名
-	DisplayLabel  *string                `protobuf:"bytes,3,opt,name=display_label,json=displayLabel,proto3,oneof" json:"display_label,omitempty"` // 引用方显示名
-	AxiomType     *uint32                `protobuf:"varint,4,opt,name=axiom_type,json=axiomType,proto3,oneof" json:"axiom_type,omitempty"`         // 引用公理类型（20 子类 / 21 不相交 / 22 等价）
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *OntologyClassUsageRef) Reset() {
-	*x = OntologyClassUsageRef{}
-	mi := &file_ontology_service_v1_ontology_class_proto_msgTypes[10]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *OntologyClassUsageRef) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*OntologyClassUsageRef) ProtoMessage() {}
-
-func (x *OntologyClassUsageRef) ProtoReflect() protoreflect.Message {
-	mi := &file_ontology_service_v1_ontology_class_proto_msgTypes[10]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use OntologyClassUsageRef.ProtoReflect.Descriptor instead.
-func (*OntologyClassUsageRef) Descriptor() ([]byte, []int) {
-	return file_ontology_service_v1_ontology_class_proto_rawDescGZIP(), []int{10}
-}
-
-func (x *OntologyClassUsageRef) GetEntityId() uint32 {
-	if x != nil && x.EntityId != nil {
-		return *x.EntityId
-	}
-	return 0
-}
-
-func (x *OntologyClassUsageRef) GetLocalName() string {
-	if x != nil && x.LocalName != nil {
-		return *x.LocalName
-	}
-	return ""
-}
-
-func (x *OntologyClassUsageRef) GetDisplayLabel() string {
-	if x != nil && x.DisplayLabel != nil {
-		return *x.DisplayLabel
-	}
-	return ""
-}
-
-func (x *OntologyClassUsageRef) GetAxiomType() uint32 {
-	if x != nil && x.AxiomType != nil {
-		return *x.AxiomType
-	}
-	return 0
-}
-
-type OntologyClassUsage struct {
-	state         protoimpl.MessageState   `protogen:"open.v1"`
-	EntityId      *uint32                  `protobuf:"varint,1,opt,name=entity_id,json=entityId,proto3,oneof" json:"entity_id,omitempty"` // 被查实体ID
-	Refs          []*OntologyClassUsageRef `protobuf:"bytes,2,rep,name=refs,proto3" json:"refs,omitempty"`                                // 引用明细
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *OntologyClassUsage) Reset() {
-	*x = OntologyClassUsage{}
-	mi := &file_ontology_service_v1_ontology_class_proto_msgTypes[11]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *OntologyClassUsage) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*OntologyClassUsage) ProtoMessage() {}
-
-func (x *OntologyClassUsage) ProtoReflect() protoreflect.Message {
-	mi := &file_ontology_service_v1_ontology_class_proto_msgTypes[11]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use OntologyClassUsage.ProtoReflect.Descriptor instead.
-func (*OntologyClassUsage) Descriptor() ([]byte, []int) {
-	return file_ontology_service_v1_ontology_class_proto_rawDescGZIP(), []int{11}
-}
-
-func (x *OntologyClassUsage) GetEntityId() uint32 {
-	if x != nil && x.EntityId != nil {
-		return *x.EntityId
-	}
-	return 0
-}
-
-func (x *OntologyClassUsage) GetRefs() []*OntologyClassUsageRef {
-	if x != nil {
-		return x.Refs
-	}
-	return nil
-}
-
 // 创建本体类 - 请求（自定义 RPC：扁平请求体，勿包 { data }——protojson 会把 data 当未知字段丢弃）
 type CreateOntologyClassRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -957,7 +836,7 @@ type CreateOntologyClassRequest struct {
 
 func (x *CreateOntologyClassRequest) Reset() {
 	*x = CreateOntologyClassRequest{}
-	mi := &file_ontology_service_v1_ontology_class_proto_msgTypes[12]
+	mi := &file_ontology_service_v1_ontology_class_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -969,7 +848,7 @@ func (x *CreateOntologyClassRequest) String() string {
 func (*CreateOntologyClassRequest) ProtoMessage() {}
 
 func (x *CreateOntologyClassRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_ontology_service_v1_ontology_class_proto_msgTypes[12]
+	mi := &file_ontology_service_v1_ontology_class_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -982,7 +861,7 @@ func (x *CreateOntologyClassRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateOntologyClassRequest.ProtoReflect.Descriptor instead.
 func (*CreateOntologyClassRequest) Descriptor() ([]byte, []int) {
-	return file_ontology_service_v1_ontology_class_proto_rawDescGZIP(), []int{12}
+	return file_ontology_service_v1_ontology_class_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *CreateOntologyClassRequest) GetOntologyId() uint32 {
@@ -1059,7 +938,7 @@ type CreateOntologyClassResponse struct {
 
 func (x *CreateOntologyClassResponse) Reset() {
 	*x = CreateOntologyClassResponse{}
-	mi := &file_ontology_service_v1_ontology_class_proto_msgTypes[13]
+	mi := &file_ontology_service_v1_ontology_class_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1071,7 +950,7 @@ func (x *CreateOntologyClassResponse) String() string {
 func (*CreateOntologyClassResponse) ProtoMessage() {}
 
 func (x *CreateOntologyClassResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_ontology_service_v1_ontology_class_proto_msgTypes[13]
+	mi := &file_ontology_service_v1_ontology_class_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1084,7 +963,7 @@ func (x *CreateOntologyClassResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateOntologyClassResponse.ProtoReflect.Descriptor instead.
 func (*CreateOntologyClassResponse) Descriptor() ([]byte, []int) {
-	return file_ontology_service_v1_ontology_class_proto_rawDescGZIP(), []int{13}
+	return file_ontology_service_v1_ontology_class_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *CreateOntologyClassResponse) GetId() uint32 {
@@ -1119,7 +998,7 @@ type UpdateOntologyClassRequest struct {
 
 func (x *UpdateOntologyClassRequest) Reset() {
 	*x = UpdateOntologyClassRequest{}
-	mi := &file_ontology_service_v1_ontology_class_proto_msgTypes[14]
+	mi := &file_ontology_service_v1_ontology_class_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1131,7 +1010,7 @@ func (x *UpdateOntologyClassRequest) String() string {
 func (*UpdateOntologyClassRequest) ProtoMessage() {}
 
 func (x *UpdateOntologyClassRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_ontology_service_v1_ontology_class_proto_msgTypes[14]
+	mi := &file_ontology_service_v1_ontology_class_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1144,7 +1023,7 @@ func (x *UpdateOntologyClassRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateOntologyClassRequest.ProtoReflect.Descriptor instead.
 func (*UpdateOntologyClassRequest) Descriptor() ([]byte, []int) {
-	return file_ontology_service_v1_ontology_class_proto_rawDescGZIP(), []int{14}
+	return file_ontology_service_v1_ontology_class_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *UpdateOntologyClassRequest) GetId() uint32 {
@@ -1222,7 +1101,7 @@ type DeleteOntologyClassRequest struct {
 
 func (x *DeleteOntologyClassRequest) Reset() {
 	*x = DeleteOntologyClassRequest{}
-	mi := &file_ontology_service_v1_ontology_class_proto_msgTypes[15]
+	mi := &file_ontology_service_v1_ontology_class_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1234,7 +1113,7 @@ func (x *DeleteOntologyClassRequest) String() string {
 func (*DeleteOntologyClassRequest) ProtoMessage() {}
 
 func (x *DeleteOntologyClassRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_ontology_service_v1_ontology_class_proto_msgTypes[15]
+	mi := &file_ontology_service_v1_ontology_class_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1247,7 +1126,7 @@ func (x *DeleteOntologyClassRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteOntologyClassRequest.ProtoReflect.Descriptor instead.
 func (*DeleteOntologyClassRequest) Descriptor() ([]byte, []int) {
-	return file_ontology_service_v1_ontology_class_proto_rawDescGZIP(), []int{15}
+	return file_ontology_service_v1_ontology_class_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *DeleteOntologyClassRequest) GetId() uint32 {
@@ -1407,24 +1286,7 @@ const file_ontology_service_v1_ontology_class_proto_rawDesc = "" +
 	"\r_base_versionB\r\n" +
 	"\v_updated_at\".\n" +
 	"\x1cGetOntologyClassUsageRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\rR\x02id\"\xe9\x01\n" +
-	"\x15OntologyClassUsageRef\x12 \n" +
-	"\tentity_id\x18\x01 \x01(\rH\x00R\bentityId\x88\x01\x01\x12\"\n" +
-	"\n" +
-	"local_name\x18\x02 \x01(\tH\x01R\tlocalName\x88\x01\x01\x12(\n" +
-	"\rdisplay_label\x18\x03 \x01(\tH\x02R\fdisplayLabel\x88\x01\x01\x12\"\n" +
-	"\n" +
-	"axiom_type\x18\x04 \x01(\rH\x03R\taxiomType\x88\x01\x01B\f\n" +
-	"\n" +
-	"_entity_idB\r\n" +
-	"\v_local_nameB\x10\n" +
-	"\x0e_display_labelB\r\n" +
-	"\v_axiom_type\"\x84\x01\n" +
-	"\x12OntologyClassUsage\x12 \n" +
-	"\tentity_id\x18\x01 \x01(\rH\x00R\bentityId\x88\x01\x01\x12>\n" +
-	"\x04refs\x18\x02 \x03(\v2*.ontology.service.v1.OntologyClassUsageRefR\x04refsB\f\n" +
-	"\n" +
-	"_entity_id\"\xa3\x03\n" +
+	"\x02id\x18\x01 \x01(\rR\x02id\"\xa3\x03\n" +
 	"\x1aCreateOntologyClassRequest\x12\x1f\n" +
 	"\vontology_id\x18\x01 \x01(\rR\n" +
 	"ontologyId\x12\x1d\n" +
@@ -1477,13 +1339,13 @@ const file_ontology_service_v1_ontology_class_proto_rawDesc = "" +
 	"\fbase_version\x18\x02 \x01(\rH\x00R\vbaseVersion\x88\x01\x01\x12\x19\n" +
 	"\x05force\x18\x03 \x01(\bH\x01R\x05force\x88\x01\x01B\x0f\n" +
 	"\r_base_versionB\b\n" +
-	"\x06_force2\xc8\x06\n" +
+	"\x06_force2\xc1\x06\n" +
 	"\x14OntologyClassService\x12j\n" +
 	"\x04Tree\x120.ontology.service.v1.GetOntologyClassTreeRequest\x1a..ontology.service.v1.OntologyClassTreeResponse\"\x00\x12p\n" +
 	"\aNavTree\x120.ontology.service.v1.GetOntologyClassTreeRequest\x1a1.ontology.service.v1.OntologyClassNavTreeResponse\"\x00\x12k\n" +
 	"\x04List\x12/.ontology.service.v1.ListOntologyClassesRequest\x1a0.ontology.service.v1.ListOntologyClassesResponse\"\x00\x12e\n" +
-	"\x05Frame\x121.ontology.service.v1.GetOntologyClassFrameRequest\x1a'.ontology.service.v1.OntologyClassFrame\"\x00\x12e\n" +
-	"\x05Usage\x121.ontology.service.v1.GetOntologyClassUsageRequest\x1a'.ontology.service.v1.OntologyClassUsage\"\x00\x12m\n" +
+	"\x05Frame\x121.ontology.service.v1.GetOntologyClassFrameRequest\x1a'.ontology.service.v1.OntologyClassFrame\"\x00\x12^\n" +
+	"\x05Usage\x121.ontology.service.v1.GetOntologyClassUsageRequest\x1a .ontology.service.v1.EntityUsage\"\x00\x12m\n" +
 	"\x06Create\x12/.ontology.service.v1.CreateOntologyClassRequest\x1a0.ontology.service.v1.CreateOntologyClassResponse\"\x00\x12S\n" +
 	"\x06Update\x12/.ontology.service.v1.UpdateOntologyClassRequest\x1a\x16.google.protobuf.Empty\"\x00\x12S\n" +
 	"\x06Delete\x12/.ontology.service.v1.DeleteOntologyClassRequest\x1a\x16.google.protobuf.Empty\"\x00B\xd4\x01\n" +
@@ -1501,7 +1363,7 @@ func file_ontology_service_v1_ontology_class_proto_rawDescGZIP() []byte {
 	return file_ontology_service_v1_ontology_class_proto_rawDescData
 }
 
-var file_ontology_service_v1_ontology_class_proto_msgTypes = make([]protoimpl.MessageInfo, 16)
+var file_ontology_service_v1_ontology_class_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
 var file_ontology_service_v1_ontology_class_proto_goTypes = []any{
 	(*OntologyClassTreeNode)(nil),        // 0: ontology.service.v1.OntologyClassTreeNode
 	(*OntologyClass)(nil),                // 1: ontology.service.v1.OntologyClass
@@ -1513,48 +1375,46 @@ var file_ontology_service_v1_ontology_class_proto_goTypes = []any{
 	(*GetOntologyClassFrameRequest)(nil), // 7: ontology.service.v1.GetOntologyClassFrameRequest
 	(*OntologyClassFrame)(nil),           // 8: ontology.service.v1.OntologyClassFrame
 	(*GetOntologyClassUsageRequest)(nil), // 9: ontology.service.v1.GetOntologyClassUsageRequest
-	(*OntologyClassUsageRef)(nil),        // 10: ontology.service.v1.OntologyClassUsageRef
-	(*OntologyClassUsage)(nil),           // 11: ontology.service.v1.OntologyClassUsage
-	(*CreateOntologyClassRequest)(nil),   // 12: ontology.service.v1.CreateOntologyClassRequest
-	(*CreateOntologyClassResponse)(nil),  // 13: ontology.service.v1.CreateOntologyClassResponse
-	(*UpdateOntologyClassRequest)(nil),   // 14: ontology.service.v1.UpdateOntologyClassRequest
-	(*DeleteOntologyClassRequest)(nil),   // 15: ontology.service.v1.DeleteOntologyClassRequest
-	(*timestamppb.Timestamp)(nil),        // 16: google.protobuf.Timestamp
-	(*EntityBrief)(nil),                  // 17: ontology.service.v1.EntityBrief
-	(*emptypb.Empty)(nil),                // 18: google.protobuf.Empty
+	(*CreateOntologyClassRequest)(nil),   // 10: ontology.service.v1.CreateOntologyClassRequest
+	(*CreateOntologyClassResponse)(nil),  // 11: ontology.service.v1.CreateOntologyClassResponse
+	(*UpdateOntologyClassRequest)(nil),   // 12: ontology.service.v1.UpdateOntologyClassRequest
+	(*DeleteOntologyClassRequest)(nil),   // 13: ontology.service.v1.DeleteOntologyClassRequest
+	(*timestamppb.Timestamp)(nil),        // 14: google.protobuf.Timestamp
+	(*EntityBrief)(nil),                  // 15: ontology.service.v1.EntityBrief
+	(*EntityUsage)(nil),                  // 16: ontology.service.v1.EntityUsage
+	(*emptypb.Empty)(nil),                // 17: google.protobuf.Empty
 }
 var file_ontology_service_v1_ontology_class_proto_depIdxs = []int32{
 	0,  // 0: ontology.service.v1.OntologyClassTreeNode.children:type_name -> ontology.service.v1.OntologyClassTreeNode
-	16, // 1: ontology.service.v1.OntologyClass.created_at:type_name -> google.protobuf.Timestamp
-	16, // 2: ontology.service.v1.OntologyClass.updated_at:type_name -> google.protobuf.Timestamp
-	16, // 3: ontology.service.v1.OntologyClass.deleted_at:type_name -> google.protobuf.Timestamp
+	14, // 1: ontology.service.v1.OntologyClass.created_at:type_name -> google.protobuf.Timestamp
+	14, // 2: ontology.service.v1.OntologyClass.updated_at:type_name -> google.protobuf.Timestamp
+	14, // 3: ontology.service.v1.OntologyClass.deleted_at:type_name -> google.protobuf.Timestamp
 	0,  // 4: ontology.service.v1.OntologyClassTreeResponse.roots:type_name -> ontology.service.v1.OntologyClassTreeNode
 	0,  // 5: ontology.service.v1.OntologyClassNavTreeResponse.roots:type_name -> ontology.service.v1.OntologyClassTreeNode
 	1,  // 6: ontology.service.v1.ListOntologyClassesResponse.items:type_name -> ontology.service.v1.OntologyClass
-	17, // 7: ontology.service.v1.OntologyClassFrame.parents:type_name -> ontology.service.v1.EntityBrief
-	16, // 8: ontology.service.v1.OntologyClassFrame.updated_at:type_name -> google.protobuf.Timestamp
-	10, // 9: ontology.service.v1.OntologyClassUsage.refs:type_name -> ontology.service.v1.OntologyClassUsageRef
-	2,  // 10: ontology.service.v1.OntologyClassService.Tree:input_type -> ontology.service.v1.GetOntologyClassTreeRequest
-	2,  // 11: ontology.service.v1.OntologyClassService.NavTree:input_type -> ontology.service.v1.GetOntologyClassTreeRequest
-	5,  // 12: ontology.service.v1.OntologyClassService.List:input_type -> ontology.service.v1.ListOntologyClassesRequest
-	7,  // 13: ontology.service.v1.OntologyClassService.Frame:input_type -> ontology.service.v1.GetOntologyClassFrameRequest
-	9,  // 14: ontology.service.v1.OntologyClassService.Usage:input_type -> ontology.service.v1.GetOntologyClassUsageRequest
-	12, // 15: ontology.service.v1.OntologyClassService.Create:input_type -> ontology.service.v1.CreateOntologyClassRequest
-	14, // 16: ontology.service.v1.OntologyClassService.Update:input_type -> ontology.service.v1.UpdateOntologyClassRequest
-	15, // 17: ontology.service.v1.OntologyClassService.Delete:input_type -> ontology.service.v1.DeleteOntologyClassRequest
-	3,  // 18: ontology.service.v1.OntologyClassService.Tree:output_type -> ontology.service.v1.OntologyClassTreeResponse
-	4,  // 19: ontology.service.v1.OntologyClassService.NavTree:output_type -> ontology.service.v1.OntologyClassNavTreeResponse
-	6,  // 20: ontology.service.v1.OntologyClassService.List:output_type -> ontology.service.v1.ListOntologyClassesResponse
-	8,  // 21: ontology.service.v1.OntologyClassService.Frame:output_type -> ontology.service.v1.OntologyClassFrame
-	11, // 22: ontology.service.v1.OntologyClassService.Usage:output_type -> ontology.service.v1.OntologyClassUsage
-	13, // 23: ontology.service.v1.OntologyClassService.Create:output_type -> ontology.service.v1.CreateOntologyClassResponse
-	18, // 24: ontology.service.v1.OntologyClassService.Update:output_type -> google.protobuf.Empty
-	18, // 25: ontology.service.v1.OntologyClassService.Delete:output_type -> google.protobuf.Empty
-	18, // [18:26] is the sub-list for method output_type
-	10, // [10:18] is the sub-list for method input_type
-	10, // [10:10] is the sub-list for extension type_name
-	10, // [10:10] is the sub-list for extension extendee
-	0,  // [0:10] is the sub-list for field type_name
+	15, // 7: ontology.service.v1.OntologyClassFrame.parents:type_name -> ontology.service.v1.EntityBrief
+	14, // 8: ontology.service.v1.OntologyClassFrame.updated_at:type_name -> google.protobuf.Timestamp
+	2,  // 9: ontology.service.v1.OntologyClassService.Tree:input_type -> ontology.service.v1.GetOntologyClassTreeRequest
+	2,  // 10: ontology.service.v1.OntologyClassService.NavTree:input_type -> ontology.service.v1.GetOntologyClassTreeRequest
+	5,  // 11: ontology.service.v1.OntologyClassService.List:input_type -> ontology.service.v1.ListOntologyClassesRequest
+	7,  // 12: ontology.service.v1.OntologyClassService.Frame:input_type -> ontology.service.v1.GetOntologyClassFrameRequest
+	9,  // 13: ontology.service.v1.OntologyClassService.Usage:input_type -> ontology.service.v1.GetOntologyClassUsageRequest
+	10, // 14: ontology.service.v1.OntologyClassService.Create:input_type -> ontology.service.v1.CreateOntologyClassRequest
+	12, // 15: ontology.service.v1.OntologyClassService.Update:input_type -> ontology.service.v1.UpdateOntologyClassRequest
+	13, // 16: ontology.service.v1.OntologyClassService.Delete:input_type -> ontology.service.v1.DeleteOntologyClassRequest
+	3,  // 17: ontology.service.v1.OntologyClassService.Tree:output_type -> ontology.service.v1.OntologyClassTreeResponse
+	4,  // 18: ontology.service.v1.OntologyClassService.NavTree:output_type -> ontology.service.v1.OntologyClassNavTreeResponse
+	6,  // 19: ontology.service.v1.OntologyClassService.List:output_type -> ontology.service.v1.ListOntologyClassesResponse
+	8,  // 20: ontology.service.v1.OntologyClassService.Frame:output_type -> ontology.service.v1.OntologyClassFrame
+	16, // 21: ontology.service.v1.OntologyClassService.Usage:output_type -> ontology.service.v1.EntityUsage
+	11, // 22: ontology.service.v1.OntologyClassService.Create:output_type -> ontology.service.v1.CreateOntologyClassResponse
+	17, // 23: ontology.service.v1.OntologyClassService.Update:output_type -> google.protobuf.Empty
+	17, // 24: ontology.service.v1.OntologyClassService.Delete:output_type -> google.protobuf.Empty
+	17, // [17:25] is the sub-list for method output_type
+	9,  // [9:17] is the sub-list for method input_type
+	9,  // [9:9] is the sub-list for extension type_name
+	9,  // [9:9] is the sub-list for extension extendee
+	0,  // [0:9] is the sub-list for field type_name
 }
 
 func init() { file_ontology_service_v1_ontology_class_proto_init() }
@@ -1571,15 +1431,13 @@ func file_ontology_service_v1_ontology_class_proto_init() {
 	file_ontology_service_v1_ontology_class_proto_msgTypes[11].OneofWrappers = []any{}
 	file_ontology_service_v1_ontology_class_proto_msgTypes[12].OneofWrappers = []any{}
 	file_ontology_service_v1_ontology_class_proto_msgTypes[13].OneofWrappers = []any{}
-	file_ontology_service_v1_ontology_class_proto_msgTypes[14].OneofWrappers = []any{}
-	file_ontology_service_v1_ontology_class_proto_msgTypes[15].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_ontology_service_v1_ontology_class_proto_rawDesc), len(file_ontology_service_v1_ontology_class_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   16,
+			NumMessages:   14,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

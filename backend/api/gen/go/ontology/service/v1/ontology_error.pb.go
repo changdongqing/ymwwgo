@@ -42,6 +42,14 @@ const (
 	OntologyErrorReason_AXIOM_INVALID    OntologyErrorReason = 20 // 公理校验失败：{}
 	OntologyErrorReason_HIERARCHY_CYCLIC OntologyErrorReason = 21 // 不允许形成继承环：{} 已是 {} 的祖先
 	OntologyErrorReason_ENTITY_IN_USE    OntologyErrorReason = 22 // 实体被 {} 处引用，无法删除
+	// ===== 对象属性（源 1-071-003 段）=====
+	OntologyErrorReason_PROPERTY_DOMAIN_INVALID         OntologyErrorReason = 30 // 对象属性定义域必须是本体类：{}
+	OntologyErrorReason_PROPERTY_RANGE_INVALID          OntologyErrorReason = 31 // 对象属性值域必须是本体类：{}
+	OntologyErrorReason_PROPERTY_CHAIN_INVALID          OntologyErrorReason = 32 // 属性链不合法：{}（至少两个属性成员，且均为已声明的对象属性）
+	OntologyErrorReason_PROPERTY_INVERSE_SELF_INVALID   OntologyErrorReason = 33 // 属性不能与自身互为逆属性：{}
+	OntologyErrorReason_PROPERTY_SELF_REFERENCE_INVALID OntologyErrorReason = 34 // 属性不能与自身建立该关系：{}（等价/不相交自引用）
+	OntologyErrorReason_PROPERTY_CHARACTERISTIC_INVALID OntologyErrorReason = 35 // 未知的对象属性特征：{}
+	OntologyErrorReason_PROPERTY_TARGET_INVALID         OntologyErrorReason = 36 // 引用目标必须是已声明的对象属性：{}
 )
 
 // Enum value maps for OntologyErrorReason.
@@ -59,20 +67,34 @@ var (
 		20: "AXIOM_INVALID",
 		21: "HIERARCHY_CYCLIC",
 		22: "ENTITY_IN_USE",
+		30: "PROPERTY_DOMAIN_INVALID",
+		31: "PROPERTY_RANGE_INVALID",
+		32: "PROPERTY_CHAIN_INVALID",
+		33: "PROPERTY_INVERSE_SELF_INVALID",
+		34: "PROPERTY_SELF_REFERENCE_INVALID",
+		35: "PROPERTY_CHARACTERISTIC_INVALID",
+		36: "PROPERTY_TARGET_INVALID",
 	}
 	OntologyErrorReason_value = map[string]int32{
-		"ONTOLOGY_NOT_FOUND":        0,
-		"ONTOLOGY_NAME_DUPLICATE":   1,
-		"ONTOLOGY_BASE_IRI_INVALID": 2,
-		"ONTOLOGY_VERSION_CONFLICT": 3,
-		"ONTOLOGY_IRI_DUPLICATE":    4,
-		"ENTITY_NOT_FOUND":          10,
-		"ENTITY_IRI_DUPLICATE":      11,
-		"LOCAL_NAME_INVALID":        12,
-		"ENTITY_TYPE_MISMATCH":      13,
-		"AXIOM_INVALID":             20,
-		"HIERARCHY_CYCLIC":          21,
-		"ENTITY_IN_USE":             22,
+		"ONTOLOGY_NOT_FOUND":              0,
+		"ONTOLOGY_NAME_DUPLICATE":         1,
+		"ONTOLOGY_BASE_IRI_INVALID":       2,
+		"ONTOLOGY_VERSION_CONFLICT":       3,
+		"ONTOLOGY_IRI_DUPLICATE":          4,
+		"ENTITY_NOT_FOUND":                10,
+		"ENTITY_IRI_DUPLICATE":            11,
+		"LOCAL_NAME_INVALID":              12,
+		"ENTITY_TYPE_MISMATCH":            13,
+		"AXIOM_INVALID":                   20,
+		"HIERARCHY_CYCLIC":                21,
+		"ENTITY_IN_USE":                   22,
+		"PROPERTY_DOMAIN_INVALID":         30,
+		"PROPERTY_RANGE_INVALID":          31,
+		"PROPERTY_CHAIN_INVALID":          32,
+		"PROPERTY_INVERSE_SELF_INVALID":   33,
+		"PROPERTY_SELF_REFERENCE_INVALID": 34,
+		"PROPERTY_CHARACTERISTIC_INVALID": 35,
+		"PROPERTY_TARGET_INVALID":         36,
 	}
 )
 
@@ -107,7 +129,7 @@ var File_ontology_service_v1_ontology_error_proto protoreflect.FileDescriptor
 
 const file_ontology_service_v1_ontology_error_proto_rawDesc = "" +
 	"\n" +
-	"(ontology/service/v1/ontology_error.proto\x12\x13ontology.service.v1\x1a\x13errors/errors.proto*\x90\x03\n" +
+	"(ontology/service/v1/ontology_error.proto\x12\x13ontology.service.v1\x1a\x13errors/errors.proto*\x99\x05\n" +
 	"\x13OntologyErrorReason\x12\x1c\n" +
 	"\x12ONTOLOGY_NOT_FOUND\x10\x00\x1a\x04\xa8E\x94\x03\x12!\n" +
 	"\x17ONTOLOGY_NAME_DUPLICATE\x10\x01\x1a\x04\xa8E\x99\x03\x12#\n" +
@@ -121,7 +143,14 @@ const file_ontology_service_v1_ontology_error_proto_rawDesc = "" +
 	"\x14ENTITY_TYPE_MISMATCH\x10\r\x1a\x04\xa8E\xa6\x03\x12\x17\n" +
 	"\rAXIOM_INVALID\x10\x14\x1a\x04\xa8E\xa6\x03\x12\x1a\n" +
 	"\x10HIERARCHY_CYCLIC\x10\x15\x1a\x04\xa8E\xa6\x03\x12\x17\n" +
-	"\rENTITY_IN_USE\x10\x16\x1a\x04\xa8E\x99\x03\x1a\x04\xa0E\xf4\x03B\xd4\x01\n" +
+	"\rENTITY_IN_USE\x10\x16\x1a\x04\xa8E\x99\x03\x12!\n" +
+	"\x17PROPERTY_DOMAIN_INVALID\x10\x1e\x1a\x04\xa8E\xa6\x03\x12 \n" +
+	"\x16PROPERTY_RANGE_INVALID\x10\x1f\x1a\x04\xa8E\xa6\x03\x12 \n" +
+	"\x16PROPERTY_CHAIN_INVALID\x10 \x1a\x04\xa8E\xa6\x03\x12'\n" +
+	"\x1dPROPERTY_INVERSE_SELF_INVALID\x10!\x1a\x04\xa8E\xa6\x03\x12)\n" +
+	"\x1fPROPERTY_SELF_REFERENCE_INVALID\x10\"\x1a\x04\xa8E\xa6\x03\x12)\n" +
+	"\x1fPROPERTY_CHARACTERISTIC_INVALID\x10#\x1a\x04\xa8E\xa6\x03\x12!\n" +
+	"\x17PROPERTY_TARGET_INVALID\x10$\x1a\x04\xa8E\xa6\x03\x1a\x04\xa0E\xf4\x03B\xd4\x01\n" +
 	"\x17com.ontology.service.v1B\x12OntologyErrorProtoP\x01Z7go-wind-admin/api/gen/go/ontology/service/v1;ontologyv1\xa2\x02\x03OSX\xaa\x02\x13Ontology.Service.V1\xca\x02\x13Ontology\\Service\\V1\xe2\x02\x1fOntology\\Service\\V1\\GPBMetadata\xea\x02\x15Ontology::Service::V1b\x06proto3"
 
 var (

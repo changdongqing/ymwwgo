@@ -108,7 +108,7 @@ var DefaultPermissions = []*permissionV1.Permission{
 			72, 73, 74,
 			80, 81, 82, 83, 84,
 			101, 102,
-			110, 111, 112,
+			110, 111, 112, 113,
 		},
 		ApiIds: []uint32{
 			1, 2, 3, 4, 5, 6, 7, 8, 9,
@@ -329,8 +329,13 @@ func ComponentToModule(component string) identityV1.Module {
 		return identityV1.Module_TASK
 	case len(component) >= 7 && component[:7] == "app/ai/":
 		return identityV1.Module_AI
-	case len(component) >= 11 && component[:11] == "app/onestop/":
+	case len(component) >= 12 && component[:12] == "app/onestop/":
 		// 一站式服务（独立 Go module）：当前均为平台级全局数据，暂挂 SYSTEM
+		// （前缀实长 12 字符，曾误写 11 致前缀永不命中——component_module_test 暴露）
+		return identityV1.Module_SYSTEM
+	case len(component) >= 13 && component[:13] == "app/ontology/":
+		// 本体建模（ont_* 四表）：平台级共享知识资产，与 module_mapping 的
+		// Ontology*Service 挂 SYSTEM 同口径
 		return identityV1.Module_SYSTEM
 	default:
 		return identityV1.Module_MODULE_UNSPECIFIED
@@ -1277,6 +1282,22 @@ var DefaultMenus = []*permissionV1.Menu{
 			Title:     trans.Ptr("menu.ontology.class"),
 			Icon:      trans.Ptr("lucide:git-branch"),
 			Order:     trans.Ptr(int32(2)),
+			Authority: []string{"sys:platform_admin"},
+		},
+	},
+	{
+		// 对象属性：左树右表（02 期，关系词汇表；公理事务管线）
+		Id:        trans.Ptr(uint32(113)),
+		ParentId:  trans.Ptr(uint32(110)),
+		Type:      permissionV1.Menu_MENU.Enum(),
+		Name:      trans.Ptr("OntologyObjectProperties"),
+		Path:      trans.Ptr("ontology-object-properties"),
+		Component: trans.Ptr("app/ontology/object-properties/index.tsx"),
+		CreatedAt: timeutil.TimeToTimestamppb(trans.Ptr(time.Now())),
+		Meta: &permissionV1.MenuMeta{
+			Title:     trans.Ptr("menu.ontology.objectProperty"),
+			Icon:      trans.Ptr("lucide:arrow-right-left"),
+			Order:     trans.Ptr(int32(3)),
 			Authority: []string{"sys:platform_admin"},
 		},
 	},
