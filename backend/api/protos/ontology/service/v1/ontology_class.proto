@@ -196,13 +196,13 @@ message CreateOntologyClassResponse {
 // 更新本体类 - 请求（frame 全量提交语义；local_name 忽略——不可变；base_version 缺省 = 跳过乐观锁比对，仅限内部路径）
 message UpdateOntologyClassRequest {
     uint32 id = 1 [json_name = "id"];                              // 实体ID
-    optional string display_label = 3 [json_name = "displayLabel"]; // 显示名（缺省 = 不变；null = 清空）
-    optional string comment = 4 [json_name = "comment"];           // 注释（缺省 = 不变；null = 清空）
-    optional string notation = 5 [json_name = "notation"];         // 编码（缺省 = 不变；null = 清空）
+    optional string display_label = 3 [json_name = "displayLabel"]; // 显示名（缺省 = 不变；空串 = 清空；protojson 无法区分 null 与缺省，见设计文档 §8.1 #19）
+    optional string comment = 4 [json_name = "comment"];           // 注释（缺省 = 不变；空串 = 清空）
+    optional string notation = 5 [json_name = "notation"];         // 编码（缺省 = 不变；空串 = 清空）
     optional bool deprecated = 6 [json_name = "deprecated"];       // 废弃（缺省 = 不变；false = 移除断言）
     repeated uint32 parent_ids = 7 [json_name = "parentIds"];      // 父类全量
     repeated uint32 disjoint_ids = 8 [json_name = "disjointIds"];  // 不相交全量
-    optional uint32 equivalent_id = 9 [json_name = "equivalentId"]; // 等价类（缺省 = 不变；null = 清空）
+    optional uint32 equivalent_id = 9 [json_name = "equivalentId"]; // 等价类（缺省 = 不变；0 = 清空；V1 单值）
     optional uint32 base_version = 10 [json_name = "baseVersion"]; // 乐观锁基准
 }
 

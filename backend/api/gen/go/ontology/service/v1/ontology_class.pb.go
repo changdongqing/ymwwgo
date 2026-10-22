@@ -1105,13 +1105,13 @@ func (x *CreateOntologyClassResponse) GetBaseVersion() uint32 {
 type UpdateOntologyClassRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            uint32                 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`                                               // 实体ID
-	DisplayLabel  *string                `protobuf:"bytes,3,opt,name=display_label,json=displayLabel,proto3,oneof" json:"display_label,omitempty"`  // 显示名（缺省 = 不变；null = 清空）
-	Comment       *string                `protobuf:"bytes,4,opt,name=comment,proto3,oneof" json:"comment,omitempty"`                                // 注释（缺省 = 不变；null = 清空）
-	Notation      *string                `protobuf:"bytes,5,opt,name=notation,proto3,oneof" json:"notation,omitempty"`                              // 编码（缺省 = 不变；null = 清空）
+	DisplayLabel  *string                `protobuf:"bytes,3,opt,name=display_label,json=displayLabel,proto3,oneof" json:"display_label,omitempty"`  // 显示名（缺省 = 不变；空串 = 清空；protojson 无法区分 null 与缺省，见设计文档 §8.1 #19）
+	Comment       *string                `protobuf:"bytes,4,opt,name=comment,proto3,oneof" json:"comment,omitempty"`                                // 注释（缺省 = 不变；空串 = 清空）
+	Notation      *string                `protobuf:"bytes,5,opt,name=notation,proto3,oneof" json:"notation,omitempty"`                              // 编码（缺省 = 不变；空串 = 清空）
 	Deprecated    *bool                  `protobuf:"varint,6,opt,name=deprecated,proto3,oneof" json:"deprecated,omitempty"`                         // 废弃（缺省 = 不变；false = 移除断言）
 	ParentIds     []uint32               `protobuf:"varint,7,rep,packed,name=parent_ids,json=parentIds,proto3" json:"parent_ids,omitempty"`         // 父类全量
 	DisjointIds   []uint32               `protobuf:"varint,8,rep,packed,name=disjoint_ids,json=disjointIds,proto3" json:"disjoint_ids,omitempty"`   // 不相交全量
-	EquivalentId  *uint32                `protobuf:"varint,9,opt,name=equivalent_id,json=equivalentId,proto3,oneof" json:"equivalent_id,omitempty"` // 等价类（缺省 = 不变；null = 清空）
+	EquivalentId  *uint32                `protobuf:"varint,9,opt,name=equivalent_id,json=equivalentId,proto3,oneof" json:"equivalent_id,omitempty"` // 等价类（缺省 = 不变；0 = 清空；V1 单值）
 	BaseVersion   *uint32                `protobuf:"varint,10,opt,name=base_version,json=baseVersion,proto3,oneof" json:"base_version,omitempty"`   // 乐观锁基准
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
