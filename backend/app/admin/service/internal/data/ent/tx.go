@@ -80,6 +80,14 @@ type Tx struct {
 	NotificationRule *NotificationRuleClient
 	// NotificationTemplate is the client for interacting with the NotificationTemplate builders.
 	NotificationTemplate *NotificationTemplateClient
+	// OntAxiom is the client for interacting with the OntAxiom builders.
+	OntAxiom *OntAxiomClient
+	// OntChangeLog is the client for interacting with the OntChangeLog builders.
+	OntChangeLog *OntChangeLogClient
+	// OntEntity is the client for interacting with the OntEntity builders.
+	OntEntity *OntEntityClient
+	// OntOntology is the client for interacting with the OntOntology builders.
+	OntOntology *OntOntologyClient
 	// OperationAuditLog is the client for interacting with the OperationAuditLog builders.
 	OperationAuditLog *OperationAuditLogClient
 	// OrgUnit is the client for interacting with the OrgUnit builders.
@@ -303,6 +311,10 @@ func (tx *Tx) init() {
 	tx.NotificationPreference = NewNotificationPreferenceClient(tx.config)
 	tx.NotificationRule = NewNotificationRuleClient(tx.config)
 	tx.NotificationTemplate = NewNotificationTemplateClient(tx.config)
+	tx.OntAxiom = NewOntAxiomClient(tx.config)
+	tx.OntChangeLog = NewOntChangeLogClient(tx.config)
+	tx.OntEntity = NewOntEntityClient(tx.config)
+	tx.OntOntology = NewOntOntologyClient(tx.config)
 	tx.OperationAuditLog = NewOperationAuditLogClient(tx.config)
 	tx.OrgUnit = NewOrgUnitClient(tx.config)
 	tx.Permission = NewPermissionClient(tx.config)

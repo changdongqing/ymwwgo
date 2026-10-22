@@ -107,6 +107,7 @@ var DefaultPermissions = []*permissionV1.Permission{
 			72, 73, 74,
 			80, 81, 82, 83, 84,
 			101, 102,
+			110, 111, 112,
 		},
 		ApiIds: []uint32{
 			1, 2, 3, 4, 5, 6, 7, 8, 9,
@@ -1208,6 +1209,57 @@ var DefaultMenus = []*permissionV1.Menu{
 			Title:     trans.Ptr("menu.onestop.serviceTypes"),
 			Icon:      trans.Ptr("lucide:layout-list"),
 			Order:     trans.Ptr(int32(1)),
+			Authority: []string{"sys:platform_admin"},
+		},
+	},
+	{
+		// 本体建模（阶段0 + 本体类，docs/ontology/design/01 号文档）：目录。
+		// 本体四表是平台级共享知识资产，建模用户是平台管理员。
+		Id:        trans.Ptr(uint32(110)),
+		ParentId:  nil,
+		Type:      permissionV1.Menu_CATALOG.Enum(),
+		Name:      trans.Ptr("OntologyModeling"),
+		Path:      trans.Ptr("/ontology"),
+		Redirect:  trans.Ptr("/ontology/ontology-docs"),
+		Component: trans.Ptr("BasicLayout"),
+		Status:    permissionV1.Menu_ON.Enum(),
+		CreatedAt: timeutil.TimeToTimestamppb(trans.Ptr(time.Now())),
+		Meta: &permissionV1.MenuMeta{
+			Order:     trans.Ptr(int32(2200)),
+			Title:     trans.Ptr("menu.ontology.moduleName"),
+			Icon:      trans.Ptr("lucide:network"),
+			Authority: []string{"sys:platform_admin"},
+		},
+	},
+	{
+		// 本体文档：owl:Ontology 管理（标准通用 CRUD）
+		Id:        trans.Ptr(uint32(111)),
+		ParentId:  trans.Ptr(uint32(110)),
+		Type:      permissionV1.Menu_MENU.Enum(),
+		Name:      trans.Ptr("OntologyDocs"),
+		Path:      trans.Ptr("ontology-docs"),
+		Component: trans.Ptr("app/ontology/ontology/index.tsx"),
+		CreatedAt: timeutil.TimeToTimestamppb(trans.Ptr(time.Now())),
+		Meta: &permissionV1.MenuMeta{
+			Title:     trans.Ptr("menu.ontology.doc"),
+			Icon:      trans.Ptr("lucide:file-json-2"),
+			Order:     trans.Ptr(int32(1)),
+			Authority: []string{"sys:platform_admin"},
+		},
+	},
+	{
+		// 本体类：左树右表（公理事务管线）
+		Id:        trans.Ptr(uint32(112)),
+		ParentId:  trans.Ptr(uint32(110)),
+		Type:      permissionV1.Menu_MENU.Enum(),
+		Name:      trans.Ptr("OntologyClasses"),
+		Path:      trans.Ptr("ontology-classes"),
+		Component: trans.Ptr("app/ontology/classes/index.tsx"),
+		CreatedAt: timeutil.TimeToTimestamppb(trans.Ptr(time.Now())),
+		Meta: &permissionV1.MenuMeta{
+			Title:     trans.Ptr("menu.ontology.class"),
+			Icon:      trans.Ptr("lucide:git-branch"),
+			Order:     trans.Ptr(int32(2)),
 			Authority: []string{"sys:platform_admin"},
 		},
 	},

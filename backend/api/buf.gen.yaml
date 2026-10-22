@@ -20,6 +20,7 @@ inputs:
       - protos/internal_message
       - protos/monitor_alert
       - protos/notification
+      - protos/ontology
       - protos/notification_channel
       - protos/online_session
       - protos/permission
@@ -64,6 +65,9 @@ managed:
     - file_option: go_package
       path: dict/service/v1
       value: go-wind-admin/api/gen/go/dict/service/v1;dictpb
+    - file_option: go_package
+      path: ontology/service/v1
+      value: go-wind-admin/api/gen/go/ontology/service/v1;ontologyv1
     - file_option: go_package
       path: storage/service/v1
       value: go-wind-admin/api/gen/go/storage/service/v1;storagepb

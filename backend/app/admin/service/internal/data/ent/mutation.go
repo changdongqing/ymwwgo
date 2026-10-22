@@ -43,6 +43,10 @@ import (
 	"go-wind-admin/app/admin/service/internal/data/ent/notificationpreference"
 	"go-wind-admin/app/admin/service/internal/data/ent/notificationrule"
 	"go-wind-admin/app/admin/service/internal/data/ent/notificationtemplate"
+	"go-wind-admin/app/admin/service/internal/data/ent/ontaxiom"
+	"go-wind-admin/app/admin/service/internal/data/ent/ontchangelog"
+	"go-wind-admin/app/admin/service/internal/data/ent/ontentity"
+	"go-wind-admin/app/admin/service/internal/data/ent/ontontology"
 	"go-wind-admin/app/admin/service/internal/data/ent/operationauditlog"
 	"go-wind-admin/app/admin/service/internal/data/ent/orgunit"
 	"go-wind-admin/app/admin/service/internal/data/ent/permission"
@@ -123,6 +127,10 @@ const (
 	TypeNotificationPreference   = "NotificationPreference"
 	TypeNotificationRule         = "NotificationRule"
 	TypeNotificationTemplate     = "NotificationTemplate"
+	TypeOntAxiom                 = "OntAxiom"
+	TypeOntChangeLog             = "OntChangeLog"
+	TypeOntEntity                = "OntEntity"
+	TypeOntOntology              = "OntOntology"
 	TypeOperationAuditLog        = "OperationAuditLog"
 	TypeOrgUnit                  = "OrgUnit"
 	TypePermission               = "Permission"
@@ -53468,6 +53476,5501 @@ func (m *NotificationTemplateMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *NotificationTemplateMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown NotificationTemplate edge %s", name)
+}
+
+// OntAxiomMutation represents an operation that mutates the OntAxiom nodes in the graph.
+type OntAxiomMutation struct {
+	config
+	op             Op
+	typ            string
+	id             *uint32
+	created_at     *time.Time
+	updated_at     *time.Time
+	deleted_at     *time.Time
+	created_by     *uint32
+	addcreated_by  *int32
+	updated_by     *uint32
+	addupdated_by  *int32
+	deleted_by     *uint32
+	adddeleted_by  *int32
+	sort_order     *uint32
+	addsort_order  *int32
+	ontology_id    *uint32
+	addontology_id *int32
+	axiom_type     *uint32
+	addaxiom_type  *int32
+	subject_id     *uint32
+	addsubject_id  *int32
+	object_id      *uint32
+	addobject_id   *int32
+	predicate_iri  *string
+	value_text     *string
+	lang           *string
+	clearedFields  map[string]struct{}
+	done           bool
+	oldValue       func(context.Context) (*OntAxiom, error)
+	predicates     []predicate.OntAxiom
+}
+
+var _ ent.Mutation = (*OntAxiomMutation)(nil)
+
+// ontaxiomOption allows management of the mutation configuration using functional options.
+type ontaxiomOption func(*OntAxiomMutation)
+
+// newOntAxiomMutation creates new mutation for the OntAxiom entity.
+func newOntAxiomMutation(c config, op Op, opts ...ontaxiomOption) *OntAxiomMutation {
+	m := &OntAxiomMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeOntAxiom,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withOntAxiomID sets the ID field of the mutation.
+func withOntAxiomID(id uint32) ontaxiomOption {
+	return func(m *OntAxiomMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *OntAxiom
+		)
+		m.oldValue = func(ctx context.Context) (*OntAxiom, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().OntAxiom.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withOntAxiom sets the old OntAxiom of the mutation.
+func withOntAxiom(node *OntAxiom) ontaxiomOption {
+	return func(m *OntAxiomMutation) {
+		m.oldValue = func(context.Context) (*OntAxiom, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m OntAxiomMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m OntAxiomMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of OntAxiom entities.
+func (m *OntAxiomMutation) SetID(id uint32) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *OntAxiomMutation) ID() (id uint32, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *OntAxiomMutation) IDs(ctx context.Context) ([]uint32, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uint32{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().OntAxiom.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *OntAxiomMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *OntAxiomMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the OntAxiom entity.
+// If the OntAxiom object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OntAxiomMutation) OldCreatedAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ClearCreatedAt clears the value of the "created_at" field.
+func (m *OntAxiomMutation) ClearCreatedAt() {
+	m.created_at = nil
+	m.clearedFields[ontaxiom.FieldCreatedAt] = struct{}{}
+}
+
+// CreatedAtCleared returns if the "created_at" field was cleared in this mutation.
+func (m *OntAxiomMutation) CreatedAtCleared() bool {
+	_, ok := m.clearedFields[ontaxiom.FieldCreatedAt]
+	return ok
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *OntAxiomMutation) ResetCreatedAt() {
+	m.created_at = nil
+	delete(m.clearedFields, ontaxiom.FieldCreatedAt)
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *OntAxiomMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *OntAxiomMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the OntAxiom entity.
+// If the OntAxiom object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OntAxiomMutation) OldUpdatedAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ClearUpdatedAt clears the value of the "updated_at" field.
+func (m *OntAxiomMutation) ClearUpdatedAt() {
+	m.updated_at = nil
+	m.clearedFields[ontaxiom.FieldUpdatedAt] = struct{}{}
+}
+
+// UpdatedAtCleared returns if the "updated_at" field was cleared in this mutation.
+func (m *OntAxiomMutation) UpdatedAtCleared() bool {
+	_, ok := m.clearedFields[ontaxiom.FieldUpdatedAt]
+	return ok
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *OntAxiomMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+	delete(m.clearedFields, ontaxiom.FieldUpdatedAt)
+}
+
+// SetDeletedAt sets the "deleted_at" field.
+func (m *OntAxiomMutation) SetDeletedAt(t time.Time) {
+	m.deleted_at = &t
+}
+
+// DeletedAt returns the value of the "deleted_at" field in the mutation.
+func (m *OntAxiomMutation) DeletedAt() (r time.Time, exists bool) {
+	v := m.deleted_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeletedAt returns the old "deleted_at" field's value of the OntAxiom entity.
+// If the OntAxiom object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OntAxiomMutation) OldDeletedAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeletedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeletedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeletedAt: %w", err)
+	}
+	return oldValue.DeletedAt, nil
+}
+
+// ClearDeletedAt clears the value of the "deleted_at" field.
+func (m *OntAxiomMutation) ClearDeletedAt() {
+	m.deleted_at = nil
+	m.clearedFields[ontaxiom.FieldDeletedAt] = struct{}{}
+}
+
+// DeletedAtCleared returns if the "deleted_at" field was cleared in this mutation.
+func (m *OntAxiomMutation) DeletedAtCleared() bool {
+	_, ok := m.clearedFields[ontaxiom.FieldDeletedAt]
+	return ok
+}
+
+// ResetDeletedAt resets all changes to the "deleted_at" field.
+func (m *OntAxiomMutation) ResetDeletedAt() {
+	m.deleted_at = nil
+	delete(m.clearedFields, ontaxiom.FieldDeletedAt)
+}
+
+// SetCreatedBy sets the "created_by" field.
+func (m *OntAxiomMutation) SetCreatedBy(u uint32) {
+	m.created_by = &u
+	m.addcreated_by = nil
+}
+
+// CreatedBy returns the value of the "created_by" field in the mutation.
+func (m *OntAxiomMutation) CreatedBy() (r uint32, exists bool) {
+	v := m.created_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedBy returns the old "created_by" field's value of the OntAxiom entity.
+// If the OntAxiom object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OntAxiomMutation) OldCreatedBy(ctx context.Context) (v *uint32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedBy: %w", err)
+	}
+	return oldValue.CreatedBy, nil
+}
+
+// AddCreatedBy adds u to the "created_by" field.
+func (m *OntAxiomMutation) AddCreatedBy(u int32) {
+	if m.addcreated_by != nil {
+		*m.addcreated_by += u
+	} else {
+		m.addcreated_by = &u
+	}
+}
+
+// AddedCreatedBy returns the value that was added to the "created_by" field in this mutation.
+func (m *OntAxiomMutation) AddedCreatedBy() (r int32, exists bool) {
+	v := m.addcreated_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearCreatedBy clears the value of the "created_by" field.
+func (m *OntAxiomMutation) ClearCreatedBy() {
+	m.created_by = nil
+	m.addcreated_by = nil
+	m.clearedFields[ontaxiom.FieldCreatedBy] = struct{}{}
+}
+
+// CreatedByCleared returns if the "created_by" field was cleared in this mutation.
+func (m *OntAxiomMutation) CreatedByCleared() bool {
+	_, ok := m.clearedFields[ontaxiom.FieldCreatedBy]
+	return ok
+}
+
+// ResetCreatedBy resets all changes to the "created_by" field.
+func (m *OntAxiomMutation) ResetCreatedBy() {
+	m.created_by = nil
+	m.addcreated_by = nil
+	delete(m.clearedFields, ontaxiom.FieldCreatedBy)
+}
+
+// SetUpdatedBy sets the "updated_by" field.
+func (m *OntAxiomMutation) SetUpdatedBy(u uint32) {
+	m.updated_by = &u
+	m.addupdated_by = nil
+}
+
+// UpdatedBy returns the value of the "updated_by" field in the mutation.
+func (m *OntAxiomMutation) UpdatedBy() (r uint32, exists bool) {
+	v := m.updated_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedBy returns the old "updated_by" field's value of the OntAxiom entity.
+// If the OntAxiom object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OntAxiomMutation) OldUpdatedBy(ctx context.Context) (v *uint32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedBy: %w", err)
+	}
+	return oldValue.UpdatedBy, nil
+}
+
+// AddUpdatedBy adds u to the "updated_by" field.
+func (m *OntAxiomMutation) AddUpdatedBy(u int32) {
+	if m.addupdated_by != nil {
+		*m.addupdated_by += u
+	} else {
+		m.addupdated_by = &u
+	}
+}
+
+// AddedUpdatedBy returns the value that was added to the "updated_by" field in this mutation.
+func (m *OntAxiomMutation) AddedUpdatedBy() (r int32, exists bool) {
+	v := m.addupdated_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearUpdatedBy clears the value of the "updated_by" field.
+func (m *OntAxiomMutation) ClearUpdatedBy() {
+	m.updated_by = nil
+	m.addupdated_by = nil
+	m.clearedFields[ontaxiom.FieldUpdatedBy] = struct{}{}
+}
+
+// UpdatedByCleared returns if the "updated_by" field was cleared in this mutation.
+func (m *OntAxiomMutation) UpdatedByCleared() bool {
+	_, ok := m.clearedFields[ontaxiom.FieldUpdatedBy]
+	return ok
+}
+
+// ResetUpdatedBy resets all changes to the "updated_by" field.
+func (m *OntAxiomMutation) ResetUpdatedBy() {
+	m.updated_by = nil
+	m.addupdated_by = nil
+	delete(m.clearedFields, ontaxiom.FieldUpdatedBy)
+}
+
+// SetDeletedBy sets the "deleted_by" field.
+func (m *OntAxiomMutation) SetDeletedBy(u uint32) {
+	m.deleted_by = &u
+	m.adddeleted_by = nil
+}
+
+// DeletedBy returns the value of the "deleted_by" field in the mutation.
+func (m *OntAxiomMutation) DeletedBy() (r uint32, exists bool) {
+	v := m.deleted_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeletedBy returns the old "deleted_by" field's value of the OntAxiom entity.
+// If the OntAxiom object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OntAxiomMutation) OldDeletedBy(ctx context.Context) (v *uint32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeletedBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeletedBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeletedBy: %w", err)
+	}
+	return oldValue.DeletedBy, nil
+}
+
+// AddDeletedBy adds u to the "deleted_by" field.
+func (m *OntAxiomMutation) AddDeletedBy(u int32) {
+	if m.adddeleted_by != nil {
+		*m.adddeleted_by += u
+	} else {
+		m.adddeleted_by = &u
+	}
+}
+
+// AddedDeletedBy returns the value that was added to the "deleted_by" field in this mutation.
+func (m *OntAxiomMutation) AddedDeletedBy() (r int32, exists bool) {
+	v := m.adddeleted_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearDeletedBy clears the value of the "deleted_by" field.
+func (m *OntAxiomMutation) ClearDeletedBy() {
+	m.deleted_by = nil
+	m.adddeleted_by = nil
+	m.clearedFields[ontaxiom.FieldDeletedBy] = struct{}{}
+}
+
+// DeletedByCleared returns if the "deleted_by" field was cleared in this mutation.
+func (m *OntAxiomMutation) DeletedByCleared() bool {
+	_, ok := m.clearedFields[ontaxiom.FieldDeletedBy]
+	return ok
+}
+
+// ResetDeletedBy resets all changes to the "deleted_by" field.
+func (m *OntAxiomMutation) ResetDeletedBy() {
+	m.deleted_by = nil
+	m.adddeleted_by = nil
+	delete(m.clearedFields, ontaxiom.FieldDeletedBy)
+}
+
+// SetSortOrder sets the "sort_order" field.
+func (m *OntAxiomMutation) SetSortOrder(u uint32) {
+	m.sort_order = &u
+	m.addsort_order = nil
+}
+
+// SortOrder returns the value of the "sort_order" field in the mutation.
+func (m *OntAxiomMutation) SortOrder() (r uint32, exists bool) {
+	v := m.sort_order
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSortOrder returns the old "sort_order" field's value of the OntAxiom entity.
+// If the OntAxiom object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OntAxiomMutation) OldSortOrder(ctx context.Context) (v *uint32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSortOrder is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSortOrder requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSortOrder: %w", err)
+	}
+	return oldValue.SortOrder, nil
+}
+
+// AddSortOrder adds u to the "sort_order" field.
+func (m *OntAxiomMutation) AddSortOrder(u int32) {
+	if m.addsort_order != nil {
+		*m.addsort_order += u
+	} else {
+		m.addsort_order = &u
+	}
+}
+
+// AddedSortOrder returns the value that was added to the "sort_order" field in this mutation.
+func (m *OntAxiomMutation) AddedSortOrder() (r int32, exists bool) {
+	v := m.addsort_order
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearSortOrder clears the value of the "sort_order" field.
+func (m *OntAxiomMutation) ClearSortOrder() {
+	m.sort_order = nil
+	m.addsort_order = nil
+	m.clearedFields[ontaxiom.FieldSortOrder] = struct{}{}
+}
+
+// SortOrderCleared returns if the "sort_order" field was cleared in this mutation.
+func (m *OntAxiomMutation) SortOrderCleared() bool {
+	_, ok := m.clearedFields[ontaxiom.FieldSortOrder]
+	return ok
+}
+
+// ResetSortOrder resets all changes to the "sort_order" field.
+func (m *OntAxiomMutation) ResetSortOrder() {
+	m.sort_order = nil
+	m.addsort_order = nil
+	delete(m.clearedFields, ontaxiom.FieldSortOrder)
+}
+
+// SetOntologyID sets the "ontology_id" field.
+func (m *OntAxiomMutation) SetOntologyID(u uint32) {
+	m.ontology_id = &u
+	m.addontology_id = nil
+}
+
+// OntologyID returns the value of the "ontology_id" field in the mutation.
+func (m *OntAxiomMutation) OntologyID() (r uint32, exists bool) {
+	v := m.ontology_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldOntologyID returns the old "ontology_id" field's value of the OntAxiom entity.
+// If the OntAxiom object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OntAxiomMutation) OldOntologyID(ctx context.Context) (v *uint32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldOntologyID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldOntologyID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldOntologyID: %w", err)
+	}
+	return oldValue.OntologyID, nil
+}
+
+// AddOntologyID adds u to the "ontology_id" field.
+func (m *OntAxiomMutation) AddOntologyID(u int32) {
+	if m.addontology_id != nil {
+		*m.addontology_id += u
+	} else {
+		m.addontology_id = &u
+	}
+}
+
+// AddedOntologyID returns the value that was added to the "ontology_id" field in this mutation.
+func (m *OntAxiomMutation) AddedOntologyID() (r int32, exists bool) {
+	v := m.addontology_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearOntologyID clears the value of the "ontology_id" field.
+func (m *OntAxiomMutation) ClearOntologyID() {
+	m.ontology_id = nil
+	m.addontology_id = nil
+	m.clearedFields[ontaxiom.FieldOntologyID] = struct{}{}
+}
+
+// OntologyIDCleared returns if the "ontology_id" field was cleared in this mutation.
+func (m *OntAxiomMutation) OntologyIDCleared() bool {
+	_, ok := m.clearedFields[ontaxiom.FieldOntologyID]
+	return ok
+}
+
+// ResetOntologyID resets all changes to the "ontology_id" field.
+func (m *OntAxiomMutation) ResetOntologyID() {
+	m.ontology_id = nil
+	m.addontology_id = nil
+	delete(m.clearedFields, ontaxiom.FieldOntologyID)
+}
+
+// SetAxiomType sets the "axiom_type" field.
+func (m *OntAxiomMutation) SetAxiomType(u uint32) {
+	m.axiom_type = &u
+	m.addaxiom_type = nil
+}
+
+// AxiomType returns the value of the "axiom_type" field in the mutation.
+func (m *OntAxiomMutation) AxiomType() (r uint32, exists bool) {
+	v := m.axiom_type
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAxiomType returns the old "axiom_type" field's value of the OntAxiom entity.
+// If the OntAxiom object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OntAxiomMutation) OldAxiomType(ctx context.Context) (v *uint32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAxiomType is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAxiomType requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAxiomType: %w", err)
+	}
+	return oldValue.AxiomType, nil
+}
+
+// AddAxiomType adds u to the "axiom_type" field.
+func (m *OntAxiomMutation) AddAxiomType(u int32) {
+	if m.addaxiom_type != nil {
+		*m.addaxiom_type += u
+	} else {
+		m.addaxiom_type = &u
+	}
+}
+
+// AddedAxiomType returns the value that was added to the "axiom_type" field in this mutation.
+func (m *OntAxiomMutation) AddedAxiomType() (r int32, exists bool) {
+	v := m.addaxiom_type
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearAxiomType clears the value of the "axiom_type" field.
+func (m *OntAxiomMutation) ClearAxiomType() {
+	m.axiom_type = nil
+	m.addaxiom_type = nil
+	m.clearedFields[ontaxiom.FieldAxiomType] = struct{}{}
+}
+
+// AxiomTypeCleared returns if the "axiom_type" field was cleared in this mutation.
+func (m *OntAxiomMutation) AxiomTypeCleared() bool {
+	_, ok := m.clearedFields[ontaxiom.FieldAxiomType]
+	return ok
+}
+
+// ResetAxiomType resets all changes to the "axiom_type" field.
+func (m *OntAxiomMutation) ResetAxiomType() {
+	m.axiom_type = nil
+	m.addaxiom_type = nil
+	delete(m.clearedFields, ontaxiom.FieldAxiomType)
+}
+
+// SetSubjectID sets the "subject_id" field.
+func (m *OntAxiomMutation) SetSubjectID(u uint32) {
+	m.subject_id = &u
+	m.addsubject_id = nil
+}
+
+// SubjectID returns the value of the "subject_id" field in the mutation.
+func (m *OntAxiomMutation) SubjectID() (r uint32, exists bool) {
+	v := m.subject_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSubjectID returns the old "subject_id" field's value of the OntAxiom entity.
+// If the OntAxiom object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OntAxiomMutation) OldSubjectID(ctx context.Context) (v *uint32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSubjectID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSubjectID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSubjectID: %w", err)
+	}
+	return oldValue.SubjectID, nil
+}
+
+// AddSubjectID adds u to the "subject_id" field.
+func (m *OntAxiomMutation) AddSubjectID(u int32) {
+	if m.addsubject_id != nil {
+		*m.addsubject_id += u
+	} else {
+		m.addsubject_id = &u
+	}
+}
+
+// AddedSubjectID returns the value that was added to the "subject_id" field in this mutation.
+func (m *OntAxiomMutation) AddedSubjectID() (r int32, exists bool) {
+	v := m.addsubject_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearSubjectID clears the value of the "subject_id" field.
+func (m *OntAxiomMutation) ClearSubjectID() {
+	m.subject_id = nil
+	m.addsubject_id = nil
+	m.clearedFields[ontaxiom.FieldSubjectID] = struct{}{}
+}
+
+// SubjectIDCleared returns if the "subject_id" field was cleared in this mutation.
+func (m *OntAxiomMutation) SubjectIDCleared() bool {
+	_, ok := m.clearedFields[ontaxiom.FieldSubjectID]
+	return ok
+}
+
+// ResetSubjectID resets all changes to the "subject_id" field.
+func (m *OntAxiomMutation) ResetSubjectID() {
+	m.subject_id = nil
+	m.addsubject_id = nil
+	delete(m.clearedFields, ontaxiom.FieldSubjectID)
+}
+
+// SetObjectID sets the "object_id" field.
+func (m *OntAxiomMutation) SetObjectID(u uint32) {
+	m.object_id = &u
+	m.addobject_id = nil
+}
+
+// ObjectID returns the value of the "object_id" field in the mutation.
+func (m *OntAxiomMutation) ObjectID() (r uint32, exists bool) {
+	v := m.object_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldObjectID returns the old "object_id" field's value of the OntAxiom entity.
+// If the OntAxiom object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OntAxiomMutation) OldObjectID(ctx context.Context) (v *uint32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldObjectID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldObjectID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldObjectID: %w", err)
+	}
+	return oldValue.ObjectID, nil
+}
+
+// AddObjectID adds u to the "object_id" field.
+func (m *OntAxiomMutation) AddObjectID(u int32) {
+	if m.addobject_id != nil {
+		*m.addobject_id += u
+	} else {
+		m.addobject_id = &u
+	}
+}
+
+// AddedObjectID returns the value that was added to the "object_id" field in this mutation.
+func (m *OntAxiomMutation) AddedObjectID() (r int32, exists bool) {
+	v := m.addobject_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearObjectID clears the value of the "object_id" field.
+func (m *OntAxiomMutation) ClearObjectID() {
+	m.object_id = nil
+	m.addobject_id = nil
+	m.clearedFields[ontaxiom.FieldObjectID] = struct{}{}
+}
+
+// ObjectIDCleared returns if the "object_id" field was cleared in this mutation.
+func (m *OntAxiomMutation) ObjectIDCleared() bool {
+	_, ok := m.clearedFields[ontaxiom.FieldObjectID]
+	return ok
+}
+
+// ResetObjectID resets all changes to the "object_id" field.
+func (m *OntAxiomMutation) ResetObjectID() {
+	m.object_id = nil
+	m.addobject_id = nil
+	delete(m.clearedFields, ontaxiom.FieldObjectID)
+}
+
+// SetPredicateIri sets the "predicate_iri" field.
+func (m *OntAxiomMutation) SetPredicateIri(s string) {
+	m.predicate_iri = &s
+}
+
+// PredicateIri returns the value of the "predicate_iri" field in the mutation.
+func (m *OntAxiomMutation) PredicateIri() (r string, exists bool) {
+	v := m.predicate_iri
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPredicateIri returns the old "predicate_iri" field's value of the OntAxiom entity.
+// If the OntAxiom object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OntAxiomMutation) OldPredicateIri(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPredicateIri is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPredicateIri requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPredicateIri: %w", err)
+	}
+	return oldValue.PredicateIri, nil
+}
+
+// ClearPredicateIri clears the value of the "predicate_iri" field.
+func (m *OntAxiomMutation) ClearPredicateIri() {
+	m.predicate_iri = nil
+	m.clearedFields[ontaxiom.FieldPredicateIri] = struct{}{}
+}
+
+// PredicateIriCleared returns if the "predicate_iri" field was cleared in this mutation.
+func (m *OntAxiomMutation) PredicateIriCleared() bool {
+	_, ok := m.clearedFields[ontaxiom.FieldPredicateIri]
+	return ok
+}
+
+// ResetPredicateIri resets all changes to the "predicate_iri" field.
+func (m *OntAxiomMutation) ResetPredicateIri() {
+	m.predicate_iri = nil
+	delete(m.clearedFields, ontaxiom.FieldPredicateIri)
+}
+
+// SetValueText sets the "value_text" field.
+func (m *OntAxiomMutation) SetValueText(s string) {
+	m.value_text = &s
+}
+
+// ValueText returns the value of the "value_text" field in the mutation.
+func (m *OntAxiomMutation) ValueText() (r string, exists bool) {
+	v := m.value_text
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldValueText returns the old "value_text" field's value of the OntAxiom entity.
+// If the OntAxiom object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OntAxiomMutation) OldValueText(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldValueText is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldValueText requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldValueText: %w", err)
+	}
+	return oldValue.ValueText, nil
+}
+
+// ClearValueText clears the value of the "value_text" field.
+func (m *OntAxiomMutation) ClearValueText() {
+	m.value_text = nil
+	m.clearedFields[ontaxiom.FieldValueText] = struct{}{}
+}
+
+// ValueTextCleared returns if the "value_text" field was cleared in this mutation.
+func (m *OntAxiomMutation) ValueTextCleared() bool {
+	_, ok := m.clearedFields[ontaxiom.FieldValueText]
+	return ok
+}
+
+// ResetValueText resets all changes to the "value_text" field.
+func (m *OntAxiomMutation) ResetValueText() {
+	m.value_text = nil
+	delete(m.clearedFields, ontaxiom.FieldValueText)
+}
+
+// SetLang sets the "lang" field.
+func (m *OntAxiomMutation) SetLang(s string) {
+	m.lang = &s
+}
+
+// Lang returns the value of the "lang" field in the mutation.
+func (m *OntAxiomMutation) Lang() (r string, exists bool) {
+	v := m.lang
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLang returns the old "lang" field's value of the OntAxiom entity.
+// If the OntAxiom object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OntAxiomMutation) OldLang(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLang is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLang requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLang: %w", err)
+	}
+	return oldValue.Lang, nil
+}
+
+// ClearLang clears the value of the "lang" field.
+func (m *OntAxiomMutation) ClearLang() {
+	m.lang = nil
+	m.clearedFields[ontaxiom.FieldLang] = struct{}{}
+}
+
+// LangCleared returns if the "lang" field was cleared in this mutation.
+func (m *OntAxiomMutation) LangCleared() bool {
+	_, ok := m.clearedFields[ontaxiom.FieldLang]
+	return ok
+}
+
+// ResetLang resets all changes to the "lang" field.
+func (m *OntAxiomMutation) ResetLang() {
+	m.lang = nil
+	delete(m.clearedFields, ontaxiom.FieldLang)
+}
+
+// Where appends a list predicates to the OntAxiomMutation builder.
+func (m *OntAxiomMutation) Where(ps ...predicate.OntAxiom) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the OntAxiomMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *OntAxiomMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.OntAxiom, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *OntAxiomMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *OntAxiomMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (OntAxiom).
+func (m *OntAxiomMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *OntAxiomMutation) Fields() []string {
+	fields := make([]string, 0, 14)
+	if m.created_at != nil {
+		fields = append(fields, ontaxiom.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, ontaxiom.FieldUpdatedAt)
+	}
+	if m.deleted_at != nil {
+		fields = append(fields, ontaxiom.FieldDeletedAt)
+	}
+	if m.created_by != nil {
+		fields = append(fields, ontaxiom.FieldCreatedBy)
+	}
+	if m.updated_by != nil {
+		fields = append(fields, ontaxiom.FieldUpdatedBy)
+	}
+	if m.deleted_by != nil {
+		fields = append(fields, ontaxiom.FieldDeletedBy)
+	}
+	if m.sort_order != nil {
+		fields = append(fields, ontaxiom.FieldSortOrder)
+	}
+	if m.ontology_id != nil {
+		fields = append(fields, ontaxiom.FieldOntologyID)
+	}
+	if m.axiom_type != nil {
+		fields = append(fields, ontaxiom.FieldAxiomType)
+	}
+	if m.subject_id != nil {
+		fields = append(fields, ontaxiom.FieldSubjectID)
+	}
+	if m.object_id != nil {
+		fields = append(fields, ontaxiom.FieldObjectID)
+	}
+	if m.predicate_iri != nil {
+		fields = append(fields, ontaxiom.FieldPredicateIri)
+	}
+	if m.value_text != nil {
+		fields = append(fields, ontaxiom.FieldValueText)
+	}
+	if m.lang != nil {
+		fields = append(fields, ontaxiom.FieldLang)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *OntAxiomMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case ontaxiom.FieldCreatedAt:
+		return m.CreatedAt()
+	case ontaxiom.FieldUpdatedAt:
+		return m.UpdatedAt()
+	case ontaxiom.FieldDeletedAt:
+		return m.DeletedAt()
+	case ontaxiom.FieldCreatedBy:
+		return m.CreatedBy()
+	case ontaxiom.FieldUpdatedBy:
+		return m.UpdatedBy()
+	case ontaxiom.FieldDeletedBy:
+		return m.DeletedBy()
+	case ontaxiom.FieldSortOrder:
+		return m.SortOrder()
+	case ontaxiom.FieldOntologyID:
+		return m.OntologyID()
+	case ontaxiom.FieldAxiomType:
+		return m.AxiomType()
+	case ontaxiom.FieldSubjectID:
+		return m.SubjectID()
+	case ontaxiom.FieldObjectID:
+		return m.ObjectID()
+	case ontaxiom.FieldPredicateIri:
+		return m.PredicateIri()
+	case ontaxiom.FieldValueText:
+		return m.ValueText()
+	case ontaxiom.FieldLang:
+		return m.Lang()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *OntAxiomMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case ontaxiom.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case ontaxiom.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	case ontaxiom.FieldDeletedAt:
+		return m.OldDeletedAt(ctx)
+	case ontaxiom.FieldCreatedBy:
+		return m.OldCreatedBy(ctx)
+	case ontaxiom.FieldUpdatedBy:
+		return m.OldUpdatedBy(ctx)
+	case ontaxiom.FieldDeletedBy:
+		return m.OldDeletedBy(ctx)
+	case ontaxiom.FieldSortOrder:
+		return m.OldSortOrder(ctx)
+	case ontaxiom.FieldOntologyID:
+		return m.OldOntologyID(ctx)
+	case ontaxiom.FieldAxiomType:
+		return m.OldAxiomType(ctx)
+	case ontaxiom.FieldSubjectID:
+		return m.OldSubjectID(ctx)
+	case ontaxiom.FieldObjectID:
+		return m.OldObjectID(ctx)
+	case ontaxiom.FieldPredicateIri:
+		return m.OldPredicateIri(ctx)
+	case ontaxiom.FieldValueText:
+		return m.OldValueText(ctx)
+	case ontaxiom.FieldLang:
+		return m.OldLang(ctx)
+	}
+	return nil, fmt.Errorf("unknown OntAxiom field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *OntAxiomMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case ontaxiom.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case ontaxiom.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	case ontaxiom.FieldDeletedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeletedAt(v)
+		return nil
+	case ontaxiom.FieldCreatedBy:
+		v, ok := value.(uint32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedBy(v)
+		return nil
+	case ontaxiom.FieldUpdatedBy:
+		v, ok := value.(uint32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedBy(v)
+		return nil
+	case ontaxiom.FieldDeletedBy:
+		v, ok := value.(uint32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeletedBy(v)
+		return nil
+	case ontaxiom.FieldSortOrder:
+		v, ok := value.(uint32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSortOrder(v)
+		return nil
+	case ontaxiom.FieldOntologyID:
+		v, ok := value.(uint32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetOntologyID(v)
+		return nil
+	case ontaxiom.FieldAxiomType:
+		v, ok := value.(uint32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAxiomType(v)
+		return nil
+	case ontaxiom.FieldSubjectID:
+		v, ok := value.(uint32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSubjectID(v)
+		return nil
+	case ontaxiom.FieldObjectID:
+		v, ok := value.(uint32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetObjectID(v)
+		return nil
+	case ontaxiom.FieldPredicateIri:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPredicateIri(v)
+		return nil
+	case ontaxiom.FieldValueText:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetValueText(v)
+		return nil
+	case ontaxiom.FieldLang:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLang(v)
+		return nil
+	}
+	return fmt.Errorf("unknown OntAxiom field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *OntAxiomMutation) AddedFields() []string {
+	var fields []string
+	if m.addcreated_by != nil {
+		fields = append(fields, ontaxiom.FieldCreatedBy)
+	}
+	if m.addupdated_by != nil {
+		fields = append(fields, ontaxiom.FieldUpdatedBy)
+	}
+	if m.adddeleted_by != nil {
+		fields = append(fields, ontaxiom.FieldDeletedBy)
+	}
+	if m.addsort_order != nil {
+		fields = append(fields, ontaxiom.FieldSortOrder)
+	}
+	if m.addontology_id != nil {
+		fields = append(fields, ontaxiom.FieldOntologyID)
+	}
+	if m.addaxiom_type != nil {
+		fields = append(fields, ontaxiom.FieldAxiomType)
+	}
+	if m.addsubject_id != nil {
+		fields = append(fields, ontaxiom.FieldSubjectID)
+	}
+	if m.addobject_id != nil {
+		fields = append(fields, ontaxiom.FieldObjectID)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *OntAxiomMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case ontaxiom.FieldCreatedBy:
+		return m.AddedCreatedBy()
+	case ontaxiom.FieldUpdatedBy:
+		return m.AddedUpdatedBy()
+	case ontaxiom.FieldDeletedBy:
+		return m.AddedDeletedBy()
+	case ontaxiom.FieldSortOrder:
+		return m.AddedSortOrder()
+	case ontaxiom.FieldOntologyID:
+		return m.AddedOntologyID()
+	case ontaxiom.FieldAxiomType:
+		return m.AddedAxiomType()
+	case ontaxiom.FieldSubjectID:
+		return m.AddedSubjectID()
+	case ontaxiom.FieldObjectID:
+		return m.AddedObjectID()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *OntAxiomMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case ontaxiom.FieldCreatedBy:
+		v, ok := value.(int32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddCreatedBy(v)
+		return nil
+	case ontaxiom.FieldUpdatedBy:
+		v, ok := value.(int32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddUpdatedBy(v)
+		return nil
+	case ontaxiom.FieldDeletedBy:
+		v, ok := value.(int32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddDeletedBy(v)
+		return nil
+	case ontaxiom.FieldSortOrder:
+		v, ok := value.(int32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddSortOrder(v)
+		return nil
+	case ontaxiom.FieldOntologyID:
+		v, ok := value.(int32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddOntologyID(v)
+		return nil
+	case ontaxiom.FieldAxiomType:
+		v, ok := value.(int32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddAxiomType(v)
+		return nil
+	case ontaxiom.FieldSubjectID:
+		v, ok := value.(int32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddSubjectID(v)
+		return nil
+	case ontaxiom.FieldObjectID:
+		v, ok := value.(int32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddObjectID(v)
+		return nil
+	}
+	return fmt.Errorf("unknown OntAxiom numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *OntAxiomMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(ontaxiom.FieldCreatedAt) {
+		fields = append(fields, ontaxiom.FieldCreatedAt)
+	}
+	if m.FieldCleared(ontaxiom.FieldUpdatedAt) {
+		fields = append(fields, ontaxiom.FieldUpdatedAt)
+	}
+	if m.FieldCleared(ontaxiom.FieldDeletedAt) {
+		fields = append(fields, ontaxiom.FieldDeletedAt)
+	}
+	if m.FieldCleared(ontaxiom.FieldCreatedBy) {
+		fields = append(fields, ontaxiom.FieldCreatedBy)
+	}
+	if m.FieldCleared(ontaxiom.FieldUpdatedBy) {
+		fields = append(fields, ontaxiom.FieldUpdatedBy)
+	}
+	if m.FieldCleared(ontaxiom.FieldDeletedBy) {
+		fields = append(fields, ontaxiom.FieldDeletedBy)
+	}
+	if m.FieldCleared(ontaxiom.FieldSortOrder) {
+		fields = append(fields, ontaxiom.FieldSortOrder)
+	}
+	if m.FieldCleared(ontaxiom.FieldOntologyID) {
+		fields = append(fields, ontaxiom.FieldOntologyID)
+	}
+	if m.FieldCleared(ontaxiom.FieldAxiomType) {
+		fields = append(fields, ontaxiom.FieldAxiomType)
+	}
+	if m.FieldCleared(ontaxiom.FieldSubjectID) {
+		fields = append(fields, ontaxiom.FieldSubjectID)
+	}
+	if m.FieldCleared(ontaxiom.FieldObjectID) {
+		fields = append(fields, ontaxiom.FieldObjectID)
+	}
+	if m.FieldCleared(ontaxiom.FieldPredicateIri) {
+		fields = append(fields, ontaxiom.FieldPredicateIri)
+	}
+	if m.FieldCleared(ontaxiom.FieldValueText) {
+		fields = append(fields, ontaxiom.FieldValueText)
+	}
+	if m.FieldCleared(ontaxiom.FieldLang) {
+		fields = append(fields, ontaxiom.FieldLang)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *OntAxiomMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *OntAxiomMutation) ClearField(name string) error {
+	switch name {
+	case ontaxiom.FieldCreatedAt:
+		m.ClearCreatedAt()
+		return nil
+	case ontaxiom.FieldUpdatedAt:
+		m.ClearUpdatedAt()
+		return nil
+	case ontaxiom.FieldDeletedAt:
+		m.ClearDeletedAt()
+		return nil
+	case ontaxiom.FieldCreatedBy:
+		m.ClearCreatedBy()
+		return nil
+	case ontaxiom.FieldUpdatedBy:
+		m.ClearUpdatedBy()
+		return nil
+	case ontaxiom.FieldDeletedBy:
+		m.ClearDeletedBy()
+		return nil
+	case ontaxiom.FieldSortOrder:
+		m.ClearSortOrder()
+		return nil
+	case ontaxiom.FieldOntologyID:
+		m.ClearOntologyID()
+		return nil
+	case ontaxiom.FieldAxiomType:
+		m.ClearAxiomType()
+		return nil
+	case ontaxiom.FieldSubjectID:
+		m.ClearSubjectID()
+		return nil
+	case ontaxiom.FieldObjectID:
+		m.ClearObjectID()
+		return nil
+	case ontaxiom.FieldPredicateIri:
+		m.ClearPredicateIri()
+		return nil
+	case ontaxiom.FieldValueText:
+		m.ClearValueText()
+		return nil
+	case ontaxiom.FieldLang:
+		m.ClearLang()
+		return nil
+	}
+	return fmt.Errorf("unknown OntAxiom nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *OntAxiomMutation) ResetField(name string) error {
+	switch name {
+	case ontaxiom.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case ontaxiom.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	case ontaxiom.FieldDeletedAt:
+		m.ResetDeletedAt()
+		return nil
+	case ontaxiom.FieldCreatedBy:
+		m.ResetCreatedBy()
+		return nil
+	case ontaxiom.FieldUpdatedBy:
+		m.ResetUpdatedBy()
+		return nil
+	case ontaxiom.FieldDeletedBy:
+		m.ResetDeletedBy()
+		return nil
+	case ontaxiom.FieldSortOrder:
+		m.ResetSortOrder()
+		return nil
+	case ontaxiom.FieldOntologyID:
+		m.ResetOntologyID()
+		return nil
+	case ontaxiom.FieldAxiomType:
+		m.ResetAxiomType()
+		return nil
+	case ontaxiom.FieldSubjectID:
+		m.ResetSubjectID()
+		return nil
+	case ontaxiom.FieldObjectID:
+		m.ResetObjectID()
+		return nil
+	case ontaxiom.FieldPredicateIri:
+		m.ResetPredicateIri()
+		return nil
+	case ontaxiom.FieldValueText:
+		m.ResetValueText()
+		return nil
+	case ontaxiom.FieldLang:
+		m.ResetLang()
+		return nil
+	}
+	return fmt.Errorf("unknown OntAxiom field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *OntAxiomMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *OntAxiomMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *OntAxiomMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *OntAxiomMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *OntAxiomMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *OntAxiomMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *OntAxiomMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown OntAxiom unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *OntAxiomMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown OntAxiom edge %s", name)
+}
+
+// OntChangeLogMutation represents an operation that mutates the OntChangeLog nodes in the graph.
+type OntChangeLogMutation struct {
+	config
+	op                Op
+	typ               string
+	id                *uint32
+	created_at        *time.Time
+	updated_at        *time.Time
+	deleted_at        *time.Time
+	created_by        *uint32
+	addcreated_by     *int32
+	updated_by        *uint32
+	addupdated_by     *int32
+	deleted_by        *uint32
+	adddeleted_by     *int32
+	ontology_id       *uint32
+	addontology_id    *int32
+	operation         *string
+	change_detail     *string
+	before_version    *uint32
+	addbefore_version *int32
+	after_version     *uint32
+	addafter_version  *int32
+	clearedFields     map[string]struct{}
+	done              bool
+	oldValue          func(context.Context) (*OntChangeLog, error)
+	predicates        []predicate.OntChangeLog
+}
+
+var _ ent.Mutation = (*OntChangeLogMutation)(nil)
+
+// ontchangelogOption allows management of the mutation configuration using functional options.
+type ontchangelogOption func(*OntChangeLogMutation)
+
+// newOntChangeLogMutation creates new mutation for the OntChangeLog entity.
+func newOntChangeLogMutation(c config, op Op, opts ...ontchangelogOption) *OntChangeLogMutation {
+	m := &OntChangeLogMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeOntChangeLog,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withOntChangeLogID sets the ID field of the mutation.
+func withOntChangeLogID(id uint32) ontchangelogOption {
+	return func(m *OntChangeLogMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *OntChangeLog
+		)
+		m.oldValue = func(ctx context.Context) (*OntChangeLog, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().OntChangeLog.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withOntChangeLog sets the old OntChangeLog of the mutation.
+func withOntChangeLog(node *OntChangeLog) ontchangelogOption {
+	return func(m *OntChangeLogMutation) {
+		m.oldValue = func(context.Context) (*OntChangeLog, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m OntChangeLogMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m OntChangeLogMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of OntChangeLog entities.
+func (m *OntChangeLogMutation) SetID(id uint32) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *OntChangeLogMutation) ID() (id uint32, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *OntChangeLogMutation) IDs(ctx context.Context) ([]uint32, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uint32{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().OntChangeLog.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *OntChangeLogMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *OntChangeLogMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the OntChangeLog entity.
+// If the OntChangeLog object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OntChangeLogMutation) OldCreatedAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ClearCreatedAt clears the value of the "created_at" field.
+func (m *OntChangeLogMutation) ClearCreatedAt() {
+	m.created_at = nil
+	m.clearedFields[ontchangelog.FieldCreatedAt] = struct{}{}
+}
+
+// CreatedAtCleared returns if the "created_at" field was cleared in this mutation.
+func (m *OntChangeLogMutation) CreatedAtCleared() bool {
+	_, ok := m.clearedFields[ontchangelog.FieldCreatedAt]
+	return ok
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *OntChangeLogMutation) ResetCreatedAt() {
+	m.created_at = nil
+	delete(m.clearedFields, ontchangelog.FieldCreatedAt)
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *OntChangeLogMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *OntChangeLogMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the OntChangeLog entity.
+// If the OntChangeLog object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OntChangeLogMutation) OldUpdatedAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ClearUpdatedAt clears the value of the "updated_at" field.
+func (m *OntChangeLogMutation) ClearUpdatedAt() {
+	m.updated_at = nil
+	m.clearedFields[ontchangelog.FieldUpdatedAt] = struct{}{}
+}
+
+// UpdatedAtCleared returns if the "updated_at" field was cleared in this mutation.
+func (m *OntChangeLogMutation) UpdatedAtCleared() bool {
+	_, ok := m.clearedFields[ontchangelog.FieldUpdatedAt]
+	return ok
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *OntChangeLogMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+	delete(m.clearedFields, ontchangelog.FieldUpdatedAt)
+}
+
+// SetDeletedAt sets the "deleted_at" field.
+func (m *OntChangeLogMutation) SetDeletedAt(t time.Time) {
+	m.deleted_at = &t
+}
+
+// DeletedAt returns the value of the "deleted_at" field in the mutation.
+func (m *OntChangeLogMutation) DeletedAt() (r time.Time, exists bool) {
+	v := m.deleted_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeletedAt returns the old "deleted_at" field's value of the OntChangeLog entity.
+// If the OntChangeLog object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OntChangeLogMutation) OldDeletedAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeletedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeletedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeletedAt: %w", err)
+	}
+	return oldValue.DeletedAt, nil
+}
+
+// ClearDeletedAt clears the value of the "deleted_at" field.
+func (m *OntChangeLogMutation) ClearDeletedAt() {
+	m.deleted_at = nil
+	m.clearedFields[ontchangelog.FieldDeletedAt] = struct{}{}
+}
+
+// DeletedAtCleared returns if the "deleted_at" field was cleared in this mutation.
+func (m *OntChangeLogMutation) DeletedAtCleared() bool {
+	_, ok := m.clearedFields[ontchangelog.FieldDeletedAt]
+	return ok
+}
+
+// ResetDeletedAt resets all changes to the "deleted_at" field.
+func (m *OntChangeLogMutation) ResetDeletedAt() {
+	m.deleted_at = nil
+	delete(m.clearedFields, ontchangelog.FieldDeletedAt)
+}
+
+// SetCreatedBy sets the "created_by" field.
+func (m *OntChangeLogMutation) SetCreatedBy(u uint32) {
+	m.created_by = &u
+	m.addcreated_by = nil
+}
+
+// CreatedBy returns the value of the "created_by" field in the mutation.
+func (m *OntChangeLogMutation) CreatedBy() (r uint32, exists bool) {
+	v := m.created_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedBy returns the old "created_by" field's value of the OntChangeLog entity.
+// If the OntChangeLog object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OntChangeLogMutation) OldCreatedBy(ctx context.Context) (v *uint32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedBy: %w", err)
+	}
+	return oldValue.CreatedBy, nil
+}
+
+// AddCreatedBy adds u to the "created_by" field.
+func (m *OntChangeLogMutation) AddCreatedBy(u int32) {
+	if m.addcreated_by != nil {
+		*m.addcreated_by += u
+	} else {
+		m.addcreated_by = &u
+	}
+}
+
+// AddedCreatedBy returns the value that was added to the "created_by" field in this mutation.
+func (m *OntChangeLogMutation) AddedCreatedBy() (r int32, exists bool) {
+	v := m.addcreated_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearCreatedBy clears the value of the "created_by" field.
+func (m *OntChangeLogMutation) ClearCreatedBy() {
+	m.created_by = nil
+	m.addcreated_by = nil
+	m.clearedFields[ontchangelog.FieldCreatedBy] = struct{}{}
+}
+
+// CreatedByCleared returns if the "created_by" field was cleared in this mutation.
+func (m *OntChangeLogMutation) CreatedByCleared() bool {
+	_, ok := m.clearedFields[ontchangelog.FieldCreatedBy]
+	return ok
+}
+
+// ResetCreatedBy resets all changes to the "created_by" field.
+func (m *OntChangeLogMutation) ResetCreatedBy() {
+	m.created_by = nil
+	m.addcreated_by = nil
+	delete(m.clearedFields, ontchangelog.FieldCreatedBy)
+}
+
+// SetUpdatedBy sets the "updated_by" field.
+func (m *OntChangeLogMutation) SetUpdatedBy(u uint32) {
+	m.updated_by = &u
+	m.addupdated_by = nil
+}
+
+// UpdatedBy returns the value of the "updated_by" field in the mutation.
+func (m *OntChangeLogMutation) UpdatedBy() (r uint32, exists bool) {
+	v := m.updated_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedBy returns the old "updated_by" field's value of the OntChangeLog entity.
+// If the OntChangeLog object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OntChangeLogMutation) OldUpdatedBy(ctx context.Context) (v *uint32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedBy: %w", err)
+	}
+	return oldValue.UpdatedBy, nil
+}
+
+// AddUpdatedBy adds u to the "updated_by" field.
+func (m *OntChangeLogMutation) AddUpdatedBy(u int32) {
+	if m.addupdated_by != nil {
+		*m.addupdated_by += u
+	} else {
+		m.addupdated_by = &u
+	}
+}
+
+// AddedUpdatedBy returns the value that was added to the "updated_by" field in this mutation.
+func (m *OntChangeLogMutation) AddedUpdatedBy() (r int32, exists bool) {
+	v := m.addupdated_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearUpdatedBy clears the value of the "updated_by" field.
+func (m *OntChangeLogMutation) ClearUpdatedBy() {
+	m.updated_by = nil
+	m.addupdated_by = nil
+	m.clearedFields[ontchangelog.FieldUpdatedBy] = struct{}{}
+}
+
+// UpdatedByCleared returns if the "updated_by" field was cleared in this mutation.
+func (m *OntChangeLogMutation) UpdatedByCleared() bool {
+	_, ok := m.clearedFields[ontchangelog.FieldUpdatedBy]
+	return ok
+}
+
+// ResetUpdatedBy resets all changes to the "updated_by" field.
+func (m *OntChangeLogMutation) ResetUpdatedBy() {
+	m.updated_by = nil
+	m.addupdated_by = nil
+	delete(m.clearedFields, ontchangelog.FieldUpdatedBy)
+}
+
+// SetDeletedBy sets the "deleted_by" field.
+func (m *OntChangeLogMutation) SetDeletedBy(u uint32) {
+	m.deleted_by = &u
+	m.adddeleted_by = nil
+}
+
+// DeletedBy returns the value of the "deleted_by" field in the mutation.
+func (m *OntChangeLogMutation) DeletedBy() (r uint32, exists bool) {
+	v := m.deleted_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeletedBy returns the old "deleted_by" field's value of the OntChangeLog entity.
+// If the OntChangeLog object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OntChangeLogMutation) OldDeletedBy(ctx context.Context) (v *uint32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeletedBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeletedBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeletedBy: %w", err)
+	}
+	return oldValue.DeletedBy, nil
+}
+
+// AddDeletedBy adds u to the "deleted_by" field.
+func (m *OntChangeLogMutation) AddDeletedBy(u int32) {
+	if m.adddeleted_by != nil {
+		*m.adddeleted_by += u
+	} else {
+		m.adddeleted_by = &u
+	}
+}
+
+// AddedDeletedBy returns the value that was added to the "deleted_by" field in this mutation.
+func (m *OntChangeLogMutation) AddedDeletedBy() (r int32, exists bool) {
+	v := m.adddeleted_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearDeletedBy clears the value of the "deleted_by" field.
+func (m *OntChangeLogMutation) ClearDeletedBy() {
+	m.deleted_by = nil
+	m.adddeleted_by = nil
+	m.clearedFields[ontchangelog.FieldDeletedBy] = struct{}{}
+}
+
+// DeletedByCleared returns if the "deleted_by" field was cleared in this mutation.
+func (m *OntChangeLogMutation) DeletedByCleared() bool {
+	_, ok := m.clearedFields[ontchangelog.FieldDeletedBy]
+	return ok
+}
+
+// ResetDeletedBy resets all changes to the "deleted_by" field.
+func (m *OntChangeLogMutation) ResetDeletedBy() {
+	m.deleted_by = nil
+	m.adddeleted_by = nil
+	delete(m.clearedFields, ontchangelog.FieldDeletedBy)
+}
+
+// SetOntologyID sets the "ontology_id" field.
+func (m *OntChangeLogMutation) SetOntologyID(u uint32) {
+	m.ontology_id = &u
+	m.addontology_id = nil
+}
+
+// OntologyID returns the value of the "ontology_id" field in the mutation.
+func (m *OntChangeLogMutation) OntologyID() (r uint32, exists bool) {
+	v := m.ontology_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldOntologyID returns the old "ontology_id" field's value of the OntChangeLog entity.
+// If the OntChangeLog object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OntChangeLogMutation) OldOntologyID(ctx context.Context) (v *uint32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldOntologyID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldOntologyID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldOntologyID: %w", err)
+	}
+	return oldValue.OntologyID, nil
+}
+
+// AddOntologyID adds u to the "ontology_id" field.
+func (m *OntChangeLogMutation) AddOntologyID(u int32) {
+	if m.addontology_id != nil {
+		*m.addontology_id += u
+	} else {
+		m.addontology_id = &u
+	}
+}
+
+// AddedOntologyID returns the value that was added to the "ontology_id" field in this mutation.
+func (m *OntChangeLogMutation) AddedOntologyID() (r int32, exists bool) {
+	v := m.addontology_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearOntologyID clears the value of the "ontology_id" field.
+func (m *OntChangeLogMutation) ClearOntologyID() {
+	m.ontology_id = nil
+	m.addontology_id = nil
+	m.clearedFields[ontchangelog.FieldOntologyID] = struct{}{}
+}
+
+// OntologyIDCleared returns if the "ontology_id" field was cleared in this mutation.
+func (m *OntChangeLogMutation) OntologyIDCleared() bool {
+	_, ok := m.clearedFields[ontchangelog.FieldOntologyID]
+	return ok
+}
+
+// ResetOntologyID resets all changes to the "ontology_id" field.
+func (m *OntChangeLogMutation) ResetOntologyID() {
+	m.ontology_id = nil
+	m.addontology_id = nil
+	delete(m.clearedFields, ontchangelog.FieldOntologyID)
+}
+
+// SetOperation sets the "operation" field.
+func (m *OntChangeLogMutation) SetOperation(s string) {
+	m.operation = &s
+}
+
+// Operation returns the value of the "operation" field in the mutation.
+func (m *OntChangeLogMutation) Operation() (r string, exists bool) {
+	v := m.operation
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldOperation returns the old "operation" field's value of the OntChangeLog entity.
+// If the OntChangeLog object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OntChangeLogMutation) OldOperation(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldOperation is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldOperation requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldOperation: %w", err)
+	}
+	return oldValue.Operation, nil
+}
+
+// ClearOperation clears the value of the "operation" field.
+func (m *OntChangeLogMutation) ClearOperation() {
+	m.operation = nil
+	m.clearedFields[ontchangelog.FieldOperation] = struct{}{}
+}
+
+// OperationCleared returns if the "operation" field was cleared in this mutation.
+func (m *OntChangeLogMutation) OperationCleared() bool {
+	_, ok := m.clearedFields[ontchangelog.FieldOperation]
+	return ok
+}
+
+// ResetOperation resets all changes to the "operation" field.
+func (m *OntChangeLogMutation) ResetOperation() {
+	m.operation = nil
+	delete(m.clearedFields, ontchangelog.FieldOperation)
+}
+
+// SetChangeDetail sets the "change_detail" field.
+func (m *OntChangeLogMutation) SetChangeDetail(s string) {
+	m.change_detail = &s
+}
+
+// ChangeDetail returns the value of the "change_detail" field in the mutation.
+func (m *OntChangeLogMutation) ChangeDetail() (r string, exists bool) {
+	v := m.change_detail
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldChangeDetail returns the old "change_detail" field's value of the OntChangeLog entity.
+// If the OntChangeLog object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OntChangeLogMutation) OldChangeDetail(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldChangeDetail is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldChangeDetail requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldChangeDetail: %w", err)
+	}
+	return oldValue.ChangeDetail, nil
+}
+
+// ClearChangeDetail clears the value of the "change_detail" field.
+func (m *OntChangeLogMutation) ClearChangeDetail() {
+	m.change_detail = nil
+	m.clearedFields[ontchangelog.FieldChangeDetail] = struct{}{}
+}
+
+// ChangeDetailCleared returns if the "change_detail" field was cleared in this mutation.
+func (m *OntChangeLogMutation) ChangeDetailCleared() bool {
+	_, ok := m.clearedFields[ontchangelog.FieldChangeDetail]
+	return ok
+}
+
+// ResetChangeDetail resets all changes to the "change_detail" field.
+func (m *OntChangeLogMutation) ResetChangeDetail() {
+	m.change_detail = nil
+	delete(m.clearedFields, ontchangelog.FieldChangeDetail)
+}
+
+// SetBeforeVersion sets the "before_version" field.
+func (m *OntChangeLogMutation) SetBeforeVersion(u uint32) {
+	m.before_version = &u
+	m.addbefore_version = nil
+}
+
+// BeforeVersion returns the value of the "before_version" field in the mutation.
+func (m *OntChangeLogMutation) BeforeVersion() (r uint32, exists bool) {
+	v := m.before_version
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldBeforeVersion returns the old "before_version" field's value of the OntChangeLog entity.
+// If the OntChangeLog object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OntChangeLogMutation) OldBeforeVersion(ctx context.Context) (v *uint32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldBeforeVersion is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldBeforeVersion requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldBeforeVersion: %w", err)
+	}
+	return oldValue.BeforeVersion, nil
+}
+
+// AddBeforeVersion adds u to the "before_version" field.
+func (m *OntChangeLogMutation) AddBeforeVersion(u int32) {
+	if m.addbefore_version != nil {
+		*m.addbefore_version += u
+	} else {
+		m.addbefore_version = &u
+	}
+}
+
+// AddedBeforeVersion returns the value that was added to the "before_version" field in this mutation.
+func (m *OntChangeLogMutation) AddedBeforeVersion() (r int32, exists bool) {
+	v := m.addbefore_version
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearBeforeVersion clears the value of the "before_version" field.
+func (m *OntChangeLogMutation) ClearBeforeVersion() {
+	m.before_version = nil
+	m.addbefore_version = nil
+	m.clearedFields[ontchangelog.FieldBeforeVersion] = struct{}{}
+}
+
+// BeforeVersionCleared returns if the "before_version" field was cleared in this mutation.
+func (m *OntChangeLogMutation) BeforeVersionCleared() bool {
+	_, ok := m.clearedFields[ontchangelog.FieldBeforeVersion]
+	return ok
+}
+
+// ResetBeforeVersion resets all changes to the "before_version" field.
+func (m *OntChangeLogMutation) ResetBeforeVersion() {
+	m.before_version = nil
+	m.addbefore_version = nil
+	delete(m.clearedFields, ontchangelog.FieldBeforeVersion)
+}
+
+// SetAfterVersion sets the "after_version" field.
+func (m *OntChangeLogMutation) SetAfterVersion(u uint32) {
+	m.after_version = &u
+	m.addafter_version = nil
+}
+
+// AfterVersion returns the value of the "after_version" field in the mutation.
+func (m *OntChangeLogMutation) AfterVersion() (r uint32, exists bool) {
+	v := m.after_version
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAfterVersion returns the old "after_version" field's value of the OntChangeLog entity.
+// If the OntChangeLog object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OntChangeLogMutation) OldAfterVersion(ctx context.Context) (v *uint32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAfterVersion is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAfterVersion requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAfterVersion: %w", err)
+	}
+	return oldValue.AfterVersion, nil
+}
+
+// AddAfterVersion adds u to the "after_version" field.
+func (m *OntChangeLogMutation) AddAfterVersion(u int32) {
+	if m.addafter_version != nil {
+		*m.addafter_version += u
+	} else {
+		m.addafter_version = &u
+	}
+}
+
+// AddedAfterVersion returns the value that was added to the "after_version" field in this mutation.
+func (m *OntChangeLogMutation) AddedAfterVersion() (r int32, exists bool) {
+	v := m.addafter_version
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearAfterVersion clears the value of the "after_version" field.
+func (m *OntChangeLogMutation) ClearAfterVersion() {
+	m.after_version = nil
+	m.addafter_version = nil
+	m.clearedFields[ontchangelog.FieldAfterVersion] = struct{}{}
+}
+
+// AfterVersionCleared returns if the "after_version" field was cleared in this mutation.
+func (m *OntChangeLogMutation) AfterVersionCleared() bool {
+	_, ok := m.clearedFields[ontchangelog.FieldAfterVersion]
+	return ok
+}
+
+// ResetAfterVersion resets all changes to the "after_version" field.
+func (m *OntChangeLogMutation) ResetAfterVersion() {
+	m.after_version = nil
+	m.addafter_version = nil
+	delete(m.clearedFields, ontchangelog.FieldAfterVersion)
+}
+
+// Where appends a list predicates to the OntChangeLogMutation builder.
+func (m *OntChangeLogMutation) Where(ps ...predicate.OntChangeLog) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the OntChangeLogMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *OntChangeLogMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.OntChangeLog, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *OntChangeLogMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *OntChangeLogMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (OntChangeLog).
+func (m *OntChangeLogMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *OntChangeLogMutation) Fields() []string {
+	fields := make([]string, 0, 11)
+	if m.created_at != nil {
+		fields = append(fields, ontchangelog.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, ontchangelog.FieldUpdatedAt)
+	}
+	if m.deleted_at != nil {
+		fields = append(fields, ontchangelog.FieldDeletedAt)
+	}
+	if m.created_by != nil {
+		fields = append(fields, ontchangelog.FieldCreatedBy)
+	}
+	if m.updated_by != nil {
+		fields = append(fields, ontchangelog.FieldUpdatedBy)
+	}
+	if m.deleted_by != nil {
+		fields = append(fields, ontchangelog.FieldDeletedBy)
+	}
+	if m.ontology_id != nil {
+		fields = append(fields, ontchangelog.FieldOntologyID)
+	}
+	if m.operation != nil {
+		fields = append(fields, ontchangelog.FieldOperation)
+	}
+	if m.change_detail != nil {
+		fields = append(fields, ontchangelog.FieldChangeDetail)
+	}
+	if m.before_version != nil {
+		fields = append(fields, ontchangelog.FieldBeforeVersion)
+	}
+	if m.after_version != nil {
+		fields = append(fields, ontchangelog.FieldAfterVersion)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *OntChangeLogMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case ontchangelog.FieldCreatedAt:
+		return m.CreatedAt()
+	case ontchangelog.FieldUpdatedAt:
+		return m.UpdatedAt()
+	case ontchangelog.FieldDeletedAt:
+		return m.DeletedAt()
+	case ontchangelog.FieldCreatedBy:
+		return m.CreatedBy()
+	case ontchangelog.FieldUpdatedBy:
+		return m.UpdatedBy()
+	case ontchangelog.FieldDeletedBy:
+		return m.DeletedBy()
+	case ontchangelog.FieldOntologyID:
+		return m.OntologyID()
+	case ontchangelog.FieldOperation:
+		return m.Operation()
+	case ontchangelog.FieldChangeDetail:
+		return m.ChangeDetail()
+	case ontchangelog.FieldBeforeVersion:
+		return m.BeforeVersion()
+	case ontchangelog.FieldAfterVersion:
+		return m.AfterVersion()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *OntChangeLogMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case ontchangelog.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case ontchangelog.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	case ontchangelog.FieldDeletedAt:
+		return m.OldDeletedAt(ctx)
+	case ontchangelog.FieldCreatedBy:
+		return m.OldCreatedBy(ctx)
+	case ontchangelog.FieldUpdatedBy:
+		return m.OldUpdatedBy(ctx)
+	case ontchangelog.FieldDeletedBy:
+		return m.OldDeletedBy(ctx)
+	case ontchangelog.FieldOntologyID:
+		return m.OldOntologyID(ctx)
+	case ontchangelog.FieldOperation:
+		return m.OldOperation(ctx)
+	case ontchangelog.FieldChangeDetail:
+		return m.OldChangeDetail(ctx)
+	case ontchangelog.FieldBeforeVersion:
+		return m.OldBeforeVersion(ctx)
+	case ontchangelog.FieldAfterVersion:
+		return m.OldAfterVersion(ctx)
+	}
+	return nil, fmt.Errorf("unknown OntChangeLog field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *OntChangeLogMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case ontchangelog.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case ontchangelog.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	case ontchangelog.FieldDeletedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeletedAt(v)
+		return nil
+	case ontchangelog.FieldCreatedBy:
+		v, ok := value.(uint32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedBy(v)
+		return nil
+	case ontchangelog.FieldUpdatedBy:
+		v, ok := value.(uint32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedBy(v)
+		return nil
+	case ontchangelog.FieldDeletedBy:
+		v, ok := value.(uint32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeletedBy(v)
+		return nil
+	case ontchangelog.FieldOntologyID:
+		v, ok := value.(uint32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetOntologyID(v)
+		return nil
+	case ontchangelog.FieldOperation:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetOperation(v)
+		return nil
+	case ontchangelog.FieldChangeDetail:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetChangeDetail(v)
+		return nil
+	case ontchangelog.FieldBeforeVersion:
+		v, ok := value.(uint32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetBeforeVersion(v)
+		return nil
+	case ontchangelog.FieldAfterVersion:
+		v, ok := value.(uint32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAfterVersion(v)
+		return nil
+	}
+	return fmt.Errorf("unknown OntChangeLog field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *OntChangeLogMutation) AddedFields() []string {
+	var fields []string
+	if m.addcreated_by != nil {
+		fields = append(fields, ontchangelog.FieldCreatedBy)
+	}
+	if m.addupdated_by != nil {
+		fields = append(fields, ontchangelog.FieldUpdatedBy)
+	}
+	if m.adddeleted_by != nil {
+		fields = append(fields, ontchangelog.FieldDeletedBy)
+	}
+	if m.addontology_id != nil {
+		fields = append(fields, ontchangelog.FieldOntologyID)
+	}
+	if m.addbefore_version != nil {
+		fields = append(fields, ontchangelog.FieldBeforeVersion)
+	}
+	if m.addafter_version != nil {
+		fields = append(fields, ontchangelog.FieldAfterVersion)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *OntChangeLogMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case ontchangelog.FieldCreatedBy:
+		return m.AddedCreatedBy()
+	case ontchangelog.FieldUpdatedBy:
+		return m.AddedUpdatedBy()
+	case ontchangelog.FieldDeletedBy:
+		return m.AddedDeletedBy()
+	case ontchangelog.FieldOntologyID:
+		return m.AddedOntologyID()
+	case ontchangelog.FieldBeforeVersion:
+		return m.AddedBeforeVersion()
+	case ontchangelog.FieldAfterVersion:
+		return m.AddedAfterVersion()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *OntChangeLogMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case ontchangelog.FieldCreatedBy:
+		v, ok := value.(int32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddCreatedBy(v)
+		return nil
+	case ontchangelog.FieldUpdatedBy:
+		v, ok := value.(int32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddUpdatedBy(v)
+		return nil
+	case ontchangelog.FieldDeletedBy:
+		v, ok := value.(int32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddDeletedBy(v)
+		return nil
+	case ontchangelog.FieldOntologyID:
+		v, ok := value.(int32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddOntologyID(v)
+		return nil
+	case ontchangelog.FieldBeforeVersion:
+		v, ok := value.(int32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddBeforeVersion(v)
+		return nil
+	case ontchangelog.FieldAfterVersion:
+		v, ok := value.(int32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddAfterVersion(v)
+		return nil
+	}
+	return fmt.Errorf("unknown OntChangeLog numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *OntChangeLogMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(ontchangelog.FieldCreatedAt) {
+		fields = append(fields, ontchangelog.FieldCreatedAt)
+	}
+	if m.FieldCleared(ontchangelog.FieldUpdatedAt) {
+		fields = append(fields, ontchangelog.FieldUpdatedAt)
+	}
+	if m.FieldCleared(ontchangelog.FieldDeletedAt) {
+		fields = append(fields, ontchangelog.FieldDeletedAt)
+	}
+	if m.FieldCleared(ontchangelog.FieldCreatedBy) {
+		fields = append(fields, ontchangelog.FieldCreatedBy)
+	}
+	if m.FieldCleared(ontchangelog.FieldUpdatedBy) {
+		fields = append(fields, ontchangelog.FieldUpdatedBy)
+	}
+	if m.FieldCleared(ontchangelog.FieldDeletedBy) {
+		fields = append(fields, ontchangelog.FieldDeletedBy)
+	}
+	if m.FieldCleared(ontchangelog.FieldOntologyID) {
+		fields = append(fields, ontchangelog.FieldOntologyID)
+	}
+	if m.FieldCleared(ontchangelog.FieldOperation) {
+		fields = append(fields, ontchangelog.FieldOperation)
+	}
+	if m.FieldCleared(ontchangelog.FieldChangeDetail) {
+		fields = append(fields, ontchangelog.FieldChangeDetail)
+	}
+	if m.FieldCleared(ontchangelog.FieldBeforeVersion) {
+		fields = append(fields, ontchangelog.FieldBeforeVersion)
+	}
+	if m.FieldCleared(ontchangelog.FieldAfterVersion) {
+		fields = append(fields, ontchangelog.FieldAfterVersion)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *OntChangeLogMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *OntChangeLogMutation) ClearField(name string) error {
+	switch name {
+	case ontchangelog.FieldCreatedAt:
+		m.ClearCreatedAt()
+		return nil
+	case ontchangelog.FieldUpdatedAt:
+		m.ClearUpdatedAt()
+		return nil
+	case ontchangelog.FieldDeletedAt:
+		m.ClearDeletedAt()
+		return nil
+	case ontchangelog.FieldCreatedBy:
+		m.ClearCreatedBy()
+		return nil
+	case ontchangelog.FieldUpdatedBy:
+		m.ClearUpdatedBy()
+		return nil
+	case ontchangelog.FieldDeletedBy:
+		m.ClearDeletedBy()
+		return nil
+	case ontchangelog.FieldOntologyID:
+		m.ClearOntologyID()
+		return nil
+	case ontchangelog.FieldOperation:
+		m.ClearOperation()
+		return nil
+	case ontchangelog.FieldChangeDetail:
+		m.ClearChangeDetail()
+		return nil
+	case ontchangelog.FieldBeforeVersion:
+		m.ClearBeforeVersion()
+		return nil
+	case ontchangelog.FieldAfterVersion:
+		m.ClearAfterVersion()
+		return nil
+	}
+	return fmt.Errorf("unknown OntChangeLog nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *OntChangeLogMutation) ResetField(name string) error {
+	switch name {
+	case ontchangelog.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case ontchangelog.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	case ontchangelog.FieldDeletedAt:
+		m.ResetDeletedAt()
+		return nil
+	case ontchangelog.FieldCreatedBy:
+		m.ResetCreatedBy()
+		return nil
+	case ontchangelog.FieldUpdatedBy:
+		m.ResetUpdatedBy()
+		return nil
+	case ontchangelog.FieldDeletedBy:
+		m.ResetDeletedBy()
+		return nil
+	case ontchangelog.FieldOntologyID:
+		m.ResetOntologyID()
+		return nil
+	case ontchangelog.FieldOperation:
+		m.ResetOperation()
+		return nil
+	case ontchangelog.FieldChangeDetail:
+		m.ResetChangeDetail()
+		return nil
+	case ontchangelog.FieldBeforeVersion:
+		m.ResetBeforeVersion()
+		return nil
+	case ontchangelog.FieldAfterVersion:
+		m.ResetAfterVersion()
+		return nil
+	}
+	return fmt.Errorf("unknown OntChangeLog field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *OntChangeLogMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *OntChangeLogMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *OntChangeLogMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *OntChangeLogMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *OntChangeLogMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *OntChangeLogMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *OntChangeLogMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown OntChangeLog unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *OntChangeLogMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown OntChangeLog edge %s", name)
+}
+
+// OntEntityMutation represents an operation that mutates the OntEntity nodes in the graph.
+type OntEntityMutation struct {
+	config
+	op             Op
+	typ            string
+	id             *uint32
+	created_at     *time.Time
+	updated_at     *time.Time
+	deleted_at     *time.Time
+	created_by     *uint32
+	addcreated_by  *int32
+	updated_by     *uint32
+	addupdated_by  *int32
+	deleted_by     *uint32
+	adddeleted_by  *int32
+	ontology_id    *uint32
+	addontology_id *int32
+	entity_type    *uint32
+	addentity_type *int32
+	iri            *string
+	local_name     *string
+	display_label  *string
+	deprecated     *bool
+	clearedFields  map[string]struct{}
+	done           bool
+	oldValue       func(context.Context) (*OntEntity, error)
+	predicates     []predicate.OntEntity
+}
+
+var _ ent.Mutation = (*OntEntityMutation)(nil)
+
+// ontentityOption allows management of the mutation configuration using functional options.
+type ontentityOption func(*OntEntityMutation)
+
+// newOntEntityMutation creates new mutation for the OntEntity entity.
+func newOntEntityMutation(c config, op Op, opts ...ontentityOption) *OntEntityMutation {
+	m := &OntEntityMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeOntEntity,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withOntEntityID sets the ID field of the mutation.
+func withOntEntityID(id uint32) ontentityOption {
+	return func(m *OntEntityMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *OntEntity
+		)
+		m.oldValue = func(ctx context.Context) (*OntEntity, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().OntEntity.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withOntEntity sets the old OntEntity of the mutation.
+func withOntEntity(node *OntEntity) ontentityOption {
+	return func(m *OntEntityMutation) {
+		m.oldValue = func(context.Context) (*OntEntity, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m OntEntityMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m OntEntityMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of OntEntity entities.
+func (m *OntEntityMutation) SetID(id uint32) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *OntEntityMutation) ID() (id uint32, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *OntEntityMutation) IDs(ctx context.Context) ([]uint32, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uint32{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().OntEntity.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *OntEntityMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *OntEntityMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the OntEntity entity.
+// If the OntEntity object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OntEntityMutation) OldCreatedAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ClearCreatedAt clears the value of the "created_at" field.
+func (m *OntEntityMutation) ClearCreatedAt() {
+	m.created_at = nil
+	m.clearedFields[ontentity.FieldCreatedAt] = struct{}{}
+}
+
+// CreatedAtCleared returns if the "created_at" field was cleared in this mutation.
+func (m *OntEntityMutation) CreatedAtCleared() bool {
+	_, ok := m.clearedFields[ontentity.FieldCreatedAt]
+	return ok
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *OntEntityMutation) ResetCreatedAt() {
+	m.created_at = nil
+	delete(m.clearedFields, ontentity.FieldCreatedAt)
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *OntEntityMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *OntEntityMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the OntEntity entity.
+// If the OntEntity object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OntEntityMutation) OldUpdatedAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ClearUpdatedAt clears the value of the "updated_at" field.
+func (m *OntEntityMutation) ClearUpdatedAt() {
+	m.updated_at = nil
+	m.clearedFields[ontentity.FieldUpdatedAt] = struct{}{}
+}
+
+// UpdatedAtCleared returns if the "updated_at" field was cleared in this mutation.
+func (m *OntEntityMutation) UpdatedAtCleared() bool {
+	_, ok := m.clearedFields[ontentity.FieldUpdatedAt]
+	return ok
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *OntEntityMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+	delete(m.clearedFields, ontentity.FieldUpdatedAt)
+}
+
+// SetDeletedAt sets the "deleted_at" field.
+func (m *OntEntityMutation) SetDeletedAt(t time.Time) {
+	m.deleted_at = &t
+}
+
+// DeletedAt returns the value of the "deleted_at" field in the mutation.
+func (m *OntEntityMutation) DeletedAt() (r time.Time, exists bool) {
+	v := m.deleted_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeletedAt returns the old "deleted_at" field's value of the OntEntity entity.
+// If the OntEntity object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OntEntityMutation) OldDeletedAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeletedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeletedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeletedAt: %w", err)
+	}
+	return oldValue.DeletedAt, nil
+}
+
+// ClearDeletedAt clears the value of the "deleted_at" field.
+func (m *OntEntityMutation) ClearDeletedAt() {
+	m.deleted_at = nil
+	m.clearedFields[ontentity.FieldDeletedAt] = struct{}{}
+}
+
+// DeletedAtCleared returns if the "deleted_at" field was cleared in this mutation.
+func (m *OntEntityMutation) DeletedAtCleared() bool {
+	_, ok := m.clearedFields[ontentity.FieldDeletedAt]
+	return ok
+}
+
+// ResetDeletedAt resets all changes to the "deleted_at" field.
+func (m *OntEntityMutation) ResetDeletedAt() {
+	m.deleted_at = nil
+	delete(m.clearedFields, ontentity.FieldDeletedAt)
+}
+
+// SetCreatedBy sets the "created_by" field.
+func (m *OntEntityMutation) SetCreatedBy(u uint32) {
+	m.created_by = &u
+	m.addcreated_by = nil
+}
+
+// CreatedBy returns the value of the "created_by" field in the mutation.
+func (m *OntEntityMutation) CreatedBy() (r uint32, exists bool) {
+	v := m.created_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedBy returns the old "created_by" field's value of the OntEntity entity.
+// If the OntEntity object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OntEntityMutation) OldCreatedBy(ctx context.Context) (v *uint32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedBy: %w", err)
+	}
+	return oldValue.CreatedBy, nil
+}
+
+// AddCreatedBy adds u to the "created_by" field.
+func (m *OntEntityMutation) AddCreatedBy(u int32) {
+	if m.addcreated_by != nil {
+		*m.addcreated_by += u
+	} else {
+		m.addcreated_by = &u
+	}
+}
+
+// AddedCreatedBy returns the value that was added to the "created_by" field in this mutation.
+func (m *OntEntityMutation) AddedCreatedBy() (r int32, exists bool) {
+	v := m.addcreated_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearCreatedBy clears the value of the "created_by" field.
+func (m *OntEntityMutation) ClearCreatedBy() {
+	m.created_by = nil
+	m.addcreated_by = nil
+	m.clearedFields[ontentity.FieldCreatedBy] = struct{}{}
+}
+
+// CreatedByCleared returns if the "created_by" field was cleared in this mutation.
+func (m *OntEntityMutation) CreatedByCleared() bool {
+	_, ok := m.clearedFields[ontentity.FieldCreatedBy]
+	return ok
+}
+
+// ResetCreatedBy resets all changes to the "created_by" field.
+func (m *OntEntityMutation) ResetCreatedBy() {
+	m.created_by = nil
+	m.addcreated_by = nil
+	delete(m.clearedFields, ontentity.FieldCreatedBy)
+}
+
+// SetUpdatedBy sets the "updated_by" field.
+func (m *OntEntityMutation) SetUpdatedBy(u uint32) {
+	m.updated_by = &u
+	m.addupdated_by = nil
+}
+
+// UpdatedBy returns the value of the "updated_by" field in the mutation.
+func (m *OntEntityMutation) UpdatedBy() (r uint32, exists bool) {
+	v := m.updated_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedBy returns the old "updated_by" field's value of the OntEntity entity.
+// If the OntEntity object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OntEntityMutation) OldUpdatedBy(ctx context.Context) (v *uint32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedBy: %w", err)
+	}
+	return oldValue.UpdatedBy, nil
+}
+
+// AddUpdatedBy adds u to the "updated_by" field.
+func (m *OntEntityMutation) AddUpdatedBy(u int32) {
+	if m.addupdated_by != nil {
+		*m.addupdated_by += u
+	} else {
+		m.addupdated_by = &u
+	}
+}
+
+// AddedUpdatedBy returns the value that was added to the "updated_by" field in this mutation.
+func (m *OntEntityMutation) AddedUpdatedBy() (r int32, exists bool) {
+	v := m.addupdated_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearUpdatedBy clears the value of the "updated_by" field.
+func (m *OntEntityMutation) ClearUpdatedBy() {
+	m.updated_by = nil
+	m.addupdated_by = nil
+	m.clearedFields[ontentity.FieldUpdatedBy] = struct{}{}
+}
+
+// UpdatedByCleared returns if the "updated_by" field was cleared in this mutation.
+func (m *OntEntityMutation) UpdatedByCleared() bool {
+	_, ok := m.clearedFields[ontentity.FieldUpdatedBy]
+	return ok
+}
+
+// ResetUpdatedBy resets all changes to the "updated_by" field.
+func (m *OntEntityMutation) ResetUpdatedBy() {
+	m.updated_by = nil
+	m.addupdated_by = nil
+	delete(m.clearedFields, ontentity.FieldUpdatedBy)
+}
+
+// SetDeletedBy sets the "deleted_by" field.
+func (m *OntEntityMutation) SetDeletedBy(u uint32) {
+	m.deleted_by = &u
+	m.adddeleted_by = nil
+}
+
+// DeletedBy returns the value of the "deleted_by" field in the mutation.
+func (m *OntEntityMutation) DeletedBy() (r uint32, exists bool) {
+	v := m.deleted_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeletedBy returns the old "deleted_by" field's value of the OntEntity entity.
+// If the OntEntity object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OntEntityMutation) OldDeletedBy(ctx context.Context) (v *uint32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeletedBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeletedBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeletedBy: %w", err)
+	}
+	return oldValue.DeletedBy, nil
+}
+
+// AddDeletedBy adds u to the "deleted_by" field.
+func (m *OntEntityMutation) AddDeletedBy(u int32) {
+	if m.adddeleted_by != nil {
+		*m.adddeleted_by += u
+	} else {
+		m.adddeleted_by = &u
+	}
+}
+
+// AddedDeletedBy returns the value that was added to the "deleted_by" field in this mutation.
+func (m *OntEntityMutation) AddedDeletedBy() (r int32, exists bool) {
+	v := m.adddeleted_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearDeletedBy clears the value of the "deleted_by" field.
+func (m *OntEntityMutation) ClearDeletedBy() {
+	m.deleted_by = nil
+	m.adddeleted_by = nil
+	m.clearedFields[ontentity.FieldDeletedBy] = struct{}{}
+}
+
+// DeletedByCleared returns if the "deleted_by" field was cleared in this mutation.
+func (m *OntEntityMutation) DeletedByCleared() bool {
+	_, ok := m.clearedFields[ontentity.FieldDeletedBy]
+	return ok
+}
+
+// ResetDeletedBy resets all changes to the "deleted_by" field.
+func (m *OntEntityMutation) ResetDeletedBy() {
+	m.deleted_by = nil
+	m.adddeleted_by = nil
+	delete(m.clearedFields, ontentity.FieldDeletedBy)
+}
+
+// SetOntologyID sets the "ontology_id" field.
+func (m *OntEntityMutation) SetOntologyID(u uint32) {
+	m.ontology_id = &u
+	m.addontology_id = nil
+}
+
+// OntologyID returns the value of the "ontology_id" field in the mutation.
+func (m *OntEntityMutation) OntologyID() (r uint32, exists bool) {
+	v := m.ontology_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldOntologyID returns the old "ontology_id" field's value of the OntEntity entity.
+// If the OntEntity object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OntEntityMutation) OldOntologyID(ctx context.Context) (v *uint32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldOntologyID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldOntologyID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldOntologyID: %w", err)
+	}
+	return oldValue.OntologyID, nil
+}
+
+// AddOntologyID adds u to the "ontology_id" field.
+func (m *OntEntityMutation) AddOntologyID(u int32) {
+	if m.addontology_id != nil {
+		*m.addontology_id += u
+	} else {
+		m.addontology_id = &u
+	}
+}
+
+// AddedOntologyID returns the value that was added to the "ontology_id" field in this mutation.
+func (m *OntEntityMutation) AddedOntologyID() (r int32, exists bool) {
+	v := m.addontology_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearOntologyID clears the value of the "ontology_id" field.
+func (m *OntEntityMutation) ClearOntologyID() {
+	m.ontology_id = nil
+	m.addontology_id = nil
+	m.clearedFields[ontentity.FieldOntologyID] = struct{}{}
+}
+
+// OntologyIDCleared returns if the "ontology_id" field was cleared in this mutation.
+func (m *OntEntityMutation) OntologyIDCleared() bool {
+	_, ok := m.clearedFields[ontentity.FieldOntologyID]
+	return ok
+}
+
+// ResetOntologyID resets all changes to the "ontology_id" field.
+func (m *OntEntityMutation) ResetOntologyID() {
+	m.ontology_id = nil
+	m.addontology_id = nil
+	delete(m.clearedFields, ontentity.FieldOntologyID)
+}
+
+// SetEntityType sets the "entity_type" field.
+func (m *OntEntityMutation) SetEntityType(u uint32) {
+	m.entity_type = &u
+	m.addentity_type = nil
+}
+
+// EntityType returns the value of the "entity_type" field in the mutation.
+func (m *OntEntityMutation) EntityType() (r uint32, exists bool) {
+	v := m.entity_type
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldEntityType returns the old "entity_type" field's value of the OntEntity entity.
+// If the OntEntity object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OntEntityMutation) OldEntityType(ctx context.Context) (v *uint32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldEntityType is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldEntityType requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldEntityType: %w", err)
+	}
+	return oldValue.EntityType, nil
+}
+
+// AddEntityType adds u to the "entity_type" field.
+func (m *OntEntityMutation) AddEntityType(u int32) {
+	if m.addentity_type != nil {
+		*m.addentity_type += u
+	} else {
+		m.addentity_type = &u
+	}
+}
+
+// AddedEntityType returns the value that was added to the "entity_type" field in this mutation.
+func (m *OntEntityMutation) AddedEntityType() (r int32, exists bool) {
+	v := m.addentity_type
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearEntityType clears the value of the "entity_type" field.
+func (m *OntEntityMutation) ClearEntityType() {
+	m.entity_type = nil
+	m.addentity_type = nil
+	m.clearedFields[ontentity.FieldEntityType] = struct{}{}
+}
+
+// EntityTypeCleared returns if the "entity_type" field was cleared in this mutation.
+func (m *OntEntityMutation) EntityTypeCleared() bool {
+	_, ok := m.clearedFields[ontentity.FieldEntityType]
+	return ok
+}
+
+// ResetEntityType resets all changes to the "entity_type" field.
+func (m *OntEntityMutation) ResetEntityType() {
+	m.entity_type = nil
+	m.addentity_type = nil
+	delete(m.clearedFields, ontentity.FieldEntityType)
+}
+
+// SetIri sets the "iri" field.
+func (m *OntEntityMutation) SetIri(s string) {
+	m.iri = &s
+}
+
+// Iri returns the value of the "iri" field in the mutation.
+func (m *OntEntityMutation) Iri() (r string, exists bool) {
+	v := m.iri
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIri returns the old "iri" field's value of the OntEntity entity.
+// If the OntEntity object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OntEntityMutation) OldIri(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIri is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIri requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIri: %w", err)
+	}
+	return oldValue.Iri, nil
+}
+
+// ClearIri clears the value of the "iri" field.
+func (m *OntEntityMutation) ClearIri() {
+	m.iri = nil
+	m.clearedFields[ontentity.FieldIri] = struct{}{}
+}
+
+// IriCleared returns if the "iri" field was cleared in this mutation.
+func (m *OntEntityMutation) IriCleared() bool {
+	_, ok := m.clearedFields[ontentity.FieldIri]
+	return ok
+}
+
+// ResetIri resets all changes to the "iri" field.
+func (m *OntEntityMutation) ResetIri() {
+	m.iri = nil
+	delete(m.clearedFields, ontentity.FieldIri)
+}
+
+// SetLocalName sets the "local_name" field.
+func (m *OntEntityMutation) SetLocalName(s string) {
+	m.local_name = &s
+}
+
+// LocalName returns the value of the "local_name" field in the mutation.
+func (m *OntEntityMutation) LocalName() (r string, exists bool) {
+	v := m.local_name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLocalName returns the old "local_name" field's value of the OntEntity entity.
+// If the OntEntity object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OntEntityMutation) OldLocalName(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLocalName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLocalName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLocalName: %w", err)
+	}
+	return oldValue.LocalName, nil
+}
+
+// ClearLocalName clears the value of the "local_name" field.
+func (m *OntEntityMutation) ClearLocalName() {
+	m.local_name = nil
+	m.clearedFields[ontentity.FieldLocalName] = struct{}{}
+}
+
+// LocalNameCleared returns if the "local_name" field was cleared in this mutation.
+func (m *OntEntityMutation) LocalNameCleared() bool {
+	_, ok := m.clearedFields[ontentity.FieldLocalName]
+	return ok
+}
+
+// ResetLocalName resets all changes to the "local_name" field.
+func (m *OntEntityMutation) ResetLocalName() {
+	m.local_name = nil
+	delete(m.clearedFields, ontentity.FieldLocalName)
+}
+
+// SetDisplayLabel sets the "display_label" field.
+func (m *OntEntityMutation) SetDisplayLabel(s string) {
+	m.display_label = &s
+}
+
+// DisplayLabel returns the value of the "display_label" field in the mutation.
+func (m *OntEntityMutation) DisplayLabel() (r string, exists bool) {
+	v := m.display_label
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDisplayLabel returns the old "display_label" field's value of the OntEntity entity.
+// If the OntEntity object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OntEntityMutation) OldDisplayLabel(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDisplayLabel is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDisplayLabel requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDisplayLabel: %w", err)
+	}
+	return oldValue.DisplayLabel, nil
+}
+
+// ClearDisplayLabel clears the value of the "display_label" field.
+func (m *OntEntityMutation) ClearDisplayLabel() {
+	m.display_label = nil
+	m.clearedFields[ontentity.FieldDisplayLabel] = struct{}{}
+}
+
+// DisplayLabelCleared returns if the "display_label" field was cleared in this mutation.
+func (m *OntEntityMutation) DisplayLabelCleared() bool {
+	_, ok := m.clearedFields[ontentity.FieldDisplayLabel]
+	return ok
+}
+
+// ResetDisplayLabel resets all changes to the "display_label" field.
+func (m *OntEntityMutation) ResetDisplayLabel() {
+	m.display_label = nil
+	delete(m.clearedFields, ontentity.FieldDisplayLabel)
+}
+
+// SetDeprecated sets the "deprecated" field.
+func (m *OntEntityMutation) SetDeprecated(b bool) {
+	m.deprecated = &b
+}
+
+// Deprecated returns the value of the "deprecated" field in the mutation.
+func (m *OntEntityMutation) Deprecated() (r bool, exists bool) {
+	v := m.deprecated
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeprecated returns the old "deprecated" field's value of the OntEntity entity.
+// If the OntEntity object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OntEntityMutation) OldDeprecated(ctx context.Context) (v *bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeprecated is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeprecated requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeprecated: %w", err)
+	}
+	return oldValue.Deprecated, nil
+}
+
+// ClearDeprecated clears the value of the "deprecated" field.
+func (m *OntEntityMutation) ClearDeprecated() {
+	m.deprecated = nil
+	m.clearedFields[ontentity.FieldDeprecated] = struct{}{}
+}
+
+// DeprecatedCleared returns if the "deprecated" field was cleared in this mutation.
+func (m *OntEntityMutation) DeprecatedCleared() bool {
+	_, ok := m.clearedFields[ontentity.FieldDeprecated]
+	return ok
+}
+
+// ResetDeprecated resets all changes to the "deprecated" field.
+func (m *OntEntityMutation) ResetDeprecated() {
+	m.deprecated = nil
+	delete(m.clearedFields, ontentity.FieldDeprecated)
+}
+
+// Where appends a list predicates to the OntEntityMutation builder.
+func (m *OntEntityMutation) Where(ps ...predicate.OntEntity) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the OntEntityMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *OntEntityMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.OntEntity, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *OntEntityMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *OntEntityMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (OntEntity).
+func (m *OntEntityMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *OntEntityMutation) Fields() []string {
+	fields := make([]string, 0, 12)
+	if m.created_at != nil {
+		fields = append(fields, ontentity.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, ontentity.FieldUpdatedAt)
+	}
+	if m.deleted_at != nil {
+		fields = append(fields, ontentity.FieldDeletedAt)
+	}
+	if m.created_by != nil {
+		fields = append(fields, ontentity.FieldCreatedBy)
+	}
+	if m.updated_by != nil {
+		fields = append(fields, ontentity.FieldUpdatedBy)
+	}
+	if m.deleted_by != nil {
+		fields = append(fields, ontentity.FieldDeletedBy)
+	}
+	if m.ontology_id != nil {
+		fields = append(fields, ontentity.FieldOntologyID)
+	}
+	if m.entity_type != nil {
+		fields = append(fields, ontentity.FieldEntityType)
+	}
+	if m.iri != nil {
+		fields = append(fields, ontentity.FieldIri)
+	}
+	if m.local_name != nil {
+		fields = append(fields, ontentity.FieldLocalName)
+	}
+	if m.display_label != nil {
+		fields = append(fields, ontentity.FieldDisplayLabel)
+	}
+	if m.deprecated != nil {
+		fields = append(fields, ontentity.FieldDeprecated)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *OntEntityMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case ontentity.FieldCreatedAt:
+		return m.CreatedAt()
+	case ontentity.FieldUpdatedAt:
+		return m.UpdatedAt()
+	case ontentity.FieldDeletedAt:
+		return m.DeletedAt()
+	case ontentity.FieldCreatedBy:
+		return m.CreatedBy()
+	case ontentity.FieldUpdatedBy:
+		return m.UpdatedBy()
+	case ontentity.FieldDeletedBy:
+		return m.DeletedBy()
+	case ontentity.FieldOntologyID:
+		return m.OntologyID()
+	case ontentity.FieldEntityType:
+		return m.EntityType()
+	case ontentity.FieldIri:
+		return m.Iri()
+	case ontentity.FieldLocalName:
+		return m.LocalName()
+	case ontentity.FieldDisplayLabel:
+		return m.DisplayLabel()
+	case ontentity.FieldDeprecated:
+		return m.Deprecated()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *OntEntityMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case ontentity.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case ontentity.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	case ontentity.FieldDeletedAt:
+		return m.OldDeletedAt(ctx)
+	case ontentity.FieldCreatedBy:
+		return m.OldCreatedBy(ctx)
+	case ontentity.FieldUpdatedBy:
+		return m.OldUpdatedBy(ctx)
+	case ontentity.FieldDeletedBy:
+		return m.OldDeletedBy(ctx)
+	case ontentity.FieldOntologyID:
+		return m.OldOntologyID(ctx)
+	case ontentity.FieldEntityType:
+		return m.OldEntityType(ctx)
+	case ontentity.FieldIri:
+		return m.OldIri(ctx)
+	case ontentity.FieldLocalName:
+		return m.OldLocalName(ctx)
+	case ontentity.FieldDisplayLabel:
+		return m.OldDisplayLabel(ctx)
+	case ontentity.FieldDeprecated:
+		return m.OldDeprecated(ctx)
+	}
+	return nil, fmt.Errorf("unknown OntEntity field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *OntEntityMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case ontentity.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case ontentity.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	case ontentity.FieldDeletedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeletedAt(v)
+		return nil
+	case ontentity.FieldCreatedBy:
+		v, ok := value.(uint32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedBy(v)
+		return nil
+	case ontentity.FieldUpdatedBy:
+		v, ok := value.(uint32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedBy(v)
+		return nil
+	case ontentity.FieldDeletedBy:
+		v, ok := value.(uint32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeletedBy(v)
+		return nil
+	case ontentity.FieldOntologyID:
+		v, ok := value.(uint32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetOntologyID(v)
+		return nil
+	case ontentity.FieldEntityType:
+		v, ok := value.(uint32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetEntityType(v)
+		return nil
+	case ontentity.FieldIri:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIri(v)
+		return nil
+	case ontentity.FieldLocalName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLocalName(v)
+		return nil
+	case ontentity.FieldDisplayLabel:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDisplayLabel(v)
+		return nil
+	case ontentity.FieldDeprecated:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeprecated(v)
+		return nil
+	}
+	return fmt.Errorf("unknown OntEntity field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *OntEntityMutation) AddedFields() []string {
+	var fields []string
+	if m.addcreated_by != nil {
+		fields = append(fields, ontentity.FieldCreatedBy)
+	}
+	if m.addupdated_by != nil {
+		fields = append(fields, ontentity.FieldUpdatedBy)
+	}
+	if m.adddeleted_by != nil {
+		fields = append(fields, ontentity.FieldDeletedBy)
+	}
+	if m.addontology_id != nil {
+		fields = append(fields, ontentity.FieldOntologyID)
+	}
+	if m.addentity_type != nil {
+		fields = append(fields, ontentity.FieldEntityType)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *OntEntityMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case ontentity.FieldCreatedBy:
+		return m.AddedCreatedBy()
+	case ontentity.FieldUpdatedBy:
+		return m.AddedUpdatedBy()
+	case ontentity.FieldDeletedBy:
+		return m.AddedDeletedBy()
+	case ontentity.FieldOntologyID:
+		return m.AddedOntologyID()
+	case ontentity.FieldEntityType:
+		return m.AddedEntityType()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *OntEntityMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case ontentity.FieldCreatedBy:
+		v, ok := value.(int32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddCreatedBy(v)
+		return nil
+	case ontentity.FieldUpdatedBy:
+		v, ok := value.(int32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddUpdatedBy(v)
+		return nil
+	case ontentity.FieldDeletedBy:
+		v, ok := value.(int32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddDeletedBy(v)
+		return nil
+	case ontentity.FieldOntologyID:
+		v, ok := value.(int32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddOntologyID(v)
+		return nil
+	case ontentity.FieldEntityType:
+		v, ok := value.(int32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddEntityType(v)
+		return nil
+	}
+	return fmt.Errorf("unknown OntEntity numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *OntEntityMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(ontentity.FieldCreatedAt) {
+		fields = append(fields, ontentity.FieldCreatedAt)
+	}
+	if m.FieldCleared(ontentity.FieldUpdatedAt) {
+		fields = append(fields, ontentity.FieldUpdatedAt)
+	}
+	if m.FieldCleared(ontentity.FieldDeletedAt) {
+		fields = append(fields, ontentity.FieldDeletedAt)
+	}
+	if m.FieldCleared(ontentity.FieldCreatedBy) {
+		fields = append(fields, ontentity.FieldCreatedBy)
+	}
+	if m.FieldCleared(ontentity.FieldUpdatedBy) {
+		fields = append(fields, ontentity.FieldUpdatedBy)
+	}
+	if m.FieldCleared(ontentity.FieldDeletedBy) {
+		fields = append(fields, ontentity.FieldDeletedBy)
+	}
+	if m.FieldCleared(ontentity.FieldOntologyID) {
+		fields = append(fields, ontentity.FieldOntologyID)
+	}
+	if m.FieldCleared(ontentity.FieldEntityType) {
+		fields = append(fields, ontentity.FieldEntityType)
+	}
+	if m.FieldCleared(ontentity.FieldIri) {
+		fields = append(fields, ontentity.FieldIri)
+	}
+	if m.FieldCleared(ontentity.FieldLocalName) {
+		fields = append(fields, ontentity.FieldLocalName)
+	}
+	if m.FieldCleared(ontentity.FieldDisplayLabel) {
+		fields = append(fields, ontentity.FieldDisplayLabel)
+	}
+	if m.FieldCleared(ontentity.FieldDeprecated) {
+		fields = append(fields, ontentity.FieldDeprecated)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *OntEntityMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *OntEntityMutation) ClearField(name string) error {
+	switch name {
+	case ontentity.FieldCreatedAt:
+		m.ClearCreatedAt()
+		return nil
+	case ontentity.FieldUpdatedAt:
+		m.ClearUpdatedAt()
+		return nil
+	case ontentity.FieldDeletedAt:
+		m.ClearDeletedAt()
+		return nil
+	case ontentity.FieldCreatedBy:
+		m.ClearCreatedBy()
+		return nil
+	case ontentity.FieldUpdatedBy:
+		m.ClearUpdatedBy()
+		return nil
+	case ontentity.FieldDeletedBy:
+		m.ClearDeletedBy()
+		return nil
+	case ontentity.FieldOntologyID:
+		m.ClearOntologyID()
+		return nil
+	case ontentity.FieldEntityType:
+		m.ClearEntityType()
+		return nil
+	case ontentity.FieldIri:
+		m.ClearIri()
+		return nil
+	case ontentity.FieldLocalName:
+		m.ClearLocalName()
+		return nil
+	case ontentity.FieldDisplayLabel:
+		m.ClearDisplayLabel()
+		return nil
+	case ontentity.FieldDeprecated:
+		m.ClearDeprecated()
+		return nil
+	}
+	return fmt.Errorf("unknown OntEntity nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *OntEntityMutation) ResetField(name string) error {
+	switch name {
+	case ontentity.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case ontentity.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	case ontentity.FieldDeletedAt:
+		m.ResetDeletedAt()
+		return nil
+	case ontentity.FieldCreatedBy:
+		m.ResetCreatedBy()
+		return nil
+	case ontentity.FieldUpdatedBy:
+		m.ResetUpdatedBy()
+		return nil
+	case ontentity.FieldDeletedBy:
+		m.ResetDeletedBy()
+		return nil
+	case ontentity.FieldOntologyID:
+		m.ResetOntologyID()
+		return nil
+	case ontentity.FieldEntityType:
+		m.ResetEntityType()
+		return nil
+	case ontentity.FieldIri:
+		m.ResetIri()
+		return nil
+	case ontentity.FieldLocalName:
+		m.ResetLocalName()
+		return nil
+	case ontentity.FieldDisplayLabel:
+		m.ResetDisplayLabel()
+		return nil
+	case ontentity.FieldDeprecated:
+		m.ResetDeprecated()
+		return nil
+	}
+	return fmt.Errorf("unknown OntEntity field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *OntEntityMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *OntEntityMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *OntEntityMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *OntEntityMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *OntEntityMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *OntEntityMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *OntEntityMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown OntEntity unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *OntEntityMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown OntEntity edge %s", name)
+}
+
+// OntOntologyMutation represents an operation that mutates the OntOntology nodes in the graph.
+type OntOntologyMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *uint32
+	created_at    *time.Time
+	updated_at    *time.Time
+	deleted_at    *time.Time
+	created_by    *uint32
+	addcreated_by *int32
+	updated_by    *uint32
+	addupdated_by *int32
+	deleted_by    *uint32
+	adddeleted_by *int32
+	is_enabled    *bool
+	ontology_name *string
+	ontology_iri  *string
+	base_iri      *string
+	description   *string
+	version       *uint32
+	addversion    *int32
+	clearedFields map[string]struct{}
+	done          bool
+	oldValue      func(context.Context) (*OntOntology, error)
+	predicates    []predicate.OntOntology
+}
+
+var _ ent.Mutation = (*OntOntologyMutation)(nil)
+
+// ontontologyOption allows management of the mutation configuration using functional options.
+type ontontologyOption func(*OntOntologyMutation)
+
+// newOntOntologyMutation creates new mutation for the OntOntology entity.
+func newOntOntologyMutation(c config, op Op, opts ...ontontologyOption) *OntOntologyMutation {
+	m := &OntOntologyMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeOntOntology,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withOntOntologyID sets the ID field of the mutation.
+func withOntOntologyID(id uint32) ontontologyOption {
+	return func(m *OntOntologyMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *OntOntology
+		)
+		m.oldValue = func(ctx context.Context) (*OntOntology, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().OntOntology.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withOntOntology sets the old OntOntology of the mutation.
+func withOntOntology(node *OntOntology) ontontologyOption {
+	return func(m *OntOntologyMutation) {
+		m.oldValue = func(context.Context) (*OntOntology, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m OntOntologyMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m OntOntologyMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of OntOntology entities.
+func (m *OntOntologyMutation) SetID(id uint32) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *OntOntologyMutation) ID() (id uint32, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *OntOntologyMutation) IDs(ctx context.Context) ([]uint32, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uint32{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().OntOntology.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *OntOntologyMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *OntOntologyMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the OntOntology entity.
+// If the OntOntology object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OntOntologyMutation) OldCreatedAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ClearCreatedAt clears the value of the "created_at" field.
+func (m *OntOntologyMutation) ClearCreatedAt() {
+	m.created_at = nil
+	m.clearedFields[ontontology.FieldCreatedAt] = struct{}{}
+}
+
+// CreatedAtCleared returns if the "created_at" field was cleared in this mutation.
+func (m *OntOntologyMutation) CreatedAtCleared() bool {
+	_, ok := m.clearedFields[ontontology.FieldCreatedAt]
+	return ok
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *OntOntologyMutation) ResetCreatedAt() {
+	m.created_at = nil
+	delete(m.clearedFields, ontontology.FieldCreatedAt)
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *OntOntologyMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *OntOntologyMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the OntOntology entity.
+// If the OntOntology object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OntOntologyMutation) OldUpdatedAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ClearUpdatedAt clears the value of the "updated_at" field.
+func (m *OntOntologyMutation) ClearUpdatedAt() {
+	m.updated_at = nil
+	m.clearedFields[ontontology.FieldUpdatedAt] = struct{}{}
+}
+
+// UpdatedAtCleared returns if the "updated_at" field was cleared in this mutation.
+func (m *OntOntologyMutation) UpdatedAtCleared() bool {
+	_, ok := m.clearedFields[ontontology.FieldUpdatedAt]
+	return ok
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *OntOntologyMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+	delete(m.clearedFields, ontontology.FieldUpdatedAt)
+}
+
+// SetDeletedAt sets the "deleted_at" field.
+func (m *OntOntologyMutation) SetDeletedAt(t time.Time) {
+	m.deleted_at = &t
+}
+
+// DeletedAt returns the value of the "deleted_at" field in the mutation.
+func (m *OntOntologyMutation) DeletedAt() (r time.Time, exists bool) {
+	v := m.deleted_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeletedAt returns the old "deleted_at" field's value of the OntOntology entity.
+// If the OntOntology object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OntOntologyMutation) OldDeletedAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeletedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeletedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeletedAt: %w", err)
+	}
+	return oldValue.DeletedAt, nil
+}
+
+// ClearDeletedAt clears the value of the "deleted_at" field.
+func (m *OntOntologyMutation) ClearDeletedAt() {
+	m.deleted_at = nil
+	m.clearedFields[ontontology.FieldDeletedAt] = struct{}{}
+}
+
+// DeletedAtCleared returns if the "deleted_at" field was cleared in this mutation.
+func (m *OntOntologyMutation) DeletedAtCleared() bool {
+	_, ok := m.clearedFields[ontontology.FieldDeletedAt]
+	return ok
+}
+
+// ResetDeletedAt resets all changes to the "deleted_at" field.
+func (m *OntOntologyMutation) ResetDeletedAt() {
+	m.deleted_at = nil
+	delete(m.clearedFields, ontontology.FieldDeletedAt)
+}
+
+// SetCreatedBy sets the "created_by" field.
+func (m *OntOntologyMutation) SetCreatedBy(u uint32) {
+	m.created_by = &u
+	m.addcreated_by = nil
+}
+
+// CreatedBy returns the value of the "created_by" field in the mutation.
+func (m *OntOntologyMutation) CreatedBy() (r uint32, exists bool) {
+	v := m.created_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedBy returns the old "created_by" field's value of the OntOntology entity.
+// If the OntOntology object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OntOntologyMutation) OldCreatedBy(ctx context.Context) (v *uint32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedBy: %w", err)
+	}
+	return oldValue.CreatedBy, nil
+}
+
+// AddCreatedBy adds u to the "created_by" field.
+func (m *OntOntologyMutation) AddCreatedBy(u int32) {
+	if m.addcreated_by != nil {
+		*m.addcreated_by += u
+	} else {
+		m.addcreated_by = &u
+	}
+}
+
+// AddedCreatedBy returns the value that was added to the "created_by" field in this mutation.
+func (m *OntOntologyMutation) AddedCreatedBy() (r int32, exists bool) {
+	v := m.addcreated_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearCreatedBy clears the value of the "created_by" field.
+func (m *OntOntologyMutation) ClearCreatedBy() {
+	m.created_by = nil
+	m.addcreated_by = nil
+	m.clearedFields[ontontology.FieldCreatedBy] = struct{}{}
+}
+
+// CreatedByCleared returns if the "created_by" field was cleared in this mutation.
+func (m *OntOntologyMutation) CreatedByCleared() bool {
+	_, ok := m.clearedFields[ontontology.FieldCreatedBy]
+	return ok
+}
+
+// ResetCreatedBy resets all changes to the "created_by" field.
+func (m *OntOntologyMutation) ResetCreatedBy() {
+	m.created_by = nil
+	m.addcreated_by = nil
+	delete(m.clearedFields, ontontology.FieldCreatedBy)
+}
+
+// SetUpdatedBy sets the "updated_by" field.
+func (m *OntOntologyMutation) SetUpdatedBy(u uint32) {
+	m.updated_by = &u
+	m.addupdated_by = nil
+}
+
+// UpdatedBy returns the value of the "updated_by" field in the mutation.
+func (m *OntOntologyMutation) UpdatedBy() (r uint32, exists bool) {
+	v := m.updated_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedBy returns the old "updated_by" field's value of the OntOntology entity.
+// If the OntOntology object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OntOntologyMutation) OldUpdatedBy(ctx context.Context) (v *uint32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedBy: %w", err)
+	}
+	return oldValue.UpdatedBy, nil
+}
+
+// AddUpdatedBy adds u to the "updated_by" field.
+func (m *OntOntologyMutation) AddUpdatedBy(u int32) {
+	if m.addupdated_by != nil {
+		*m.addupdated_by += u
+	} else {
+		m.addupdated_by = &u
+	}
+}
+
+// AddedUpdatedBy returns the value that was added to the "updated_by" field in this mutation.
+func (m *OntOntologyMutation) AddedUpdatedBy() (r int32, exists bool) {
+	v := m.addupdated_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearUpdatedBy clears the value of the "updated_by" field.
+func (m *OntOntologyMutation) ClearUpdatedBy() {
+	m.updated_by = nil
+	m.addupdated_by = nil
+	m.clearedFields[ontontology.FieldUpdatedBy] = struct{}{}
+}
+
+// UpdatedByCleared returns if the "updated_by" field was cleared in this mutation.
+func (m *OntOntologyMutation) UpdatedByCleared() bool {
+	_, ok := m.clearedFields[ontontology.FieldUpdatedBy]
+	return ok
+}
+
+// ResetUpdatedBy resets all changes to the "updated_by" field.
+func (m *OntOntologyMutation) ResetUpdatedBy() {
+	m.updated_by = nil
+	m.addupdated_by = nil
+	delete(m.clearedFields, ontontology.FieldUpdatedBy)
+}
+
+// SetDeletedBy sets the "deleted_by" field.
+func (m *OntOntologyMutation) SetDeletedBy(u uint32) {
+	m.deleted_by = &u
+	m.adddeleted_by = nil
+}
+
+// DeletedBy returns the value of the "deleted_by" field in the mutation.
+func (m *OntOntologyMutation) DeletedBy() (r uint32, exists bool) {
+	v := m.deleted_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeletedBy returns the old "deleted_by" field's value of the OntOntology entity.
+// If the OntOntology object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OntOntologyMutation) OldDeletedBy(ctx context.Context) (v *uint32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeletedBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeletedBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeletedBy: %w", err)
+	}
+	return oldValue.DeletedBy, nil
+}
+
+// AddDeletedBy adds u to the "deleted_by" field.
+func (m *OntOntologyMutation) AddDeletedBy(u int32) {
+	if m.adddeleted_by != nil {
+		*m.adddeleted_by += u
+	} else {
+		m.adddeleted_by = &u
+	}
+}
+
+// AddedDeletedBy returns the value that was added to the "deleted_by" field in this mutation.
+func (m *OntOntologyMutation) AddedDeletedBy() (r int32, exists bool) {
+	v := m.adddeleted_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearDeletedBy clears the value of the "deleted_by" field.
+func (m *OntOntologyMutation) ClearDeletedBy() {
+	m.deleted_by = nil
+	m.adddeleted_by = nil
+	m.clearedFields[ontontology.FieldDeletedBy] = struct{}{}
+}
+
+// DeletedByCleared returns if the "deleted_by" field was cleared in this mutation.
+func (m *OntOntologyMutation) DeletedByCleared() bool {
+	_, ok := m.clearedFields[ontontology.FieldDeletedBy]
+	return ok
+}
+
+// ResetDeletedBy resets all changes to the "deleted_by" field.
+func (m *OntOntologyMutation) ResetDeletedBy() {
+	m.deleted_by = nil
+	m.adddeleted_by = nil
+	delete(m.clearedFields, ontontology.FieldDeletedBy)
+}
+
+// SetIsEnabled sets the "is_enabled" field.
+func (m *OntOntologyMutation) SetIsEnabled(b bool) {
+	m.is_enabled = &b
+}
+
+// IsEnabled returns the value of the "is_enabled" field in the mutation.
+func (m *OntOntologyMutation) IsEnabled() (r bool, exists bool) {
+	v := m.is_enabled
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIsEnabled returns the old "is_enabled" field's value of the OntOntology entity.
+// If the OntOntology object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OntOntologyMutation) OldIsEnabled(ctx context.Context) (v *bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIsEnabled is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIsEnabled requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIsEnabled: %w", err)
+	}
+	return oldValue.IsEnabled, nil
+}
+
+// ClearIsEnabled clears the value of the "is_enabled" field.
+func (m *OntOntologyMutation) ClearIsEnabled() {
+	m.is_enabled = nil
+	m.clearedFields[ontontology.FieldIsEnabled] = struct{}{}
+}
+
+// IsEnabledCleared returns if the "is_enabled" field was cleared in this mutation.
+func (m *OntOntologyMutation) IsEnabledCleared() bool {
+	_, ok := m.clearedFields[ontontology.FieldIsEnabled]
+	return ok
+}
+
+// ResetIsEnabled resets all changes to the "is_enabled" field.
+func (m *OntOntologyMutation) ResetIsEnabled() {
+	m.is_enabled = nil
+	delete(m.clearedFields, ontontology.FieldIsEnabled)
+}
+
+// SetOntologyName sets the "ontology_name" field.
+func (m *OntOntologyMutation) SetOntologyName(s string) {
+	m.ontology_name = &s
+}
+
+// OntologyName returns the value of the "ontology_name" field in the mutation.
+func (m *OntOntologyMutation) OntologyName() (r string, exists bool) {
+	v := m.ontology_name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldOntologyName returns the old "ontology_name" field's value of the OntOntology entity.
+// If the OntOntology object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OntOntologyMutation) OldOntologyName(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldOntologyName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldOntologyName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldOntologyName: %w", err)
+	}
+	return oldValue.OntologyName, nil
+}
+
+// ClearOntologyName clears the value of the "ontology_name" field.
+func (m *OntOntologyMutation) ClearOntologyName() {
+	m.ontology_name = nil
+	m.clearedFields[ontontology.FieldOntologyName] = struct{}{}
+}
+
+// OntologyNameCleared returns if the "ontology_name" field was cleared in this mutation.
+func (m *OntOntologyMutation) OntologyNameCleared() bool {
+	_, ok := m.clearedFields[ontontology.FieldOntologyName]
+	return ok
+}
+
+// ResetOntologyName resets all changes to the "ontology_name" field.
+func (m *OntOntologyMutation) ResetOntologyName() {
+	m.ontology_name = nil
+	delete(m.clearedFields, ontontology.FieldOntologyName)
+}
+
+// SetOntologyIri sets the "ontology_iri" field.
+func (m *OntOntologyMutation) SetOntologyIri(s string) {
+	m.ontology_iri = &s
+}
+
+// OntologyIri returns the value of the "ontology_iri" field in the mutation.
+func (m *OntOntologyMutation) OntologyIri() (r string, exists bool) {
+	v := m.ontology_iri
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldOntologyIri returns the old "ontology_iri" field's value of the OntOntology entity.
+// If the OntOntology object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OntOntologyMutation) OldOntologyIri(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldOntologyIri is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldOntologyIri requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldOntologyIri: %w", err)
+	}
+	return oldValue.OntologyIri, nil
+}
+
+// ClearOntologyIri clears the value of the "ontology_iri" field.
+func (m *OntOntologyMutation) ClearOntologyIri() {
+	m.ontology_iri = nil
+	m.clearedFields[ontontology.FieldOntologyIri] = struct{}{}
+}
+
+// OntologyIriCleared returns if the "ontology_iri" field was cleared in this mutation.
+func (m *OntOntologyMutation) OntologyIriCleared() bool {
+	_, ok := m.clearedFields[ontontology.FieldOntologyIri]
+	return ok
+}
+
+// ResetOntologyIri resets all changes to the "ontology_iri" field.
+func (m *OntOntologyMutation) ResetOntologyIri() {
+	m.ontology_iri = nil
+	delete(m.clearedFields, ontontology.FieldOntologyIri)
+}
+
+// SetBaseIri sets the "base_iri" field.
+func (m *OntOntologyMutation) SetBaseIri(s string) {
+	m.base_iri = &s
+}
+
+// BaseIri returns the value of the "base_iri" field in the mutation.
+func (m *OntOntologyMutation) BaseIri() (r string, exists bool) {
+	v := m.base_iri
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldBaseIri returns the old "base_iri" field's value of the OntOntology entity.
+// If the OntOntology object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OntOntologyMutation) OldBaseIri(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldBaseIri is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldBaseIri requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldBaseIri: %w", err)
+	}
+	return oldValue.BaseIri, nil
+}
+
+// ClearBaseIri clears the value of the "base_iri" field.
+func (m *OntOntologyMutation) ClearBaseIri() {
+	m.base_iri = nil
+	m.clearedFields[ontontology.FieldBaseIri] = struct{}{}
+}
+
+// BaseIriCleared returns if the "base_iri" field was cleared in this mutation.
+func (m *OntOntologyMutation) BaseIriCleared() bool {
+	_, ok := m.clearedFields[ontontology.FieldBaseIri]
+	return ok
+}
+
+// ResetBaseIri resets all changes to the "base_iri" field.
+func (m *OntOntologyMutation) ResetBaseIri() {
+	m.base_iri = nil
+	delete(m.clearedFields, ontontology.FieldBaseIri)
+}
+
+// SetDescription sets the "description" field.
+func (m *OntOntologyMutation) SetDescription(s string) {
+	m.description = &s
+}
+
+// Description returns the value of the "description" field in the mutation.
+func (m *OntOntologyMutation) Description() (r string, exists bool) {
+	v := m.description
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDescription returns the old "description" field's value of the OntOntology entity.
+// If the OntOntology object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OntOntologyMutation) OldDescription(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDescription is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDescription requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDescription: %w", err)
+	}
+	return oldValue.Description, nil
+}
+
+// ClearDescription clears the value of the "description" field.
+func (m *OntOntologyMutation) ClearDescription() {
+	m.description = nil
+	m.clearedFields[ontontology.FieldDescription] = struct{}{}
+}
+
+// DescriptionCleared returns if the "description" field was cleared in this mutation.
+func (m *OntOntologyMutation) DescriptionCleared() bool {
+	_, ok := m.clearedFields[ontontology.FieldDescription]
+	return ok
+}
+
+// ResetDescription resets all changes to the "description" field.
+func (m *OntOntologyMutation) ResetDescription() {
+	m.description = nil
+	delete(m.clearedFields, ontontology.FieldDescription)
+}
+
+// SetVersion sets the "version" field.
+func (m *OntOntologyMutation) SetVersion(u uint32) {
+	m.version = &u
+	m.addversion = nil
+}
+
+// Version returns the value of the "version" field in the mutation.
+func (m *OntOntologyMutation) Version() (r uint32, exists bool) {
+	v := m.version
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldVersion returns the old "version" field's value of the OntOntology entity.
+// If the OntOntology object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OntOntologyMutation) OldVersion(ctx context.Context) (v *uint32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldVersion is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldVersion requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldVersion: %w", err)
+	}
+	return oldValue.Version, nil
+}
+
+// AddVersion adds u to the "version" field.
+func (m *OntOntologyMutation) AddVersion(u int32) {
+	if m.addversion != nil {
+		*m.addversion += u
+	} else {
+		m.addversion = &u
+	}
+}
+
+// AddedVersion returns the value that was added to the "version" field in this mutation.
+func (m *OntOntologyMutation) AddedVersion() (r int32, exists bool) {
+	v := m.addversion
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearVersion clears the value of the "version" field.
+func (m *OntOntologyMutation) ClearVersion() {
+	m.version = nil
+	m.addversion = nil
+	m.clearedFields[ontontology.FieldVersion] = struct{}{}
+}
+
+// VersionCleared returns if the "version" field was cleared in this mutation.
+func (m *OntOntologyMutation) VersionCleared() bool {
+	_, ok := m.clearedFields[ontontology.FieldVersion]
+	return ok
+}
+
+// ResetVersion resets all changes to the "version" field.
+func (m *OntOntologyMutation) ResetVersion() {
+	m.version = nil
+	m.addversion = nil
+	delete(m.clearedFields, ontontology.FieldVersion)
+}
+
+// Where appends a list predicates to the OntOntologyMutation builder.
+func (m *OntOntologyMutation) Where(ps ...predicate.OntOntology) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the OntOntologyMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *OntOntologyMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.OntOntology, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *OntOntologyMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *OntOntologyMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (OntOntology).
+func (m *OntOntologyMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *OntOntologyMutation) Fields() []string {
+	fields := make([]string, 0, 12)
+	if m.created_at != nil {
+		fields = append(fields, ontontology.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, ontontology.FieldUpdatedAt)
+	}
+	if m.deleted_at != nil {
+		fields = append(fields, ontontology.FieldDeletedAt)
+	}
+	if m.created_by != nil {
+		fields = append(fields, ontontology.FieldCreatedBy)
+	}
+	if m.updated_by != nil {
+		fields = append(fields, ontontology.FieldUpdatedBy)
+	}
+	if m.deleted_by != nil {
+		fields = append(fields, ontontology.FieldDeletedBy)
+	}
+	if m.is_enabled != nil {
+		fields = append(fields, ontontology.FieldIsEnabled)
+	}
+	if m.ontology_name != nil {
+		fields = append(fields, ontontology.FieldOntologyName)
+	}
+	if m.ontology_iri != nil {
+		fields = append(fields, ontontology.FieldOntologyIri)
+	}
+	if m.base_iri != nil {
+		fields = append(fields, ontontology.FieldBaseIri)
+	}
+	if m.description != nil {
+		fields = append(fields, ontontology.FieldDescription)
+	}
+	if m.version != nil {
+		fields = append(fields, ontontology.FieldVersion)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *OntOntologyMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case ontontology.FieldCreatedAt:
+		return m.CreatedAt()
+	case ontontology.FieldUpdatedAt:
+		return m.UpdatedAt()
+	case ontontology.FieldDeletedAt:
+		return m.DeletedAt()
+	case ontontology.FieldCreatedBy:
+		return m.CreatedBy()
+	case ontontology.FieldUpdatedBy:
+		return m.UpdatedBy()
+	case ontontology.FieldDeletedBy:
+		return m.DeletedBy()
+	case ontontology.FieldIsEnabled:
+		return m.IsEnabled()
+	case ontontology.FieldOntologyName:
+		return m.OntologyName()
+	case ontontology.FieldOntologyIri:
+		return m.OntologyIri()
+	case ontontology.FieldBaseIri:
+		return m.BaseIri()
+	case ontontology.FieldDescription:
+		return m.Description()
+	case ontontology.FieldVersion:
+		return m.Version()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *OntOntologyMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case ontontology.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case ontontology.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	case ontontology.FieldDeletedAt:
+		return m.OldDeletedAt(ctx)
+	case ontontology.FieldCreatedBy:
+		return m.OldCreatedBy(ctx)
+	case ontontology.FieldUpdatedBy:
+		return m.OldUpdatedBy(ctx)
+	case ontontology.FieldDeletedBy:
+		return m.OldDeletedBy(ctx)
+	case ontontology.FieldIsEnabled:
+		return m.OldIsEnabled(ctx)
+	case ontontology.FieldOntologyName:
+		return m.OldOntologyName(ctx)
+	case ontontology.FieldOntologyIri:
+		return m.OldOntologyIri(ctx)
+	case ontontology.FieldBaseIri:
+		return m.OldBaseIri(ctx)
+	case ontontology.FieldDescription:
+		return m.OldDescription(ctx)
+	case ontontology.FieldVersion:
+		return m.OldVersion(ctx)
+	}
+	return nil, fmt.Errorf("unknown OntOntology field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *OntOntologyMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case ontontology.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case ontontology.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	case ontontology.FieldDeletedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeletedAt(v)
+		return nil
+	case ontontology.FieldCreatedBy:
+		v, ok := value.(uint32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedBy(v)
+		return nil
+	case ontontology.FieldUpdatedBy:
+		v, ok := value.(uint32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedBy(v)
+		return nil
+	case ontontology.FieldDeletedBy:
+		v, ok := value.(uint32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeletedBy(v)
+		return nil
+	case ontontology.FieldIsEnabled:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIsEnabled(v)
+		return nil
+	case ontontology.FieldOntologyName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetOntologyName(v)
+		return nil
+	case ontontology.FieldOntologyIri:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetOntologyIri(v)
+		return nil
+	case ontontology.FieldBaseIri:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetBaseIri(v)
+		return nil
+	case ontontology.FieldDescription:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDescription(v)
+		return nil
+	case ontontology.FieldVersion:
+		v, ok := value.(uint32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetVersion(v)
+		return nil
+	}
+	return fmt.Errorf("unknown OntOntology field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *OntOntologyMutation) AddedFields() []string {
+	var fields []string
+	if m.addcreated_by != nil {
+		fields = append(fields, ontontology.FieldCreatedBy)
+	}
+	if m.addupdated_by != nil {
+		fields = append(fields, ontontology.FieldUpdatedBy)
+	}
+	if m.adddeleted_by != nil {
+		fields = append(fields, ontontology.FieldDeletedBy)
+	}
+	if m.addversion != nil {
+		fields = append(fields, ontontology.FieldVersion)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *OntOntologyMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case ontontology.FieldCreatedBy:
+		return m.AddedCreatedBy()
+	case ontontology.FieldUpdatedBy:
+		return m.AddedUpdatedBy()
+	case ontontology.FieldDeletedBy:
+		return m.AddedDeletedBy()
+	case ontontology.FieldVersion:
+		return m.AddedVersion()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *OntOntologyMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case ontontology.FieldCreatedBy:
+		v, ok := value.(int32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddCreatedBy(v)
+		return nil
+	case ontontology.FieldUpdatedBy:
+		v, ok := value.(int32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddUpdatedBy(v)
+		return nil
+	case ontontology.FieldDeletedBy:
+		v, ok := value.(int32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddDeletedBy(v)
+		return nil
+	case ontontology.FieldVersion:
+		v, ok := value.(int32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddVersion(v)
+		return nil
+	}
+	return fmt.Errorf("unknown OntOntology numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *OntOntologyMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(ontontology.FieldCreatedAt) {
+		fields = append(fields, ontontology.FieldCreatedAt)
+	}
+	if m.FieldCleared(ontontology.FieldUpdatedAt) {
+		fields = append(fields, ontontology.FieldUpdatedAt)
+	}
+	if m.FieldCleared(ontontology.FieldDeletedAt) {
+		fields = append(fields, ontontology.FieldDeletedAt)
+	}
+	if m.FieldCleared(ontontology.FieldCreatedBy) {
+		fields = append(fields, ontontology.FieldCreatedBy)
+	}
+	if m.FieldCleared(ontontology.FieldUpdatedBy) {
+		fields = append(fields, ontontology.FieldUpdatedBy)
+	}
+	if m.FieldCleared(ontontology.FieldDeletedBy) {
+		fields = append(fields, ontontology.FieldDeletedBy)
+	}
+	if m.FieldCleared(ontontology.FieldIsEnabled) {
+		fields = append(fields, ontontology.FieldIsEnabled)
+	}
+	if m.FieldCleared(ontontology.FieldOntologyName) {
+		fields = append(fields, ontontology.FieldOntologyName)
+	}
+	if m.FieldCleared(ontontology.FieldOntologyIri) {
+		fields = append(fields, ontontology.FieldOntologyIri)
+	}
+	if m.FieldCleared(ontontology.FieldBaseIri) {
+		fields = append(fields, ontontology.FieldBaseIri)
+	}
+	if m.FieldCleared(ontontology.FieldDescription) {
+		fields = append(fields, ontontology.FieldDescription)
+	}
+	if m.FieldCleared(ontontology.FieldVersion) {
+		fields = append(fields, ontontology.FieldVersion)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *OntOntologyMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *OntOntologyMutation) ClearField(name string) error {
+	switch name {
+	case ontontology.FieldCreatedAt:
+		m.ClearCreatedAt()
+		return nil
+	case ontontology.FieldUpdatedAt:
+		m.ClearUpdatedAt()
+		return nil
+	case ontontology.FieldDeletedAt:
+		m.ClearDeletedAt()
+		return nil
+	case ontontology.FieldCreatedBy:
+		m.ClearCreatedBy()
+		return nil
+	case ontontology.FieldUpdatedBy:
+		m.ClearUpdatedBy()
+		return nil
+	case ontontology.FieldDeletedBy:
+		m.ClearDeletedBy()
+		return nil
+	case ontontology.FieldIsEnabled:
+		m.ClearIsEnabled()
+		return nil
+	case ontontology.FieldOntologyName:
+		m.ClearOntologyName()
+		return nil
+	case ontontology.FieldOntologyIri:
+		m.ClearOntologyIri()
+		return nil
+	case ontontology.FieldBaseIri:
+		m.ClearBaseIri()
+		return nil
+	case ontontology.FieldDescription:
+		m.ClearDescription()
+		return nil
+	case ontontology.FieldVersion:
+		m.ClearVersion()
+		return nil
+	}
+	return fmt.Errorf("unknown OntOntology nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *OntOntologyMutation) ResetField(name string) error {
+	switch name {
+	case ontontology.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case ontontology.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	case ontontology.FieldDeletedAt:
+		m.ResetDeletedAt()
+		return nil
+	case ontontology.FieldCreatedBy:
+		m.ResetCreatedBy()
+		return nil
+	case ontontology.FieldUpdatedBy:
+		m.ResetUpdatedBy()
+		return nil
+	case ontontology.FieldDeletedBy:
+		m.ResetDeletedBy()
+		return nil
+	case ontontology.FieldIsEnabled:
+		m.ResetIsEnabled()
+		return nil
+	case ontontology.FieldOntologyName:
+		m.ResetOntologyName()
+		return nil
+	case ontontology.FieldOntologyIri:
+		m.ResetOntologyIri()
+		return nil
+	case ontontology.FieldBaseIri:
+		m.ResetBaseIri()
+		return nil
+	case ontontology.FieldDescription:
+		m.ResetDescription()
+		return nil
+	case ontontology.FieldVersion:
+		m.ResetVersion()
+		return nil
+	}
+	return fmt.Errorf("unknown OntOntology field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *OntOntologyMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *OntOntologyMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *OntOntologyMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *OntOntologyMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *OntOntologyMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *OntOntologyMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *OntOntologyMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown OntOntology unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *OntOntologyMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown OntOntology edge %s", name)
 }
 
 // OperationAuditLogMutation represents an operation that mutates the OperationAuditLog nodes in the graph.

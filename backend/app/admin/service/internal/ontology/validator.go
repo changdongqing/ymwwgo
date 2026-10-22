@@ -1,0 +1,193 @@
+package ontology
+
+import (
+	"context"
+	"net/url"
+	"regexp"
+	"strconv"
+	"strings"
+	"unicode/utf8"
+
+	"go-wind-admin/app/admin/service/internal/data/ent"
+)
+
+// notationPattern skos:notation 字符集（编码语义与取号机制见 06 号文档，本期仅手工录入 + 校验）
+var notationPattern = regexp.MustCompile(`^[A-Za-z0-9_-]+$`)
+
+// ValidateAxioms 纯 Go 结构校验器（替代源 OntAxiomCompiler 的 OWLAPI 投影，决策五）。
+//
+// V1 校验项（设计文档 §3.6）：
+//  1. IRI 语法：每实体 iri 可被 url.Parse 解析为绝对 IRI 且以本体 base_iri 为前缀；
+//  2. 引用存在性与类型匹配：20/21/22 两端均须为本体下未删的类；
+//  3. 声明完备性：每实体恰有一条未删 DECLARATION(10)，反之每条 10 型公理主体存在（防御校验）；
+//  4. 注解断言双轨：100 型谓词必须命中内建白名单（04 期自定义注解属性激活 object_id 双轨后放开），
+//     lang ≤ 16 字符；
+//  5. 值词法：owl:deprecated ∈ {"true","false"}；skos:notation ∈ [A-Za-z0-9_-]+；
+//  6. 层级无环：环检测在写路径前置执行（AssertNoCycle），校验器不重复（职责分工，与源一致）。
+//
+// 未知 axiom_type（02~06 期号段尚未启用）WARN 跳过、不报错。返回全部问题（空切片 = 通过）。
+func ValidateAxioms(ctx context.Context, baseIRI string, entities []*ent.OntEntity, axioms []*ent.OntAxiom, log Logger) []error {
+	problems := make([]error, 0)
+
+	byID := make(map[uint32]*ent.OntEntity, len(entities))
+	for _, e := range entities {
+		byID[e.ID] = e
+	}
+
+	// 1. IRI 语法
+	for _, e := range entities {
+		iri := nilString(e.Iri)
+		if u, err := url.Parse(iri); err != nil || !u.IsAbs() {
+			problems = append(problems, NewError(ReasonAxiomInvalid,
+				"实体 %s 的 IRI %s 不是绝对 IRI", entityLabel(e), iri))
+			continue
+		}
+		if !strings.HasPrefix(iri, baseIRI) {
+			problems = append(problems, NewError(ReasonAxiomInvalid,
+				"实体 %s 的 IRI %s 不以本体命名空间 %s 为前缀", entityLabel(e), iri, baseIRI))
+		}
+	}
+
+	// 2. 引用存在性与类型匹配（20/21/22 两端均须为类）
+	entityTypeOf := func(id uint32) (uint32, bool) {
+		e, ok := byID[id]
+		if !ok || e.EntityType == nil {
+			return 0, false
+		}
+		return *e.EntityType, true
+	}
+	for _, ax := range axioms {
+		if ax.AxiomType == nil {
+			continue
+		}
+		t := *ax.AxiomType
+		if t != AxiomSubClassOf && t != AxiomDisjointWith && t != AxiomEquivalentClasses {
+			continue
+		}
+		if ax.SubjectID == nil {
+			problems = append(problems, NewError(ReasonAxiomInvalid, "公理 %d 缺少主语", ax.ID))
+			continue
+		}
+		for _, end := range []struct {
+			role string
+			id   uint32
+		}{{"主语", *ax.SubjectID}} {
+			if et, ok := entityTypeOf(end.id); !ok {
+				problems = append(problems, NewError(ReasonAxiomInvalid,
+					"公理 %d 的%s实体 %d 不存在或已删除", ax.ID, end.role, end.id))
+			} else if et != EntityTypeClass {
+				problems = append(problems, NewError(ReasonAxiomInvalid,
+					"公理 %d 的%s实体 %d 类型不符（期望类）", ax.ID, end.role, end.id))
+			}
+		}
+		if ax.ObjectID != nil && *ax.ObjectID != 0 {
+			if et, ok := entityTypeOf(*ax.ObjectID); !ok {
+				problems = append(problems, NewError(ReasonAxiomInvalid,
+					"公理 %d 的宾语实体 %d 不存在或已删除", ax.ID, *ax.ObjectID))
+			} else if et != EntityTypeClass {
+				problems = append(problems, NewError(ReasonAxiomInvalid,
+					"公理 %d 的宾语实体 %d 类型不符（期望类）", ax.ID, *ax.ObjectID))
+			}
+		} else {
+			problems = append(problems, NewError(ReasonAxiomInvalid,
+				"公理 %d 缺少宾语实体", ax.ID))
+		}
+	}
+
+	// 3. 声明完备性（双向防御）
+	declarationCount := make(map[uint32]int, len(entities))
+	for _, ax := range axioms {
+		if ax.AxiomType == nil || *ax.AxiomType != AxiomDeclaration {
+			continue
+		}
+		if ax.SubjectID == nil {
+			problems = append(problems, NewError(ReasonAxiomInvalid, "声明公理 %d 缺少主语", ax.ID))
+			continue
+		}
+		if _, ok := byID[*ax.SubjectID]; !ok {
+			problems = append(problems, NewError(ReasonAxiomInvalid,
+				"声明公理 %d 的主体实体 %d 不存在（删除流程应保证同步）", ax.ID, *ax.SubjectID))
+			continue
+		}
+		declarationCount[*ax.SubjectID]++
+	}
+	for _, e := range entities {
+		if n := declarationCount[e.ID]; n != 1 {
+			problems = append(problems, NewError(ReasonAxiomInvalid,
+				"实体 %s 的声明公理数量为 %d（应为 1）", entityLabel(e), n))
+		}
+	}
+
+	// 4/5. 注解断言谓词白名单、lang 长度与值词法
+	whitelist := make(map[string]struct{}, len(BuiltinAnnotationPredicates))
+	for _, p := range BuiltinAnnotationPredicates {
+		whitelist[p] = struct{}{}
+	}
+	for _, ax := range axioms {
+		if ax.AxiomType == nil || *ax.AxiomType != AxiomAnnotationAssertion {
+			continue
+		}
+
+		predicate := nilString(ax.PredicateIri)
+		if _, ok := whitelist[predicate]; !ok {
+			// object_id 双轨（04 期激活）：谓词白名单外时，宾语必须是注解属性实体才合法；
+			// 本期注解属性实体尚无法创建，等价于白名单外一律拒绝
+			customOK := false
+			if ax.ObjectID != nil && *ax.ObjectID != 0 {
+				if et, ok := entityTypeOf(*ax.ObjectID); ok && et == EntityTypeAnnotationProperty {
+					customOK = true
+				}
+			}
+			if !customOK {
+				problems = append(problems, NewError(ReasonAxiomInvalid,
+					"公理 %d 的注解谓词 %s 不在白名单内（自定义注解属性 04 期开放）", ax.ID, predicate))
+			}
+		}
+
+		if ax.Lang != nil && utf8.RuneCountInString(*ax.Lang) > 16 {
+			problems = append(problems, NewError(ReasonAxiomInvalid,
+				"公理 %d 的语言标签超长（≤16 字符）", ax.ID))
+		}
+
+		value := nilString(ax.ValueText)
+		switch predicate {
+		case PredicateOWLDeprecated:
+			if value != "true" && value != "false" {
+				problems = append(problems, NewError(ReasonAxiomInvalid,
+					"公理 %d 的 owl:deprecated 值 %q 非法（仅允许 true/false）", ax.ID, value))
+			}
+		case PredicateSKOSNotation:
+			if !notationPattern.MatchString(value) {
+				problems = append(problems, NewError(ReasonAxiomInvalid,
+					"公理 %d 的编码 %q 含非法字符（仅允许字母/数字/下划线/连字符）", ax.ID, value))
+			}
+		}
+	}
+
+	// 未知 axiom_type：WARN 跳过（02~06 期号段尚未启用，兼容增量）
+	known := map[uint32]struct{}{
+		AxiomDeclaration:         {},
+		AxiomSubClassOf:          {},
+		AxiomDisjointWith:        {},
+		AxiomEquivalentClasses:   {},
+		AxiomAnnotationAssertion: {},
+	}
+	for _, ax := range axioms {
+		if ax.AxiomType == nil {
+			continue
+		}
+		if _, ok := known[*ax.AxiomType]; !ok {
+			warnf(log, ctx, "ontology validator: 未知公理类型 %d（公理 %d），跳过校验", *ax.AxiomType, ax.ID)
+		}
+	}
+
+	return problems
+}
+
+func entityLabel(e *ent.OntEntity) string {
+	name := nilString(e.LocalName)
+	if name == "" {
+		name = strconv.FormatUint(uint64(e.ID), 10)
+	}
+	return name
+}

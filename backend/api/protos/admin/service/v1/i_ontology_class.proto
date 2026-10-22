@@ -1,0 +1,74 @@
+syntax = "proto3";
+
+package admin.service.v1;
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+
+import "ontology/service/v1/ontology_class.proto";
+
+// 本体类管理服务（admin 门面）
+//
+// 本体类 create/update/delete 是自定义 RPC（公理事务管线：diff + 环检测 + 乐观锁 + 校验 + 变更日志），
+// body: "*" 收扁平请求体——不是通用 CRUD，勿按惯例包 { data: {...} }
+// （protojson 会把 data 当未知字段丢弃，接口 200 但字段全空，仓库已知坑）。
+// GET/DELETE 的标量参数由 Kratos 从 query string 按 proto 字段 json 名（camelCase）绑定。
+service OntologyClassService {
+    // 查询本体类全量树
+    rpc Tree (ontology.service.v1.GetOntologyClassTreeRequest) returns (ontology.service.v1.OntologyClassTreeResponse) {
+        option (google.api.http) = {
+            get: "/admin/v1/ontology/classes/tree"
+        };
+    }
+
+    // 查询本体类骨架树（深层无子叶子剪枝）
+    rpc NavTree (ontology.service.v1.GetOntologyClassTreeRequest) returns (ontology.service.v1.OntologyClassNavTreeResponse) {
+        option (google.api.http) = {
+            get: "/admin/v1/ontology/classes/nav-tree"
+        };
+    }
+
+    // 分页查询本体类列表
+    rpc List (ontology.service.v1.ListOntologyClassesRequest) returns (ontology.service.v1.ListOntologyClassesResponse) {
+        option (google.api.http) = {
+            get: "/admin/v1/ontology/classes"
+        };
+    }
+
+    // 查询本体类 frame 详情
+    rpc Frame (ontology.service.v1.GetOntologyClassFrameRequest) returns (ontology.service.v1.OntologyClassFrame) {
+        option (google.api.http) = {
+            get: "/admin/v1/ontology/classes/{id}/frame"
+        };
+    }
+
+    // 查询本体类引用明细
+    rpc Usage (ontology.service.v1.GetOntologyClassUsageRequest) returns (ontology.service.v1.OntologyClassUsage) {
+        option (google.api.http) = {
+            get: "/admin/v1/ontology/classes/{id}/usage"
+        };
+    }
+
+    // 创建本体类（公理事务管线；返回新实体 id + 变更后版本）
+    rpc Create (ontology.service.v1.CreateOntologyClassRequest) returns (ontology.service.v1.CreateOntologyClassResponse) {
+        option (google.api.http) = {
+            post: "/admin/v1/ontology/classes"
+            body: "*"
+        };
+    }
+
+    // 更新本体类（frame 全量提交，公理事务管线）
+    rpc Update (ontology.service.v1.UpdateOntologyClassRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            put: "/admin/v1/ontology/classes/{id}"
+            body: "*"
+        };
+    }
+
+    // 删除本体类（force=true 级联移除引用公理，子类自动变根类）
+    rpc Delete (ontology.service.v1.DeleteOntologyClassRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            delete: "/admin/v1/ontology/classes/{id}"
+        };
+    }
+}

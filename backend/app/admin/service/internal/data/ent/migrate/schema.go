@@ -1903,6 +1903,153 @@ var (
 			},
 		},
 	}
+	// OntAxiomsColumns holds the columns for the "ont_axioms" table.
+	OntAxiomsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUint32, Increment: true, Comment: "id"},
+		{Name: "created_at", Type: field.TypeTime, Nullable: true, Comment: "创建时间"},
+		{Name: "updated_at", Type: field.TypeTime, Nullable: true, Comment: "更新时间"},
+		{Name: "deleted_at", Type: field.TypeTime, Nullable: true, Comment: "删除时间"},
+		{Name: "created_by", Type: field.TypeUint32, Nullable: true, Comment: "创建者ID"},
+		{Name: "updated_by", Type: field.TypeUint32, Nullable: true, Comment: "更新者ID"},
+		{Name: "deleted_by", Type: field.TypeUint32, Nullable: true, Comment: "删除者ID"},
+		{Name: "sort_order", Type: field.TypeUint32, Nullable: true, Comment: "排序值（越小越靠前）", Default: 0},
+		{Name: "ontology_id", Type: field.TypeUint32, Nullable: true, Comment: "所属本体 id"},
+		{Name: "axiom_type", Type: field.TypeUint32, Nullable: true, Comment: "公理类型号段，见 OntologyAxiomType（10 声明/20 子类/21 不相交/22 等价/100 注解断言；30~62 预留 02~06 期）"},
+		{Name: "subject_id", Type: field.TypeUint32, Nullable: true, Comment: "主实体 id（ont_entities.id）"},
+		{Name: "object_id", Type: field.TypeUint32, Nullable: true, Comment: "对象实体 id（层级/不相交/等价另一端；04 期自定义注解谓词时为注解属性实体）"},
+		{Name: "predicate_iri", Type: field.TypeString, Nullable: true, Size: 512, Comment: "注解断言谓词 IRI（rdfs:label/rdfs:comment/owl:deprecated/skos:notation）"},
+		{Name: "value_text", Type: field.TypeString, Nullable: true, Size: 2147483647, Comment: "注解值 / 字面量（02 期起复用存属性链 JSON、内建值域 IRI 等）"},
+		{Name: "lang", Type: field.TypeString, Nullable: true, Size: 16, Comment: "语言标签（多语言 label 预留，BCP47 简化校验 ≤16 字符）"},
+	}
+	// OntAxiomsTable holds the schema information for the "ont_axioms" table.
+	OntAxiomsTable = &schema.Table{
+		Name:       "ont_axioms",
+		Comment:    "OWL 公理行化存储表（六项本体建模功能共用；层级/不相交/等价/注解断言均落此处）",
+		Columns:    OntAxiomsColumns,
+		PrimaryKey: []*schema.Column{OntAxiomsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "idx_ont_axioms_subject",
+				Unique:  false,
+				Columns: []*schema.Column{OntAxiomsColumns[8], OntAxiomsColumns[10], OntAxiomsColumns[9]},
+			},
+			{
+				Name:    "idx_ont_axioms_object",
+				Unique:  false,
+				Columns: []*schema.Column{OntAxiomsColumns[8], OntAxiomsColumns[11]},
+			},
+		},
+	}
+	// OntChangeLogsColumns holds the columns for the "ont_change_logs" table.
+	OntChangeLogsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUint32, Increment: true, Comment: "id"},
+		{Name: "created_at", Type: field.TypeTime, Nullable: true, Comment: "创建时间"},
+		{Name: "updated_at", Type: field.TypeTime, Nullable: true, Comment: "更新时间"},
+		{Name: "deleted_at", Type: field.TypeTime, Nullable: true, Comment: "删除时间"},
+		{Name: "created_by", Type: field.TypeUint32, Nullable: true, Comment: "创建者ID"},
+		{Name: "updated_by", Type: field.TypeUint32, Nullable: true, Comment: "更新者ID"},
+		{Name: "deleted_by", Type: field.TypeUint32, Nullable: true, Comment: "删除者ID"},
+		{Name: "ontology_id", Type: field.TypeUint32, Nullable: true, Comment: "所属本体 id"},
+		{Name: "operation", Type: field.TypeString, Nullable: true, Size: 32, Comment: "操作名 CREATE_CLASS / UPDATE_CLASS / DELETE_CLASS / CREATE_ONTOLOGY ..."},
+		{Name: "change_detail", Type: field.TypeString, Nullable: true, Size: 2147483647, Comment: "公理级增删 JSON 快照（added=新增公理字段数组，deleted=被删公理 id 数组）"},
+		{Name: "before_version", Type: field.TypeUint32, Nullable: true, Comment: "变更前本体版本"},
+		{Name: "after_version", Type: field.TypeUint32, Nullable: true, Comment: "变更后本体版本"},
+	}
+	// OntChangeLogsTable holds the schema information for the "ont_change_logs" table.
+	OntChangeLogsTable = &schema.Table{
+		Name:       "ont_change_logs",
+		Comment:    "本体变更日志表（对应 Protégé HistoryManager，V1 只记不回滚）",
+		Columns:    OntChangeLogsColumns,
+		PrimaryKey: []*schema.Column{OntChangeLogsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "idx_ont_change_logs_ontology_time",
+				Unique:  false,
+				Columns: []*schema.Column{OntChangeLogsColumns[7], OntChangeLogsColumns[1]},
+			},
+		},
+	}
+	// OntEntitiesColumns holds the columns for the "ont_entities" table.
+	OntEntitiesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUint32, Increment: true, Comment: "id"},
+		{Name: "created_at", Type: field.TypeTime, Nullable: true, Comment: "创建时间"},
+		{Name: "updated_at", Type: field.TypeTime, Nullable: true, Comment: "更新时间"},
+		{Name: "deleted_at", Type: field.TypeTime, Nullable: true, Comment: "删除时间"},
+		{Name: "created_by", Type: field.TypeUint32, Nullable: true, Comment: "创建者ID"},
+		{Name: "updated_by", Type: field.TypeUint32, Nullable: true, Comment: "更新者ID"},
+		{Name: "deleted_by", Type: field.TypeUint32, Nullable: true, Comment: "删除者ID"},
+		{Name: "ontology_id", Type: field.TypeUint32, Nullable: true, Comment: "所属本体 id（ont_ontologies.id，无 FK，事务保证一致性）"},
+		{Name: "entity_type", Type: field.TypeUint32, Nullable: true, Comment: "实体类型 10:类 20:对象属性 30:数据属性 40:注解属性 50:数据类型 60:个体"},
+		{Name: "iri", Type: field.TypeString, Nullable: true, Size: 512, Comment: "完整 IRI，本体文档内唯一"},
+		{Name: "local_name", Type: field.TypeString, Nullable: true, Size: 255, Comment: "局部名，创建后不可变（V1 不提供 rename）"},
+		{Name: "display_label", Type: field.TypeString, Nullable: true, Size: 255, Comment: "渲染缓存：rdfs:label 首选值；事实源在注解公理，同事务同步"},
+		{Name: "deprecated", Type: field.TypeBool, Nullable: true, Comment: "渲染缓存：owl:deprecated", Default: false},
+	}
+	// OntEntitiesTable holds the schema information for the "ont_entities" table.
+	OntEntitiesTable = &schema.Table{
+		Name:       "ont_entities",
+		Comment:    "本体实体注册表（六类实体统一注册：类/对象属性/数据属性/注解属性/数据类型/个体）",
+		Columns:    OntEntitiesColumns,
+		PrimaryKey: []*schema.Column{OntEntitiesColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "idx_ont_entities_ontology_type",
+				Unique:  false,
+				Columns: []*schema.Column{OntEntitiesColumns[7], OntEntitiesColumns[8]},
+			},
+			{
+				Name:    "idx_ont_entities_local_name",
+				Unique:  false,
+				Columns: []*schema.Column{OntEntitiesColumns[10]},
+			},
+			{
+				Name:    "uix_ont_entities_ontology_iri",
+				Unique:  true,
+				Columns: []*schema.Column{OntEntitiesColumns[7], OntEntitiesColumns[9]},
+				Annotation: &entsql.IndexAnnotation{
+					Where: "deleted_at IS NULL",
+				},
+			},
+		},
+	}
+	// OntOntologiesColumns holds the columns for the "ont_ontologies" table.
+	OntOntologiesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUint32, Increment: true, Comment: "id"},
+		{Name: "created_at", Type: field.TypeTime, Nullable: true, Comment: "创建时间"},
+		{Name: "updated_at", Type: field.TypeTime, Nullable: true, Comment: "更新时间"},
+		{Name: "deleted_at", Type: field.TypeTime, Nullable: true, Comment: "删除时间"},
+		{Name: "created_by", Type: field.TypeUint32, Nullable: true, Comment: "创建者ID"},
+		{Name: "updated_by", Type: field.TypeUint32, Nullable: true, Comment: "更新者ID"},
+		{Name: "deleted_by", Type: field.TypeUint32, Nullable: true, Comment: "删除者ID"},
+		{Name: "is_enabled", Type: field.TypeBool, Nullable: true, Comment: "是否启用", Default: true},
+		{Name: "ontology_name", Type: field.TypeString, Nullable: true, Size: 128, Comment: "显示名"},
+		{Name: "ontology_iri", Type: field.TypeString, Nullable: true, Size: 512, Comment: "本体 IRI（owl:Ontology IRI，全局唯一）"},
+		{Name: "base_iri", Type: field.TypeString, Nullable: true, Size: 512, Comment: "实体命名空间，以 # 结尾；实体 IRI = base_iri || local_name"},
+		{Name: "description", Type: field.TypeString, Nullable: true, Size: 512, Comment: "描述", Default: ""},
+		{Name: "version", Type: field.TypeUint32, Nullable: true, Comment: "乐观锁版本号", Default: 0},
+	}
+	// OntOntologiesTable holds the schema information for the "ont_ontologies" table.
+	OntOntologiesTable = &schema.Table{
+		Name:       "ont_ontologies",
+		Comment:    "本体文档表（owl:Ontology，平台级：不挂 TenantID、不配租户 Policy，参照 sys_languages）",
+		Columns:    OntOntologiesColumns,
+		PrimaryKey: []*schema.Column{OntOntologiesColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "idx_ont_ontologies_ontology_name",
+				Unique:  false,
+				Columns: []*schema.Column{OntOntologiesColumns[8]},
+			},
+			{
+				Name:    "uix_ont_ontologies_iri",
+				Unique:  true,
+				Columns: []*schema.Column{OntOntologiesColumns[9]},
+				Annotation: &entsql.IndexAnnotation{
+					Where: "deleted_at IS NULL",
+				},
+			},
+		},
+	}
 	// SysOperationAuditLogsColumns holds the columns for the "sys_operation_audit_logs" table.
 	SysOperationAuditLogsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUint32, Increment: true, Comment: "id"},
@@ -3753,6 +3900,10 @@ var (
 		NotificationPreferencesTable,
 		SysNotificationRulesTable,
 		NotificationTemplatesTable,
+		OntAxiomsTable,
+		OntChangeLogsTable,
+		OntEntitiesTable,
+		OntOntologiesTable,
 		SysOperationAuditLogsTable,
 		SysOrgUnitsTable,
 		SysPermissionsTable,
@@ -3961,6 +4112,18 @@ func init() {
 		Table:     "notification_templates",
 		Charset:   "utf8mb4",
 		Collation: "utf8mb4_bin",
+	}
+	OntAxiomsTable.Annotation = &entsql.Annotation{
+		Table: "ont_axioms",
+	}
+	OntChangeLogsTable.Annotation = &entsql.Annotation{
+		Table: "ont_change_logs",
+	}
+	OntEntitiesTable.Annotation = &entsql.Annotation{
+		Table: "ont_entities",
+	}
+	OntOntologiesTable.Annotation = &entsql.Annotation{
+		Table: "ont_ontologies",
 	}
 	SysOperationAuditLogsTable.Annotation = &entsql.Annotation{
 		Table:     "sys_operation_audit_logs",

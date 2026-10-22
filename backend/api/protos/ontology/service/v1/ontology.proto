@@ -1,0 +1,181 @@
+syntax = "proto3";
+
+package ontology.service.v1;
+
+option go_package = "go-wind-admin/api/gen/go/ontology/service/v1;ontologyv1";
+
+import "gnostic/openapi/v3/annotations.proto";
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/field_mask.proto";
+
+import "pagination/v1/pagination.proto";
+
+// 实体类型号段（与源项目 OntEntityTypeEnum 逐值一致；02~06 期逐期启用，预留值加枚举值是兼容变更）
+enum OntologyEntityType {
+    ENTITY_TYPE_UNSPECIFIED = 0;            // 未指定
+    ENTITY_TYPE_CLASS = 10;                 // 本体类（OWLClass）
+    ENTITY_TYPE_OBJECT_PROPERTY = 20;       // 对象属性（02 期）
+    ENTITY_TYPE_DATA_PROPERTY = 30;         // 数据属性（03 期）
+    ENTITY_TYPE_ANNOTATION_PROPERTY = 40;   // 注解属性（04 期）
+    ENTITY_TYPE_DATATYPE = 50;              // 数据类型（05 期）
+    ENTITY_TYPE_INDIVIDUAL = 60;            // 个体对象（06 期）
+}
+
+// 公理类型号段（与源项目 OntAxiomTypeEnum 逐值一致；本期只启用已用值）
+enum OntologyAxiomType {
+    AXIOM_TYPE_UNSPECIFIED = 0;             // 未指定
+    AXIOM_DECLARATION = 10;                 // 阶段0：实体声明
+    AXIOM_SUBCLASS_OF = 20;                 // 01：子类（多继承多条，subject=子类，object=父类）
+    AXIOM_DISJOINT_WITH = 21;               // 01：不相交（成对存储：(A,B) 与 (B,A) 各一行）
+    AXIOM_EQUIVALENT_CLASSES = 22;          // 01：等价（成对存储，V1 命名类对）
+    // 30~37 预留 02 对象属性（30 子属性 / 31 定义域 / 32 值域 / 33 特征 / 37 属性链）
+    // 40~45 预留 03 数据属性；46~49 预留 05 数据类型；50 预留 04 注解属性
+    // 60~62 预留 06 个体（60 断型 / 61 对象断言 / 62 数据断言）
+    AXIOM_ANNOTATION_ASSERTION = 100;       // 阶段0：注解断言，全功能共用
+}
+
+// 实体简况（树/引用/父类选择器共用）
+message EntityBrief {
+    optional uint32 id = 1 [
+        json_name = "id",
+        (gnostic.openapi.v3.property) = { description: "实体ID" }
+    ]; // 实体ID
+    optional string local_name = 2 [
+        json_name = "localName",
+        (gnostic.openapi.v3.property) = { description: "局部名" }
+    ]; // 局部名
+    optional string display_label = 3 [
+        json_name = "displayLabel",
+        (gnostic.openapi.v3.property) = { description: "显示名（rdfs:label 渲染缓存）" }
+    ]; // 显示名
+    optional bool deprecated = 4 [
+        json_name = "deprecated",
+        (gnostic.openapi.v3.property) = { description: "是否废弃（owl:deprecated）" }
+    ]; // 是否废弃
+}
+
+// 本体文档（owl:Ontology）
+message Ontology {
+    optional uint32 id = 1 [
+        json_name = "id",
+        (gnostic.openapi.v3.property) = { description: "本体ID" }
+    ]; // 本体ID
+
+    optional string ontology_name = 2 [
+        json_name = "ontologyName",
+        (gnostic.openapi.v3.property) = { description: "显示名" }
+    ]; // 显示名
+
+    optional string ontology_iri = 3 [
+        json_name = "ontologyIri",
+        (gnostic.openapi.v3.property) = { description: "本体 IRI（owl:Ontology IRI，全局唯一）" }
+    ]; // 本体 IRI
+
+    optional string base_iri = 4 [
+        json_name = "baseIri",
+        (gnostic.openapi.v3.property) = { description: "实体命名空间，以 # 结尾；实体 IRI = base_iri + local_name；创建后不可变" }
+    ]; // 实体命名空间
+
+    optional string description = 5 [
+        json_name = "description",
+        (gnostic.openapi.v3.property) = { description: "描述" }
+    ]; // 描述
+
+    optional bool is_enabled = 6 [
+        json_name = "isEnabled",
+        (gnostic.openapi.v3.property) = { description: "是否启用" }
+    ]; // 是否启用
+
+    optional uint32 version = 7 [
+        json_name = "version",
+        (gnostic.openapi.v3.property) = { description: "乐观锁版本号（任何公理级变更事务内 +1）" }
+    ]; // 乐观锁版本号
+
+    optional uint32 created_by = 100 [json_name = "createdBy", (gnostic.openapi.v3.property) = { description: "创建者用户ID" }]; // 创建者用户ID
+    optional uint32 updated_by = 101 [json_name = "updatedBy", (gnostic.openapi.v3.property) = { description: "更新者用户ID" }]; // 更新者用户ID
+    optional uint32 deleted_by = 102 [json_name = "deletedBy", (gnostic.openapi.v3.property) = { description: "删除者用户ID" }]; // 删除者用户ID
+
+    optional google.protobuf.Timestamp created_at = 200 [json_name = "createdAt", (gnostic.openapi.v3.property) = { description: "创建时间" }]; // 创建时间
+    optional google.protobuf.Timestamp updated_at = 201 [json_name = "updatedAt", (gnostic.openapi.v3.property) = { description: "更新时间" }]; // 更新时间
+    optional google.protobuf.Timestamp deleted_at = 202 [json_name = "deletedAt", (gnostic.openapi.v3.property) = { description: "删除时间" }]; // 删除时间
+}
+
+// 查询本体文档列表 - 回应
+message ListOntologiesResponse {
+    repeated Ontology items = 1;
+    uint64 total = 2;
+}
+
+// 本体简况（切换器 simple-list 用）
+message OntologyBrief {
+    optional uint32 id = 1 [json_name = "id"];                 // 本体ID
+    optional string ontology_name = 2 [json_name = "ontologyName"]; // 显示名
+}
+
+// 查询本体简况列表（活动本体切换器）- 回应
+message ListOntologiesSimpleResponse {
+    repeated OntologyBrief items = 1;
+}
+
+// 查询本体文档详情 - 请求
+message GetOntologyRequest {
+    uint32 id = 1 [
+        json_name = "id",
+        (gnostic.openapi.v3.property) = { description: "本体ID" }
+    ]; // 本体ID
+
+    optional google.protobuf.FieldMask view_mask = 100 [
+        json_name = "viewMask",
+        (gnostic.openapi.v3.property) = { description: "视图字段过滤器" }
+    ]; // 视图字段过滤器
+}
+
+// 创建本体文档 - 请求
+message CreateOntologyRequest {
+    Ontology data = 1; // 通用 CRUD：{ data: {...} } 包裹
+}
+
+// 更新本体文档 - 请求
+message UpdateOntologyRequest {
+    uint32 id = 1; // 本体ID
+
+    Ontology data = 2; // base_iri 创建后不可变，服务层忽略该字段
+
+    google.protobuf.FieldMask update_mask = 3 [
+        (gnostic.openapi.v3.property) = { description: "要更新的字段列表" },
+        json_name = "updateMask"
+    ]; // 要更新的字段列表
+
+    optional bool allow_missing = 4 [json_name = "allowMissing"]; // 资源不存在时是否新增
+}
+
+// 删除本体文档 - 请求（批量；级联软删本体下全部实体/公理/变更日志）
+message DeleteOntologyRequest {
+    repeated uint32 ids = 1; // 要删除的本体ID列表
+}
+
+// 本体文档管理服务（源领域：只定义消息与 rpc，HTTP 路由在 admin 门面挂载）
+//
+// 本体文档是标准通用 CRUD（请求体包 { data: {...} }），实体级操作（本体类等）
+// 是自定义 RPC（公理事务管线），收扁平请求体——见 i_ontology_class.proto。
+service OntologyService {
+    // 分页查询本体文档列表
+    rpc List (pagination.PagingRequest) returns (ListOntologiesResponse) {}
+
+    // 查询本体简况列表（活动本体切换器）
+    rpc SimpleList (google.protobuf.Empty) returns (ListOntologiesSimpleResponse) {}
+
+    // 查询本体文档详情
+    rpc Get (GetOntologyRequest) returns (Ontology) {}
+
+    // 创建本体文档
+    rpc Create (CreateOntologyRequest) returns (google.protobuf.Empty) {}
+
+    // 更新本体文档
+    rpc Update (UpdateOntologyRequest) returns (google.protobuf.Empty) {}
+
+    // 删除本体文档（级联软删本体下全部实体/公理/变更日志）
+    rpc Delete (DeleteOntologyRequest) returns (google.protobuf.Empty) {}
+}

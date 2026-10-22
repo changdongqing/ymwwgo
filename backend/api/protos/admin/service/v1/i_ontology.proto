@@ -1,0 +1,59 @@
+syntax = "proto3";
+
+package admin.service.v1;
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+
+import "pagination/v1/pagination.proto";
+import "ontology/service/v1/ontology.proto";
+
+// 本体文档管理服务（admin 门面）
+//
+// 源领域 proto 在 ontology/service/v1（消息 + rpc，无 HTTP 注解）；本门面只挂 HTTP 路由。
+// 本体文档是标准通用 CRUD：create/update 收 { data: {...} } 包裹。
+service OntologyService {
+    // 分页查询本体文档列表
+    rpc List (pagination.PagingRequest) returns (ontology.service.v1.ListOntologiesResponse) {
+        option (google.api.http) = {
+            get: "/admin/v1/ontology/ontologies"
+        };
+    }
+
+    // 查询本体简况列表（活动本体切换器）
+    rpc SimpleList (google.protobuf.Empty) returns (ontology.service.v1.ListOntologiesSimpleResponse) {
+        option (google.api.http) = {
+            get: "/admin/v1/ontology/ontologies/simple-list"
+        };
+    }
+
+    // 查询本体文档详情
+    rpc Get (ontology.service.v1.GetOntologyRequest) returns (ontology.service.v1.Ontology) {
+        option (google.api.http) = {
+            get: "/admin/v1/ontology/ontologies/{id}"
+        };
+    }
+
+    // 创建本体文档
+    rpc Create (ontology.service.v1.CreateOntologyRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            post: "/admin/v1/ontology/ontologies"
+            body: "*"
+        };
+    }
+
+    // 更新本体文档（base_iri 创建后不可变，服务层忽略）
+    rpc Update (ontology.service.v1.UpdateOntologyRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            put: "/admin/v1/ontology/ontologies/{id}"
+            body: "*"
+        };
+    }
+
+    // 删除本体文档（级联软删本体下全部实体/公理/变更日志）
+    rpc Delete (ontology.service.v1.DeleteOntologyRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            delete: "/admin/v1/ontology/ontologies"
+        };
+    }
+}

@@ -134,6 +134,11 @@
       "providers": "AI Providers",
       "knowledge": "Knowledge Bases",
       "usage": "Usage"
+    },
+    "ontology": {
+      "moduleName": "Ontology Modeling",
+      "doc": "Ontology Documents",
+      "class": "Ontology Classes"
     }
   },
   "page": {
@@ -142,5 +147,8 @@
       "analytics": "Analytics",
       "workspace": "Workbench"
     }
-  }
+  },
+  "ontology": "Ontology Modeling",
+  "ontology-docs": "Ontology Documents",
+  "ontology-classes": "Ontology Classes"
 }

@@ -132,6 +132,11 @@ func initApp(ctx *bootstrap.Context) (*kratos.App, func(), error) {
 	dictEntryRepo := data.NewDictEntryRepo(ctx, entClient, dictEntryI18nRepo)
 	languageRepo := data.NewLanguageRepo(ctx, entClient)
 
+	// 本体建模（阶段0 + 本体类）
+	ontologyRepo := data.NewOntologyRepo(ctx, entClient)
+	ontologyEntityRepo := data.NewOntEntityRepo(ctx, entClient)
+	ontologyAxiomRepo := data.NewOntAxiomRepo(ctx, entClient)
+
 	// 套餐与计费
 	planRepo := data.NewPlanRepo(ctx, entClient)
 	planQuotaRepo := data.NewPlanQuotaRepo(ctx, entClient)
@@ -252,6 +257,10 @@ func initApp(ctx *bootstrap.Context) (*kratos.App, func(), error) {
 	dictEntryService := service.NewDictEntryService(ctx, dictEntryRepo)
 	languageService := service.NewLanguageService(ctx, languageRepo)
 
+	// 本体建模（阶段0 + 本体类）
+	ontologyService := service.NewOntologyService(ctx, ontologyRepo)
+	ontologyClassService := service.NewOntologyClassService(ctx, ontologyRepo, ontologyEntityRepo, ontologyAxiomRepo)
+
 	// 文件与任务
 	fileService := service.NewFileService(ctx, fileRepo, minioClient)
 	fileTransferService := service.NewFileTransferService(ctx, minioClient, fileRepo, tenantUsageRepo)
@@ -352,6 +361,7 @@ func initApp(ctx *bootstrap.Context) (*kratos.App, func(), error) {
 		adminPortalService, taskService,
 		fileService, fileTransferService,
 		dictTypeService, dictEntryService, languageService,
+		ontologyService, ontologyClassService,
 		tenantService, planService, planQuotaService, planModuleService,
 		userService, userProfileService, roleService, positionService, orgUnitService,
 		menuService, apiService, permissionService, permissionGroupService,

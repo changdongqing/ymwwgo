@@ -40,6 +40,10 @@ import (
 	"go-wind-admin/app/admin/service/internal/data/ent/notificationpreference"
 	"go-wind-admin/app/admin/service/internal/data/ent/notificationrule"
 	"go-wind-admin/app/admin/service/internal/data/ent/notificationtemplate"
+	"go-wind-admin/app/admin/service/internal/data/ent/ontaxiom"
+	"go-wind-admin/app/admin/service/internal/data/ent/ontchangelog"
+	"go-wind-admin/app/admin/service/internal/data/ent/ontentity"
+	"go-wind-admin/app/admin/service/internal/data/ent/ontontology"
 	"go-wind-admin/app/admin/service/internal/data/ent/operationauditlog"
 	"go-wind-admin/app/admin/service/internal/data/ent/orgunit"
 	"go-wind-admin/app/admin/service/internal/data/ent/permission"
@@ -169,6 +173,10 @@ func checkColumn(t, c string) error {
 			notificationpreference.Table:   notificationpreference.ValidColumn,
 			notificationrule.Table:         notificationrule.ValidColumn,
 			notificationtemplate.Table:     notificationtemplate.ValidColumn,
+			ontaxiom.Table:                 ontaxiom.ValidColumn,
+			ontchangelog.Table:             ontchangelog.ValidColumn,
+			ontentity.Table:                ontentity.ValidColumn,
+			ontontology.Table:              ontontology.ValidColumn,
 			operationauditlog.Table:        operationauditlog.ValidColumn,
 			orgunit.Table:                  orgunit.ValidColumn,
 			permission.Table:               permission.ValidColumn,

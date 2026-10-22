@@ -39,6 +39,10 @@ import (
 	"go-wind-admin/app/admin/service/internal/data/ent/notificationpreference"
 	"go-wind-admin/app/admin/service/internal/data/ent/notificationrule"
 	"go-wind-admin/app/admin/service/internal/data/ent/notificationtemplate"
+	"go-wind-admin/app/admin/service/internal/data/ent/ontaxiom"
+	"go-wind-admin/app/admin/service/internal/data/ent/ontchangelog"
+	"go-wind-admin/app/admin/service/internal/data/ent/ontentity"
+	"go-wind-admin/app/admin/service/internal/data/ent/ontontology"
 	"go-wind-admin/app/admin/service/internal/data/ent/operationauditlog"
 	"go-wind-admin/app/admin/service/internal/data/ent/orgunit"
 	"go-wind-admin/app/admin/service/internal/data/ent/permission"
@@ -984,6 +988,188 @@ func init() {
 	notificationtemplateDescID := notificationtemplateMixinFields0[0].Descriptor()
 	// notificationtemplate.IDValidator is a validator for the "id" field. It is called by the builders before save.
 	notificationtemplate.IDValidator = notificationtemplateDescID.Validators[0].(func(uint32) error)
+	ontaxiomMixin := schema.OntAxiom{}.Mixin()
+	ontaxiomMixinFields0 := ontaxiomMixin[0].Fields()
+	_ = ontaxiomMixinFields0
+	ontaxiomMixinFields3 := ontaxiomMixin[3].Fields()
+	_ = ontaxiomMixinFields3
+	ontaxiomFields := schema.OntAxiom{}.Fields()
+	_ = ontaxiomFields
+	// ontaxiomDescSortOrder is the schema descriptor for sort_order field.
+	ontaxiomDescSortOrder := ontaxiomMixinFields3[0].Descriptor()
+	// ontaxiom.DefaultSortOrder holds the default value on creation for the sort_order field.
+	ontaxiom.DefaultSortOrder = ontaxiomDescSortOrder.Default.(uint32)
+	// ontaxiomDescPredicateIri is the schema descriptor for predicate_iri field.
+	ontaxiomDescPredicateIri := ontaxiomFields[4].Descriptor()
+	// ontaxiom.PredicateIriValidator is a validator for the "predicate_iri" field. It is called by the builders before save.
+	ontaxiom.PredicateIriValidator = ontaxiomDescPredicateIri.Validators[0].(func(string) error)
+	// ontaxiomDescLang is the schema descriptor for lang field.
+	ontaxiomDescLang := ontaxiomFields[6].Descriptor()
+	// ontaxiom.LangValidator is a validator for the "lang" field. It is called by the builders before save.
+	ontaxiom.LangValidator = ontaxiomDescLang.Validators[0].(func(string) error)
+	// ontaxiomDescID is the schema descriptor for id field.
+	ontaxiomDescID := ontaxiomMixinFields0[0].Descriptor()
+	// ontaxiom.IDValidator is a validator for the "id" field. It is called by the builders before save.
+	ontaxiom.IDValidator = ontaxiomDescID.Validators[0].(func(uint32) error)
+	ontchangelogMixin := schema.OntChangeLog{}.Mixin()
+	ontchangelogMixinFields0 := ontchangelogMixin[0].Fields()
+	_ = ontchangelogMixinFields0
+	ontchangelogFields := schema.OntChangeLog{}.Fields()
+	_ = ontchangelogFields
+	// ontchangelogDescOperation is the schema descriptor for operation field.
+	ontchangelogDescOperation := ontchangelogFields[1].Descriptor()
+	// ontchangelog.OperationValidator is a validator for the "operation" field. It is called by the builders before save.
+	ontchangelog.OperationValidator = func() func(string) error {
+		validators := ontchangelogDescOperation.Validators
+		fns := [...]func(string) error{
+			validators[0].(func(string) error),
+			validators[1].(func(string) error),
+		}
+		return func(operation string) error {
+			for _, fn := range fns {
+				if err := fn(operation); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	// ontchangelogDescID is the schema descriptor for id field.
+	ontchangelogDescID := ontchangelogMixinFields0[0].Descriptor()
+	// ontchangelog.IDValidator is a validator for the "id" field. It is called by the builders before save.
+	ontchangelog.IDValidator = ontchangelogDescID.Validators[0].(func(uint32) error)
+	ontentityMixin := schema.OntEntity{}.Mixin()
+	ontentityMixinFields0 := ontentityMixin[0].Fields()
+	_ = ontentityMixinFields0
+	ontentityFields := schema.OntEntity{}.Fields()
+	_ = ontentityFields
+	// ontentityDescIri is the schema descriptor for iri field.
+	ontentityDescIri := ontentityFields[2].Descriptor()
+	// ontentity.IriValidator is a validator for the "iri" field. It is called by the builders before save.
+	ontentity.IriValidator = func() func(string) error {
+		validators := ontentityDescIri.Validators
+		fns := [...]func(string) error{
+			validators[0].(func(string) error),
+			validators[1].(func(string) error),
+		}
+		return func(iri string) error {
+			for _, fn := range fns {
+				if err := fn(iri); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	// ontentityDescLocalName is the schema descriptor for local_name field.
+	ontentityDescLocalName := ontentityFields[3].Descriptor()
+	// ontentity.LocalNameValidator is a validator for the "local_name" field. It is called by the builders before save.
+	ontentity.LocalNameValidator = func() func(string) error {
+		validators := ontentityDescLocalName.Validators
+		fns := [...]func(string) error{
+			validators[0].(func(string) error),
+			validators[1].(func(string) error),
+		}
+		return func(local_name string) error {
+			for _, fn := range fns {
+				if err := fn(local_name); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	// ontentityDescDisplayLabel is the schema descriptor for display_label field.
+	ontentityDescDisplayLabel := ontentityFields[4].Descriptor()
+	// ontentity.DisplayLabelValidator is a validator for the "display_label" field. It is called by the builders before save.
+	ontentity.DisplayLabelValidator = ontentityDescDisplayLabel.Validators[0].(func(string) error)
+	// ontentityDescDeprecated is the schema descriptor for deprecated field.
+	ontentityDescDeprecated := ontentityFields[5].Descriptor()
+	// ontentity.DefaultDeprecated holds the default value on creation for the deprecated field.
+	ontentity.DefaultDeprecated = ontentityDescDeprecated.Default.(bool)
+	// ontentityDescID is the schema descriptor for id field.
+	ontentityDescID := ontentityMixinFields0[0].Descriptor()
+	// ontentity.IDValidator is a validator for the "id" field. It is called by the builders before save.
+	ontentity.IDValidator = ontentityDescID.Validators[0].(func(uint32) error)
+	ontontologyMixin := schema.OntOntology{}.Mixin()
+	ontontologyMixinFields0 := ontontologyMixin[0].Fields()
+	_ = ontontologyMixinFields0
+	ontontologyMixinFields3 := ontontologyMixin[3].Fields()
+	_ = ontontologyMixinFields3
+	ontontologyFields := schema.OntOntology{}.Fields()
+	_ = ontontologyFields
+	// ontontologyDescIsEnabled is the schema descriptor for is_enabled field.
+	ontontologyDescIsEnabled := ontontologyMixinFields3[0].Descriptor()
+	// ontontology.DefaultIsEnabled holds the default value on creation for the is_enabled field.
+	ontontology.DefaultIsEnabled = ontontologyDescIsEnabled.Default.(bool)
+	// ontontologyDescOntologyName is the schema descriptor for ontology_name field.
+	ontontologyDescOntologyName := ontontologyFields[0].Descriptor()
+	// ontontology.OntologyNameValidator is a validator for the "ontology_name" field. It is called by the builders before save.
+	ontontology.OntologyNameValidator = func() func(string) error {
+		validators := ontontologyDescOntologyName.Validators
+		fns := [...]func(string) error{
+			validators[0].(func(string) error),
+			validators[1].(func(string) error),
+		}
+		return func(ontology_name string) error {
+			for _, fn := range fns {
+				if err := fn(ontology_name); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	// ontontologyDescOntologyIri is the schema descriptor for ontology_iri field.
+	ontontologyDescOntologyIri := ontontologyFields[1].Descriptor()
+	// ontontology.OntologyIriValidator is a validator for the "ontology_iri" field. It is called by the builders before save.
+	ontontology.OntologyIriValidator = func() func(string) error {
+		validators := ontontologyDescOntologyIri.Validators
+		fns := [...]func(string) error{
+			validators[0].(func(string) error),
+			validators[1].(func(string) error),
+		}
+		return func(ontology_iri string) error {
+			for _, fn := range fns {
+				if err := fn(ontology_iri); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	// ontontologyDescBaseIri is the schema descriptor for base_iri field.
+	ontontologyDescBaseIri := ontontologyFields[2].Descriptor()
+	// ontontology.BaseIriValidator is a validator for the "base_iri" field. It is called by the builders before save.
+	ontontology.BaseIriValidator = func() func(string) error {
+		validators := ontontologyDescBaseIri.Validators
+		fns := [...]func(string) error{
+			validators[0].(func(string) error),
+			validators[1].(func(string) error),
+		}
+		return func(base_iri string) error {
+			for _, fn := range fns {
+				if err := fn(base_iri); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	// ontontologyDescDescription is the schema descriptor for description field.
+	ontontologyDescDescription := ontontologyFields[3].Descriptor()
+	// ontontology.DefaultDescription holds the default value on creation for the description field.
+	ontontology.DefaultDescription = ontontologyDescDescription.Default.(string)
+	// ontontology.DescriptionValidator is a validator for the "description" field. It is called by the builders before save.
+	ontontology.DescriptionValidator = ontontologyDescDescription.Validators[0].(func(string) error)
+	// ontontologyDescVersion is the schema descriptor for version field.
+	ontontologyDescVersion := ontontologyFields[4].Descriptor()
+	// ontontology.DefaultVersion holds the default value on creation for the version field.
+	ontontology.DefaultVersion = ontontologyDescVersion.Default.(uint32)
+	// ontontologyDescID is the schema descriptor for id field.
+	ontontologyDescID := ontontologyMixinFields0[0].Descriptor()
+	// ontontology.IDValidator is a validator for the "id" field. It is called by the builders before save.
+	ontontology.IDValidator = ontontologyDescID.Validators[0].(func(uint32) error)
 	operationauditlogMixin := schema.OperationAuditLog{}.Mixin()
 	operationauditlog.Policy = privacy.NewPolicies(operationauditlogMixin[2], schema.OperationAuditLog{})
 	operationauditlog.Hooks[0] = func(next ent.Mutator) ent.Mutator {

@@ -144,6 +144,9 @@ func NewRestServer(
 	dictEntryService *service.DictEntryService,
 	languageService *service.LanguageService,
 
+	ontologyService *service.OntologyService,
+	ontologyClassService *service.OntologyClassService,
+
 	tenantService *service.TenantService,
 	planService *service.PlanService,
 	planQuotaService *service.PlanQuotaService,
@@ -231,6 +234,9 @@ func NewRestServer(
 	adminV1.RegisterDictTypeServiceHTTPServer(srv, dictTypeService)
 	adminV1.RegisterDictEntryServiceHTTPServer(srv, dictEntryService)
 	adminV1.RegisterLanguageServiceHTTPServer(srv, languageService)
+
+	adminV1.RegisterOntologyServiceHTTPServer(srv, ontologyService)
+	adminV1.RegisterOntologyClassServiceHTTPServer(srv, ontologyClassService)
 
 	adminV1.RegisterApiServiceHTTPServer(srv, apiService)
 	adminV1.RegisterMenuServiceHTTPServer(srv, menuService)

@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+package ontology.service.v1;
+
+option go_package = "go-wind-admin/api/gen/go/ontology/service/v1;ontologyv1";
+
+import "errors/errors.proto";
+
+// 本体建模错误定义（对齐源项目 1-071-xxx 数字错误码段的语义分段；
+// Kratos errors 规范：reason 字符串 + HTTP 数字码，前端按 error.response.data.reason 分流）
+enum OntologyErrorReason {
+    option (errors.default_code) = 500;
+
+    // ===== 本体文档（源 1-071-000 段）=====
+    ONTOLOGY_NOT_FOUND = 0 [(errors.code) = 404];           // 本体不存在
+    ONTOLOGY_NAME_DUPLICATE = 1 [(errors.code) = 409];      // 已存在同名本体
+    ONTOLOGY_BASE_IRI_INVALID = 2 [(errors.code) = 422];    // 实体命名空间 IRI 不合法
+    ONTOLOGY_VERSION_CONFLICT = 3 [(errors.code) = 409];    // 本体已被他人修改（当前版本 {}），请刷新后重试
+    ONTOLOGY_IRI_DUPLICATE = 4 [(errors.code) = 409];       // 已存在相同 IRI 的本体
+
+    // ===== 实体（源 1-071-001 段）=====
+    ENTITY_NOT_FOUND = 10 [(errors.code) = 404];            // 本体实体不存在
+    ENTITY_IRI_DUPLICATE = 11 [(errors.code) = 409];        // 已存在相同 IRI 的实体：{}
+    LOCAL_NAME_INVALID = 12 [(errors.code) = 422];          // 局部名不合法：{}
+    ENTITY_TYPE_MISMATCH = 13 [(errors.code) = 422];        // 引用实体类型不符或跨本体：{}
+
+    // ===== 公理（源 1-071-002 段）=====
+    AXIOM_INVALID = 20 [(errors.code) = 422];               // 公理校验失败：{}
+    HIERARCHY_CYCLIC = 21 [(errors.code) = 422];            // 不允许形成继承环：{} 已是 {} 的祖先
+    ENTITY_IN_USE = 22 [(errors.code) = 409];               // 实体被 {} 处引用，无法删除
+
+    // 30~39 预留 02 对象属性；40~44 预留 03 数据属性；50~51 预留 04 注解属性；
+    // 60~66 预留 06 个体与赋码；70~74 预留 05 数据类型；80~88 预留 07 OWL 导入导出。
+    // 号段对齐源 1-071-003~008 子段，各期文档落地时启用。
+}

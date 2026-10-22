@@ -416,6 +416,54 @@ func (f NotificationTemplateFunc) Mutate(ctx context.Context, m ent.Mutation) (e
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.NotificationTemplateMutation", m)
 }
 
+// The OntAxiomFunc type is an adapter to allow the use of ordinary
+// function as OntAxiom mutator.
+type OntAxiomFunc func(context.Context, *ent.OntAxiomMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f OntAxiomFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.OntAxiomMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.OntAxiomMutation", m)
+}
+
+// The OntChangeLogFunc type is an adapter to allow the use of ordinary
+// function as OntChangeLog mutator.
+type OntChangeLogFunc func(context.Context, *ent.OntChangeLogMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f OntChangeLogFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.OntChangeLogMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.OntChangeLogMutation", m)
+}
+
+// The OntEntityFunc type is an adapter to allow the use of ordinary
+// function as OntEntity mutator.
+type OntEntityFunc func(context.Context, *ent.OntEntityMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f OntEntityFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.OntEntityMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.OntEntityMutation", m)
+}
+
+// The OntOntologyFunc type is an adapter to allow the use of ordinary
+// function as OntOntology mutator.
+type OntOntologyFunc func(context.Context, *ent.OntOntologyMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f OntOntologyFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.OntOntologyMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.OntOntologyMutation", m)
+}
+
 // The OperationAuditLogFunc type is an adapter to allow the use of ordinary
 // function as OperationAuditLog mutator.
 type OperationAuditLogFunc func(context.Context, *ent.OperationAuditLogMutation) (ent.Value, error)

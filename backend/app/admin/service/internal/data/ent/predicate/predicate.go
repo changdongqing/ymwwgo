@@ -108,6 +108,18 @@ type NotificationRule func(*sql.Selector)
 // NotificationTemplate is the predicate function for notificationtemplate builders.
 type NotificationTemplate func(*sql.Selector)
 
+// OntAxiom is the predicate function for ontaxiom builders.
+type OntAxiom func(*sql.Selector)
+
+// OntChangeLog is the predicate function for ontchangelog builders.
+type OntChangeLog func(*sql.Selector)
+
+// OntEntity is the predicate function for ontentity builders.
+type OntEntity func(*sql.Selector)
+
+// OntOntology is the predicate function for ontontology builders.
+type OntOntology func(*sql.Selector)
+
 // OperationAuditLog is the predicate function for operationauditlog builders.
 type OperationAuditLog func(*sql.Selector)
 

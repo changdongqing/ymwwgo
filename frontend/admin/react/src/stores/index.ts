@@ -3,3 +3,4 @@ export * from "./user";
 export * from "./pageRefresh";
 export * from "./tabs";
 export * from "./lock";
+export * from "./ontology";

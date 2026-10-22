@@ -927,6 +927,102 @@ func (f NotificationTemplateMutationRuleFunc) EvalMutation(ctx context.Context, 
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.NotificationTemplateMutation", m)
 }
 
+// The OntAxiomQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type OntAxiomQueryRuleFunc func(context.Context, *ent.OntAxiomQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f OntAxiomQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.OntAxiomQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.OntAxiomQuery", q)
+}
+
+// The OntAxiomMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type OntAxiomMutationRuleFunc func(context.Context, *ent.OntAxiomMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f OntAxiomMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.OntAxiomMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.OntAxiomMutation", m)
+}
+
+// The OntChangeLogQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type OntChangeLogQueryRuleFunc func(context.Context, *ent.OntChangeLogQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f OntChangeLogQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.OntChangeLogQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.OntChangeLogQuery", q)
+}
+
+// The OntChangeLogMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type OntChangeLogMutationRuleFunc func(context.Context, *ent.OntChangeLogMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f OntChangeLogMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.OntChangeLogMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.OntChangeLogMutation", m)
+}
+
+// The OntEntityQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type OntEntityQueryRuleFunc func(context.Context, *ent.OntEntityQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f OntEntityQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.OntEntityQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.OntEntityQuery", q)
+}
+
+// The OntEntityMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type OntEntityMutationRuleFunc func(context.Context, *ent.OntEntityMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f OntEntityMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.OntEntityMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.OntEntityMutation", m)
+}
+
+// The OntOntologyQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type OntOntologyQueryRuleFunc func(context.Context, *ent.OntOntologyQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f OntOntologyQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.OntOntologyQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.OntOntologyQuery", q)
+}
+
+// The OntOntologyMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type OntOntologyMutationRuleFunc func(context.Context, *ent.OntOntologyMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f OntOntologyMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.OntOntologyMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.OntOntologyMutation", m)
+}
+
 // The OperationAuditLogQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
 type OperationAuditLogQueryRuleFunc func(context.Context, *ent.OperationAuditLogQuery) error
@@ -1726,6 +1822,14 @@ func queryFilter(q ent.Query) (Filter, error) {
 		return q.Filter(), nil
 	case *ent.NotificationTemplateQuery:
 		return q.Filter(), nil
+	case *ent.OntAxiomQuery:
+		return q.Filter(), nil
+	case *ent.OntChangeLogQuery:
+		return q.Filter(), nil
+	case *ent.OntEntityQuery:
+		return q.Filter(), nil
+	case *ent.OntOntologyQuery:
+		return q.Filter(), nil
 	case *ent.OperationAuditLogQuery:
 		return q.Filter(), nil
 	case *ent.OrgUnitQuery:
@@ -1858,6 +1962,14 @@ func mutationFilter(m ent.Mutation) (Filter, error) {
 	case *ent.NotificationRuleMutation:
 		return m.Filter(), nil
 	case *ent.NotificationTemplateMutation:
+		return m.Filter(), nil
+	case *ent.OntAxiomMutation:
+		return m.Filter(), nil
+	case *ent.OntChangeLogMutation:
+		return m.Filter(), nil
+	case *ent.OntEntityMutation:
+		return m.Filter(), nil
+	case *ent.OntOntologyMutation:
 		return m.Filter(), nil
 	case *ent.OperationAuditLogMutation:
 		return m.Filter(), nil

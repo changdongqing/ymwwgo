@@ -45,6 +45,10 @@ import (
 	"go-wind-admin/app/admin/service/internal/data/ent/notificationpreference"
 	"go-wind-admin/app/admin/service/internal/data/ent/notificationrule"
 	"go-wind-admin/app/admin/service/internal/data/ent/notificationtemplate"
+	"go-wind-admin/app/admin/service/internal/data/ent/ontaxiom"
+	"go-wind-admin/app/admin/service/internal/data/ent/ontchangelog"
+	"go-wind-admin/app/admin/service/internal/data/ent/ontentity"
+	"go-wind-admin/app/admin/service/internal/data/ent/ontontology"
 	"go-wind-admin/app/admin/service/internal/data/ent/operationauditlog"
 	"go-wind-admin/app/admin/service/internal/data/ent/orgunit"
 	"go-wind-admin/app/admin/service/internal/data/ent/permission"
@@ -154,6 +158,14 @@ type Client struct {
 	NotificationRule *NotificationRuleClient
 	// NotificationTemplate is the client for interacting with the NotificationTemplate builders.
 	NotificationTemplate *NotificationTemplateClient
+	// OntAxiom is the client for interacting with the OntAxiom builders.
+	OntAxiom *OntAxiomClient
+	// OntChangeLog is the client for interacting with the OntChangeLog builders.
+	OntChangeLog *OntChangeLogClient
+	// OntEntity is the client for interacting with the OntEntity builders.
+	OntEntity *OntEntityClient
+	// OntOntology is the client for interacting with the OntOntology builders.
+	OntOntology *OntOntologyClient
 	// OperationAuditLog is the client for interacting with the OperationAuditLog builders.
 	OperationAuditLog *OperationAuditLogClient
 	// OrgUnit is the client for interacting with the OrgUnit builders.
@@ -257,6 +269,10 @@ func (c *Client) init() {
 	c.NotificationPreference = NewNotificationPreferenceClient(c.config)
 	c.NotificationRule = NewNotificationRuleClient(c.config)
 	c.NotificationTemplate = NewNotificationTemplateClient(c.config)
+	c.OntAxiom = NewOntAxiomClient(c.config)
+	c.OntChangeLog = NewOntChangeLogClient(c.config)
+	c.OntEntity = NewOntEntityClient(c.config)
+	c.OntOntology = NewOntOntologyClient(c.config)
 	c.OperationAuditLog = NewOperationAuditLogClient(c.config)
 	c.OrgUnit = NewOrgUnitClient(c.config)
 	c.Permission = NewPermissionClient(c.config)
@@ -412,6 +428,10 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		NotificationPreference:   NewNotificationPreferenceClient(cfg),
 		NotificationRule:         NewNotificationRuleClient(cfg),
 		NotificationTemplate:     NewNotificationTemplateClient(cfg),
+		OntAxiom:                 NewOntAxiomClient(cfg),
+		OntChangeLog:             NewOntChangeLogClient(cfg),
+		OntEntity:                NewOntEntityClient(cfg),
+		OntOntology:              NewOntOntologyClient(cfg),
 		OperationAuditLog:        NewOperationAuditLogClient(cfg),
 		OrgUnit:                  NewOrgUnitClient(cfg),
 		Permission:               NewPermissionClient(cfg),
@@ -494,6 +514,10 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		NotificationPreference:   NewNotificationPreferenceClient(cfg),
 		NotificationRule:         NewNotificationRuleClient(cfg),
 		NotificationTemplate:     NewNotificationTemplateClient(cfg),
+		OntAxiom:                 NewOntAxiomClient(cfg),
+		OntChangeLog:             NewOntChangeLogClient(cfg),
+		OntEntity:                NewOntEntityClient(cfg),
+		OntOntology:              NewOntOntologyClient(cfg),
 		OperationAuditLog:        NewOperationAuditLogClient(cfg),
 		OrgUnit:                  NewOrgUnitClient(cfg),
 		Permission:               NewPermissionClient(cfg),
@@ -560,12 +584,13 @@ func (c *Client) Use(hooks ...Hook) {
 		c.Membership, c.MembershipOrgUnit, c.MembershipPosition, c.MembershipRole,
 		c.Menu, c.MonitorAlertRule, c.NotificationChannel, c.NotificationDelivery,
 		c.NotificationPreference, c.NotificationRule, c.NotificationTemplate,
-		c.OperationAuditLog, c.OrgUnit, c.Permission, c.PermissionApi,
-		c.PermissionAuditLog, c.PermissionGroup, c.PermissionMenu, c.PermissionPolicy,
-		c.Plan, c.PlanModule, c.PlanQuota, c.PolicyEvaluationLog, c.Position, c.Role,
-		c.RoleFieldPermission, c.RoleMetadata, c.RoleOrgUnit, c.RolePermission,
-		c.Script, c.ScriptLog, c.SysConfig, c.Task, c.Tenant, c.User, c.UserCredential,
-		c.UserMfaFactor, c.UserOrgUnit, c.UserPosition, c.UserRole,
+		c.OntAxiom, c.OntChangeLog, c.OntEntity, c.OntOntology, c.OperationAuditLog,
+		c.OrgUnit, c.Permission, c.PermissionApi, c.PermissionAuditLog,
+		c.PermissionGroup, c.PermissionMenu, c.PermissionPolicy, c.Plan, c.PlanModule,
+		c.PlanQuota, c.PolicyEvaluationLog, c.Position, c.Role, c.RoleFieldPermission,
+		c.RoleMetadata, c.RoleOrgUnit, c.RolePermission, c.Script, c.ScriptLog,
+		c.SysConfig, c.Task, c.Tenant, c.User, c.UserCredential, c.UserMfaFactor,
+		c.UserOrgUnit, c.UserPosition, c.UserRole,
 	} {
 		n.Use(hooks...)
 	}
@@ -583,12 +608,13 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 		c.Membership, c.MembershipOrgUnit, c.MembershipPosition, c.MembershipRole,
 		c.Menu, c.MonitorAlertRule, c.NotificationChannel, c.NotificationDelivery,
 		c.NotificationPreference, c.NotificationRule, c.NotificationTemplate,
-		c.OperationAuditLog, c.OrgUnit, c.Permission, c.PermissionApi,
-		c.PermissionAuditLog, c.PermissionGroup, c.PermissionMenu, c.PermissionPolicy,
-		c.Plan, c.PlanModule, c.PlanQuota, c.PolicyEvaluationLog, c.Position, c.Role,
-		c.RoleFieldPermission, c.RoleMetadata, c.RoleOrgUnit, c.RolePermission,
-		c.Script, c.ScriptLog, c.SysConfig, c.Task, c.Tenant, c.User, c.UserCredential,
-		c.UserMfaFactor, c.UserOrgUnit, c.UserPosition, c.UserRole,
+		c.OntAxiom, c.OntChangeLog, c.OntEntity, c.OntOntology, c.OperationAuditLog,
+		c.OrgUnit, c.Permission, c.PermissionApi, c.PermissionAuditLog,
+		c.PermissionGroup, c.PermissionMenu, c.PermissionPolicy, c.Plan, c.PlanModule,
+		c.PlanQuota, c.PolicyEvaluationLog, c.Position, c.Role, c.RoleFieldPermission,
+		c.RoleMetadata, c.RoleOrgUnit, c.RolePermission, c.Script, c.ScriptLog,
+		c.SysConfig, c.Task, c.Tenant, c.User, c.UserCredential, c.UserMfaFactor,
+		c.UserOrgUnit, c.UserPosition, c.UserRole,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -665,6 +691,14 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.NotificationRule.mutate(ctx, m)
 	case *NotificationTemplateMutation:
 		return c.NotificationTemplate.mutate(ctx, m)
+	case *OntAxiomMutation:
+		return c.OntAxiom.mutate(ctx, m)
+	case *OntChangeLogMutation:
+		return c.OntChangeLog.mutate(ctx, m)
+	case *OntEntityMutation:
+		return c.OntEntity.mutate(ctx, m)
+	case *OntOntologyMutation:
+		return c.OntOntology.mutate(ctx, m)
 	case *OperationAuditLogMutation:
 		return c.OperationAuditLog.mutate(ctx, m)
 	case *OrgUnitMutation:
@@ -5466,6 +5500,538 @@ func (c *NotificationTemplateClient) mutate(ctx context.Context, m *Notification
 	}
 }
 
+// OntAxiomClient is a client for the OntAxiom schema.
+type OntAxiomClient struct {
+	config
+}
+
+// NewOntAxiomClient returns a client for the OntAxiom from the given config.
+func NewOntAxiomClient(c config) *OntAxiomClient {
+	return &OntAxiomClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `ontaxiom.Hooks(f(g(h())))`.
+func (c *OntAxiomClient) Use(hooks ...Hook) {
+	c.hooks.OntAxiom = append(c.hooks.OntAxiom, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `ontaxiom.Intercept(f(g(h())))`.
+func (c *OntAxiomClient) Intercept(interceptors ...Interceptor) {
+	c.inters.OntAxiom = append(c.inters.OntAxiom, interceptors...)
+}
+
+// Create returns a builder for creating a OntAxiom entity.
+func (c *OntAxiomClient) Create() *OntAxiomCreate {
+	mutation := newOntAxiomMutation(c.config, OpCreate)
+	return &OntAxiomCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of OntAxiom entities.
+func (c *OntAxiomClient) CreateBulk(builders ...*OntAxiomCreate) *OntAxiomCreateBulk {
+	return &OntAxiomCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *OntAxiomClient) MapCreateBulk(slice any, setFunc func(*OntAxiomCreate, int)) *OntAxiomCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &OntAxiomCreateBulk{err: fmt.Errorf("calling to OntAxiomClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*OntAxiomCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &OntAxiomCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for OntAxiom.
+func (c *OntAxiomClient) Update() *OntAxiomUpdate {
+	mutation := newOntAxiomMutation(c.config, OpUpdate)
+	return &OntAxiomUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *OntAxiomClient) UpdateOne(_m *OntAxiom) *OntAxiomUpdateOne {
+	mutation := newOntAxiomMutation(c.config, OpUpdateOne, withOntAxiom(_m))
+	return &OntAxiomUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *OntAxiomClient) UpdateOneID(id uint32) *OntAxiomUpdateOne {
+	mutation := newOntAxiomMutation(c.config, OpUpdateOne, withOntAxiomID(id))
+	return &OntAxiomUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for OntAxiom.
+func (c *OntAxiomClient) Delete() *OntAxiomDelete {
+	mutation := newOntAxiomMutation(c.config, OpDelete)
+	return &OntAxiomDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *OntAxiomClient) DeleteOne(_m *OntAxiom) *OntAxiomDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *OntAxiomClient) DeleteOneID(id uint32) *OntAxiomDeleteOne {
+	builder := c.Delete().Where(ontaxiom.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &OntAxiomDeleteOne{builder}
+}
+
+// Query returns a query builder for OntAxiom.
+func (c *OntAxiomClient) Query() *OntAxiomQuery {
+	return &OntAxiomQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeOntAxiom},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a OntAxiom entity by its id.
+func (c *OntAxiomClient) Get(ctx context.Context, id uint32) (*OntAxiom, error) {
+	return c.Query().Where(ontaxiom.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *OntAxiomClient) GetX(ctx context.Context, id uint32) *OntAxiom {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *OntAxiomClient) Hooks() []Hook {
+	return c.hooks.OntAxiom
+}
+
+// Interceptors returns the client interceptors.
+func (c *OntAxiomClient) Interceptors() []Interceptor {
+	return c.inters.OntAxiom
+}
+
+func (c *OntAxiomClient) mutate(ctx context.Context, m *OntAxiomMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&OntAxiomCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&OntAxiomUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&OntAxiomUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&OntAxiomDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown OntAxiom mutation op: %q", m.Op())
+	}
+}
+
+// OntChangeLogClient is a client for the OntChangeLog schema.
+type OntChangeLogClient struct {
+	config
+}
+
+// NewOntChangeLogClient returns a client for the OntChangeLog from the given config.
+func NewOntChangeLogClient(c config) *OntChangeLogClient {
+	return &OntChangeLogClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `ontchangelog.Hooks(f(g(h())))`.
+func (c *OntChangeLogClient) Use(hooks ...Hook) {
+	c.hooks.OntChangeLog = append(c.hooks.OntChangeLog, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `ontchangelog.Intercept(f(g(h())))`.
+func (c *OntChangeLogClient) Intercept(interceptors ...Interceptor) {
+	c.inters.OntChangeLog = append(c.inters.OntChangeLog, interceptors...)
+}
+
+// Create returns a builder for creating a OntChangeLog entity.
+func (c *OntChangeLogClient) Create() *OntChangeLogCreate {
+	mutation := newOntChangeLogMutation(c.config, OpCreate)
+	return &OntChangeLogCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of OntChangeLog entities.
+func (c *OntChangeLogClient) CreateBulk(builders ...*OntChangeLogCreate) *OntChangeLogCreateBulk {
+	return &OntChangeLogCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *OntChangeLogClient) MapCreateBulk(slice any, setFunc func(*OntChangeLogCreate, int)) *OntChangeLogCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &OntChangeLogCreateBulk{err: fmt.Errorf("calling to OntChangeLogClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*OntChangeLogCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &OntChangeLogCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for OntChangeLog.
+func (c *OntChangeLogClient) Update() *OntChangeLogUpdate {
+	mutation := newOntChangeLogMutation(c.config, OpUpdate)
+	return &OntChangeLogUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *OntChangeLogClient) UpdateOne(_m *OntChangeLog) *OntChangeLogUpdateOne {
+	mutation := newOntChangeLogMutation(c.config, OpUpdateOne, withOntChangeLog(_m))
+	return &OntChangeLogUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *OntChangeLogClient) UpdateOneID(id uint32) *OntChangeLogUpdateOne {
+	mutation := newOntChangeLogMutation(c.config, OpUpdateOne, withOntChangeLogID(id))
+	return &OntChangeLogUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for OntChangeLog.
+func (c *OntChangeLogClient) Delete() *OntChangeLogDelete {
+	mutation := newOntChangeLogMutation(c.config, OpDelete)
+	return &OntChangeLogDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *OntChangeLogClient) DeleteOne(_m *OntChangeLog) *OntChangeLogDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *OntChangeLogClient) DeleteOneID(id uint32) *OntChangeLogDeleteOne {
+	builder := c.Delete().Where(ontchangelog.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &OntChangeLogDeleteOne{builder}
+}
+
+// Query returns a query builder for OntChangeLog.
+func (c *OntChangeLogClient) Query() *OntChangeLogQuery {
+	return &OntChangeLogQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeOntChangeLog},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a OntChangeLog entity by its id.
+func (c *OntChangeLogClient) Get(ctx context.Context, id uint32) (*OntChangeLog, error) {
+	return c.Query().Where(ontchangelog.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *OntChangeLogClient) GetX(ctx context.Context, id uint32) *OntChangeLog {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *OntChangeLogClient) Hooks() []Hook {
+	return c.hooks.OntChangeLog
+}
+
+// Interceptors returns the client interceptors.
+func (c *OntChangeLogClient) Interceptors() []Interceptor {
+	return c.inters.OntChangeLog
+}
+
+func (c *OntChangeLogClient) mutate(ctx context.Context, m *OntChangeLogMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&OntChangeLogCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&OntChangeLogUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&OntChangeLogUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&OntChangeLogDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown OntChangeLog mutation op: %q", m.Op())
+	}
+}
+
+// OntEntityClient is a client for the OntEntity schema.
+type OntEntityClient struct {
+	config
+}
+
+// NewOntEntityClient returns a client for the OntEntity from the given config.
+func NewOntEntityClient(c config) *OntEntityClient {
+	return &OntEntityClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `ontentity.Hooks(f(g(h())))`.
+func (c *OntEntityClient) Use(hooks ...Hook) {
+	c.hooks.OntEntity = append(c.hooks.OntEntity, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `ontentity.Intercept(f(g(h())))`.
+func (c *OntEntityClient) Intercept(interceptors ...Interceptor) {
+	c.inters.OntEntity = append(c.inters.OntEntity, interceptors...)
+}
+
+// Create returns a builder for creating a OntEntity entity.
+func (c *OntEntityClient) Create() *OntEntityCreate {
+	mutation := newOntEntityMutation(c.config, OpCreate)
+	return &OntEntityCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of OntEntity entities.
+func (c *OntEntityClient) CreateBulk(builders ...*OntEntityCreate) *OntEntityCreateBulk {
+	return &OntEntityCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *OntEntityClient) MapCreateBulk(slice any, setFunc func(*OntEntityCreate, int)) *OntEntityCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &OntEntityCreateBulk{err: fmt.Errorf("calling to OntEntityClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*OntEntityCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &OntEntityCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for OntEntity.
+func (c *OntEntityClient) Update() *OntEntityUpdate {
+	mutation := newOntEntityMutation(c.config, OpUpdate)
+	return &OntEntityUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *OntEntityClient) UpdateOne(_m *OntEntity) *OntEntityUpdateOne {
+	mutation := newOntEntityMutation(c.config, OpUpdateOne, withOntEntity(_m))
+	return &OntEntityUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *OntEntityClient) UpdateOneID(id uint32) *OntEntityUpdateOne {
+	mutation := newOntEntityMutation(c.config, OpUpdateOne, withOntEntityID(id))
+	return &OntEntityUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for OntEntity.
+func (c *OntEntityClient) Delete() *OntEntityDelete {
+	mutation := newOntEntityMutation(c.config, OpDelete)
+	return &OntEntityDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *OntEntityClient) DeleteOne(_m *OntEntity) *OntEntityDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *OntEntityClient) DeleteOneID(id uint32) *OntEntityDeleteOne {
+	builder := c.Delete().Where(ontentity.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &OntEntityDeleteOne{builder}
+}
+
+// Query returns a query builder for OntEntity.
+func (c *OntEntityClient) Query() *OntEntityQuery {
+	return &OntEntityQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeOntEntity},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a OntEntity entity by its id.
+func (c *OntEntityClient) Get(ctx context.Context, id uint32) (*OntEntity, error) {
+	return c.Query().Where(ontentity.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *OntEntityClient) GetX(ctx context.Context, id uint32) *OntEntity {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *OntEntityClient) Hooks() []Hook {
+	return c.hooks.OntEntity
+}
+
+// Interceptors returns the client interceptors.
+func (c *OntEntityClient) Interceptors() []Interceptor {
+	return c.inters.OntEntity
+}
+
+func (c *OntEntityClient) mutate(ctx context.Context, m *OntEntityMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&OntEntityCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&OntEntityUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&OntEntityUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&OntEntityDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown OntEntity mutation op: %q", m.Op())
+	}
+}
+
+// OntOntologyClient is a client for the OntOntology schema.
+type OntOntologyClient struct {
+	config
+}
+
+// NewOntOntologyClient returns a client for the OntOntology from the given config.
+func NewOntOntologyClient(c config) *OntOntologyClient {
+	return &OntOntologyClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `ontontology.Hooks(f(g(h())))`.
+func (c *OntOntologyClient) Use(hooks ...Hook) {
+	c.hooks.OntOntology = append(c.hooks.OntOntology, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `ontontology.Intercept(f(g(h())))`.
+func (c *OntOntologyClient) Intercept(interceptors ...Interceptor) {
+	c.inters.OntOntology = append(c.inters.OntOntology, interceptors...)
+}
+
+// Create returns a builder for creating a OntOntology entity.
+func (c *OntOntologyClient) Create() *OntOntologyCreate {
+	mutation := newOntOntologyMutation(c.config, OpCreate)
+	return &OntOntologyCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of OntOntology entities.
+func (c *OntOntologyClient) CreateBulk(builders ...*OntOntologyCreate) *OntOntologyCreateBulk {
+	return &OntOntologyCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *OntOntologyClient) MapCreateBulk(slice any, setFunc func(*OntOntologyCreate, int)) *OntOntologyCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &OntOntologyCreateBulk{err: fmt.Errorf("calling to OntOntologyClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*OntOntologyCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &OntOntologyCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for OntOntology.
+func (c *OntOntologyClient) Update() *OntOntologyUpdate {
+	mutation := newOntOntologyMutation(c.config, OpUpdate)
+	return &OntOntologyUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *OntOntologyClient) UpdateOne(_m *OntOntology) *OntOntologyUpdateOne {
+	mutation := newOntOntologyMutation(c.config, OpUpdateOne, withOntOntology(_m))
+	return &OntOntologyUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *OntOntologyClient) UpdateOneID(id uint32) *OntOntologyUpdateOne {
+	mutation := newOntOntologyMutation(c.config, OpUpdateOne, withOntOntologyID(id))
+	return &OntOntologyUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for OntOntology.
+func (c *OntOntologyClient) Delete() *OntOntologyDelete {
+	mutation := newOntOntologyMutation(c.config, OpDelete)
+	return &OntOntologyDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *OntOntologyClient) DeleteOne(_m *OntOntology) *OntOntologyDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *OntOntologyClient) DeleteOneID(id uint32) *OntOntologyDeleteOne {
+	builder := c.Delete().Where(ontontology.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &OntOntologyDeleteOne{builder}
+}
+
+// Query returns a query builder for OntOntology.
+func (c *OntOntologyClient) Query() *OntOntologyQuery {
+	return &OntOntologyQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeOntOntology},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a OntOntology entity by its id.
+func (c *OntOntologyClient) Get(ctx context.Context, id uint32) (*OntOntology, error) {
+	return c.Query().Where(ontontology.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *OntOntologyClient) GetX(ctx context.Context, id uint32) *OntOntology {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *OntOntologyClient) Hooks() []Hook {
+	return c.hooks.OntOntology
+}
+
+// Interceptors returns the client interceptors.
+func (c *OntOntologyClient) Interceptors() []Interceptor {
+	return c.inters.OntOntology
+}
+
+func (c *OntOntologyClient) mutate(ctx context.Context, m *OntOntologyMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&OntOntologyCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&OntOntologyUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&OntOntologyUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&OntOntologyDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown OntOntology mutation op: %q", m.Op())
+	}
+}
+
 // OperationAuditLogClient is a client for the OperationAuditLog schema.
 type OperationAuditLogClient struct {
 	config
@@ -9509,12 +10075,13 @@ type (
 		InternalMessageCategory, InternalMessageRecipient, Language, LoginAuditLog,
 		LoginPolicy, Membership, MembershipOrgUnit, MembershipPosition, MembershipRole,
 		Menu, MonitorAlertRule, NotificationChannel, NotificationDelivery,
-		NotificationPreference, NotificationRule, NotificationTemplate,
-		OperationAuditLog, OrgUnit, Permission, PermissionApi, PermissionAuditLog,
-		PermissionGroup, PermissionMenu, PermissionPolicy, Plan, PlanModule, PlanQuota,
-		PolicyEvaluationLog, Position, Role, RoleFieldPermission, RoleMetadata,
-		RoleOrgUnit, RolePermission, Script, ScriptLog, SysConfig, Task, Tenant, User,
-		UserCredential, UserMfaFactor, UserOrgUnit, UserPosition, UserRole []ent.Hook
+		NotificationPreference, NotificationRule, NotificationTemplate, OntAxiom,
+		OntChangeLog, OntEntity, OntOntology, OperationAuditLog, OrgUnit, Permission,
+		PermissionApi, PermissionAuditLog, PermissionGroup, PermissionMenu,
+		PermissionPolicy, Plan, PlanModule, PlanQuota, PolicyEvaluationLog, Position,
+		Role, RoleFieldPermission, RoleMetadata, RoleOrgUnit, RolePermission, Script,
+		ScriptLog, SysConfig, Task, Tenant, User, UserCredential, UserMfaFactor,
+		UserOrgUnit, UserPosition, UserRole []ent.Hook
 	}
 	inters struct {
 		AccessKey, AiAgentApp, AiAgentRun, AiChunk, AiConversation, AiDoc,
@@ -9523,12 +10090,12 @@ type (
 		InternalMessageCategory, InternalMessageRecipient, Language, LoginAuditLog,
 		LoginPolicy, Membership, MembershipOrgUnit, MembershipPosition, MembershipRole,
 		Menu, MonitorAlertRule, NotificationChannel, NotificationDelivery,
-		NotificationPreference, NotificationRule, NotificationTemplate,
-		OperationAuditLog, OrgUnit, Permission, PermissionApi, PermissionAuditLog,
-		PermissionGroup, PermissionMenu, PermissionPolicy, Plan, PlanModule, PlanQuota,
-		PolicyEvaluationLog, Position, Role, RoleFieldPermission, RoleMetadata,
-		RoleOrgUnit, RolePermission, Script, ScriptLog, SysConfig, Task, Tenant, User,
-		UserCredential, UserMfaFactor, UserOrgUnit, UserPosition,
-		UserRole []ent.Interceptor
+		NotificationPreference, NotificationRule, NotificationTemplate, OntAxiom,
+		OntChangeLog, OntEntity, OntOntology, OperationAuditLog, OrgUnit, Permission,
+		PermissionApi, PermissionAuditLog, PermissionGroup, PermissionMenu,
+		PermissionPolicy, Plan, PlanModule, PlanQuota, PolicyEvaluationLog, Position,
+		Role, RoleFieldPermission, RoleMetadata, RoleOrgUnit, RolePermission, Script,
+		ScriptLog, SysConfig, Task, Tenant, User, UserCredential, UserMfaFactor,
+		UserOrgUnit, UserPosition, UserRole []ent.Interceptor
 	}
 )

@@ -77,5 +77,10 @@ var ServiceTagToBusinessModule = map[string]identityV1.Module{
 	// 后续工单等租户态业务实体应在该 module 下新增服务并单独评估业务模块归属。
 	"OneStopServiceTypeService": identityV1.Module_SYSTEM,
 
+	// 本体建模（ont_* 四表）：平台级共享知识资产，暂挂 SYSTEM 模块
+	// （菜单侧以 sys:platform_admin 收权，与 onestop 同 rationale）。
+	"OntologyService":      identityV1.Module_SYSTEM,
+	"OntologyClassService": identityV1.Module_SYSTEM,
+
 	"AuthenticationService": identityV1.Module_DASHBOARD,
 }

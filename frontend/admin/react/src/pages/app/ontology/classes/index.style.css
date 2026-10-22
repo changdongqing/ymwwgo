@@ -1,0 +1,68 @@
+/* 本体类页（左树右表）：工具条、树节点 hover 操作、+N 角标、usage 弹窗警示 */
+
+.ontology-classes-toolbar {
+  padding-bottom: 12px;
+}
+
+.ontology-classes-toolbar-label {
+  color: var(--ant-color-text-tertiary);
+  font-size: 12px;
+}
+
+.ontology-classes-empty {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ant-color-text-tertiary);
+}
+
+/* 树节点：标题 + hover 操作区 */
+.ontology-tree-node {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.ontology-tree-node-title.deprecated {
+  text-decoration: line-through;
+  color: var(--ant-color-text-tertiary);
+}
+
+.ontology-tree-node-badge {
+  margin-inline-end: 0;
+  font-size: 10px;
+  line-height: 16px;
+  padding-inline: 4px;
+}
+
+.ontology-tree-node-actions {
+  display: none;
+  align-items: center;
+  gap: 6px;
+  margin-left: 6px;
+  color: var(--ant-color-text-tertiary);
+
+  .anticon:hover {
+    color: var(--ant-color-primary);
+  }
+
+  .ontology-tree-node-delete:hover {
+    color: var(--ant-color-error);
+  }
+}
+
+/* hover 出操作按钮：树标题行与节点都命中 */
+.ant-tree-node-content-wrapper:hover .ontology-tree-node-actions,
+.ontology-tree-node:hover .ontology-tree-node-actions {
+  display: inline-flex;
+}
+
+.ontology-usage-warning {
+  color: var(--ant-color-error);
+}
+
+.ontology-usage-mono {
+  font-family: monospace;
+}
