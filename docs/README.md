@@ -47,6 +47,7 @@
 | [field_change_guide.md](./field_change_guide.md) | **改一个字段速查**：A/B/C/D 四档要跑哪几条命令、碰哪几个文件；哪些事明确不用做（接口同步/菜单/SQL/字段权限）；两个"接口 200 但结果是错的" | 给已有资源加字段、只调自己那一端之前——日常最高频的活，02 与 04 之间的空档 |
 | [database/design/ent-goose-migrations.md](./database/design/ent-goose-migrations.md) | **数据库结构版本化迁移（goose）**：改表结构标准五步流程、危险变更 expand–migrate–contract 三步法、存量库纳管、CI 漂移守卫、`cmd/migrate` CLI | 改任何表结构之前必读（全仓铁律 6）；排"迁移失败/结构漂移/老库升级"时 |
 | [crud_module_guide/](./crud_module_guide/) | 新增完整 CRUD 业务模块的端到端手册：README 跨端编排与通用陷阱、backend.md 后端全流程与样例镜像索引、三端各自的页面实现参考（正文为英文原稿） | 接到「新增模块/新增资源/新建管理页」需求、动工新增整个模块之前；只给已有资源加字段先看 field_change_guide.md |
+| [leixing/biaodan/](./leixing/biaodan/) | 表单分类编码字典（01 表单）：后勤/物业工单四级分类（大类 01 表单 → 中类 0101–0112 → 小类 → 细类）的编码规则与全量清单、字典表字段建议 | 设计工单/表单分类字典、录入分类数据、给单据类型排编码前缀前 |
 | [frontend_authority.md](./frontend_authority.md) | 前端权限：路由访问模式、按钮权限码/角色、字段级权限 V1 | 改路由/按钮可见性/受控字段时 |
 | [adopt-one-frontend.md](./adopt-one-frontend.md) | 只保留一个前端的裁剪：三端独立性实测、`make ts` 回流、CORS、菜单表无"端"维度的后果 | 决定只用 react / vue-element / vue-vben 之一、要删掉另外两端之前 |
 | [authentication.md](./authentication.md) | 认证与令牌链路：登录全流程、令牌结构与配置、刷新轮换与 Cookie、机器令牌、MFA、限流/策略/验证码、会话吊销 | 改登录/令牌/刷新/MFA/限流/策略前 |
