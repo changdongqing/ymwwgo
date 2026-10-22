@@ -28,6 +28,8 @@ Thumbs.db
 *.key
 *.log
 bin/
+# air 热重载构建产物（.air.toml 的 bin 输出目录）
+tmp/
 
 # Develop tools
 .vscode/
