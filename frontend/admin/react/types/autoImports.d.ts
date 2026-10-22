@@ -119,54 +119,6 @@ declare global {
 // for type re-export
 declare global {
   // @ts-ignore
-  export type { FC } from 'react'
-  import('react')
-  // @ts-ignore
-  export type { ECOption } from '../src/hooks/useEcharts'
-  import('../src/hooks/useEcharts')
-  // @ts-ignore
-  export type { AuthLayoutProps } from '../src/components/bussiness/AuthLayout/index'
-  import('../src/components/bussiness/AuthLayout/index')
-  // @ts-ignore
-  export type { EditorProps } from '../src/components/common/Editor/types'
-  import('../src/components/common/Editor/types')
-  // @ts-ignore
-  export type { CodeEditorProps } from '../src/components/common/Editor/src/CodeEditor'
-  import('../src/components/common/Editor/src/CodeEditor')
-  // @ts-ignore
-  export type { JsonEditorProps } from '../src/components/common/Editor/src/JsonEditor'
-  import('../src/components/common/Editor/src/JsonEditor')
-  // @ts-ignore
-  export type { MarkdownEditorProps } from '../src/components/common/Editor/src/MarkdownEditor'
-  import('../src/components/common/Editor/src/MarkdownEditor')
-  // @ts-ignore
-  export type { PlainTextEditorProps } from '../src/components/common/Editor/src/PlainTextEditor'
-  import('../src/components/common/Editor/src/PlainTextEditor')
-  // @ts-ignore
-  export type { TiptapEditorProps } from '../src/components/common/Editor/src/TiptapEditor'
-  import('../src/components/common/Editor/src/TiptapEditor')
-  // @ts-ignore
-  export type { CodeBlockModalProps, VideoModalProps, IframeModalProps } from '../src/components/common/Editor/src/TiptapEditor/modals'
-  import('../src/components/common/Editor/src/TiptapEditor/modals')
-  // @ts-ignore
-  export type { ImportModalProps } from '../src/components/common/ImportModal/index'
-  import('../src/components/common/ImportModal/index')
-  // @ts-ignore
-  export type { TableSkeletonProps } from '../src/components/common/ListTable/TableSkeleton'
-  import('../src/components/common/ListTable/TableSkeleton')
-  // @ts-ignore
-  export type { ThemeLoadingProps } from '../src/components/common/Loading/index'
-  import('../src/components/common/Loading/index')
-  // @ts-ignore
-  export type { TableExportServerExport, TableExportButtonProps } from '../src/components/common/TableExportButton/index'
-  import('../src/components/common/TableExportButton/index')
-  // @ts-ignore
-  export type { TokenPayload, AuthState } from '../src/stores/auth'
-  import('../src/stores/auth')
-  // @ts-ignore
-  export type { UserState } from '../src/stores/user'
-  import('../src/stores/user')
-  // @ts-ignore
-  export type { TabItem } from '../src/stores/tabs'
-  import('../src/stores/tabs')
+  export type { FC, ECOption, AuthLayoutProps, EditorProps, CodeEditorProps, JsonEditorProps, MarkdownEditorProps, PlainTextEditorProps, TiptapEditorProps, CodeBlockModalProps, VideoModalProps, IframeModalProps, ImportModalProps, TableSkeletonProps, ThemeLoadingProps, TableExportServerExport, TableExportButtonProps, TokenPayload, AuthState, UserState, TabItem } from './autoImports.d'
+  import('./autoImports.d')
 }

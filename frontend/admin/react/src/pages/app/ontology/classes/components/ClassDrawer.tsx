@@ -17,6 +17,7 @@ import {
   useOntologyClassTree,
   useUpdateOntologyClass,
 } from '@/api/hooks/ontologyClass';
+import AnnotationListEditor, { cleanAnnotationRows } from '../../components/AnnotationListEditor';
 
 interface ClassDrawerProps {
   open: boolean;
@@ -141,6 +142,11 @@ const ClassDrawer: React.FC<ClassDrawerProps> = ({
           parentIds: frame.parentIds ?? [],
           disjointIds: frame.disjointIds ?? [],
           equivalentId: frame.equivalentId ?? undefined,
+          annotations: (frame.annotations ?? []).map((a) => ({
+            propertyId: a.propertyId,
+            value: a.value ?? '',
+            lang: a.lang ?? undefined,
+          })),
         });
       }, 0);
     } else {
@@ -154,6 +160,7 @@ const ClassDrawer: React.FC<ClassDrawerProps> = ({
           parentIds: defaultParentIds ?? [],
           disjointIds: [],
           equivalentId: undefined,
+          annotations: [],
         });
       }, 0);
     }
@@ -185,6 +192,11 @@ const ClassDrawer: React.FC<ClassDrawerProps> = ({
         return true;
       case 'ENTITY_TYPE_MISMATCH':
         formRef.current?.setFields([{ name: 'disjointIds', errors: [detail] }]);
+        return true;
+      case 'ANNOTATION_PROPERTY_TARGET_INVALID':
+      case 'ANNOTATION_VALUE_INVALID':
+        // 自定义注解区错误（04 期增量）：值空白/谓词非法落行内红字
+        formRef.current?.setFields([{ name: 'annotations', errors: [detail] }]);
         return true;
       default:
         return false;
@@ -239,6 +251,7 @@ const ClassDrawer: React.FC<ClassDrawerProps> = ({
             parentIds: values.parentIds ?? [],
             disjointIds: values.disjointIds ?? [],
             equivalentId: values.equivalentId ?? 0, // 0 = 清空等价（V1 单值）
+            annotations: cleanAnnotationRows(values.annotations), // 全量替换语义（04 期增量）
             baseVersion: frame?.baseVersion ?? undefined, // 乐观锁基准；nil = 跳过（内部路径）
           },
         });
@@ -253,6 +266,7 @@ const ClassDrawer: React.FC<ClassDrawerProps> = ({
           parentIds: values.parentIds ?? [],
           disjointIds: values.disjointIds ?? [],
           equivalentId: values.equivalentId ?? undefined,
+          annotations: cleanAnnotationRows(values.annotations), // 全量提交（04 期增量）
         };
         await createMutation.mutateAsync({ values: payload });
       }
@@ -391,6 +405,15 @@ const ClassDrawer: React.FC<ClassDrawerProps> = ({
             .filter((o) => !isEdit || o.id !== classId)
             .map((o) => ({ value: o.id, label: o.label, disabled: disabledDescendants.has(o.id) }))}
         />
+      </Form.Item>
+
+      {/* 自定义注解区（04 期增量——AnnotationListEditor 共享组件，六类实体 frame 共用） */}
+      <Form.Item
+        name="annotations"
+        label={t('class.annotations')}
+        extra={t('annotationEditor.hint')}
+      >
+        <AnnotationListEditor />
       </Form.Item>
 
       <ProFormSwitch name="deprecated" label={t('class.deprecated')} />

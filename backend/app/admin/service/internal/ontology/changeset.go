@@ -1,6 +1,8 @@
 package ontology
 
 import (
+	"strings"
+
 	"go-wind-admin/app/admin/service/internal/data/ent"
 )
 
@@ -464,6 +466,134 @@ func DiffCharacteristics(subject uint32, axiomType uint32, current []*ent.OntAxi
 			SubjectID:    subject,
 			PredicateIRI: iri,
 		})
+	}
+	return changes
+}
+
+// ============================================================================
+// 自定义注解断言 diff（04 期增量，六类实体 frame 共用——04 号文档 §4.3）
+// ============================================================================
+
+// CustomAnnotationInput 自定义注解断言提交载荷（100 型 object_id 路径；四面 Create/Update 共用）。
+type CustomAnnotationInput struct {
+	PropertyID uint32 // 谓词 = 注解属性实体 id
+	Value      string // 字面量词形（plain literal 语义；空白非法）
+	Lang       string // 可选语言标签（空白归一为空串）
+}
+
+// NormalizeCustomAnnotationInputs 提交载荷归一化（服务层在 diff 前统一执行，04 号文档 §4.3）：
+//   - value 去首尾空白后为空 → ANNOTATION_VALUE_INVALID；
+//   - lang 去首尾空白（空白归一为空串，非法 BCP-47 值 V1 不校验——04 号文档 §7 #16）；
+//   - 按 (property_id, value, lang) 三元组有序去重（防前端重复行，重复只落一行）。
+//
+// propertyID 为 0 的行直接丢弃（前端空行防御）。
+func NormalizeCustomAnnotationInputs(inputs []CustomAnnotationInput) ([]CustomAnnotationInput, error) {
+	out := make([]CustomAnnotationInput, 0, len(inputs))
+	seen := make(map[CustomAnnotationInput]struct{}, len(inputs))
+	for _, in := range inputs {
+		if in.PropertyID == 0 {
+			continue
+		}
+		value := strings.TrimSpace(in.Value)
+		if value == "" {
+			return nil, NewError(ReasonAnnotationValueInvalid, "注解值不合法：属性 %d 的注解值为空白", in.PropertyID)
+		}
+		norm := CustomAnnotationInput{PropertyID: in.PropertyID, Value: value, Lang: strings.TrimSpace(in.Lang)}
+		if _, dup := seen[norm]; dup {
+			continue
+		}
+		seen[norm] = struct{}{}
+		out = append(out, norm)
+	}
+	return out, nil
+}
+
+// customAnnotationKey diff 键：(object_id, value_text, lang) 三元组——同属性多值天然支持。
+type customAnnotationKey struct {
+	propertyID uint32
+	value      string
+	lang       string
+}
+
+func customAnnotationKeyOf(objectID uint32, value, lang string) customAnnotationKey {
+	return customAnnotationKey{propertyID: objectID, value: value, lang: lang}
+}
+
+// AppendCustomAnnotationAxioms create 侧：新实体的自定义注解断言 ADD 变更（sort_order 从 0 顺排，
+// 回读序 = 提交序）。subjectRef > 0 时主语引用 NewEntities[subjectRef-1]（create 路径新实体
+// 尚无自增 id 的桥接），否则用 subjectID（内部初始化路径）。inputs 须先过 NormalizeCustomAnnotationInputs。
+func AppendCustomAnnotationAxioms(set *EntityChangeSet, subjectRef int, subjectID uint32, inputs []CustomAnnotationInput) {
+	for i, in := range inputs {
+		set.Changes = append(set.Changes, AxiomChange{
+			Op:                  AxiomOpAdd,
+			AxiomType:           AxiomAnnotationAssertion,
+			SubjectNewEntityRef: subjectRef,
+			SubjectID:           subjectID,
+			ObjectID:            in.PropertyID,
+			ValueText:           in.Value,
+			Lang:                in.Lang,
+			SortOrder:           int32(i),
+		})
+	}
+}
+
+// DiffCustomAnnotations update 侧：自定义注解断言 replace diff（100 型 object_id 轨，
+// 六类实体 frame 共用——类/对象属性/数据属性/注解属性四面 + 06 期个体零成本复用）。
+//
+//   - 现状集 = current 中 object_id 非空的 100 行（内建谓词行 predicate_iri 路径不参与本 diff）；
+//   - diff 键 = (object_id, value_text, lang) 三元组：键在目标中 → 保留不动，否则删；
+//   - 目标中无存量行的键 → 增（sort_order 从存量自定义行最大值后顺排，回读序 = 提交序）；
+//   - 全量替换语义（04 号文档 §12 #1）：inputs 为空 = 清空全部自定义注解——与 01 期
+//     内建注解 frame 全量提交语义对齐；"未提及则不动"的未来升级路径是 optional wrapper message。
+//
+// inputs 须先过 NormalizeCustomAnnotationInputs（值空白/去重已由服务层前置）。
+func DiffCustomAnnotations(subject uint32, current []*ent.OntAxiom, inputs []CustomAnnotationInput) []AxiomChange {
+	currentByKey := make(map[customAnnotationKey][]*ent.OntAxiom, len(current))
+	maxSort := int32(-1)
+	for _, ax := range current {
+		if ax.ObjectID == nil || *ax.ObjectID == 0 {
+			continue
+		}
+		key := customAnnotationKeyOf(*ax.ObjectID, nilString(ax.ValueText), nilString(ax.Lang))
+		currentByKey[key] = append(currentByKey[key], ax)
+		if so := sortOrderOf(ax); so > maxSort {
+			maxSort = so
+		}
+	}
+
+	changes := make([]AxiomChange, 0, len(current)+len(inputs))
+
+	// 删：存量自定义行中键不在目标集合的（同键多行脏数据全部删除，增侧会补一行规范行）
+	targetKeys := make(map[customAnnotationKey]struct{}, len(inputs))
+	for _, in := range inputs {
+		targetKeys[customAnnotationKeyOf(in.PropertyID, in.Value, in.Lang)] = struct{}{}
+	}
+	for key, rows := range currentByKey {
+		if _, keep := targetKeys[key]; keep {
+			continue
+		}
+		for _, row := range rows {
+			changes = append(changes, AxiomChange{Op: AxiomOpDelete, AxiomID: row.ID, SubjectID: subject})
+		}
+	}
+
+	// 增：目标中无存量行的键，按提交序从存量最大 sort_order 后顺排
+	seq := maxSort + 1
+	for _, in := range inputs {
+		key := customAnnotationKeyOf(in.PropertyID, in.Value, in.Lang)
+		if _, ok := currentByKey[key]; ok {
+			continue
+		}
+		changes = append(changes, AxiomChange{
+			Op:        AxiomOpAdd,
+			AxiomType: AxiomAnnotationAssertion,
+			SubjectID: subject,
+			ObjectID:  in.PropertyID,
+			ValueText: in.Value,
+			Lang:      in.Lang,
+			SortOrder: seq,
+		})
+		seq++
 	}
 	return changes
 }

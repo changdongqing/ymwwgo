@@ -19,6 +19,7 @@ import {
   useOntologyObjectPropertyTree,
   useUpdateObjectProperty,
 } from '@/api/hooks/ontologyObjectProperty';
+import AnnotationListEditor, { cleanAnnotationRows } from '../../components/AnnotationListEditor';
 import { useOntologyClassTree } from '@/api/hooks/ontologyClass';
 import { PROPERTY_CHARACTERISTICS } from '../constants';
 
@@ -151,6 +152,11 @@ const ObjectPropertyDrawer: React.FC<ObjectPropertyDrawerProps> = ({
             id: c.id,
             memberIds: c.memberIds ?? [],
           })),
+          annotations: (frame.annotations ?? []).map((a) => ({
+            propertyId: a.propertyId,
+            value: a.value ?? '',
+            lang: a.lang ?? undefined,
+          })),
         });
       }, 0);
     } else {
@@ -168,6 +174,7 @@ const ObjectPropertyDrawer: React.FC<ObjectPropertyDrawerProps> = ({
           equivalentId: undefined,
           characteristics: [],
           chains: [],
+          annotations: [],
         });
       }, 0);
     }
@@ -213,6 +220,11 @@ const ObjectPropertyDrawer: React.FC<ObjectPropertyDrawerProps> = ({
       case 'PROPERTY_CHAIN_INVALID':
       case 'PROPERTY_TARGET_INVALID':
         formRef.current?.setFields([{ name: 'chains', errors: [detail] }]);
+        return true;
+      case 'ANNOTATION_PROPERTY_TARGET_INVALID':
+      case 'ANNOTATION_VALUE_INVALID':
+        // 自定义注解区错误（04 期增量）：值空白/谓词非法落行内红字
+        formRef.current?.setFields([{ name: 'annotations', errors: [detail] }]);
         return true;
       default:
         return false;
@@ -277,6 +289,7 @@ const ObjectPropertyDrawer: React.FC<ObjectPropertyDrawerProps> = ({
             equivalentId: values.equivalentId ?? 0, // 0 = 清空等价（V1 单值）
             characteristics: values.characteristics ?? [],
             chains,
+            annotations: cleanAnnotationRows(values.annotations), // 全量替换语义（04 期增量）
             baseVersion: frame?.baseVersion ?? undefined, // 乐观锁基准；nil = 跳过（内部路径）
           },
         });
@@ -295,6 +308,7 @@ const ObjectPropertyDrawer: React.FC<ObjectPropertyDrawerProps> = ({
           equivalentId: values.equivalentId ?? undefined,
           characteristics: values.characteristics ?? [],
           chains,
+          annotations: cleanAnnotationRows(values.annotations), // 全量提交（04 期增量）
         };
         await createMutation.mutateAsync({ values: payload });
       }
@@ -533,6 +547,15 @@ const ObjectPropertyDrawer: React.FC<ObjectPropertyDrawerProps> = ({
           </Form.Item>
         )}
       </Form.List>
+
+      {/* 自定义注解区（04 期增量——AnnotationListEditor 共享组件，六类实体 frame 共用） */}
+      <Form.Item
+        name="annotations"
+        label={t('objectProperty.annotations')}
+        extra={t('annotationEditor.hint')}
+      >
+        <AnnotationListEditor />
+      </Form.Item>
 
       <ProFormSwitch name="deprecated" label={t('objectProperty.deprecated')} />
     </DrawerForm>

@@ -111,7 +111,8 @@ const (
 	OntologyAxiomType_AXIOM_DATA_PROPERTY_CHARACTERISTIC   OntologyAxiomType = 43 // 03：数据属性特征（泛型，predicate_iri 区分；V1 仅函数性）
 	OntologyAxiomType_AXIOM_EQUIVALENT_DATA_PROPERTIES     OntologyAxiomType = 44 // 03：等价数据属性（成对 (P,Q)+(Q,P)）
 	OntologyAxiomType_AXIOM_DISJOINT_DATA_PROPERTIES       OntologyAxiomType = 45 // 03：不相交数据属性（成对）
-	// 46~49 预留 05 数据类型；50 预留 04 注解属性
+	OntologyAxiomType_AXIOM_SUB_ANNOTATION_PROPERTY_OF     OntologyAxiomType = 50 // 04：子注解属性（subject=子属性，object_id=父属性；多行=多父）
+	// 46~49 预留 05 数据类型
 	// 60~62 预留 06 个体（60 断型 / 61 对象断言 / 62 数据断言）
 	OntologyAxiomType_AXIOM_ANNOTATION_ASSERTION OntologyAxiomType = 100 // 阶段0：注解断言，全功能共用
 )
@@ -138,6 +139,7 @@ var (
 		43:  "AXIOM_DATA_PROPERTY_CHARACTERISTIC",
 		44:  "AXIOM_EQUIVALENT_DATA_PROPERTIES",
 		45:  "AXIOM_DISJOINT_DATA_PROPERTIES",
+		50:  "AXIOM_SUB_ANNOTATION_PROPERTY_OF",
 		100: "AXIOM_ANNOTATION_ASSERTION",
 	}
 	OntologyAxiomType_value = map[string]int32{
@@ -160,6 +162,7 @@ var (
 		"AXIOM_DATA_PROPERTY_CHARACTERISTIC":   43,
 		"AXIOM_EQUIVALENT_DATA_PROPERTIES":     44,
 		"AXIOM_DISJOINT_DATA_PROPERTIES":       45,
+		"AXIOM_SUB_ANNOTATION_PROPERTY_OF":     50,
 		"AXIOM_ANNOTATION_ASSERTION":           100,
 	}
 )
@@ -382,6 +385,144 @@ func (x *EntityUsage) GetRefs() []*EntityUsageRef {
 	return nil
 }
 
+// 自定义注解断言（frame 回显；100 型 object_id 路径的行，保序 sort_order——04 号文档 §5.1）
+type AnnotationAssertion struct {
+	state                protoimpl.MessageState `protogen:"open.v1"`
+	PropertyId           *uint32                `protobuf:"varint,1,opt,name=property_id,json=propertyId,proto3,oneof" json:"property_id,omitempty"`                                // 注解属性实体ID
+	PropertyLocalName    *string                `protobuf:"bytes,2,opt,name=property_local_name,json=propertyLocalName,proto3,oneof" json:"property_local_name,omitempty"`          // 注解属性局部名
+	PropertyDisplayLabel *string                `protobuf:"bytes,3,opt,name=property_display_label,json=propertyDisplayLabel,proto3,oneof" json:"property_display_label,omitempty"` // 注解属性显示名
+	Value                *string                `protobuf:"bytes,4,opt,name=value,proto3,oneof" json:"value,omitempty"`                                                             // 注解值
+	Lang                 *string                `protobuf:"bytes,5,opt,name=lang,proto3,oneof" json:"lang,omitempty"`                                                               // 语言标签
+	unknownFields        protoimpl.UnknownFields
+	sizeCache            protoimpl.SizeCache
+}
+
+func (x *AnnotationAssertion) Reset() {
+	*x = AnnotationAssertion{}
+	mi := &file_ontology_service_v1_ontology_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AnnotationAssertion) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AnnotationAssertion) ProtoMessage() {}
+
+func (x *AnnotationAssertion) ProtoReflect() protoreflect.Message {
+	mi := &file_ontology_service_v1_ontology_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AnnotationAssertion.ProtoReflect.Descriptor instead.
+func (*AnnotationAssertion) Descriptor() ([]byte, []int) {
+	return file_ontology_service_v1_ontology_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *AnnotationAssertion) GetPropertyId() uint32 {
+	if x != nil && x.PropertyId != nil {
+		return *x.PropertyId
+	}
+	return 0
+}
+
+func (x *AnnotationAssertion) GetPropertyLocalName() string {
+	if x != nil && x.PropertyLocalName != nil {
+		return *x.PropertyLocalName
+	}
+	return ""
+}
+
+func (x *AnnotationAssertion) GetPropertyDisplayLabel() string {
+	if x != nil && x.PropertyDisplayLabel != nil {
+		return *x.PropertyDisplayLabel
+	}
+	return ""
+}
+
+func (x *AnnotationAssertion) GetValue() string {
+	if x != nil && x.Value != nil {
+		return *x.Value
+	}
+	return ""
+}
+
+func (x *AnnotationAssertion) GetLang() string {
+	if x != nil && x.Lang != nil {
+		return *x.Lang
+	}
+	return ""
+}
+
+// 自定义注解提交载荷（四面 Create/Update 请求共用；同属性多值合法，重复行服务端有序去重）
+type AnnotationAssertionInput struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	PropertyId    uint32                 `protobuf:"varint,1,opt,name=property_id,json=propertyId,proto3" json:"property_id,omitempty"` // 注解属性实体ID
+	Value         string                 `protobuf:"bytes,2,opt,name=value,proto3" json:"value,omitempty"`                              // 注解值
+	Lang          *string                `protobuf:"bytes,3,opt,name=lang,proto3,oneof" json:"lang,omitempty"`                          // 语言标签
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AnnotationAssertionInput) Reset() {
+	*x = AnnotationAssertionInput{}
+	mi := &file_ontology_service_v1_ontology_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AnnotationAssertionInput) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AnnotationAssertionInput) ProtoMessage() {}
+
+func (x *AnnotationAssertionInput) ProtoReflect() protoreflect.Message {
+	mi := &file_ontology_service_v1_ontology_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AnnotationAssertionInput.ProtoReflect.Descriptor instead.
+func (*AnnotationAssertionInput) Descriptor() ([]byte, []int) {
+	return file_ontology_service_v1_ontology_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *AnnotationAssertionInput) GetPropertyId() uint32 {
+	if x != nil {
+		return x.PropertyId
+	}
+	return 0
+}
+
+func (x *AnnotationAssertionInput) GetValue() string {
+	if x != nil {
+		return x.Value
+	}
+	return ""
+}
+
+func (x *AnnotationAssertionInput) GetLang() string {
+	if x != nil && x.Lang != nil {
+		return *x.Lang
+	}
+	return ""
+}
+
 // 本体文档（owl:Ontology）
 type Ontology struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -404,7 +545,7 @@ type Ontology struct {
 
 func (x *Ontology) Reset() {
 	*x = Ontology{}
-	mi := &file_ontology_service_v1_ontology_proto_msgTypes[3]
+	mi := &file_ontology_service_v1_ontology_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -416,7 +557,7 @@ func (x *Ontology) String() string {
 func (*Ontology) ProtoMessage() {}
 
 func (x *Ontology) ProtoReflect() protoreflect.Message {
-	mi := &file_ontology_service_v1_ontology_proto_msgTypes[3]
+	mi := &file_ontology_service_v1_ontology_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -429,7 +570,7 @@ func (x *Ontology) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Ontology.ProtoReflect.Descriptor instead.
 func (*Ontology) Descriptor() ([]byte, []int) {
-	return file_ontology_service_v1_ontology_proto_rawDescGZIP(), []int{3}
+	return file_ontology_service_v1_ontology_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *Ontology) GetId() uint32 {
@@ -534,7 +675,7 @@ type ListOntologiesResponse struct {
 
 func (x *ListOntologiesResponse) Reset() {
 	*x = ListOntologiesResponse{}
-	mi := &file_ontology_service_v1_ontology_proto_msgTypes[4]
+	mi := &file_ontology_service_v1_ontology_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -546,7 +687,7 @@ func (x *ListOntologiesResponse) String() string {
 func (*ListOntologiesResponse) ProtoMessage() {}
 
 func (x *ListOntologiesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_ontology_service_v1_ontology_proto_msgTypes[4]
+	mi := &file_ontology_service_v1_ontology_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -559,7 +700,7 @@ func (x *ListOntologiesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListOntologiesResponse.ProtoReflect.Descriptor instead.
 func (*ListOntologiesResponse) Descriptor() ([]byte, []int) {
-	return file_ontology_service_v1_ontology_proto_rawDescGZIP(), []int{4}
+	return file_ontology_service_v1_ontology_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *ListOntologiesResponse) GetItems() []*Ontology {
@@ -587,7 +728,7 @@ type OntologyBrief struct {
 
 func (x *OntologyBrief) Reset() {
 	*x = OntologyBrief{}
-	mi := &file_ontology_service_v1_ontology_proto_msgTypes[5]
+	mi := &file_ontology_service_v1_ontology_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -599,7 +740,7 @@ func (x *OntologyBrief) String() string {
 func (*OntologyBrief) ProtoMessage() {}
 
 func (x *OntologyBrief) ProtoReflect() protoreflect.Message {
-	mi := &file_ontology_service_v1_ontology_proto_msgTypes[5]
+	mi := &file_ontology_service_v1_ontology_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -612,7 +753,7 @@ func (x *OntologyBrief) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OntologyBrief.ProtoReflect.Descriptor instead.
 func (*OntologyBrief) Descriptor() ([]byte, []int) {
-	return file_ontology_service_v1_ontology_proto_rawDescGZIP(), []int{5}
+	return file_ontology_service_v1_ontology_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *OntologyBrief) GetId() uint32 {
@@ -639,7 +780,7 @@ type ListOntologiesSimpleResponse struct {
 
 func (x *ListOntologiesSimpleResponse) Reset() {
 	*x = ListOntologiesSimpleResponse{}
-	mi := &file_ontology_service_v1_ontology_proto_msgTypes[6]
+	mi := &file_ontology_service_v1_ontology_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -651,7 +792,7 @@ func (x *ListOntologiesSimpleResponse) String() string {
 func (*ListOntologiesSimpleResponse) ProtoMessage() {}
 
 func (x *ListOntologiesSimpleResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_ontology_service_v1_ontology_proto_msgTypes[6]
+	mi := &file_ontology_service_v1_ontology_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -664,7 +805,7 @@ func (x *ListOntologiesSimpleResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListOntologiesSimpleResponse.ProtoReflect.Descriptor instead.
 func (*ListOntologiesSimpleResponse) Descriptor() ([]byte, []int) {
-	return file_ontology_service_v1_ontology_proto_rawDescGZIP(), []int{6}
+	return file_ontology_service_v1_ontology_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *ListOntologiesSimpleResponse) GetItems() []*OntologyBrief {
@@ -685,7 +826,7 @@ type GetOntologyRequest struct {
 
 func (x *GetOntologyRequest) Reset() {
 	*x = GetOntologyRequest{}
-	mi := &file_ontology_service_v1_ontology_proto_msgTypes[7]
+	mi := &file_ontology_service_v1_ontology_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -697,7 +838,7 @@ func (x *GetOntologyRequest) String() string {
 func (*GetOntologyRequest) ProtoMessage() {}
 
 func (x *GetOntologyRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_ontology_service_v1_ontology_proto_msgTypes[7]
+	mi := &file_ontology_service_v1_ontology_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -710,7 +851,7 @@ func (x *GetOntologyRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetOntologyRequest.ProtoReflect.Descriptor instead.
 func (*GetOntologyRequest) Descriptor() ([]byte, []int) {
-	return file_ontology_service_v1_ontology_proto_rawDescGZIP(), []int{7}
+	return file_ontology_service_v1_ontology_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *GetOntologyRequest) GetId() uint32 {
@@ -737,7 +878,7 @@ type CreateOntologyRequest struct {
 
 func (x *CreateOntologyRequest) Reset() {
 	*x = CreateOntologyRequest{}
-	mi := &file_ontology_service_v1_ontology_proto_msgTypes[8]
+	mi := &file_ontology_service_v1_ontology_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -749,7 +890,7 @@ func (x *CreateOntologyRequest) String() string {
 func (*CreateOntologyRequest) ProtoMessage() {}
 
 func (x *CreateOntologyRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_ontology_service_v1_ontology_proto_msgTypes[8]
+	mi := &file_ontology_service_v1_ontology_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -762,7 +903,7 @@ func (x *CreateOntologyRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateOntologyRequest.ProtoReflect.Descriptor instead.
 func (*CreateOntologyRequest) Descriptor() ([]byte, []int) {
-	return file_ontology_service_v1_ontology_proto_rawDescGZIP(), []int{8}
+	return file_ontology_service_v1_ontology_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *CreateOntologyRequest) GetData() *Ontology {
@@ -785,7 +926,7 @@ type UpdateOntologyRequest struct {
 
 func (x *UpdateOntologyRequest) Reset() {
 	*x = UpdateOntologyRequest{}
-	mi := &file_ontology_service_v1_ontology_proto_msgTypes[9]
+	mi := &file_ontology_service_v1_ontology_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -797,7 +938,7 @@ func (x *UpdateOntologyRequest) String() string {
 func (*UpdateOntologyRequest) ProtoMessage() {}
 
 func (x *UpdateOntologyRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_ontology_service_v1_ontology_proto_msgTypes[9]
+	mi := &file_ontology_service_v1_ontology_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -810,7 +951,7 @@ func (x *UpdateOntologyRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateOntologyRequest.ProtoReflect.Descriptor instead.
 func (*UpdateOntologyRequest) Descriptor() ([]byte, []int) {
-	return file_ontology_service_v1_ontology_proto_rawDescGZIP(), []int{9}
+	return file_ontology_service_v1_ontology_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *UpdateOntologyRequest) GetId() uint32 {
@@ -851,7 +992,7 @@ type DeleteOntologyRequest struct {
 
 func (x *DeleteOntologyRequest) Reset() {
 	*x = DeleteOntologyRequest{}
-	mi := &file_ontology_service_v1_ontology_proto_msgTypes[10]
+	mi := &file_ontology_service_v1_ontology_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -863,7 +1004,7 @@ func (x *DeleteOntologyRequest) String() string {
 func (*DeleteOntologyRequest) ProtoMessage() {}
 
 func (x *DeleteOntologyRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_ontology_service_v1_ontology_proto_msgTypes[10]
+	mi := &file_ontology_service_v1_ontology_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -876,7 +1017,7 @@ func (x *DeleteOntologyRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteOntologyRequest.ProtoReflect.Descriptor instead.
 func (*DeleteOntologyRequest) Descriptor() ([]byte, []int) {
-	return file_ontology_service_v1_ontology_proto_rawDescGZIP(), []int{10}
+	return file_ontology_service_v1_ontology_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *DeleteOntologyRequest) GetIds() []uint32 {
@@ -919,7 +1060,25 @@ const file_ontology_service_v1_ontology_proto_rawDesc = "" +
 	"\tentity_id\x18\x01 \x01(\rB\x14\xbaG\x11\x92\x02\x0e被查实体IDH\x00R\bentityId\x88\x01\x01\x127\n" +
 	"\x04refs\x18\x02 \x03(\v2#.ontology.service.v1.EntityUsageRefR\x04refsB\f\n" +
 	"\n" +
-	"_entity_id\"\x8c\t\n" +
+	"_entity_id\"\xaa\x04\n" +
+	"\x13AnnotationAssertion\x12L\n" +
+	"\vproperty_id\x18\x01 \x01(\rB&\xbaG#\x92\x02 注解属性实体ID（谓词）H\x00R\n" +
+	"propertyId\x88\x01\x01\x12b\n" +
+	"\x13property_local_name\x18\x02 \x01(\tB-\xbaG*\x92\x02'注解属性局部名（实体反查）H\x01R\x11propertyLocalName\x88\x01\x01\x12h\n" +
+	"\x16property_display_label\x18\x03 \x01(\tB-\xbaG*\x92\x02'注解属性显示名（实体反查）H\x02R\x14propertyDisplayLabel\x88\x01\x01\x12V\n" +
+	"\x05value\x18\x04 \x01(\tB;\xbaG8\x92\x025注解值（字面量词形，plain literal 语义）H\x03R\x05value\x88\x01\x01\x12I\n" +
+	"\x04lang\x18\x05 \x01(\tB0\xbaG-\x92\x02*语言标签（空 = 无语言字面量）H\x04R\x04lang\x88\x01\x01B\x0e\n" +
+	"\f_property_idB\x16\n" +
+	"\x14_property_local_nameB\x19\n" +
+	"\x17_property_display_labelB\b\n" +
+	"\x06_valueB\a\n" +
+	"\x05_lang\"\xf6\x01\n" +
+	"\x18AnnotationAssertionInput\x12G\n" +
+	"\vproperty_id\x18\x01 \x01(\rB&\xbaG#\x92\x02 注解属性实体ID（谓词）R\n" +
+	"propertyId\x127\n" +
+	"\x05value\x18\x02 \x01(\tB!\xbaG\x1e\x92\x02\x1b注解值（空白拒绝）R\x05value\x12O\n" +
+	"\x04lang\x18\x03 \x01(\tB6\xbaG3\x92\x020语言标签（可空；空白归一为空串）H\x00R\x04lang\x88\x01\x01B\a\n" +
+	"\x05_lang\"\x8c\t\n" +
 	"\bOntology\x12#\n" +
 	"\x02id\x18\x01 \x01(\rB\x0e\xbaG\v\x92\x02\b本体IDH\x00R\x02id\x88\x01\x01\x129\n" +
 	"\rontology_name\x18\x02 \x01(\tB\x0f\xbaG\f\x92\x02\t显示名H\x01R\fontologyName\x88\x01\x01\x12]\n" +
@@ -990,7 +1149,7 @@ const file_ontology_service_v1_ontology_proto_rawDesc = "" +
 	"\x19ENTITY_TYPE_DATA_PROPERTY\x10\x1e\x12#\n" +
 	"\x1fENTITY_TYPE_ANNOTATION_PROPERTY\x10(\x12\x18\n" +
 	"\x14ENTITY_TYPE_DATATYPE\x102\x12\x1a\n" +
-	"\x16ENTITY_TYPE_INDIVIDUAL\x10<*\x99\x05\n" +
+	"\x16ENTITY_TYPE_INDIVIDUAL\x10<*\xbf\x05\n" +
 	"\x11OntologyAxiomType\x12\x1a\n" +
 	"\x16AXIOM_TYPE_UNSPECIFIED\x10\x00\x12\x15\n" +
 	"\x11AXIOM_DECLARATION\x10\n" +
@@ -1011,7 +1170,8 @@ const file_ontology_service_v1_ontology_proto_rawDesc = "" +
 	"\x19AXIOM_DATA_PROPERTY_RANGE\x10*\x12&\n" +
 	"\"AXIOM_DATA_PROPERTY_CHARACTERISTIC\x10+\x12$\n" +
 	" AXIOM_EQUIVALENT_DATA_PROPERTIES\x10,\x12\"\n" +
-	"\x1eAXIOM_DISJOINT_DATA_PROPERTIES\x10-\x12\x1e\n" +
+	"\x1eAXIOM_DISJOINT_DATA_PROPERTIES\x10-\x12$\n" +
+	" AXIOM_SUB_ANNOTATION_PROPERTY_OF\x102\x12\x1e\n" +
 	"\x1aAXIOM_ANNOTATION_ASSERTION\x10d2\xff\x03\n" +
 	"\x0fOntologyService\x12P\n" +
 	"\x04List\x12\x19.pagination.PagingRequest\x1a+.ontology.service.v1.ListOntologiesResponse\"\x00\x12Y\n" +
@@ -1036,49 +1196,51 @@ func file_ontology_service_v1_ontology_proto_rawDescGZIP() []byte {
 }
 
 var file_ontology_service_v1_ontology_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
-var file_ontology_service_v1_ontology_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
+var file_ontology_service_v1_ontology_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
 var file_ontology_service_v1_ontology_proto_goTypes = []any{
 	(OntologyEntityType)(0),              // 0: ontology.service.v1.OntologyEntityType
 	(OntologyAxiomType)(0),               // 1: ontology.service.v1.OntologyAxiomType
 	(*EntityBrief)(nil),                  // 2: ontology.service.v1.EntityBrief
 	(*EntityUsageRef)(nil),               // 3: ontology.service.v1.EntityUsageRef
 	(*EntityUsage)(nil),                  // 4: ontology.service.v1.EntityUsage
-	(*Ontology)(nil),                     // 5: ontology.service.v1.Ontology
-	(*ListOntologiesResponse)(nil),       // 6: ontology.service.v1.ListOntologiesResponse
-	(*OntologyBrief)(nil),                // 7: ontology.service.v1.OntologyBrief
-	(*ListOntologiesSimpleResponse)(nil), // 8: ontology.service.v1.ListOntologiesSimpleResponse
-	(*GetOntologyRequest)(nil),           // 9: ontology.service.v1.GetOntologyRequest
-	(*CreateOntologyRequest)(nil),        // 10: ontology.service.v1.CreateOntologyRequest
-	(*UpdateOntologyRequest)(nil),        // 11: ontology.service.v1.UpdateOntologyRequest
-	(*DeleteOntologyRequest)(nil),        // 12: ontology.service.v1.DeleteOntologyRequest
-	(*timestamppb.Timestamp)(nil),        // 13: google.protobuf.Timestamp
-	(*fieldmaskpb.FieldMask)(nil),        // 14: google.protobuf.FieldMask
-	(*v1.PagingRequest)(nil),             // 15: pagination.PagingRequest
-	(*emptypb.Empty)(nil),                // 16: google.protobuf.Empty
+	(*AnnotationAssertion)(nil),          // 5: ontology.service.v1.AnnotationAssertion
+	(*AnnotationAssertionInput)(nil),     // 6: ontology.service.v1.AnnotationAssertionInput
+	(*Ontology)(nil),                     // 7: ontology.service.v1.Ontology
+	(*ListOntologiesResponse)(nil),       // 8: ontology.service.v1.ListOntologiesResponse
+	(*OntologyBrief)(nil),                // 9: ontology.service.v1.OntologyBrief
+	(*ListOntologiesSimpleResponse)(nil), // 10: ontology.service.v1.ListOntologiesSimpleResponse
+	(*GetOntologyRequest)(nil),           // 11: ontology.service.v1.GetOntologyRequest
+	(*CreateOntologyRequest)(nil),        // 12: ontology.service.v1.CreateOntologyRequest
+	(*UpdateOntologyRequest)(nil),        // 13: ontology.service.v1.UpdateOntologyRequest
+	(*DeleteOntologyRequest)(nil),        // 14: ontology.service.v1.DeleteOntologyRequest
+	(*timestamppb.Timestamp)(nil),        // 15: google.protobuf.Timestamp
+	(*fieldmaskpb.FieldMask)(nil),        // 16: google.protobuf.FieldMask
+	(*v1.PagingRequest)(nil),             // 17: pagination.PagingRequest
+	(*emptypb.Empty)(nil),                // 18: google.protobuf.Empty
 }
 var file_ontology_service_v1_ontology_proto_depIdxs = []int32{
 	3,  // 0: ontology.service.v1.EntityUsage.refs:type_name -> ontology.service.v1.EntityUsageRef
-	13, // 1: ontology.service.v1.Ontology.created_at:type_name -> google.protobuf.Timestamp
-	13, // 2: ontology.service.v1.Ontology.updated_at:type_name -> google.protobuf.Timestamp
-	13, // 3: ontology.service.v1.Ontology.deleted_at:type_name -> google.protobuf.Timestamp
-	5,  // 4: ontology.service.v1.ListOntologiesResponse.items:type_name -> ontology.service.v1.Ontology
-	7,  // 5: ontology.service.v1.ListOntologiesSimpleResponse.items:type_name -> ontology.service.v1.OntologyBrief
-	14, // 6: ontology.service.v1.GetOntologyRequest.view_mask:type_name -> google.protobuf.FieldMask
-	5,  // 7: ontology.service.v1.CreateOntologyRequest.data:type_name -> ontology.service.v1.Ontology
-	5,  // 8: ontology.service.v1.UpdateOntologyRequest.data:type_name -> ontology.service.v1.Ontology
-	14, // 9: ontology.service.v1.UpdateOntologyRequest.update_mask:type_name -> google.protobuf.FieldMask
-	15, // 10: ontology.service.v1.OntologyService.List:input_type -> pagination.PagingRequest
-	16, // 11: ontology.service.v1.OntologyService.SimpleList:input_type -> google.protobuf.Empty
-	9,  // 12: ontology.service.v1.OntologyService.Get:input_type -> ontology.service.v1.GetOntologyRequest
-	10, // 13: ontology.service.v1.OntologyService.Create:input_type -> ontology.service.v1.CreateOntologyRequest
-	11, // 14: ontology.service.v1.OntologyService.Update:input_type -> ontology.service.v1.UpdateOntologyRequest
-	12, // 15: ontology.service.v1.OntologyService.Delete:input_type -> ontology.service.v1.DeleteOntologyRequest
-	6,  // 16: ontology.service.v1.OntologyService.List:output_type -> ontology.service.v1.ListOntologiesResponse
-	8,  // 17: ontology.service.v1.OntologyService.SimpleList:output_type -> ontology.service.v1.ListOntologiesSimpleResponse
-	5,  // 18: ontology.service.v1.OntologyService.Get:output_type -> ontology.service.v1.Ontology
-	16, // 19: ontology.service.v1.OntologyService.Create:output_type -> google.protobuf.Empty
-	16, // 20: ontology.service.v1.OntologyService.Update:output_type -> google.protobuf.Empty
-	16, // 21: ontology.service.v1.OntologyService.Delete:output_type -> google.protobuf.Empty
+	15, // 1: ontology.service.v1.Ontology.created_at:type_name -> google.protobuf.Timestamp
+	15, // 2: ontology.service.v1.Ontology.updated_at:type_name -> google.protobuf.Timestamp
+	15, // 3: ontology.service.v1.Ontology.deleted_at:type_name -> google.protobuf.Timestamp
+	7,  // 4: ontology.service.v1.ListOntologiesResponse.items:type_name -> ontology.service.v1.Ontology
+	9,  // 5: ontology.service.v1.ListOntologiesSimpleResponse.items:type_name -> ontology.service.v1.OntologyBrief
+	16, // 6: ontology.service.v1.GetOntologyRequest.view_mask:type_name -> google.protobuf.FieldMask
+	7,  // 7: ontology.service.v1.CreateOntologyRequest.data:type_name -> ontology.service.v1.Ontology
+	7,  // 8: ontology.service.v1.UpdateOntologyRequest.data:type_name -> ontology.service.v1.Ontology
+	16, // 9: ontology.service.v1.UpdateOntologyRequest.update_mask:type_name -> google.protobuf.FieldMask
+	17, // 10: ontology.service.v1.OntologyService.List:input_type -> pagination.PagingRequest
+	18, // 11: ontology.service.v1.OntologyService.SimpleList:input_type -> google.protobuf.Empty
+	11, // 12: ontology.service.v1.OntologyService.Get:input_type -> ontology.service.v1.GetOntologyRequest
+	12, // 13: ontology.service.v1.OntologyService.Create:input_type -> ontology.service.v1.CreateOntologyRequest
+	13, // 14: ontology.service.v1.OntologyService.Update:input_type -> ontology.service.v1.UpdateOntologyRequest
+	14, // 15: ontology.service.v1.OntologyService.Delete:input_type -> ontology.service.v1.DeleteOntologyRequest
+	8,  // 16: ontology.service.v1.OntologyService.List:output_type -> ontology.service.v1.ListOntologiesResponse
+	10, // 17: ontology.service.v1.OntologyService.SimpleList:output_type -> ontology.service.v1.ListOntologiesSimpleResponse
+	7,  // 18: ontology.service.v1.OntologyService.Get:output_type -> ontology.service.v1.Ontology
+	18, // 19: ontology.service.v1.OntologyService.Create:output_type -> google.protobuf.Empty
+	18, // 20: ontology.service.v1.OntologyService.Update:output_type -> google.protobuf.Empty
+	18, // 21: ontology.service.v1.OntologyService.Delete:output_type -> google.protobuf.Empty
 	16, // [16:22] is the sub-list for method output_type
 	10, // [10:16] is the sub-list for method input_type
 	10, // [10:10] is the sub-list for extension type_name
@@ -1095,16 +1257,18 @@ func file_ontology_service_v1_ontology_proto_init() {
 	file_ontology_service_v1_ontology_proto_msgTypes[1].OneofWrappers = []any{}
 	file_ontology_service_v1_ontology_proto_msgTypes[2].OneofWrappers = []any{}
 	file_ontology_service_v1_ontology_proto_msgTypes[3].OneofWrappers = []any{}
+	file_ontology_service_v1_ontology_proto_msgTypes[4].OneofWrappers = []any{}
 	file_ontology_service_v1_ontology_proto_msgTypes[5].OneofWrappers = []any{}
 	file_ontology_service_v1_ontology_proto_msgTypes[7].OneofWrappers = []any{}
 	file_ontology_service_v1_ontology_proto_msgTypes[9].OneofWrappers = []any{}
+	file_ontology_service_v1_ontology_proto_msgTypes[11].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_ontology_service_v1_ontology_proto_rawDesc), len(file_ontology_service_v1_ontology_proto_rawDesc)),
 			NumEnums:      2,
-			NumMessages:   11,
+			NumMessages:   13,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

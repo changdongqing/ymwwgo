@@ -20,8 +20,8 @@ var notationPattern = regexp.MustCompile(`^[A-Za-z0-9_-]+$`)
 //  1. IRI 语法：每实体 iri 可被 url.Parse 解析为绝对 IRI 且以本体 base_iri 为前缀；
 //  2. 引用存在性与类型匹配：20/21/22 两端均须为本体下未删的类；
 //  3. 声明完备性：每实体恰有一条未删 DECLARATION(10)，反之每条 10 型公理主体存在（防御校验）；
-//  4. 注解断言双轨：100 型谓词必须命中内建白名单（04 期自定义注解属性激活 object_id 双轨后放开），
-//     lang ≤ 16 字符；
+//  4. 注解断言双轨（04 期激活）：object_id 非空 → 宾语须为本本体已声明的注解属性实体；
+//     否则 predicate_iri ∈ 内建白名单；二者皆空拒绝。lang ≤ 16 字符、value_text 非空白；
 //  5. 值词法：owl:deprecated ∈ {"true","false"}；skos:notation ∈ [A-Za-z0-9_-]+；
 //  6. 层级无环：环检测在写路径前置执行（AssertNoCycle），校验器不重复（职责分工，与源一致）。
 //
@@ -189,7 +189,27 @@ func ValidateAxioms(ctx context.Context, baseIRI string, entities []*ent.OntEnti
 				}
 			}
 
-		// 2c. 03 期数据属性公理（40~45）+ 62 数据断言分支（03 号文档 §4.4）
+		// 2d. 04 期注解属性公理（50）：两端实体均存在、未删、entity_type = ANNOTATION_PROPERTY
+		// （04 号文档 §4.5；环检测在写路径前置 AssertNoCycle，校验器不重复）
+		case AxiomSubAnnotationPropertyOf:
+			if ax.SubjectID == nil || ax.ObjectID == nil {
+				problems = append(problems, NewError(ReasonAxiomInvalid, "公理 %d 缺少属性两端实体", ax.ID))
+				continue
+			}
+			for _, end := range []struct {
+				role string
+				id   uint32
+			}{{"主语", *ax.SubjectID}, {"宾语", *ax.ObjectID}} {
+				if et, ok := entityTypeOf(end.id); !ok {
+					problems = append(problems, NewError(ReasonAxiomInvalid,
+						"公理 %d 的%s实体 %d 不存在或已删除", ax.ID, end.role, end.id))
+				} else if et != EntityTypeAnnotationProperty {
+					problems = append(problems, NewError(ReasonAxiomInvalid,
+						"公理 %d 的%s实体 %d 类型不符（期望注解属性）", ax.ID, end.role, end.id))
+				}
+			}
+
+			// 2c. 03 期数据属性公理（40~45）+ 62 数据断言分支（03 号文档 §4.4）
 		case AxiomSubDataPropertyOf, AxiomEquivalentDataProperties, AxiomDisjointDataProperties:
 			// 两端实体均存在、未删、entity_type = DATA_PROPERTY
 			if ax.SubjectID == nil || ax.ObjectID == nil {
@@ -331,7 +351,7 @@ func ValidateAxioms(ctx context.Context, baseIRI string, entities []*ent.OntEnti
 		}
 	}
 
-	// 4/5. 注解断言谓词白名单、lang 长度与值词法
+	// 4/5. 注解断言谓词双轨（04 号文档 §4.5）、lang 长度与值词法
 	whitelist := make(map[string]struct{}, len(BuiltinAnnotationPredicates))
 	for _, p := range BuiltinAnnotationPredicates {
 		whitelist[p] = struct{}{}
@@ -341,19 +361,23 @@ func ValidateAxioms(ctx context.Context, baseIRI string, entities []*ent.OntEnti
 			continue
 		}
 
+		// 谓词双轨二选一（服务层已拦，校验器兜底直改库场景）：
+		//   自定义轨：object_id 非空 → 实体必须是本本体已声明的注解属性；
+		//   内建轨：object_id 空 → predicate_iri ∈ 内建白名单（01~03 期存量行为，不变）；
+		//   二者皆空 → 拒绝。object_id 优先，predicate_iri 与 object_id 并存按自定义轨判。
 		predicate := nilString(ax.PredicateIri)
-		if _, ok := whitelist[predicate]; !ok {
-			// object_id 双轨（04 期激活）：谓词白名单外时，宾语必须是注解属性实体才合法；
-			// 本期注解属性实体尚无法创建，等价于白名单外一律拒绝
-			customOK := false
-			if ax.ObjectID != nil && *ax.ObjectID != 0 {
-				if et, ok := entityTypeOf(*ax.ObjectID); ok && et == EntityTypeAnnotationProperty {
-					customOK = true
-				}
-			}
-			if !customOK {
+		if objectID := nilUint(ax.ObjectID); objectID != 0 {
+			if et, ok := entityTypeOf(objectID); !ok {
 				problems = append(problems, NewError(ReasonAxiomInvalid,
-					"公理 %d 的注解谓词 %s 不在白名单内（自定义注解属性 04 期开放）", ax.ID, predicate))
+					"公理 %d 的注解谓词实体 %d 不存在或已删除", ax.ID, objectID))
+			} else if et != EntityTypeAnnotationProperty {
+				problems = append(problems, NewError(ReasonAxiomInvalid,
+					"公理 %d 的注解谓词必须是注解属性实体：%d", ax.ID, objectID))
+			}
+		} else {
+			if _, ok := whitelist[predicate]; !ok {
+				problems = append(problems, NewError(ReasonAxiomInvalid,
+					"公理 %d 的注解谓词 %s 不在白名单内（自定义注解谓词须指向注解属性实体）", ax.ID, predicate))
 			}
 		}
 
@@ -363,6 +387,10 @@ func ValidateAxioms(ctx context.Context, baseIRI string, entities []*ent.OntEnti
 		}
 
 		value := nilString(ax.ValueText)
+		if strings.TrimSpace(value) == "" {
+			problems = append(problems, NewError(ReasonAxiomInvalid,
+				"公理 %d 的注解值为空白", ax.ID))
+		}
 		switch predicate {
 		case PredicateOWLDeprecated:
 			if value != "true" && value != "false" {

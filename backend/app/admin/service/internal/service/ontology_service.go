@@ -141,6 +141,12 @@ func mapDomainError(err error) error {
 		return ontologyV1.ErrorDataPropertyTargetInvalid("%s", de.Message)
 	case ontology.ReasonDataPropertyCharacteristicInvalid:
 		return ontologyV1.ErrorDataPropertyCharacteristicInvalid("%s", de.Message)
+
+	// 04 期注解属性（源 1-071-005 段）
+	case ontology.ReasonAnnotationPropertyTargetInvalid:
+		return ontologyV1.ErrorAnnotationPropertyTargetInvalid("%s", de.Message)
+	case ontology.ReasonAnnotationValueInvalid:
+		return ontologyV1.ErrorAnnotationValueInvalid("%s", de.Message)
 	default:
 		return adminV1.ErrorInternalServerError("%s", de.Message)
 	}

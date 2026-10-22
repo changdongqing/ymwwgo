@@ -108,7 +108,7 @@ var DefaultPermissions = []*permissionV1.Permission{
 			72, 73, 74,
 			80, 81, 82, 83, 84,
 			101, 102,
-			110, 111, 112, 113, 114,
+			110, 111, 112, 113, 114, 115,
 		},
 		ApiIds: []uint32{
 			1, 2, 3, 4, 5, 6, 7, 8, 9,
@@ -1314,6 +1314,23 @@ var DefaultMenus = []*permissionV1.Menu{
 			Title:     trans.Ptr("menu.ontology.dataProperty"),
 			Icon:      trans.Ptr("lucide:tags"),
 			Order:     trans.Ptr(int32(4)),
+			Authority: []string{"sys:platform_admin"},
+		},
+	},
+	{
+		// 注解属性：左树右表（04 期，元数据词汇表 + 六类实体通用注解区；公理事务管线）。
+		// 橙色系图标对应 Protégé 注解属性专属色 D17A00 约定（04 号文档 §3.3/§6.1）。
+		Id:        trans.Ptr(uint32(115)),
+		ParentId:  trans.Ptr(uint32(110)),
+		Type:      permissionV1.Menu_MENU.Enum(),
+		Name:      trans.Ptr("OntologyAnnotationProperties"),
+		Path:      trans.Ptr("annotation-properties"),
+		Component: trans.Ptr("app/ontology/annotation-properties/index.tsx"),
+		CreatedAt: timeutil.TimeToTimestamppb(trans.Ptr(time.Now())),
+		Meta: &permissionV1.MenuMeta{
+			Title:     trans.Ptr("menu.ontology.annotationProperty"),
+			Icon:      trans.Ptr("lucide:tag"),
+			Order:     trans.Ptr(int32(5)),
 			Authority: []string{"sys:platform_admin"},
 		},
 	},

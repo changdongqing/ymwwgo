@@ -592,6 +592,7 @@ type DataPropertyFrame struct {
 	EquivalentId     *uint32                `protobuf:"varint,15,opt,name=equivalent_id,json=equivalentId,proto3,oneof" json:"equivalent_id,omitempty"`               // 等价属性ID（V1 单值）
 	Characteristics  []string               `protobuf:"bytes,16,rep,name=characteristics,proto3" json:"characteristics,omitempty"`                                    // 特征 IRI（V1 至多函数性）
 	BaseVersion      *uint32                `protobuf:"varint,17,opt,name=base_version,json=baseVersion,proto3,oneof" json:"base_version,omitempty"`                  // 本体当前版本，下次提交回传（乐观锁基准）
+	Annotations      []*AnnotationAssertion `protobuf:"bytes,18,rep,name=annotations,proto3" json:"annotations,omitempty"`                                            // 自定义注解（内建字段之外，保序；04 期增量）
 	UpdatedAt        *timestamppb.Timestamp `protobuf:"bytes,201,opt,name=updated_at,json=updatedAt,proto3,oneof" json:"updated_at,omitempty"`                        // 更新时间
 	unknownFields    protoimpl.UnknownFields
 	sizeCache        protoimpl.SizeCache
@@ -739,6 +740,13 @@ func (x *DataPropertyFrame) GetBaseVersion() uint32 {
 	return 0
 }
 
+func (x *DataPropertyFrame) GetAnnotations() []*AnnotationAssertion {
+	if x != nil {
+		return x.Annotations
+	}
+	return nil
+}
+
 func (x *DataPropertyFrame) GetUpdatedAt() *timestamppb.Timestamp {
 	if x != nil {
 		return x.UpdatedAt
@@ -794,18 +802,19 @@ func (x *GetDataPropertyUsageRequest) GetId() uint32 {
 // 创建数据属性 - 请求（自定义 RPC：扁平请求体，勿包 { data }——protojson 会把 data 当未知字段丢弃）。
 // 无 inverse_ids / chains：OWL 2 中逆属性与属性链仅对象属性可用（03 号文档 §2.3）。
 type CreateDataPropertyRequest struct {
-	state            protoimpl.MessageState `protogen:"open.v1"`
-	OntologyId       uint32                 `protobuf:"varint,1,opt,name=ontology_id,json=ontologyId,proto3" json:"ontology_id,omitempty"`                            // 本体ID（必填）
-	LocalName        string                 `protobuf:"bytes,2,opt,name=local_name,json=localName,proto3" json:"local_name,omitempty"`                                // 局部名（必填，创建后不可变）
-	DisplayLabel     *string                `protobuf:"bytes,3,opt,name=display_label,json=displayLabel,proto3,oneof" json:"display_label,omitempty"`                 // 显示名 → rdfs:label（zh）
-	Comment          *string                `protobuf:"bytes,4,opt,name=comment,proto3,oneof" json:"comment,omitempty"`                                               // 注释 → rdfs:comment（zh）
-	Deprecated       *bool                  `protobuf:"varint,5,opt,name=deprecated,proto3,oneof" json:"deprecated,omitempty"`                                        // 废弃 → owl:deprecated
-	SuperPropertyIds []uint32               `protobuf:"varint,6,rep,packed,name=super_property_ids,json=superPropertyIds,proto3" json:"super_property_ids,omitempty"` // 父属性（多选；空 = 根属性，挂 owl:topDataProperty）
-	DomainIds        []uint32               `protobuf:"varint,7,rep,packed,name=domain_ids,json=domainIds,proto3" json:"domain_ids,omitempty"`                        // 定义域类（多选）
-	RangeIris        []string               `protobuf:"bytes,8,rep,name=range_iris,json=rangeIris,proto3" json:"range_iris,omitempty"`                                // 值域 datatype IRI（内建白名单内，多选）
-	DisjointIds      []uint32               `protobuf:"varint,9,rep,packed,name=disjoint_ids,json=disjointIds,proto3" json:"disjoint_ids,omitempty"`                  // 不相交属性（成对补全由服务端完成）
-	EquivalentId     *uint32                `protobuf:"varint,10,opt,name=equivalent_id,json=equivalentId,proto3,oneof" json:"equivalent_id,omitempty"`               // 等价属性（V1 单值）
-	Characteristics  []string               `protobuf:"bytes,11,rep,name=characteristics,proto3" json:"characteristics,omitempty"`                                    // 特征 IRI 数组（V1 至多函数性一项）
+	state            protoimpl.MessageState      `protogen:"open.v1"`
+	OntologyId       uint32                      `protobuf:"varint,1,opt,name=ontology_id,json=ontologyId,proto3" json:"ontology_id,omitempty"`                            // 本体ID（必填）
+	LocalName        string                      `protobuf:"bytes,2,opt,name=local_name,json=localName,proto3" json:"local_name,omitempty"`                                // 局部名（必填，创建后不可变）
+	DisplayLabel     *string                     `protobuf:"bytes,3,opt,name=display_label,json=displayLabel,proto3,oneof" json:"display_label,omitempty"`                 // 显示名 → rdfs:label（zh）
+	Comment          *string                     `protobuf:"bytes,4,opt,name=comment,proto3,oneof" json:"comment,omitempty"`                                               // 注释 → rdfs:comment（zh）
+	Deprecated       *bool                       `protobuf:"varint,5,opt,name=deprecated,proto3,oneof" json:"deprecated,omitempty"`                                        // 废弃 → owl:deprecated
+	SuperPropertyIds []uint32                    `protobuf:"varint,6,rep,packed,name=super_property_ids,json=superPropertyIds,proto3" json:"super_property_ids,omitempty"` // 父属性（多选；空 = 根属性，挂 owl:topDataProperty）
+	DomainIds        []uint32                    `protobuf:"varint,7,rep,packed,name=domain_ids,json=domainIds,proto3" json:"domain_ids,omitempty"`                        // 定义域类（多选）
+	RangeIris        []string                    `protobuf:"bytes,8,rep,name=range_iris,json=rangeIris,proto3" json:"range_iris,omitempty"`                                // 值域 datatype IRI（内建白名单内，多选）
+	DisjointIds      []uint32                    `protobuf:"varint,9,rep,packed,name=disjoint_ids,json=disjointIds,proto3" json:"disjoint_ids,omitempty"`                  // 不相交属性（成对补全由服务端完成）
+	EquivalentId     *uint32                     `protobuf:"varint,10,opt,name=equivalent_id,json=equivalentId,proto3,oneof" json:"equivalent_id,omitempty"`               // 等价属性（V1 单值）
+	Characteristics  []string                    `protobuf:"bytes,11,rep,name=characteristics,proto3" json:"characteristics,omitempty"`                                    // 特征 IRI 数组（V1 至多函数性一项）
+	Annotations      []*AnnotationAssertionInput `protobuf:"bytes,12,rep,name=annotations,proto3" json:"annotations,omitempty"`                                            // 自定义注解（全量提交语义；04 期增量）
 	unknownFields    protoimpl.UnknownFields
 	sizeCache        protoimpl.SizeCache
 }
@@ -917,6 +926,13 @@ func (x *CreateDataPropertyRequest) GetCharacteristics() []string {
 	return nil
 }
 
+func (x *CreateDataPropertyRequest) GetAnnotations() []*AnnotationAssertionInput {
+	if x != nil {
+		return x.Annotations
+	}
+	return nil
+}
+
 // 创建数据属性 - 回应（新实体 id + 变更后本体版本）
 type CreateDataPropertyResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -972,18 +988,19 @@ func (x *CreateDataPropertyResponse) GetBaseVersion() uint32 {
 
 // 更新数据属性 - 请求（frame 全量提交语义；local_name 忽略——不可变；base_version 缺省 = 跳过乐观锁比对，仅限内部路径）
 type UpdateDataPropertyRequest struct {
-	state            protoimpl.MessageState `protogen:"open.v1"`
-	Id               uint32                 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`                                                              // 实体ID
-	DisplayLabel     *string                `protobuf:"bytes,3,opt,name=display_label,json=displayLabel,proto3,oneof" json:"display_label,omitempty"`                 // 显示名（缺省 = 不变；空串 = 清空）
-	Comment          *string                `protobuf:"bytes,4,opt,name=comment,proto3,oneof" json:"comment,omitempty"`                                               // 注释（缺省 = 不变；空串 = 清空）
-	Deprecated       *bool                  `protobuf:"varint,5,opt,name=deprecated,proto3,oneof" json:"deprecated,omitempty"`                                        // 废弃（缺省 = 不变；false = 移除断言）
-	SuperPropertyIds []uint32               `protobuf:"varint,6,rep,packed,name=super_property_ids,json=superPropertyIds,proto3" json:"super_property_ids,omitempty"` // 父属性全量
-	DomainIds        []uint32               `protobuf:"varint,7,rep,packed,name=domain_ids,json=domainIds,proto3" json:"domain_ids,omitempty"`                        // 定义域全量
-	RangeIris        []string               `protobuf:"bytes,8,rep,name=range_iris,json=rangeIris,proto3" json:"range_iris,omitempty"`                                // 值域全量（保序；多值=OWL 交集语义）
-	DisjointIds      []uint32               `protobuf:"varint,9,rep,packed,name=disjoint_ids,json=disjointIds,proto3" json:"disjoint_ids,omitempty"`                  // 不相交全量
-	EquivalentId     *uint32                `protobuf:"varint,10,opt,name=equivalent_id,json=equivalentId,proto3,oneof" json:"equivalent_id,omitempty"`               // 等价属性（缺省 = 不变；0 = 清空；V1 单值）
-	Characteristics  []string               `protobuf:"bytes,11,rep,name=characteristics,proto3" json:"characteristics,omitempty"`                                    // 特征 IRI 全量（V1 至多函数性一项）
-	BaseVersion      *uint32                `protobuf:"varint,12,opt,name=base_version,json=baseVersion,proto3,oneof" json:"base_version,omitempty"`                  // 乐观锁基准
+	state            protoimpl.MessageState      `protogen:"open.v1"`
+	Id               uint32                      `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`                                                              // 实体ID
+	DisplayLabel     *string                     `protobuf:"bytes,3,opt,name=display_label,json=displayLabel,proto3,oneof" json:"display_label,omitempty"`                 // 显示名（缺省 = 不变；空串 = 清空）
+	Comment          *string                     `protobuf:"bytes,4,opt,name=comment,proto3,oneof" json:"comment,omitempty"`                                               // 注释（缺省 = 不变；空串 = 清空）
+	Deprecated       *bool                       `protobuf:"varint,5,opt,name=deprecated,proto3,oneof" json:"deprecated,omitempty"`                                        // 废弃（缺省 = 不变；false = 移除断言）
+	SuperPropertyIds []uint32                    `protobuf:"varint,6,rep,packed,name=super_property_ids,json=superPropertyIds,proto3" json:"super_property_ids,omitempty"` // 父属性全量
+	DomainIds        []uint32                    `protobuf:"varint,7,rep,packed,name=domain_ids,json=domainIds,proto3" json:"domain_ids,omitempty"`                        // 定义域全量
+	RangeIris        []string                    `protobuf:"bytes,8,rep,name=range_iris,json=rangeIris,proto3" json:"range_iris,omitempty"`                                // 值域全量（保序；多值=OWL 交集语义）
+	DisjointIds      []uint32                    `protobuf:"varint,9,rep,packed,name=disjoint_ids,json=disjointIds,proto3" json:"disjoint_ids,omitempty"`                  // 不相交全量
+	EquivalentId     *uint32                     `protobuf:"varint,10,opt,name=equivalent_id,json=equivalentId,proto3,oneof" json:"equivalent_id,omitempty"`               // 等价属性（缺省 = 不变；0 = 清空；V1 单值）
+	Characteristics  []string                    `protobuf:"bytes,11,rep,name=characteristics,proto3" json:"characteristics,omitempty"`                                    // 特征 IRI 全量（V1 至多函数性一项）
+	BaseVersion      *uint32                     `protobuf:"varint,12,opt,name=base_version,json=baseVersion,proto3,oneof" json:"base_version,omitempty"`                  // 乐观锁基准
+	Annotations      []*AnnotationAssertionInput `protobuf:"bytes,13,rep,name=annotations,proto3" json:"annotations,omitempty"`                                            // 自定义注解全量（nil/缺失/空数组统一 = 清空；04 期增量）
 	unknownFields    protoimpl.UnknownFields
 	sizeCache        protoimpl.SizeCache
 }
@@ -1093,6 +1110,13 @@ func (x *UpdateDataPropertyRequest) GetBaseVersion() uint32 {
 		return *x.BaseVersion
 	}
 	return 0
+}
+
+func (x *UpdateDataPropertyRequest) GetAnnotations() []*AnnotationAssertionInput {
+	if x != nil {
+		return x.Annotations
+	}
+	return nil
 }
 
 // 删除数据属性 - 请求（force=true 级联移除引用公理，子属性自动变根属性）
@@ -1251,7 +1275,7 @@ const file_ontology_service_v1_ontology_data_property_proto_rawDesc = "" +
 	"\x05items\x18\x01 \x03(\v2!.ontology.service.v1.DataPropertyR\x05items\x12\x14\n" +
 	"\x05total\x18\x02 \x01(\x04R\x05total\"-\n" +
 	"\x1bGetDataPropertyFrameRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\rR\x02id\"\xd9\x06\n" +
+	"\x02id\x18\x01 \x01(\rR\x02id\"\xa5\a\n" +
 	"\x11DataPropertyFrame\x12\x13\n" +
 	"\x02id\x18\x01 \x01(\rH\x00R\x02id\x88\x01\x01\x12$\n" +
 	"\vontology_id\x18\x02 \x01(\rH\x01R\n" +
@@ -1275,7 +1299,8 @@ const file_ontology_service_v1_ontology_data_property_proto_rawDesc = "" +
 	"\fdisjoint_ids\x18\x0e \x03(\rR\vdisjointIds\x12(\n" +
 	"\requivalent_id\x18\x0f \x01(\rH\aR\fequivalentId\x88\x01\x01\x12(\n" +
 	"\x0fcharacteristics\x18\x10 \x03(\tR\x0fcharacteristics\x12&\n" +
-	"\fbase_version\x18\x11 \x01(\rH\bR\vbaseVersion\x88\x01\x01\x12?\n" +
+	"\fbase_version\x18\x11 \x01(\rH\bR\vbaseVersion\x88\x01\x01\x12J\n" +
+	"\vannotations\x18\x12 \x03(\v2(.ontology.service.v1.AnnotationAssertionR\vannotations\x12?\n" +
 	"\n" +
 	"updated_at\x18\xc9\x01 \x01(\v2\x1a.google.protobuf.TimestampH\tR\tupdatedAt\x88\x01\x01B\x05\n" +
 	"\x03_idB\x0e\n" +
@@ -1290,7 +1315,7 @@ const file_ontology_service_v1_ontology_data_property_proto_rawDesc = "" +
 	"\r_base_versionB\r\n" +
 	"\v_updated_at\"-\n" +
 	"\x1bGetDataPropertyUsageRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\rR\x02id\"\xeb\x03\n" +
+	"\x02id\x18\x01 \x01(\rR\x02id\"\xbc\x04\n" +
 	"\x19CreateDataPropertyRequest\x12\x1f\n" +
 	"\vontology_id\x18\x01 \x01(\rR\n" +
 	"ontologyId\x12\x1d\n" +
@@ -1309,7 +1334,8 @@ const file_ontology_service_v1_ontology_data_property_proto_rawDesc = "" +
 	"\fdisjoint_ids\x18\t \x03(\rR\vdisjointIds\x12(\n" +
 	"\requivalent_id\x18\n" +
 	" \x01(\rH\x03R\fequivalentId\x88\x01\x01\x12(\n" +
-	"\x0fcharacteristics\x18\v \x03(\tR\x0fcharacteristicsB\x10\n" +
+	"\x0fcharacteristics\x18\v \x03(\tR\x0fcharacteristics\x12O\n" +
+	"\vannotations\x18\f \x03(\v2-.ontology.service.v1.AnnotationAssertionInputR\vannotationsB\x10\n" +
 	"\x0e_display_labelB\n" +
 	"\n" +
 	"\b_commentB\r\n" +
@@ -1319,7 +1345,7 @@ const file_ontology_service_v1_ontology_data_property_proto_rawDesc = "" +
 	"\x02id\x18\x01 \x01(\rH\x00R\x02id\x88\x01\x01\x12&\n" +
 	"\fbase_version\x18\x02 \x01(\rH\x01R\vbaseVersion\x88\x01\x01B\x05\n" +
 	"\x03_idB\x0f\n" +
-	"\r_base_version\"\xf4\x03\n" +
+	"\r_base_version\"\xc5\x04\n" +
 	"\x19UpdateDataPropertyRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\rR\x02id\x12(\n" +
 	"\rdisplay_label\x18\x03 \x01(\tH\x00R\fdisplayLabel\x88\x01\x01\x12\x1d\n" +
@@ -1336,7 +1362,8 @@ const file_ontology_service_v1_ontology_data_property_proto_rawDesc = "" +
 	"\requivalent_id\x18\n" +
 	" \x01(\rH\x03R\fequivalentId\x88\x01\x01\x12(\n" +
 	"\x0fcharacteristics\x18\v \x03(\tR\x0fcharacteristics\x12&\n" +
-	"\fbase_version\x18\f \x01(\rH\x04R\vbaseVersion\x88\x01\x01B\x10\n" +
+	"\fbase_version\x18\f \x01(\rH\x04R\vbaseVersion\x88\x01\x01\x12O\n" +
+	"\vannotations\x18\r \x03(\v2-.ontology.service.v1.AnnotationAssertionInputR\vannotationsB\x10\n" +
 	"\x0e_display_labelB\n" +
 	"\n" +
 	"\b_commentB\r\n" +
@@ -1388,8 +1415,10 @@ var file_ontology_service_v1_ontology_data_property_proto_goTypes = []any{
 	(*DeleteDataPropertyRequest)(nil),   // 12: ontology.service.v1.DeleteDataPropertyRequest
 	(*timestamppb.Timestamp)(nil),       // 13: google.protobuf.Timestamp
 	(*EntityBrief)(nil),                 // 14: ontology.service.v1.EntityBrief
-	(*EntityUsage)(nil),                 // 15: ontology.service.v1.EntityUsage
-	(*emptypb.Empty)(nil),               // 16: google.protobuf.Empty
+	(*AnnotationAssertion)(nil),         // 15: ontology.service.v1.AnnotationAssertion
+	(*AnnotationAssertionInput)(nil),    // 16: ontology.service.v1.AnnotationAssertionInput
+	(*EntityUsage)(nil),                 // 17: ontology.service.v1.EntityUsage
+	(*emptypb.Empty)(nil),               // 18: google.protobuf.Empty
 }
 var file_ontology_service_v1_ontology_data_property_proto_depIdxs = []int32{
 	0,  // 0: ontology.service.v1.DataPropertyTreeNode.children:type_name -> ontology.service.v1.DataPropertyTreeNode
@@ -1400,26 +1429,29 @@ var file_ontology_service_v1_ontology_data_property_proto_depIdxs = []int32{
 	1,  // 5: ontology.service.v1.ListDataPropertiesResponse.items:type_name -> ontology.service.v1.DataProperty
 	14, // 6: ontology.service.v1.DataPropertyFrame.super_properties:type_name -> ontology.service.v1.EntityBrief
 	14, // 7: ontology.service.v1.DataPropertyFrame.domains:type_name -> ontology.service.v1.EntityBrief
-	13, // 8: ontology.service.v1.DataPropertyFrame.updated_at:type_name -> google.protobuf.Timestamp
-	2,  // 9: ontology.service.v1.OntologyDataPropertyService.Tree:input_type -> ontology.service.v1.GetDataPropertyTreeRequest
-	4,  // 10: ontology.service.v1.OntologyDataPropertyService.List:input_type -> ontology.service.v1.ListDataPropertiesRequest
-	6,  // 11: ontology.service.v1.OntologyDataPropertyService.Frame:input_type -> ontology.service.v1.GetDataPropertyFrameRequest
-	8,  // 12: ontology.service.v1.OntologyDataPropertyService.Usage:input_type -> ontology.service.v1.GetDataPropertyUsageRequest
-	9,  // 13: ontology.service.v1.OntologyDataPropertyService.Create:input_type -> ontology.service.v1.CreateDataPropertyRequest
-	11, // 14: ontology.service.v1.OntologyDataPropertyService.Update:input_type -> ontology.service.v1.UpdateDataPropertyRequest
-	12, // 15: ontology.service.v1.OntologyDataPropertyService.Delete:input_type -> ontology.service.v1.DeleteDataPropertyRequest
-	3,  // 16: ontology.service.v1.OntologyDataPropertyService.Tree:output_type -> ontology.service.v1.DataPropertyTreeResponse
-	5,  // 17: ontology.service.v1.OntologyDataPropertyService.List:output_type -> ontology.service.v1.ListDataPropertiesResponse
-	7,  // 18: ontology.service.v1.OntologyDataPropertyService.Frame:output_type -> ontology.service.v1.DataPropertyFrame
-	15, // 19: ontology.service.v1.OntologyDataPropertyService.Usage:output_type -> ontology.service.v1.EntityUsage
-	10, // 20: ontology.service.v1.OntologyDataPropertyService.Create:output_type -> ontology.service.v1.CreateDataPropertyResponse
-	16, // 21: ontology.service.v1.OntologyDataPropertyService.Update:output_type -> google.protobuf.Empty
-	16, // 22: ontology.service.v1.OntologyDataPropertyService.Delete:output_type -> google.protobuf.Empty
-	16, // [16:23] is the sub-list for method output_type
-	9,  // [9:16] is the sub-list for method input_type
-	9,  // [9:9] is the sub-list for extension type_name
-	9,  // [9:9] is the sub-list for extension extendee
-	0,  // [0:9] is the sub-list for field type_name
+	15, // 8: ontology.service.v1.DataPropertyFrame.annotations:type_name -> ontology.service.v1.AnnotationAssertion
+	13, // 9: ontology.service.v1.DataPropertyFrame.updated_at:type_name -> google.protobuf.Timestamp
+	16, // 10: ontology.service.v1.CreateDataPropertyRequest.annotations:type_name -> ontology.service.v1.AnnotationAssertionInput
+	16, // 11: ontology.service.v1.UpdateDataPropertyRequest.annotations:type_name -> ontology.service.v1.AnnotationAssertionInput
+	2,  // 12: ontology.service.v1.OntologyDataPropertyService.Tree:input_type -> ontology.service.v1.GetDataPropertyTreeRequest
+	4,  // 13: ontology.service.v1.OntologyDataPropertyService.List:input_type -> ontology.service.v1.ListDataPropertiesRequest
+	6,  // 14: ontology.service.v1.OntologyDataPropertyService.Frame:input_type -> ontology.service.v1.GetDataPropertyFrameRequest
+	8,  // 15: ontology.service.v1.OntologyDataPropertyService.Usage:input_type -> ontology.service.v1.GetDataPropertyUsageRequest
+	9,  // 16: ontology.service.v1.OntologyDataPropertyService.Create:input_type -> ontology.service.v1.CreateDataPropertyRequest
+	11, // 17: ontology.service.v1.OntologyDataPropertyService.Update:input_type -> ontology.service.v1.UpdateDataPropertyRequest
+	12, // 18: ontology.service.v1.OntologyDataPropertyService.Delete:input_type -> ontology.service.v1.DeleteDataPropertyRequest
+	3,  // 19: ontology.service.v1.OntologyDataPropertyService.Tree:output_type -> ontology.service.v1.DataPropertyTreeResponse
+	5,  // 20: ontology.service.v1.OntologyDataPropertyService.List:output_type -> ontology.service.v1.ListDataPropertiesResponse
+	7,  // 21: ontology.service.v1.OntologyDataPropertyService.Frame:output_type -> ontology.service.v1.DataPropertyFrame
+	17, // 22: ontology.service.v1.OntologyDataPropertyService.Usage:output_type -> ontology.service.v1.EntityUsage
+	10, // 23: ontology.service.v1.OntologyDataPropertyService.Create:output_type -> ontology.service.v1.CreateDataPropertyResponse
+	18, // 24: ontology.service.v1.OntologyDataPropertyService.Update:output_type -> google.protobuf.Empty
+	18, // 25: ontology.service.v1.OntologyDataPropertyService.Delete:output_type -> google.protobuf.Empty
+	19, // [19:26] is the sub-list for method output_type
+	12, // [12:19] is the sub-list for method input_type
+	12, // [12:12] is the sub-list for extension type_name
+	12, // [12:12] is the sub-list for extension extendee
+	0,  // [0:12] is the sub-list for field type_name
 }
 
 func init() { file_ontology_service_v1_ontology_data_property_proto_init() }

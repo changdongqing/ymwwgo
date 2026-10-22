@@ -403,6 +403,238 @@ var _ interface {
 	ErrorName() string
 } = EntityUsageValidationError{}
 
+// Validate checks the field values on AnnotationAssertion with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *AnnotationAssertion) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on AnnotationAssertion with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// AnnotationAssertionMultiError, or nil if none found.
+func (m *AnnotationAssertion) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *AnnotationAssertion) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if m.PropertyId != nil {
+		// no validation rules for PropertyId
+	}
+
+	if m.PropertyLocalName != nil {
+		// no validation rules for PropertyLocalName
+	}
+
+	if m.PropertyDisplayLabel != nil {
+		// no validation rules for PropertyDisplayLabel
+	}
+
+	if m.Value != nil {
+		// no validation rules for Value
+	}
+
+	if m.Lang != nil {
+		// no validation rules for Lang
+	}
+
+	if len(errors) > 0 {
+		return AnnotationAssertionMultiError(errors)
+	}
+
+	return nil
+}
+
+// AnnotationAssertionMultiError is an error wrapping multiple validation
+// errors returned by AnnotationAssertion.ValidateAll() if the designated
+// constraints aren't met.
+type AnnotationAssertionMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m AnnotationAssertionMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m AnnotationAssertionMultiError) AllErrors() []error { return m }
+
+// AnnotationAssertionValidationError is the validation error returned by
+// AnnotationAssertion.Validate if the designated constraints aren't met.
+type AnnotationAssertionValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e AnnotationAssertionValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e AnnotationAssertionValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e AnnotationAssertionValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e AnnotationAssertionValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e AnnotationAssertionValidationError) ErrorName() string {
+	return "AnnotationAssertionValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e AnnotationAssertionValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sAnnotationAssertion.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = AnnotationAssertionValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = AnnotationAssertionValidationError{}
+
+// Validate checks the field values on AnnotationAssertionInput with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *AnnotationAssertionInput) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on AnnotationAssertionInput with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// AnnotationAssertionInputMultiError, or nil if none found.
+func (m *AnnotationAssertionInput) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *AnnotationAssertionInput) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for PropertyId
+
+	// no validation rules for Value
+
+	if m.Lang != nil {
+		// no validation rules for Lang
+	}
+
+	if len(errors) > 0 {
+		return AnnotationAssertionInputMultiError(errors)
+	}
+
+	return nil
+}
+
+// AnnotationAssertionInputMultiError is an error wrapping multiple validation
+// errors returned by AnnotationAssertionInput.ValidateAll() if the designated
+// constraints aren't met.
+type AnnotationAssertionInputMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m AnnotationAssertionInputMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m AnnotationAssertionInputMultiError) AllErrors() []error { return m }
+
+// AnnotationAssertionInputValidationError is the validation error returned by
+// AnnotationAssertionInput.Validate if the designated constraints aren't met.
+type AnnotationAssertionInputValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e AnnotationAssertionInputValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e AnnotationAssertionInputValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e AnnotationAssertionInputValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e AnnotationAssertionInputValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e AnnotationAssertionInputValidationError) ErrorName() string {
+	return "AnnotationAssertionInputValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e AnnotationAssertionInputValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sAnnotationAssertionInput.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = AnnotationAssertionInputValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = AnnotationAssertionInputValidationError{}
+
 // Validate checks the field values on Ontology with the rules defined in the
 // proto definition for this message. If any rules are violated, the first
 // error encountered is returned, or nil if there are no violations.

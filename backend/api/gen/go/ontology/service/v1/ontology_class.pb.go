@@ -640,6 +640,7 @@ type OntologyClassFrame struct {
 	DisjointIds   []uint32               `protobuf:"varint,11,rep,packed,name=disjoint_ids,json=disjointIds,proto3" json:"disjoint_ids,omitempty"`   // 不相交伙伴ID（对称伙伴去重后）
 	EquivalentId  *uint32                `protobuf:"varint,12,opt,name=equivalent_id,json=equivalentId,proto3,oneof" json:"equivalent_id,omitempty"` // 等价类ID（V1 单值）
 	BaseVersion   *uint32                `protobuf:"varint,13,opt,name=base_version,json=baseVersion,proto3,oneof" json:"base_version,omitempty"`    // 本体当前版本，下次提交回传（乐观锁基准）
+	Annotations   []*AnnotationAssertion `protobuf:"bytes,14,rep,name=annotations,proto3" json:"annotations,omitempty"`                              // 自定义注解（内建字段之外，保序；04 期增量）
 	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,201,opt,name=updated_at,json=updatedAt,proto3,oneof" json:"updated_at,omitempty"`          // 更新时间
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -766,6 +767,13 @@ func (x *OntologyClassFrame) GetBaseVersion() uint32 {
 	return 0
 }
 
+func (x *OntologyClassFrame) GetAnnotations() []*AnnotationAssertion {
+	if x != nil {
+		return x.Annotations
+	}
+	return nil
+}
+
 func (x *OntologyClassFrame) GetUpdatedAt() *timestamppb.Timestamp {
 	if x != nil {
 		return x.UpdatedAt
@@ -820,16 +828,17 @@ func (x *GetOntologyClassUsageRequest) GetId() uint32 {
 
 // 创建本体类 - 请求（自定义 RPC：扁平请求体，勿包 { data }——protojson 会把 data 当未知字段丢弃）
 type CreateOntologyClassRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	OntologyId    uint32                 `protobuf:"varint,1,opt,name=ontology_id,json=ontologyId,proto3" json:"ontology_id,omitempty"`             // 本体ID（必填）
-	LocalName     string                 `protobuf:"bytes,2,opt,name=local_name,json=localName,proto3" json:"local_name,omitempty"`                 // 局部名（必填 ≤255，创建后不可变）
-	DisplayLabel  *string                `protobuf:"bytes,3,opt,name=display_label,json=displayLabel,proto3,oneof" json:"display_label,omitempty"`  // 显示名 → rdfs:label（zh）
-	Comment       *string                `protobuf:"bytes,4,opt,name=comment,proto3,oneof" json:"comment,omitempty"`                                // 注释 → rdfs:comment（zh）
-	Notation      *string                `protobuf:"bytes,5,opt,name=notation,proto3,oneof" json:"notation,omitempty"`                              // 编码 → skos:notation，[A-Za-z0-9_-]+
-	Deprecated    *bool                  `protobuf:"varint,6,opt,name=deprecated,proto3,oneof" json:"deprecated,omitempty"`                         // 废弃 → owl:deprecated
-	ParentIds     []uint32               `protobuf:"varint,7,rep,packed,name=parent_ids,json=parentIds,proto3" json:"parent_ids,omitempty"`         // 父类（多选；空 = 根类，挂 owl:Thing）
-	DisjointIds   []uint32               `protobuf:"varint,8,rep,packed,name=disjoint_ids,json=disjointIds,proto3" json:"disjoint_ids,omitempty"`   // 不相交类（成对补全由服务端完成）
-	EquivalentId  *uint32                `protobuf:"varint,9,opt,name=equivalent_id,json=equivalentId,proto3,oneof" json:"equivalent_id,omitempty"` // 等价类（V1 单值）
+	state         protoimpl.MessageState      `protogen:"open.v1"`
+	OntologyId    uint32                      `protobuf:"varint,1,opt,name=ontology_id,json=ontologyId,proto3" json:"ontology_id,omitempty"`             // 本体ID（必填）
+	LocalName     string                      `protobuf:"bytes,2,opt,name=local_name,json=localName,proto3" json:"local_name,omitempty"`                 // 局部名（必填 ≤255，创建后不可变）
+	DisplayLabel  *string                     `protobuf:"bytes,3,opt,name=display_label,json=displayLabel,proto3,oneof" json:"display_label,omitempty"`  // 显示名 → rdfs:label（zh）
+	Comment       *string                     `protobuf:"bytes,4,opt,name=comment,proto3,oneof" json:"comment,omitempty"`                                // 注释 → rdfs:comment（zh）
+	Notation      *string                     `protobuf:"bytes,5,opt,name=notation,proto3,oneof" json:"notation,omitempty"`                              // 编码 → skos:notation，[A-Za-z0-9_-]+
+	Deprecated    *bool                       `protobuf:"varint,6,opt,name=deprecated,proto3,oneof" json:"deprecated,omitempty"`                         // 废弃 → owl:deprecated
+	ParentIds     []uint32                    `protobuf:"varint,7,rep,packed,name=parent_ids,json=parentIds,proto3" json:"parent_ids,omitempty"`         // 父类（多选；空 = 根类，挂 owl:Thing）
+	DisjointIds   []uint32                    `protobuf:"varint,8,rep,packed,name=disjoint_ids,json=disjointIds,proto3" json:"disjoint_ids,omitempty"`   // 不相交类（成对补全由服务端完成）
+	EquivalentId  *uint32                     `protobuf:"varint,9,opt,name=equivalent_id,json=equivalentId,proto3,oneof" json:"equivalent_id,omitempty"` // 等价类（V1 单值）
+	Annotations   []*AnnotationAssertionInput `protobuf:"bytes,10,rep,name=annotations,proto3" json:"annotations,omitempty"`                             // 自定义注解（全量提交语义；04 期增量）
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -927,6 +936,13 @@ func (x *CreateOntologyClassRequest) GetEquivalentId() uint32 {
 	return 0
 }
 
+func (x *CreateOntologyClassRequest) GetAnnotations() []*AnnotationAssertionInput {
+	if x != nil {
+		return x.Annotations
+	}
+	return nil
+}
+
 // 创建本体类 - 回应（新实体 id + 变更后本体版本，前端创建后选中新节点）
 type CreateOntologyClassResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -982,16 +998,17 @@ func (x *CreateOntologyClassResponse) GetBaseVersion() uint32 {
 
 // 更新本体类 - 请求（frame 全量提交语义；local_name 忽略——不可变；base_version 缺省 = 跳过乐观锁比对，仅限内部路径）
 type UpdateOntologyClassRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            uint32                 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`                                               // 实体ID
-	DisplayLabel  *string                `protobuf:"bytes,3,opt,name=display_label,json=displayLabel,proto3,oneof" json:"display_label,omitempty"`  // 显示名（缺省 = 不变；空串 = 清空；protojson 无法区分 null 与缺省，见设计文档 §8.1 #19）
-	Comment       *string                `protobuf:"bytes,4,opt,name=comment,proto3,oneof" json:"comment,omitempty"`                                // 注释（缺省 = 不变；空串 = 清空）
-	Notation      *string                `protobuf:"bytes,5,opt,name=notation,proto3,oneof" json:"notation,omitempty"`                              // 编码（缺省 = 不变；空串 = 清空）
-	Deprecated    *bool                  `protobuf:"varint,6,opt,name=deprecated,proto3,oneof" json:"deprecated,omitempty"`                         // 废弃（缺省 = 不变；false = 移除断言）
-	ParentIds     []uint32               `protobuf:"varint,7,rep,packed,name=parent_ids,json=parentIds,proto3" json:"parent_ids,omitempty"`         // 父类全量
-	DisjointIds   []uint32               `protobuf:"varint,8,rep,packed,name=disjoint_ids,json=disjointIds,proto3" json:"disjoint_ids,omitempty"`   // 不相交全量
-	EquivalentId  *uint32                `protobuf:"varint,9,opt,name=equivalent_id,json=equivalentId,proto3,oneof" json:"equivalent_id,omitempty"` // 等价类（缺省 = 不变；0 = 清空；V1 单值）
-	BaseVersion   *uint32                `protobuf:"varint,10,opt,name=base_version,json=baseVersion,proto3,oneof" json:"base_version,omitempty"`   // 乐观锁基准
+	state         protoimpl.MessageState      `protogen:"open.v1"`
+	Id            uint32                      `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`                                               // 实体ID
+	DisplayLabel  *string                     `protobuf:"bytes,3,opt,name=display_label,json=displayLabel,proto3,oneof" json:"display_label,omitempty"`  // 显示名（缺省 = 不变；空串 = 清空；protojson 无法区分 null 与缺省，见设计文档 §8.1 #19）
+	Comment       *string                     `protobuf:"bytes,4,opt,name=comment,proto3,oneof" json:"comment,omitempty"`                                // 注释（缺省 = 不变；空串 = 清空）
+	Notation      *string                     `protobuf:"bytes,5,opt,name=notation,proto3,oneof" json:"notation,omitempty"`                              // 编码（缺省 = 不变；空串 = 清空）
+	Deprecated    *bool                       `protobuf:"varint,6,opt,name=deprecated,proto3,oneof" json:"deprecated,omitempty"`                         // 废弃（缺省 = 不变；false = 移除断言）
+	ParentIds     []uint32                    `protobuf:"varint,7,rep,packed,name=parent_ids,json=parentIds,proto3" json:"parent_ids,omitempty"`         // 父类全量
+	DisjointIds   []uint32                    `protobuf:"varint,8,rep,packed,name=disjoint_ids,json=disjointIds,proto3" json:"disjoint_ids,omitempty"`   // 不相交全量
+	EquivalentId  *uint32                     `protobuf:"varint,9,opt,name=equivalent_id,json=equivalentId,proto3,oneof" json:"equivalent_id,omitempty"` // 等价类（缺省 = 不变；0 = 清空；V1 单值）
+	BaseVersion   *uint32                     `protobuf:"varint,10,opt,name=base_version,json=baseVersion,proto3,oneof" json:"base_version,omitempty"`   // 乐观锁基准
+	Annotations   []*AnnotationAssertionInput `protobuf:"bytes,11,rep,name=annotations,proto3" json:"annotations,omitempty"`                             // 自定义注解全量（nil/缺失/空数组统一 = 清空；04 期增量）
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1087,6 +1104,13 @@ func (x *UpdateOntologyClassRequest) GetBaseVersion() uint32 {
 		return *x.BaseVersion
 	}
 	return 0
+}
+
+func (x *UpdateOntologyClassRequest) GetAnnotations() []*AnnotationAssertionInput {
+	if x != nil {
+		return x.Annotations
+	}
+	return nil
 }
 
 // 删除本体类 - 请求（force=true 级联移除引用公理，子类自动变根类）
@@ -1249,7 +1273,7 @@ const file_ontology_service_v1_ontology_class_proto_rawDesc = "" +
 	"\x05items\x18\x01 \x03(\v2\".ontology.service.v1.OntologyClassR\x05items\x12\x14\n" +
 	"\x05total\x18\x02 \x01(\x04R\x05total\".\n" +
 	"\x1cGetOntologyClassFrameRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\rR\x02id\"\xc4\x05\n" +
+	"\x02id\x18\x01 \x01(\rR\x02id\"\x90\x06\n" +
 	"\x12OntologyClassFrame\x12\x13\n" +
 	"\x02id\x18\x01 \x01(\rH\x00R\x02id\x88\x01\x01\x12$\n" +
 	"\vontology_id\x18\x02 \x01(\rH\x01R\n" +
@@ -1269,7 +1293,8 @@ const file_ontology_service_v1_ontology_class_proto_rawDesc = "" +
 	" \x03(\v2 .ontology.service.v1.EntityBriefR\aparents\x12!\n" +
 	"\fdisjoint_ids\x18\v \x03(\rR\vdisjointIds\x12(\n" +
 	"\requivalent_id\x18\f \x01(\rH\bR\fequivalentId\x88\x01\x01\x12&\n" +
-	"\fbase_version\x18\r \x01(\rH\tR\vbaseVersion\x88\x01\x01\x12?\n" +
+	"\fbase_version\x18\r \x01(\rH\tR\vbaseVersion\x88\x01\x01\x12J\n" +
+	"\vannotations\x18\x0e \x03(\v2(.ontology.service.v1.AnnotationAssertionR\vannotations\x12?\n" +
 	"\n" +
 	"updated_at\x18\xc9\x01 \x01(\v2\x1a.google.protobuf.TimestampH\n" +
 	"R\tupdatedAt\x88\x01\x01B\x05\n" +
@@ -1286,7 +1311,7 @@ const file_ontology_service_v1_ontology_class_proto_rawDesc = "" +
 	"\r_base_versionB\r\n" +
 	"\v_updated_at\".\n" +
 	"\x1cGetOntologyClassUsageRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\rR\x02id\"\xa3\x03\n" +
+	"\x02id\x18\x01 \x01(\rR\x02id\"\xf4\x03\n" +
 	"\x1aCreateOntologyClassRequest\x12\x1f\n" +
 	"\vontology_id\x18\x01 \x01(\rR\n" +
 	"ontologyId\x12\x1d\n" +
@@ -1301,7 +1326,9 @@ const file_ontology_service_v1_ontology_class_proto_rawDesc = "" +
 	"\n" +
 	"parent_ids\x18\a \x03(\rR\tparentIds\x12!\n" +
 	"\fdisjoint_ids\x18\b \x03(\rR\vdisjointIds\x12(\n" +
-	"\requivalent_id\x18\t \x01(\rH\x04R\fequivalentId\x88\x01\x01B\x10\n" +
+	"\requivalent_id\x18\t \x01(\rH\x04R\fequivalentId\x88\x01\x01\x12O\n" +
+	"\vannotations\x18\n" +
+	" \x03(\v2-.ontology.service.v1.AnnotationAssertionInputR\vannotationsB\x10\n" +
 	"\x0e_display_labelB\n" +
 	"\n" +
 	"\b_commentB\v\n" +
@@ -1312,7 +1339,7 @@ const file_ontology_service_v1_ontology_class_proto_rawDesc = "" +
 	"\x02id\x18\x01 \x01(\rH\x00R\x02id\x88\x01\x01\x12&\n" +
 	"\fbase_version\x18\x02 \x01(\rH\x01R\vbaseVersion\x88\x01\x01B\x05\n" +
 	"\x03_idB\x0f\n" +
-	"\r_base_version\"\xac\x03\n" +
+	"\r_base_version\"\xfd\x03\n" +
 	"\x1aUpdateOntologyClassRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\rR\x02id\x12(\n" +
 	"\rdisplay_label\x18\x03 \x01(\tH\x00R\fdisplayLabel\x88\x01\x01\x12\x1d\n" +
@@ -1326,7 +1353,8 @@ const file_ontology_service_v1_ontology_class_proto_rawDesc = "" +
 	"\fdisjoint_ids\x18\b \x03(\rR\vdisjointIds\x12(\n" +
 	"\requivalent_id\x18\t \x01(\rH\x04R\fequivalentId\x88\x01\x01\x12&\n" +
 	"\fbase_version\x18\n" +
-	" \x01(\rH\x05R\vbaseVersion\x88\x01\x01B\x10\n" +
+	" \x01(\rH\x05R\vbaseVersion\x88\x01\x01\x12O\n" +
+	"\vannotations\x18\v \x03(\v2-.ontology.service.v1.AnnotationAssertionInputR\vannotationsB\x10\n" +
 	"\x0e_display_labelB\n" +
 	"\n" +
 	"\b_commentB\v\n" +
@@ -1381,8 +1409,10 @@ var file_ontology_service_v1_ontology_class_proto_goTypes = []any{
 	(*DeleteOntologyClassRequest)(nil),   // 13: ontology.service.v1.DeleteOntologyClassRequest
 	(*timestamppb.Timestamp)(nil),        // 14: google.protobuf.Timestamp
 	(*EntityBrief)(nil),                  // 15: ontology.service.v1.EntityBrief
-	(*EntityUsage)(nil),                  // 16: ontology.service.v1.EntityUsage
-	(*emptypb.Empty)(nil),                // 17: google.protobuf.Empty
+	(*AnnotationAssertion)(nil),          // 16: ontology.service.v1.AnnotationAssertion
+	(*AnnotationAssertionInput)(nil),     // 17: ontology.service.v1.AnnotationAssertionInput
+	(*EntityUsage)(nil),                  // 18: ontology.service.v1.EntityUsage
+	(*emptypb.Empty)(nil),                // 19: google.protobuf.Empty
 }
 var file_ontology_service_v1_ontology_class_proto_depIdxs = []int32{
 	0,  // 0: ontology.service.v1.OntologyClassTreeNode.children:type_name -> ontology.service.v1.OntologyClassTreeNode
@@ -1393,28 +1423,31 @@ var file_ontology_service_v1_ontology_class_proto_depIdxs = []int32{
 	0,  // 5: ontology.service.v1.OntologyClassNavTreeResponse.roots:type_name -> ontology.service.v1.OntologyClassTreeNode
 	1,  // 6: ontology.service.v1.ListOntologyClassesResponse.items:type_name -> ontology.service.v1.OntologyClass
 	15, // 7: ontology.service.v1.OntologyClassFrame.parents:type_name -> ontology.service.v1.EntityBrief
-	14, // 8: ontology.service.v1.OntologyClassFrame.updated_at:type_name -> google.protobuf.Timestamp
-	2,  // 9: ontology.service.v1.OntologyClassService.Tree:input_type -> ontology.service.v1.GetOntologyClassTreeRequest
-	2,  // 10: ontology.service.v1.OntologyClassService.NavTree:input_type -> ontology.service.v1.GetOntologyClassTreeRequest
-	5,  // 11: ontology.service.v1.OntologyClassService.List:input_type -> ontology.service.v1.ListOntologyClassesRequest
-	7,  // 12: ontology.service.v1.OntologyClassService.Frame:input_type -> ontology.service.v1.GetOntologyClassFrameRequest
-	9,  // 13: ontology.service.v1.OntologyClassService.Usage:input_type -> ontology.service.v1.GetOntologyClassUsageRequest
-	10, // 14: ontology.service.v1.OntologyClassService.Create:input_type -> ontology.service.v1.CreateOntologyClassRequest
-	12, // 15: ontology.service.v1.OntologyClassService.Update:input_type -> ontology.service.v1.UpdateOntologyClassRequest
-	13, // 16: ontology.service.v1.OntologyClassService.Delete:input_type -> ontology.service.v1.DeleteOntologyClassRequest
-	3,  // 17: ontology.service.v1.OntologyClassService.Tree:output_type -> ontology.service.v1.OntologyClassTreeResponse
-	4,  // 18: ontology.service.v1.OntologyClassService.NavTree:output_type -> ontology.service.v1.OntologyClassNavTreeResponse
-	6,  // 19: ontology.service.v1.OntologyClassService.List:output_type -> ontology.service.v1.ListOntologyClassesResponse
-	8,  // 20: ontology.service.v1.OntologyClassService.Frame:output_type -> ontology.service.v1.OntologyClassFrame
-	16, // 21: ontology.service.v1.OntologyClassService.Usage:output_type -> ontology.service.v1.EntityUsage
-	11, // 22: ontology.service.v1.OntologyClassService.Create:output_type -> ontology.service.v1.CreateOntologyClassResponse
-	17, // 23: ontology.service.v1.OntologyClassService.Update:output_type -> google.protobuf.Empty
-	17, // 24: ontology.service.v1.OntologyClassService.Delete:output_type -> google.protobuf.Empty
-	17, // [17:25] is the sub-list for method output_type
-	9,  // [9:17] is the sub-list for method input_type
-	9,  // [9:9] is the sub-list for extension type_name
-	9,  // [9:9] is the sub-list for extension extendee
-	0,  // [0:9] is the sub-list for field type_name
+	16, // 8: ontology.service.v1.OntologyClassFrame.annotations:type_name -> ontology.service.v1.AnnotationAssertion
+	14, // 9: ontology.service.v1.OntologyClassFrame.updated_at:type_name -> google.protobuf.Timestamp
+	17, // 10: ontology.service.v1.CreateOntologyClassRequest.annotations:type_name -> ontology.service.v1.AnnotationAssertionInput
+	17, // 11: ontology.service.v1.UpdateOntologyClassRequest.annotations:type_name -> ontology.service.v1.AnnotationAssertionInput
+	2,  // 12: ontology.service.v1.OntologyClassService.Tree:input_type -> ontology.service.v1.GetOntologyClassTreeRequest
+	2,  // 13: ontology.service.v1.OntologyClassService.NavTree:input_type -> ontology.service.v1.GetOntologyClassTreeRequest
+	5,  // 14: ontology.service.v1.OntologyClassService.List:input_type -> ontology.service.v1.ListOntologyClassesRequest
+	7,  // 15: ontology.service.v1.OntologyClassService.Frame:input_type -> ontology.service.v1.GetOntologyClassFrameRequest
+	9,  // 16: ontology.service.v1.OntologyClassService.Usage:input_type -> ontology.service.v1.GetOntologyClassUsageRequest
+	10, // 17: ontology.service.v1.OntologyClassService.Create:input_type -> ontology.service.v1.CreateOntologyClassRequest
+	12, // 18: ontology.service.v1.OntologyClassService.Update:input_type -> ontology.service.v1.UpdateOntologyClassRequest
+	13, // 19: ontology.service.v1.OntologyClassService.Delete:input_type -> ontology.service.v1.DeleteOntologyClassRequest
+	3,  // 20: ontology.service.v1.OntologyClassService.Tree:output_type -> ontology.service.v1.OntologyClassTreeResponse
+	4,  // 21: ontology.service.v1.OntologyClassService.NavTree:output_type -> ontology.service.v1.OntologyClassNavTreeResponse
+	6,  // 22: ontology.service.v1.OntologyClassService.List:output_type -> ontology.service.v1.ListOntologyClassesResponse
+	8,  // 23: ontology.service.v1.OntologyClassService.Frame:output_type -> ontology.service.v1.OntologyClassFrame
+	18, // 24: ontology.service.v1.OntologyClassService.Usage:output_type -> ontology.service.v1.EntityUsage
+	11, // 25: ontology.service.v1.OntologyClassService.Create:output_type -> ontology.service.v1.CreateOntologyClassResponse
+	19, // 26: ontology.service.v1.OntologyClassService.Update:output_type -> google.protobuf.Empty
+	19, // 27: ontology.service.v1.OntologyClassService.Delete:output_type -> google.protobuf.Empty
+	20, // [20:28] is the sub-list for method output_type
+	12, // [12:20] is the sub-list for method input_type
+	12, // [12:12] is the sub-list for extension type_name
+	12, // [12:12] is the sub-list for extension extendee
+	0,  // [0:12] is the sub-list for field type_name
 }
 
 func init() { file_ontology_service_v1_ontology_class_proto_init() }

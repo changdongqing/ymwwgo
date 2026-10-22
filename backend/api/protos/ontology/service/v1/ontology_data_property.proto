@@ -151,6 +151,7 @@ message DataPropertyFrame {
     optional uint32 equivalent_id = 15 [json_name = "equivalentId"]; // 等价属性ID（V1 单值）
     repeated string characteristics = 16 [json_name = "characteristics"]; // 特征 IRI（V1 至多函数性）
     optional uint32 base_version = 17 [json_name = "baseVersion"]; // 本体当前版本，下次提交回传（乐观锁基准）
+    repeated AnnotationAssertion annotations = 18 [json_name = "annotations"]; // 自定义注解（内建字段之外，保序；04 期增量）
 
     optional google.protobuf.Timestamp updated_at = 201 [json_name = "updatedAt"]; // 更新时间
 }
@@ -174,6 +175,7 @@ message CreateDataPropertyRequest {
     repeated uint32 disjoint_ids = 9 [json_name = "disjointIds"];  // 不相交属性（成对补全由服务端完成）
     optional uint32 equivalent_id = 10 [json_name = "equivalentId"]; // 等价属性（V1 单值）
     repeated string characteristics = 11 [json_name = "characteristics"]; // 特征 IRI 数组（V1 至多函数性一项）
+    repeated AnnotationAssertionInput annotations = 12 [json_name = "annotations"]; // 自定义注解（全量提交语义；04 期增量）
 }
 
 // 创建数据属性 - 回应（新实体 id + 变更后本体版本）
@@ -195,6 +197,7 @@ message UpdateDataPropertyRequest {
     optional uint32 equivalent_id = 10 [json_name = "equivalentId"]; // 等价属性（缺省 = 不变；0 = 清空；V1 单值）
     repeated string characteristics = 11 [json_name = "characteristics"]; // 特征 IRI 全量（V1 至多函数性一项）
     optional uint32 base_version = 12 [json_name = "baseVersion"]; // 乐观锁基准
+    repeated AnnotationAssertionInput annotations = 13 [json_name = "annotations"]; // 自定义注解全量（nil/缺失/空数组统一 = 清空；04 期增量）
 }
 
 // 删除数据属性 - 请求（force=true 级联移除引用公理，子属性自动变根属性）

@@ -44,7 +44,8 @@ enum OntologyAxiomType {
     AXIOM_DATA_PROPERTY_CHARACTERISTIC = 43; // 03：数据属性特征（泛型，predicate_iri 区分；V1 仅函数性）
     AXIOM_EQUIVALENT_DATA_PROPERTIES = 44;  // 03：等价数据属性（成对 (P,Q)+(Q,P)）
     AXIOM_DISJOINT_DATA_PROPERTIES = 45;    // 03：不相交数据属性（成对）
-    // 46~49 预留 05 数据类型；50 预留 04 注解属性
+    AXIOM_SUB_ANNOTATION_PROPERTY_OF = 50;  // 04：子注解属性（subject=子属性，object_id=父属性；多行=多父）
+    // 46~49 预留 05 数据类型
     // 60~62 预留 06 个体（60 断型 / 61 对象断言 / 62 数据断言）
     AXIOM_ANNOTATION_ASSERTION = 100;       // 阶段0：注解断言，全功能共用
 }
@@ -96,6 +97,46 @@ message EntityUsage {
         (gnostic.openapi.v3.property) = { description: "被查实体ID" }
     ]; // 被查实体ID
     repeated EntityUsageRef refs = 2 [json_name = "refs"]; // 引用明细
+}
+
+// 自定义注解断言（frame 回显；100 型 object_id 路径的行，保序 sort_order——04 号文档 §5.1）
+message AnnotationAssertion {
+    optional uint32 property_id = 1 [
+        json_name = "propertyId",
+        (gnostic.openapi.v3.property) = { description: "注解属性实体ID（谓词）" }
+    ]; // 注解属性实体ID
+    optional string property_local_name = 2 [
+        json_name = "propertyLocalName",
+        (gnostic.openapi.v3.property) = { description: "注解属性局部名（实体反查）" }
+    ]; // 注解属性局部名
+    optional string property_display_label = 3 [
+        json_name = "propertyDisplayLabel",
+        (gnostic.openapi.v3.property) = { description: "注解属性显示名（实体反查）" }
+    ]; // 注解属性显示名
+    optional string value = 4 [
+        json_name = "value",
+        (gnostic.openapi.v3.property) = { description: "注解值（字面量词形，plain literal 语义）" }
+    ]; // 注解值
+    optional string lang = 5 [
+        json_name = "lang",
+        (gnostic.openapi.v3.property) = { description: "语言标签（空 = 无语言字面量）" }
+    ]; // 语言标签
+}
+
+// 自定义注解提交载荷（四面 Create/Update 请求共用；同属性多值合法，重复行服务端有序去重）
+message AnnotationAssertionInput {
+    uint32 property_id = 1 [
+        json_name = "propertyId",
+        (gnostic.openapi.v3.property) = { description: "注解属性实体ID（谓词）" }
+    ]; // 注解属性实体ID
+    string value = 2 [
+        json_name = "value",
+        (gnostic.openapi.v3.property) = { description: "注解值（空白拒绝）" }
+    ]; // 注解值
+    optional string lang = 3 [
+        json_name = "lang",
+        (gnostic.openapi.v3.property) = { description: "语言标签（可空；空白归一为空串）" }
+    ]; // 语言标签
 }
 
 // 本体文档（owl:Ontology）

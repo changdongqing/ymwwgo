@@ -8070,6 +8070,344 @@ export type ontologyservicev1_DeleteOntologyRequest = {
   ids: number[] | undefined;
 };
 
+// 注解属性管理服务（admin 门面）
+//
+// 注解属性 create/update/delete 是自定义 RPC（公理事务管线：diff + 环检测 + 乐观锁 + 校验 + 变更日志），
+// body: "*" 收扁平请求体——不是通用 CRUD，勿按惯例包 { data: {...} }
+// （protojson 会把 data 当未知字段丢弃，接口 200 但字段全空，仓库已知坑）。
+// GET/DELETE 的标量参数由 Kratos 从 query string 按 proto 字段 json 名（camelCase）绑定。
+export interface OntologyAnnotationPropertyService {
+  // 查询注解属性全量树
+  Tree(
+    request: ontologyservicev1_GetAnnotationPropertyTreeRequest,
+  ): Promise<ontologyservicev1_AnnotationPropertyTreeResponse>;
+  // 分页查询注解属性列表
+  List(
+    request: ontologyservicev1_ListAnnotationPropertiesRequest,
+  ): Promise<ontologyservicev1_ListAnnotationPropertiesResponse>;
+  // 查询注解属性 frame 详情
+  Frame(
+    request: ontologyservicev1_GetAnnotationPropertyFrameRequest,
+  ): Promise<ontologyservicev1_AnnotationPropertyFrame>;
+  // 查询注解属性引用明细
+  Usage(
+    request: ontologyservicev1_GetAnnotationPropertyUsageRequest,
+  ): Promise<ontologyservicev1_EntityUsage>;
+  // 创建注解属性（公理事务管线；返回新实体 id + 变更后版本）
+  Create(
+    request: ontologyservicev1_CreateAnnotationPropertyRequest,
+  ): Promise<ontologyservicev1_CreateAnnotationPropertyResponse>;
+  // 更新注解属性（frame 全量提交，公理事务管线）
+  Update(
+    request: ontologyservicev1_UpdateAnnotationPropertyRequest,
+  ): Promise<wellKnownEmpty>;
+  // 删除注解属性（force=true 级联移除引用公理：50 子属性边 + 他人挂的自定义注解断言，子属性自动变根属性）
+  Delete(
+    request: ontologyservicev1_DeleteAnnotationPropertyRequest,
+  ): Promise<wellKnownEmpty>;
+}
+
+export function createOntologyAnnotationPropertyServiceClient(
+  transport: ClientTransport,
+): OntologyAnnotationPropertyService {
+  return {
+    Tree(request) {
+      const path = `/admin/v1/ontology/annotation-properties/tree`;
+      const body = null;
+      const queryParams: string[] = [];
+      if (request.ontologyId) {
+        queryParams.push(
+          `ontologyId=${encodeURIComponent(request.ontologyId.toString())}`,
+        );
+      }
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join('&')}`;
+      }
+      return transport.unary(uri, 'GET', body, {
+        service: 'OntologyAnnotationPropertyService',
+        method: 'Tree',
+      }) as Promise<ontologyservicev1_AnnotationPropertyTreeResponse>;
+    },
+    List(request) {
+      const path = `/admin/v1/ontology/annotation-properties`;
+      const body = null;
+      const queryParams: string[] = [];
+      if (request.page) {
+        queryParams.push(
+          `page=${encodeURIComponent(request.page.toString())}`,
+        );
+      }
+      if (request.pageSize) {
+        queryParams.push(
+          `pageSize=${encodeURIComponent(request.pageSize.toString())}`,
+        );
+      }
+      if (request.ontologyId) {
+        queryParams.push(
+          `ontologyId=${encodeURIComponent(request.ontologyId.toString())}`,
+        );
+      }
+      if (request.localName) {
+        queryParams.push(
+          `localName=${encodeURIComponent(request.localName.toString())}`,
+        );
+      }
+      if (request.displayLabel) {
+        queryParams.push(
+          `displayLabel=${encodeURIComponent(request.displayLabel.toString())}`,
+        );
+      }
+      if (request.deprecated) {
+        queryParams.push(
+          `deprecated=${encodeURIComponent(request.deprecated.toString())}`,
+        );
+      }
+      if (request.orderBy) {
+        queryParams.push(
+          `orderBy=${encodeURIComponent(request.orderBy.toString())}`,
+        );
+      }
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join('&')}`;
+      }
+      return transport.unary(uri, 'GET', body, {
+        service: 'OntologyAnnotationPropertyService',
+        method: 'List',
+      }) as Promise<ontologyservicev1_ListAnnotationPropertiesResponse>;
+    },
+    Frame(request) {
+      if (request.id === undefined || request.id === null) {
+        throw new Error('missing required field request.id');
+      }
+      const path = `/admin/v1/ontology/annotation-properties/${request.id}/frame`;
+      const body = null;
+      return transport.unary(path, 'GET', body, {
+        service: 'OntologyAnnotationPropertyService',
+        method: 'Frame',
+      }) as Promise<ontologyservicev1_AnnotationPropertyFrame>;
+    },
+    Usage(request) {
+      if (request.id === undefined || request.id === null) {
+        throw new Error('missing required field request.id');
+      }
+      const path = `/admin/v1/ontology/annotation-properties/${request.id}/usage`;
+      const body = null;
+      return transport.unary(path, 'GET', body, {
+        service: 'OntologyAnnotationPropertyService',
+        method: 'Usage',
+      }) as Promise<ontologyservicev1_EntityUsage>;
+    },
+    Create(request) {
+      const path = `/admin/v1/ontology/annotation-properties`;
+      const body = JSON.stringify(request);
+      return transport.unary(path, 'POST', body, {
+        service: 'OntologyAnnotationPropertyService',
+        method: 'Create',
+      }) as Promise<ontologyservicev1_CreateAnnotationPropertyResponse>;
+    },
+    Update(request) {
+      if (request.id === undefined || request.id === null) {
+        throw new Error('missing required field request.id');
+      }
+      const path = `/admin/v1/ontology/annotation-properties/${request.id}`;
+      const bodyMap = { ...request } as Record<string, unknown>;
+      delete bodyMap["id"];
+      const body = JSON.stringify(bodyMap);
+      return transport.unary(path, 'PUT', body, {
+        service: 'OntologyAnnotationPropertyService',
+        method: 'Update',
+      }) as Promise<wellKnownEmpty>;
+    },
+    Delete(request) {
+      if (request.id === undefined || request.id === null) {
+        throw new Error('missing required field request.id');
+      }
+      const path = `/admin/v1/ontology/annotation-properties/${request.id}`;
+      const body = null;
+      const queryParams: string[] = [];
+      if (request.baseVersion) {
+        queryParams.push(
+          `baseVersion=${encodeURIComponent(request.baseVersion.toString())}`,
+        );
+      }
+      if (request.force) {
+        queryParams.push(
+          `force=${encodeURIComponent(request.force.toString())}`,
+        );
+      }
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join('&')}`;
+      }
+      return transport.unary(uri, 'DELETE', body, {
+        service: 'OntologyAnnotationPropertyService',
+        method: 'Delete',
+      }) as Promise<wellKnownEmpty>;
+    },
+  };
+}
+// 查询注解属性树 - 请求
+export type ontologyservicev1_GetAnnotationPropertyTreeRequest = {
+  ontologyId: number | undefined;
+};
+
+// 查询注解属性树 - 回应（根列表；owl:topAnnotationProperty 虚拟根由前端固定渲染）
+export type ontologyservicev1_AnnotationPropertyTreeResponse = {
+  roots: ontologyservicev1_AnnotationPropertyTreeNode[] | undefined;
+};
+
+// 注解属性树节点（owl:topAnnotationProperty 虚拟根由前端固定渲染，不入库）
+export type ontologyservicev1_AnnotationPropertyTreeNode = {
+  childCount?: number;
+  children: ontologyservicev1_AnnotationPropertyTreeNode[] | undefined;
+  deprecated?: boolean;
+  displayLabel?: string;
+  id?: number;
+  iri?: string;
+  localName?: string;
+};
+
+// 查询注解属性列表 - 请求（自定义分页消息，字段从 query 绑定；搜索条件一律 contains；无 root_id——左树点击=定位高亮右表行）
+export type ontologyservicev1_ListAnnotationPropertiesRequest = {
+  deprecated?: boolean;
+  displayLabel: string | undefined;
+  localName: string | undefined;
+  ontologyId: number | undefined;
+  orderBy: string | undefined;
+  page: number | undefined;
+  pageSize: number | undefined;
+};
+
+// 查询注解属性列表 - 回应
+export type ontologyservicev1_ListAnnotationPropertiesResponse = {
+  items: ontologyservicev1_AnnotationProperty[] | undefined;
+  total: number | undefined;
+};
+
+// 注解属性（列表项，含聚合列）。
+// 与数据属性的差异（OWL 2 语言约束的同构减法，04 号文档 §2.7）：无特征/值域/等价/不相交列。
+export type ontologyservicev1_AnnotationProperty = {
+  childCount?: number;
+  comment?: string;
+  createdAt?: wellKnownTimestamp;
+  createdBy?: number;
+  deletedAt?: wellKnownTimestamp;
+  deletedBy?: number;
+  deprecated?: boolean;
+  displayLabel?: string;
+  id?: number;
+  iri?: string;
+  localName?: string;
+  ontologyId?: number;
+  parentCount?: number;
+  updatedAt?: wellKnownTimestamp;
+  updatedBy?: number;
+};
+
+// 查询注解属性 frame 详情 - 请求
+export type ontologyservicev1_GetAnnotationPropertyFrameRequest = {
+  id: number | undefined;
+};
+
+// 注解属性 frame 详情（Protégé Annotation Property 描述视图对应物；base_version 供乐观锁回传）。
+// 无定义域/值域/特征/等价/不相交分区——OWL 2 不给注解属性任何逻辑结构（04 号文档 §1.3）；
+// annotations 为自定义注解区（100 型 object_id 路径），注解属性自身也可挂注解（递归）。
+export type ontologyservicev1_AnnotationPropertyFrame = {
+  annotations: ontologyservicev1_AnnotationAssertion[] | undefined;
+  baseVersion?: number;
+  comment?: string;
+  deprecated?: boolean;
+  displayLabel?: string;
+  id?: number;
+  iri?: string;
+  localName?: string;
+  ontologyId?: number;
+  superProperties: ontologyservicev1_EntityBrief[] | undefined;
+  superPropertyIds: number[] | undefined;
+  updatedAt?: wellKnownTimestamp;
+};
+
+// 实体简况（树/引用/父类选择器共用）
+export type ontologyservicev1_EntityBrief = {
+  deprecated?: boolean;
+  displayLabel?: string;
+  id?: number;
+  localName?: string;
+};
+
+// 自定义注解断言（frame 回显；100 型 object_id 路径的行，保序 sort_order——04 号文档 §5.1）
+export type ontologyservicev1_AnnotationAssertion = {
+  lang?: string;
+  propertyDisplayLabel?: string;
+  propertyId?: number;
+  propertyLocalName?: string;
+  value?: string;
+};
+
+// 查询注解属性引用 - 请求
+export type ontologyservicev1_GetAnnotationPropertyUsageRequest = {
+  id: number | undefined;
+};
+
+// 实体引用明细（谁引用了我；原 01 期 OntologyClassUsage 上移泛化，类/属性接口共用）
+export type ontologyservicev1_EntityUsage = {
+  entityId?: number;
+  refs: ontologyservicev1_EntityUsageRef[] | undefined;
+};
+
+// 实体引用明细行（usage 反查；类/属性各期共用同一消息，axiom_type 语义随各期扩展）
+export type ontologyservicev1_EntityUsageRef = {
+  axiomType?: number;
+  displayLabel?: string;
+  entityId?: number;
+  localName?: string;
+};
+
+// 创建注解属性 - 请求（自定义 RPC：扁平请求体，勿包 { data }——protojson 会把 data 当未知字段丢弃）。
+// 无 domain/range、无特征、无等价/不相交——OWL 2 不给注解属性逻辑结构（04 号文档 §1.3/§1.4）。
+export type ontologyservicev1_CreateAnnotationPropertyRequest = {
+  annotations: ontologyservicev1_AnnotationAssertionInput[] | undefined;
+  comment?: string;
+  deprecated?: boolean;
+  displayLabel?: string;
+  localName: string | undefined;
+  ontologyId: number | undefined;
+  superPropertyIds: number[] | undefined;
+};
+
+// 自定义注解提交载荷（四面 Create/Update 请求共用；同属性多值合法，重复行服务端有序去重）
+export type ontologyservicev1_AnnotationAssertionInput = {
+  lang?: string;
+  propertyId: number | undefined;
+  value: string | undefined;
+};
+
+// 创建注解属性 - 回应（新实体 id + 变更后本体版本）
+export type ontologyservicev1_CreateAnnotationPropertyResponse = {
+  baseVersion?: number;
+  id?: number;
+};
+
+// 更新注解属性 - 请求（frame 全量提交语义；local_name 忽略——不可变；base_version 缺省 = 跳过乐观锁比对，仅限内部路径）
+export type ontologyservicev1_UpdateAnnotationPropertyRequest = {
+  annotations: ontologyservicev1_AnnotationAssertionInput[] | undefined;
+  baseVersion?: number;
+  comment?: string;
+  deprecated?: boolean;
+  displayLabel?: string;
+  id: number | undefined;
+  superPropertyIds: number[] | undefined;
+};
+
+// 删除注解属性 - 请求（force=true 级联移除引用公理：50 子属性边 + 他人挂的自定义注解断言；子属性自动变根属性）
+export type ontologyservicev1_DeleteAnnotationPropertyRequest = {
+  baseVersion?: number;
+  force?: boolean;
+  id: number | undefined;
+};
+
 // 本体类管理服务（admin 门面）
 //
 // 本体类 create/update/delete 是自定义 RPC（公理事务管线：diff + 环检测 + 乐观锁 + 校验 + 变更日志），
@@ -8347,6 +8685,7 @@ export type ontologyservicev1_GetOntologyClassFrameRequest = {
 
 // 本体类 frame 详情（Protégé 类描述视图对应物；base_version 供乐观锁回传）
 export type ontologyservicev1_OntologyClassFrame = {
+  annotations: ontologyservicev1_AnnotationAssertion[] | undefined;
   baseVersion?: number;
   comment?: string;
   deprecated?: boolean;
@@ -8363,35 +8702,14 @@ export type ontologyservicev1_OntologyClassFrame = {
   updatedAt?: wellKnownTimestamp;
 };
 
-// 实体简况（树/引用/父类选择器共用）
-export type ontologyservicev1_EntityBrief = {
-  deprecated?: boolean;
-  displayLabel?: string;
-  id?: number;
-  localName?: string;
-};
-
 // 查询本体类引用 - 请求
 export type ontologyservicev1_GetOntologyClassUsageRequest = {
   id: number | undefined;
 };
 
-// 实体引用明细（谁引用了我；原 01 期 OntologyClassUsage 上移泛化，类/属性接口共用）
-export type ontologyservicev1_EntityUsage = {
-  entityId?: number;
-  refs: ontologyservicev1_EntityUsageRef[] | undefined;
-};
-
-// 实体引用明细行（usage 反查；类/属性各期共用同一消息，axiom_type 语义随各期扩展）
-export type ontologyservicev1_EntityUsageRef = {
-  axiomType?: number;
-  displayLabel?: string;
-  entityId?: number;
-  localName?: string;
-};
-
 // 创建本体类 - 请求（自定义 RPC：扁平请求体，勿包 { data }——protojson 会把 data 当未知字段丢弃）
 export type ontologyservicev1_CreateOntologyClassRequest = {
+  annotations: ontologyservicev1_AnnotationAssertionInput[] | undefined;
   comment?: string;
   deprecated?: boolean;
   disjointIds: number[] | undefined;
@@ -8411,6 +8729,7 @@ export type ontologyservicev1_CreateOntologyClassResponse = {
 
 // 更新本体类 - 请求（frame 全量提交语义；local_name 忽略——不可变；base_version 缺省 = 跳过乐观锁比对，仅限内部路径）
 export type ontologyservicev1_UpdateOntologyClassRequest = {
+  annotations: ontologyservicev1_AnnotationAssertionInput[] | undefined;
   baseVersion?: number;
   comment?: string;
   deprecated?: boolean;
@@ -8675,6 +8994,7 @@ export type ontologyservicev1_GetDataPropertyFrameRequest = {
 // 与对象属性 frame 的差异：值域是 datatype IRI 列表（42 型 value_text，非实体引用）；
 // 无逆属性与属性链（OWL 2 语言约束：二者仅对象属性可用）。
 export type ontologyservicev1_DataPropertyFrame = {
+  annotations: ontologyservicev1_AnnotationAssertion[] | undefined;
   baseVersion?: number;
   characteristics: string[] | undefined;
   comment?: string;
@@ -8702,6 +9022,7 @@ export type ontologyservicev1_GetDataPropertyUsageRequest = {
 // 创建数据属性 - 请求（自定义 RPC：扁平请求体，勿包 { data }——protojson 会把 data 当未知字段丢弃）。
 // 无 inverse_ids / chains：OWL 2 中逆属性与属性链仅对象属性可用（03 号文档 §2.3）。
 export type ontologyservicev1_CreateDataPropertyRequest = {
+  annotations: ontologyservicev1_AnnotationAssertionInput[] | undefined;
   characteristics: string[] | undefined;
   comment?: string;
   deprecated?: boolean;
@@ -8723,6 +9044,7 @@ export type ontologyservicev1_CreateDataPropertyResponse = {
 
 // 更新数据属性 - 请求（frame 全量提交语义；local_name 忽略——不可变；base_version 缺省 = 跳过乐观锁比对，仅限内部路径）
 export type ontologyservicev1_UpdateDataPropertyRequest = {
+  annotations: ontologyservicev1_AnnotationAssertionInput[] | undefined;
   baseVersion?: number;
   characteristics: string[] | undefined;
   comment?: string;
@@ -8986,6 +9308,7 @@ export type ontologyservicev1_GetObjectPropertyFrameRequest = {
 
 // 对象属性 frame 详情（Protégé Object Property 描述视图对应物；base_version 供乐观锁回传）
 export type ontologyservicev1_ObjectPropertyFrame = {
+  annotations: ontologyservicev1_AnnotationAssertion[] | undefined;
   baseVersion?: number;
   chains: ontologyservicev1_ObjectPropertyChain[] | undefined;
   characteristics: string[] | undefined;
@@ -9022,6 +9345,7 @@ export type ontologyservicev1_GetObjectPropertyUsageRequest = {
 
 // 创建对象属性 - 请求（自定义 RPC：扁平请求体，勿包 { data }——protojson 会把 data 当未知字段丢弃）
 export type ontologyservicev1_CreateObjectPropertyRequest = {
+  annotations: ontologyservicev1_AnnotationAssertionInput[] | undefined;
   chains: ontologyservicev1_ObjectPropertyChain[] | undefined;
   characteristics: string[] | undefined;
   comment?: string;
@@ -9045,6 +9369,7 @@ export type ontologyservicev1_CreateObjectPropertyResponse = {
 
 // 更新对象属性 - 请求（frame 全量提交语义；local_name 忽略——不可变；base_version 缺省 = 跳过乐观锁比对，仅限内部路径）
 export type ontologyservicev1_UpdateObjectPropertyRequest = {
+  annotations: ontologyservicev1_AnnotationAssertionInput[] | undefined;
   baseVersion?: number;
   chains: ontologyservicev1_ObjectPropertyChain[] | undefined;
   characteristics: string[] | undefined;
@@ -13327,6 +13652,7 @@ export class ApiClient {
   private _notificationTemplateService?: NotificationTemplateService;
   private _oneStopServiceTypeService?: OneStopServiceTypeService;
   private _onlineSessionService?: OnlineSessionService;
+  private _ontologyAnnotationPropertyService?: OntologyAnnotationPropertyService;
   private _ontologyClassService?: OntologyClassService;
   private _ontologyDataPropertyService?: OntologyDataPropertyService;
   private _ontologyObjectPropertyService?: OntologyObjectPropertyService;
@@ -13507,6 +13833,10 @@ export class ApiClient {
 
   get onlineSessionService(): OnlineSessionService {
     return this._onlineSessionService ??= createOnlineSessionServiceClient(this._transport);
+  }
+
+  get ontologyAnnotationPropertyService(): OntologyAnnotationPropertyService {
+    return this._ontologyAnnotationPropertyService ??= createOntologyAnnotationPropertyServiceClient(this._transport);
   }
 
   get ontologyClassService(): OntologyClassService {

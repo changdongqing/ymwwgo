@@ -115,7 +115,8 @@
       "objectPropertyDomain": "定义域",
       "objectPropertyRange": "值域",
       "dataPropertyDomain": "定义域（数据属性）"
-    }
+    },
+    "annotations": "自定义注解"
   },
   "classErrors": {
     "versionConflictTitle": "本体已被他人修改",
@@ -194,7 +195,8 @@
       "disjoint": "不相交",
       "chain": "属性链",
       "other": "其他"
-    }
+    },
+    "annotations": "自定义注解"
   },
   "objectPropertyTree": {
     "filterPlaceholder": "过滤属性名",
@@ -285,7 +287,8 @@
       "equivalent": "等价",
       "disjoint": "不相交",
       "other": "其他"
-    }
+    },
+    "annotations": "自定义注解"
   },
   "dataPropertyTree": {
     "filterPlaceholder": "过滤属性名",
@@ -333,5 +336,82 @@
     "timeExample": "例：09:30:00 / 14:00:00+08:00",
     "anyURI": "URI",
     "anyURIExample": "例：http://example.com/x"
+  },
+  "annotationProperty": {
+    "listTitle": "注解属性列表",
+    "createTitle": "新建注解属性",
+    "editTitle": "编辑注解属性",
+    "createRoot": "新增根属性",
+    "createChildAction": "子属性",
+    "localName": "局部名",
+    "localNamePlaceholder": "如 formerNotation / 曾用码",
+    "requiredLocalName": "请输入局部名",
+    "invalidLocalName": "仅允许中文/字母/下划线/连字符/数字，且首字符不能是数字",
+    "localNameImmutable": "局部名创建后不可变（V1 不提供重命名）",
+    "localNameHint": "实体 IRI = 本体命名空间 + 局部名",
+    "displayLabel": "显示名",
+    "displayLabelPlaceholder": "rdfs:label（zh）",
+    "comment": "注释",
+    "commentPlaceholder": "rdfs:comment（zh）",
+    "superPropertyIds": "父注解属性",
+    "superPropertyIdsPlaceholder": "可多选（多父）；空 = 根属性",
+    "superPropertyIdsHint": "支持多父属性；自身已禁选，环校验由服务端兜底",
+    "annotations": "自定义注解",
+    "annotationsHint": "注解属性自身也可挂注解（递归）；同属性多值合法；清空全部行提交 = 清空注解区",
+    "deprecated": "废弃",
+    "deprecatedYes": "已废弃",
+    "deprecatedNo": "正常",
+    "parentCount": "父属性数",
+    "childCount": "直接子属性数",
+    "updatedAt": "更新时间",
+    "noOntologySelected": "请先在顶部选择活动本体",
+    "createSuccess": "创建成功",
+    "updateSuccess": "更新成功",
+    "deleteSuccess": "删除成功",
+    "createFailed": "创建失败",
+    "updateFailed": "更新失败",
+    "deleteFailed": "删除失败",
+    "deleteConfirmTitle": "确认删除该注解属性？",
+    "deleteConfirmDesc": "删除后，引用它的自定义注解断言与子属性关系将不可恢复",
+    "usageModalTitle": "「{{name}}」的引用明细",
+    "usageWarning": "该注解属性被 {{count}} 处引用：删除将同时移除这些引用（子属性自动变根属性、被注解实体本身不受影响）。",
+    "forceDelete": "强制删除",
+    "usageType": {
+      "subAnnotationProperty": "子注解属性",
+      "annotated": "被注解",
+      "other": "其他引用"
+    },
+    "usageRef": {
+      "localName": "引用方局部名",
+      "displayLabel": "引用方显示名",
+      "axiomType": "引用方式"
+    }
+  },
+  "annotationPropertyTree": {
+    "createChild": "新建子属性",
+    "createSibling": "新建兄弟属性",
+    "filterPlaceholder": "搜索注解属性",
+    "expandAll": "全部展开",
+    "collapseAll": "全部折叠",
+    "refresh": "刷新",
+    "noMatch": "未匹配到注解属性"
+  },
+  "annotationPropertyErrors": {
+    "versionConflictTitle": "本体已被他人修改",
+    "versionConflict": "请刷新后重试（乐观锁冲突）",
+    "localNameInvalid": "局部名不合法",
+    "hierarchyCyclic": "不允许形成继承环"
+  },
+  "annotationEditor": {
+    "hint": "谓词候选仅列本体内声明的注解属性；内建 rdfs:label / rdfs:comment 等由上方专属字段承载",
+    "emptyHint": "暂无自定义注解，点击下方按钮添加",
+    "propertyPlaceholder": "注解属性（谓词）",
+    "valuePlaceholder": "注解值（字面量）",
+    "langPlaceholder": "语言，可空",
+    "removeRow": "删除本行",
+    "addRow": "添加注解",
+    "optionsUnavailable": "注解属性列表加载失败（无权限或网络异常）",
+    "noPropertyHint": "请先在注解属性页创建注解属性",
+    "deprecated": "已废弃"
   }
 }

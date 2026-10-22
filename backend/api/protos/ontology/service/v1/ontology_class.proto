@@ -152,6 +152,7 @@ message OntologyClassFrame {
     repeated uint32 disjoint_ids = 11 [json_name = "disjointIds"]; // 不相交伙伴ID（对称伙伴去重后）
     optional uint32 equivalent_id = 12 [json_name = "equivalentId"]; // 等价类ID（V1 单值）
     optional uint32 base_version = 13 [json_name = "baseVersion"];   // 本体当前版本，下次提交回传（乐观锁基准）
+    repeated AnnotationAssertion annotations = 14 [json_name = "annotations"]; // 自定义注解（内建字段之外，保序；04 期增量）
 
     optional google.protobuf.Timestamp updated_at = 201 [json_name = "updatedAt"]; // 更新时间
 }
@@ -173,6 +174,7 @@ message CreateOntologyClassRequest {
     repeated uint32 parent_ids = 7 [json_name = "parentIds"];      // 父类（多选；空 = 根类，挂 owl:Thing）
     repeated uint32 disjoint_ids = 8 [json_name = "disjointIds"];  // 不相交类（成对补全由服务端完成）
     optional uint32 equivalent_id = 9 [json_name = "equivalentId"]; // 等价类（V1 单值）
+    repeated AnnotationAssertionInput annotations = 10 [json_name = "annotations"]; // 自定义注解（全量提交语义；04 期增量）
 }
 
 // 创建本体类 - 回应（新实体 id + 变更后本体版本，前端创建后选中新节点）
@@ -192,6 +194,7 @@ message UpdateOntologyClassRequest {
     repeated uint32 disjoint_ids = 8 [json_name = "disjointIds"];  // 不相交全量
     optional uint32 equivalent_id = 9 [json_name = "equivalentId"]; // 等价类（缺省 = 不变；0 = 清空；V1 单值）
     optional uint32 base_version = 10 [json_name = "baseVersion"]; // 乐观锁基准
+    repeated AnnotationAssertionInput annotations = 11 [json_name = "annotations"]; // 自定义注解全量（nil/缺失/空数组统一 = 清空；04 期增量）
 }
 
 // 删除本体类 - 请求（force=true 级联移除引用公理，子类自动变根类）

@@ -18,6 +18,7 @@ import {
   useUpdateDataProperty,
 } from '@/api/hooks/ontologyDataProperty';
 import { useOntologyClassTree } from '@/api/hooks/ontologyClass';
+import AnnotationListEditor, { cleanAnnotationRows } from '../../components/AnnotationListEditor';
 import { DATATYPE_LABELS, datatypeShortName } from '../constants';
 
 interface DataPropertyDrawerProps {
@@ -160,6 +161,11 @@ const DataPropertyDrawer: React.FC<DataPropertyDrawerProps> = ({
           disjointIds: frame.disjointIds ?? [],
           equivalentId: frame.equivalentId ?? undefined,
           functional: (frame.characteristics ?? []).includes(FUNCTIONAL_IRI),
+          annotations: (frame.annotations ?? []).map((a) => ({
+            propertyId: a.propertyId,
+            value: a.value ?? '',
+            lang: a.lang ?? undefined,
+          })),
         });
       }, 0);
     } else {
@@ -175,6 +181,7 @@ const DataPropertyDrawer: React.FC<DataPropertyDrawerProps> = ({
           disjointIds: [],
           equivalentId: undefined,
           functional: false,
+          annotations: [],
         });
       }, 0);
     }
@@ -218,6 +225,11 @@ const DataPropertyDrawer: React.FC<DataPropertyDrawerProps> = ({
         return true;
       case 'DATA_PROPERTY_TARGET_INVALID':
         formRef.current?.setFields([{ name: 'superPropertyIds', errors: [detail] }]);
+        return true;
+      case 'ANNOTATION_PROPERTY_TARGET_INVALID':
+      case 'ANNOTATION_VALUE_INVALID':
+        // 自定义注解区错误（04 期增量）：值空白/谓词非法落行内红字
+        formRef.current?.setFields([{ name: 'annotations', errors: [detail] }]);
         return true;
       default:
         return false;
@@ -274,6 +286,7 @@ const DataPropertyDrawer: React.FC<DataPropertyDrawerProps> = ({
             disjointIds: values.disjointIds ?? [],
             equivalentId: values.equivalentId ?? 0, // 0 = 清空等价（V1 单值）
             characteristics: values.functional ? [FUNCTIONAL_IRI] : [],
+            annotations: cleanAnnotationRows(values.annotations), // 全量替换语义（04 期增量）
             baseVersion: frame?.baseVersion ?? undefined, // 乐观锁基准；nil = 跳过（内部路径）
           },
         });
@@ -290,6 +303,7 @@ const DataPropertyDrawer: React.FC<DataPropertyDrawerProps> = ({
           disjointIds: values.disjointIds ?? [],
           equivalentId: values.equivalentId ?? undefined,
           characteristics: values.functional ? [FUNCTIONAL_IRI] : [],
+          annotations: cleanAnnotationRows(values.annotations), // 全量提交（04 期增量）
         };
         await createMutation.mutateAsync({ values: payload });
       }
@@ -452,6 +466,15 @@ const DataPropertyDrawer: React.FC<DataPropertyDrawerProps> = ({
       >
         {t('characteristic.functional')}
       </ProFormCheckbox>
+
+      {/* 自定义注解区（04 期增量——AnnotationListEditor 共享组件，六类实体 frame 共用） */}
+      <Form.Item
+        name="annotations"
+        label={t('dataProperty.annotations')}
+        extra={t('annotationEditor.hint')}
+      >
+        <AnnotationListEditor />
+      </Form.Item>
 
       <ProFormSwitch name="deprecated" label={t('dataProperty.deprecated')} />
     </DrawerForm>

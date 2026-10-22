@@ -1,0 +1,53 @@
+/* 注解属性页（左树右表）：工具条、树节点 hover 操作、usage 弹窗警示。
+   树节点相关样式（ontology-tree-node*）与类页/属性页同源共用类名——本页自带一份，避免跨页 import 耦合。 */
+
+.ontology-properties-toolbar {
+  padding-bottom: 12px;
+}
+
+.ontology-properties-empty {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ant-color-text-tertiary);
+}
+
+/* 树节点：标题 + hover 操作区 */
+.ontology-tree-node {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.ontology-tree-node-title.deprecated {
+  text-decoration: line-through;
+  color: var(--ant-color-text-tertiary);
+}
+
+.ontology-tree-node-actions {
+  display: none;
+  align-items: center;
+  gap: 6px;
+  margin-left: 6px;
+  color: var(--ant-color-text-tertiary);
+
+  .anticon:hover {
+    color: var(--ant-color-primary);
+  }
+
+  .ontology-tree-node-delete:hover {
+    color: var(--ant-color-error);
+  }
+}
+
+/* hover 出操作按钮：树标题行与节点都命中 */
+.ant-tree-node-content-wrapper:hover .ontology-tree-node-actions,
+.ontology-tree-node:hover .ontology-tree-node-actions {
+  display: inline-flex;
+}
+
+.ontology-usage-warning {
+  color: var(--ant-color-error);
+}

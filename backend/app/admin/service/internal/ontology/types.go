@@ -44,6 +44,7 @@ const (
 	AxiomDataPropertyCharacteristic   uint32 = 43  // 数据属性特征（泛型：subject=属性，predicate_iri=特征 IRI；V1 仅函数性）
 	AxiomEquivalentDataProperties     uint32 = 44  // 等价数据属性（成对 (P,Q)+(Q,P) 各一行）
 	AxiomDisjointDataProperties       uint32 = 45  // 不相交数据属性（成对）
+	AxiomSubAnnotationPropertyOf      uint32 = 50  // 04：子注解属性（subject=子属性，object_id=父属性；多行=多父）
 	AxiomDataPropertyAssertion        uint32 = 62  // 数据属性断言（06 期写入方：subject=个体，object_id=数据属性实体，value_text=字面量词形；03 期定稿行语义 + 校验器分支）
 	AxiomAnnotationAssertion          uint32 = 100 // 注解断言，全功能共用
 )
@@ -65,6 +66,11 @@ const IRIOWLTopObjectProperty = "http://www.w3.org/2002/07/owl#topObjectProperty
 // IRIOWLTopDataProperty owl:topDataProperty 虚拟根（数据属性层级的顶点，OWL 2 规范词汇；
 // 03 期：不入库、不可编辑删除、仅可"新建子属性"，前端固定渲染）
 const IRIOWLTopDataProperty = "http://www.w3.org/2002/07/owl#topDataProperty"
+
+// IRIOWLTopAnnotationProperty owl:topAnnotationProperty 虚拟根（注解属性层级的顶点，OWL 2 规范词汇；
+// 04 期：不入库、不可编辑删除、仅可"新建子属性"，前端固定渲染。与 Protégé 多根+8 内建根的
+// 刻意差异见 04 号文档 §2.3——系列统一单虚拟根，内建谓词不入树不入库）
+const IRIOWLTopAnnotationProperty = "http://www.w3.org/2002/07/owl#topAnnotationProperty"
 
 // IRIOWLFunctionalProperty 函数性特征 IRI（OWL 2 词汇表；数据属性 V1 唯一支持的特征——
 // 逆函数性等六种是对象属性专属，03 号文档 §2.3）。PropertyCharacteristicIRIs 首项引用本常量，单一事实源。
@@ -152,6 +158,14 @@ var BuiltinAnnotationPredicates = []string{
 	PredicateSKOSNotation,
 }
 
+// DisplayLabelPredicates 显示名渲染谓词候选（04 号文档 §2.6 常量留缝，对应 Protégé
+// OWLRendererPreferences 的注解偏好列表）：PickDisplayLabel 按序取首个命中谓词的首选值。
+// V1 单元素（语义与 01~03 期硬编码 rdfs:label 完全等价）；后续把 skos:prefLabel
+// 纳入显示名候选时在此追加，UI 不开放配置（06 期多语言场景驱动再开）。
+var DisplayLabelPredicates = []string{
+	PredicateRDFSLabel,
+}
+
 // ClassUsageAxiomTypes 类删除保护（usage 反查）的引用公理类型集。
 // 02 期对象属性定义域/值域（31/32）、03 期数据属性定义域（41）已并入；
 // 06 期个体断型（60）落地时再往切片加号段（源修订 #12/#14 的缺口已在本仓前置内化）。
@@ -184,6 +198,15 @@ var DataPropertyUsageAxiomTypes = []uint32{
 	AxiomDisjointDataProperties,
 }
 
+// AnnotationPropertyUsageAxiomTypes 注解属性删除保护（usage 反查）object 侧的引用公理类型集：
+// 50 子注解属性边（P 是父属性）+ 100 自定义注解断言（P 是谓词，object_id 路径——100 的
+// 内建谓词行 object_id 为 NULL，不会命中 object_id 检索）。
+// 注解属性无域值域/特征/等价/不相交，两类引用即全集（04 号文档 §4.4）。
+var AnnotationPropertyUsageAxiomTypes = []uint32{
+	AxiomSubAnnotationPropertyOf,
+	AxiomAnnotationAssertion,
+}
+
 // 变更日志操作名（ont_change_logs.operation；03~06 期按需追加）
 const (
 	OpCreateClass = "CREATE_CLASS"
@@ -197,6 +220,10 @@ const (
 	OpCreateDataProperty = "CREATE_DATA_PROPERTY"
 	OpUpdateDataProperty = "UPDATE_DATA_PROPERTY"
 	OpDeleteDataProperty = "DELETE_DATA_PROPERTY"
+
+	OpCreateAnnotationProperty = "CREATE_ANNOTATION_PROPERTY"
+	OpUpdateAnnotationProperty = "UPDATE_ANNOTATION_PROPERTY"
+	OpDeleteAnnotationProperty = "DELETE_ANNOTATION_PROPERTY"
 )
 
 // NavKeepDepth 骨架树无条件保留深度：1=根类、2=域入口；更深的"有父类且无子类"叶子剪掉
@@ -234,6 +261,10 @@ const (
 	ReasonDataPropertySelfReferenceInvalid  = "DATA_PROPERTY_SELF_REFERENCE_INVALID"
 	ReasonDataPropertyTargetInvalid         = "DATA_PROPERTY_TARGET_INVALID"
 	ReasonDataPropertyCharacteristicInvalid = "DATA_PROPERTY_CHARACTERISTIC_INVALID"
+
+	// 04 期注解属性（源 1-071-005 段）
+	ReasonAnnotationPropertyTargetInvalid = "ANNOTATION_PROPERTY_TARGET_INVALID"
+	ReasonAnnotationValueInvalid          = "ANNOTATION_VALUE_INVALID"
 )
 
 // DomainError 域内核错误：携带 reason 与用户可读明细。

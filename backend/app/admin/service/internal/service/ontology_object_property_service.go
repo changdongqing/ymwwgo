@@ -274,6 +274,13 @@ func (s *OntologyObjectPropertyService) Frame(ctx context.Context, req *ontology
 		}
 	}
 
+	// 自定义注解区（内建字段之外，保序；04 期增量——04 号文档 §4.3）
+	annotations, err := frameAnnotationsOf(ctx, s.entityRepo, ontologyID, subjectAxioms)
+	if err != nil {
+		return nil, adminV1.ErrorInternalServerError("query annotations failed")
+	}
+	frame.Annotations = annotations
+
 	return frame, nil
 }
 
@@ -459,6 +466,15 @@ func (s *OntologyObjectPropertyService) Create(ctx context.Context, req *ontolog
 		return nil, err
 	}
 
+	// 自定义注解（04 期增量）：值空白拒绝 / lang 归一去重 + 谓词须为本本体注解属性实体
+	annotationInputs, err := normalizeAnnotationInputs(req.GetAnnotations())
+	if err != nil {
+		return nil, err
+	}
+	if err = validateAnnotationPropertyRefs(ctx, s.factory, req.GetOntologyId(), annotationInputs); err != nil {
+		return nil, err
+	}
+
 	// 环检测（create 时新实体无任何入边，理论上恒通过；防御性保留同一管线）
 	if err = s.assertNoCycleForProperty(ctx, req.GetOntologyId(), 0, superIDs); err != nil {
 		return nil, err
@@ -474,6 +490,7 @@ func (s *OntologyObjectPropertyService) Create(ctx context.Context, req *ontolog
 	appendPropertyRelationAdds(set, superIDs, domainIDs, rangeIDs, inverseIDs, disjointIDs, equivalentID, req.GetChains())
 	appendCharacteristicsAdds(set, ontology.AxiomObjectPropertyCharacteristic, req.GetCharacteristics())
 	appendAnnotationAdds(set, req.DisplayLabel, req.Comment, nil, req.Deprecated)
+	ontology.AppendCustomAnnotationAxioms(set, 1, 0, annotationInputs) // 主语 = 新实体（NewEntities[0]）
 
 	result, err := s.applier.Apply(ctx, set, operatorUserID(ctx))
 	if err != nil {
@@ -580,6 +597,15 @@ func (s *OntologyObjectPropertyService) Update(ctx context.Context, req *ontolog
 	if req.Deprecated != nil {
 		changes = append(changes, ontology.DiffDeprecated(req.GetId(), annotationAxioms, *req.Deprecated)...)
 	}
+	// 自定义注解区（全量替换：nil/缺失/空数组统一 = 清空；04 期增量——04 号文档 §4.3）
+	annotationInputs, err := normalizeAnnotationInputs(req.GetAnnotations())
+	if err != nil {
+		return nil, err
+	}
+	if err = validateAnnotationPropertyRefs(ctx, s.factory, ontologyID, annotationInputs); err != nil {
+		return nil, err
+	}
+	changes = append(changes, ontology.DiffCustomAnnotations(req.GetId(), annotationAxioms, annotationInputs)...)
 
 	set := &ontology.EntityChangeSet{
 		OntologyID:  ontologyID,

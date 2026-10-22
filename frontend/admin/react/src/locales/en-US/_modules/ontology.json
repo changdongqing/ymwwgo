@@ -115,7 +115,8 @@
       "objectPropertyDomain": "Domain of",
       "objectPropertyRange": "Range of",
       "dataPropertyDomain": "Data Property Domain"
-    }
+    },
+    "annotations": "Custom Annotations"
   },
   "classErrors": {
     "versionConflictTitle": "Ontology modified by someone else",
@@ -194,7 +195,8 @@
       "disjoint": "Disjoint",
       "chain": "Property Chain",
       "other": "Other"
-    }
+    },
+    "annotations": "Custom Annotations"
   },
   "objectPropertyTree": {
     "filterPlaceholder": "Filter properties",
@@ -285,7 +287,8 @@
       "equivalent": "Equivalent",
       "disjoint": "Disjoint",
       "other": "Other"
-    }
+    },
+    "annotations": "Custom Annotations"
   },
   "dataPropertyTree": {
     "filterPlaceholder": "Filter properties",
@@ -333,5 +336,82 @@
     "timeExample": "e.g. 09:30:00 / 14:00:00+08:00",
     "anyURI": "URI",
     "anyURIExample": "e.g. http://example.com/x"
+  },
+  "annotationProperty": {
+    "listTitle": "Annotation Property List",
+    "createTitle": "Create Annotation Property",
+    "editTitle": "Edit Annotation Property",
+    "createRoot": "New Root Property",
+    "createChildAction": "Sub-property",
+    "localName": "Local Name",
+    "localNamePlaceholder": "e.g. formerNotation",
+    "requiredLocalName": "Please enter the local name",
+    "invalidLocalName": "Only letters/unicode letters/underscore/hyphen/digits allowed; must not start with a digit",
+    "localNameImmutable": "Local name is immutable after creation (no rename in V1)",
+    "localNameHint": "Entity IRI = ontology namespace + local name",
+    "displayLabel": "Display Label",
+    "displayLabelPlaceholder": "rdfs:label (zh)",
+    "comment": "Comment",
+    "commentPlaceholder": "rdfs:comment (zh)",
+    "superPropertyIds": "Super Properties",
+    "superPropertyIdsPlaceholder": "Multiple allowed; empty = root property",
+    "superPropertyIdsHint": "Multiple parents supported; self is disabled; cycle check enforced by server",
+    "annotations": "Custom Annotations",
+    "annotationsHint": "Annotation properties can carry annotations too (recursive); multiple values per property allowed; submitting no rows clears the region",
+    "deprecated": "Deprecated",
+    "deprecatedYes": "Deprecated",
+    "deprecatedNo": "Active",
+    "parentCount": "Parents",
+    "childCount": "Direct Children",
+    "updatedAt": "Updated At",
+    "noOntologySelected": "Select an active ontology first",
+    "createSuccess": "Created",
+    "updateSuccess": "Saved",
+    "deleteSuccess": "Deleted",
+    "createFailed": "Create failed",
+    "updateFailed": "Save failed",
+    "deleteFailed": "Delete failed",
+    "deleteConfirmTitle": "Delete this annotation property?",
+    "deleteConfirmDesc": "Annotation assertions referencing it and sub-property edges will be removed",
+    "usageModalTitle": "References of \"{{name}}\"",
+    "usageWarning": "Referenced by {{count}} place(s): deleting removes those references (sub-properties become roots; annotated entities themselves are unaffected).",
+    "forceDelete": "Force Delete",
+    "usageType": {
+      "subAnnotationProperty": "Sub Annotation Property",
+      "annotated": "Annotated",
+      "other": "Other"
+    },
+    "usageRef": {
+      "localName": "Referencing Local Name",
+      "displayLabel": "Referencing Display Label",
+      "axiomType": "Reference Kind"
+    }
+  },
+  "annotationPropertyTree": {
+    "createChild": "New Sub-property",
+    "createSibling": "New Sibling",
+    "filterPlaceholder": "Search annotation properties",
+    "expandAll": "Expand All",
+    "collapseAll": "Collapse All",
+    "refresh": "Refresh",
+    "noMatch": "No matching annotation properties"
+  },
+  "annotationPropertyErrors": {
+    "versionConflictTitle": "Ontology modified by someone else",
+    "versionConflict": "Refresh and retry (optimistic lock conflict)",
+    "localNameInvalid": "Invalid local name",
+    "hierarchyCyclic": "Hierarchy cycles are not allowed"
+  },
+  "annotationEditor": {
+    "hint": "Candidates list only annotation properties declared in this ontology; builtin rdfs:label / rdfs:comment are carried by the dedicated fields above",
+    "emptyHint": "No custom annotations yet — add one below",
+    "propertyPlaceholder": "Annotation property (predicate)",
+    "valuePlaceholder": "Annotation value (literal)",
+    "langPlaceholder": "Lang, optional",
+    "removeRow": "Remove this row",
+    "addRow": "Add Annotation",
+    "optionsUnavailable": "Failed to load annotation properties (no permission or network error)",
+    "noPropertyHint": "Create annotation properties first",
+    "deprecated": "deprecated"
   }
 }

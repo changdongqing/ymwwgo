@@ -122,6 +122,12 @@ func (r *OntEntityRepo) ListDataProperties(ctx context.Context, filter ClassList
 	return r.listEntitiesOfType(ctx, filter, ontology.EntityTypeDataProperty)
 }
 
+// ListAnnotationProperties 分页查询注解属性列表（铁律 3 contains；无子树范围——属性树不做范围切换）
+func (r *OntEntityRepo) ListAnnotationProperties(ctx context.Context, filter ClassListFilter) ([]*ent.OntEntity, int, error) {
+	filter.SubtreeIDs = nil
+	return r.listEntitiesOfType(ctx, filter, ontology.EntityTypeAnnotationProperty)
+}
+
 // listEntitiesOfType 分页查询指定实体类型列表（ListClasses 的泛化底座）
 func (r *OntEntityRepo) listEntitiesOfType(ctx context.Context, filter ClassListFilter, entityType uint32) ([]*ent.OntEntity, int, error) {
 	q := r.entClient.Client().OntEntity.Query().
@@ -566,6 +572,101 @@ func EntEntityToDataPropertyDTO(e *ent.OntEntity, agg *DataPropertyAggregate) *o
 		dto.Comment = agg.Comment
 		dto.Characteristics = agg.Characteristics
 		dto.RangeIris = agg.RangeIRIs
+	}
+	return dto
+}
+
+// AnnotationPropertyAggregate 注解属性列表聚合列（一次分页批量计算）
+type AnnotationPropertyAggregate struct {
+	ParentCount uint32
+	ChildCount  uint32
+	Comment     *string
+}
+
+// AggregateAnnotationPropertyInfo 批量计算注解属性聚合列：父属性数/直接子属性数（50 型）+
+// 注释首选值。注解属性无特征/域值域/等价/不相交（OWL 2 语言约束，04 号文档 §2.7）。
+func (r *OntEntityRepo) AggregateAnnotationPropertyInfo(ctx context.Context, ontologyID uint32, entityIDs []uint32) (map[uint32]*AnnotationPropertyAggregate, error) {
+	out := make(map[uint32]*AnnotationPropertyAggregate, len(entityIDs))
+	if len(entityIDs) == 0 {
+		return out, nil
+	}
+	for _, id := range entityIDs {
+		out[id] = &AnnotationPropertyAggregate{}
+	}
+
+	type countRow struct {
+		SubjectID uint32 `json:"subject_id"`
+		ObjectID  uint32 `json:"object_id"`
+		Count     int    `json:"count"`
+	}
+
+	// 父属性数：50 型公理以我为主语
+	var parentRows []countRow
+	if err := r.entClient.Client().OntAxiom.Query().
+		Where(ontaxiom.OntologyIDEQ(ontologyID), ontaxiom.AxiomTypeEQ(ontology.AxiomSubAnnotationPropertyOf),
+			ontaxiom.SubjectIDIn(entityIDs...), ontaxiom.DeletedAtIsNil()).
+		GroupBy(ontaxiom.FieldSubjectID).
+		Aggregate(ent.As(ent.Count(), "count")).
+		Scan(ctx, &parentRows); err != nil {
+		return nil, err
+	}
+	for _, row := range parentRows {
+		if agg, ok := out[row.SubjectID]; ok {
+			agg.ParentCount = uint32(row.Count)
+		}
+	}
+
+	// 直接子属性数：50 型公理以我为宾语
+	var childRows []countRow
+	if err := r.entClient.Client().OntAxiom.Query().
+		Where(ontaxiom.OntologyIDEQ(ontologyID), ontaxiom.AxiomTypeEQ(ontology.AxiomSubAnnotationPropertyOf),
+			ontaxiom.ObjectIDIn(entityIDs...), ontaxiom.DeletedAtIsNil()).
+		GroupBy(ontaxiom.FieldObjectID).
+		Aggregate(ent.As(ent.Count(), "count")).
+		Scan(ctx, &childRows); err != nil {
+		return nil, err
+	}
+	for _, row := range childRows {
+		if agg, ok := out[row.ObjectID]; ok {
+			agg.ChildCount = uint32(row.Count)
+		}
+	}
+
+	// 注释首选值：100 型注解公理（内建谓词行；自定义行不参与聚合列）
+	axioms, err := r.entClient.Client().OntAxiom.Query().
+		Where(ontaxiom.OntologyIDEQ(ontologyID), ontaxiom.AxiomTypeEQ(ontology.AxiomAnnotationAssertion),
+			ontaxiom.SubjectIDIn(entityIDs...), ontaxiom.DeletedAtIsNil()).
+		All(ctx)
+	if err != nil {
+		return nil, err
+	}
+	bySubject := make(map[uint32][]*ent.OntAxiom, len(entityIDs))
+	for _, ax := range axioms {
+		if ax.SubjectID == nil {
+			continue
+		}
+		bySubject[*ax.SubjectID] = append(bySubject[*ax.SubjectID], ax)
+	}
+	for id, agg := range out {
+		agg.Comment = ontology.PickAnnotationPreferred(bySubject[id], ontology.PredicateRDFSComment)
+	}
+	return out, nil
+}
+
+// EntEntityToAnnotationPropertyDTO 实体行 + 聚合 → AnnotationProperty DTO（服务层组装用）
+func EntEntityToAnnotationPropertyDTO(e *ent.OntEntity, agg *AnnotationPropertyAggregate) *ontologyV1.AnnotationProperty {
+	dto := &ontologyV1.AnnotationProperty{
+		Id:           &e.ID,
+		OntologyId:   e.OntologyID,
+		Iri:          e.Iri,
+		LocalName:    e.LocalName,
+		DisplayLabel: e.DisplayLabel,
+		Deprecated:   e.Deprecated,
+	}
+	if agg != nil {
+		dto.ParentCount = trans.Ptr(agg.ParentCount)
+		dto.ChildCount = trans.Ptr(agg.ChildCount)
+		dto.Comment = agg.Comment
 	}
 	return dto
 }

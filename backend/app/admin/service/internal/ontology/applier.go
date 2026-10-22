@@ -256,9 +256,17 @@ func (a *ChangeApplier) syncRenderCache(ctx context.Context, tx AxiomTx, ontolog
 	return nil
 }
 
-// PickDisplayLabel rdfs:label 首选值（lang 优先级 zh > 无 lang > 其它，再按 sort_order、id）。
+// PickDisplayLabel 显示名首选值（lang 优先级 zh > 无 lang > 其它，再按 sort_order、id）。
+// 谓词候选走 DisplayLabelPredicates 常量切片（04 号文档 §2.6 留缝改造，行为零变化——
+// V1 单元素 rdfs:label，语义与 01~03 期硬编码一致）；自定义注解行 predicate_iri 为 NULL，
+// 结构上不可能进入候选（04 号文档 §2.2 双轨互斥的直接收益）。
 func PickDisplayLabel(annotationAxioms []*ent.OntAxiom) *string {
-	return PickAnnotationPreferred(annotationAxioms, PredicateRDFSLabel)
+	for _, predicate := range DisplayLabelPredicates {
+		if v := PickAnnotationPreferred(annotationAxioms, predicate); v != nil {
+			return v
+		}
+	}
+	return nil
 }
 
 // PickAnnotationPreferred 指定谓词的注解首选值（渲染缓存/列表聚合共用同一条回退规则）。

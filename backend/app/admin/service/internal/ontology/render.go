@@ -104,7 +104,26 @@ func RenderAxiom(ax *ent.OntAxiom, entityNames map[uint32]string) string {
 		b.WriteString(")")
 		return b.String()
 	case AxiomAnnotationAssertion:
+		// 双轨渲染（04 号文档 §4.5）：自定义轨（object_id 非空）以注解属性实体名作谓词渲染；
+		// 内建轨（存量，predicate_iri 路径）行为零变化
+		if objectID := nilUint(ax.ObjectID); objectID != 0 {
+			var b strings.Builder
+			b.WriteString("Annotation(")
+			b.WriteString(entityName(objectID))
+			b.WriteString(" ")
+			b.WriteString(entityName(subject))
+			b.WriteString(" ")
+			b.WriteString(quoteValue(nilString(ax.ValueText)))
+			if lang := nilString(ax.Lang); lang != "" {
+				b.WriteString("@")
+				b.WriteString(lang)
+			}
+			b.WriteString(")")
+			return b.String()
+		}
 		return renderAnnotation(entityName(subject), nilString(ax.PredicateIri), nilString(ax.ValueText), nilString(ax.Lang))
+	case AxiomSubAnnotationPropertyOf:
+		return "SubPropertyOf(" + entityName(subject) + " " + entityName(nilUint(ax.ObjectID)) + ")"
 	case AxiomSubDataPropertyOf:
 		return "SubPropertyOf(" + entityName(subject) + " " + entityName(nilUint(ax.ObjectID)) + ")"
 	case AxiomDataPropertyDomain:

@@ -29,7 +29,7 @@ enum OntologyErrorReason {
     HIERARCHY_CYCLIC = 21 [(errors.code) = 422];            // 不允许形成继承环：{} 已是 {} 的祖先
     ENTITY_IN_USE = 22 [(errors.code) = 409];               // 实体被 {} 处引用，无法删除
 
-    // 30~39 对象属性（源 1-071-003 段，02 期启用）；40~44 数据属性（源 1-071-004 段，03 期启用）；50~51 预留 04 注解属性；
+    // 30~39 对象属性（源 1-071-003 段，02 期启用）；40~44 数据属性（源 1-071-004 段，03 期启用）；
     // 60~66 预留 06 个体与赋码；70~74 预留 05 数据类型；80~88 预留 07 OWL 导入导出。
     // 号段对齐源 1-071-003~008 子段，各期文档落地时启用。
 
@@ -48,4 +48,10 @@ enum OntologyErrorReason {
     DATA_PROPERTY_SELF_REFERENCE_INVALID = 42 [(errors.code) = 422]; // 属性不能与自身建立该关系：{}（等价/不相交自引用）
     DATA_PROPERTY_TARGET_INVALID = 43 [(errors.code) = 422];         // 引用目标必须是已声明的数据属性：{}
     DATA_PROPERTY_CHARACTERISTIC_INVALID = 44 [(errors.code) = 422]; // 数据属性仅支持函数性特征：{}
+
+    // ===== 注解属性（源 1-071-005 段，04 期）=====
+    ANNOTATION_PROPERTY_TARGET_INVALID = 50 [(errors.code) = 422]; // 引用目标必须是已声明的注解属性：{}
+        // 父注解属性类型违规 + 自定义注解谓词非本体内注解属性实体 + frame/usage 直查非注解属性实体
+    ANNOTATION_VALUE_INVALID = 51 [(errors.code) = 422];           // 注解值不合法：{}
+        // 自定义注解值为空白（值长度由 value_text text 列承载，不设上限）
 }

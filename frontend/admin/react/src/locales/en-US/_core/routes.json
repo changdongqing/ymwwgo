@@ -140,7 +140,8 @@
       "doc": "Ontology Documents",
       "class": "Ontology Classes",
       "objectProperty": "Object Properties",
-      "dataProperty": "Data Properties"
+      "dataProperty": "Data Properties",
+      "annotationProperty": "Annotation Properties"
     }
   },
   "page": {
@@ -154,5 +155,6 @@
   "ontology-docs": "Ontology Documents",
   "ontology-classes": "Ontology Classes",
   "ontology-object-properties": "Object Properties",
-  "ontology-data-properties": "Data Properties"
+  "ontology-data-properties": "Data Properties",
+  "annotation-properties": "Annotation Properties"
 }

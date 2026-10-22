@@ -56,6 +56,10 @@ const (
 	OntologyErrorReason_DATA_PROPERTY_SELF_REFERENCE_INVALID OntologyErrorReason = 42 // 属性不能与自身建立该关系：{}（等价/不相交自引用）
 	OntologyErrorReason_DATA_PROPERTY_TARGET_INVALID         OntologyErrorReason = 43 // 引用目标必须是已声明的数据属性：{}
 	OntologyErrorReason_DATA_PROPERTY_CHARACTERISTIC_INVALID OntologyErrorReason = 44 // 数据属性仅支持函数性特征：{}
+	// ===== 注解属性（源 1-071-005 段，04 期）=====
+	OntologyErrorReason_ANNOTATION_PROPERTY_TARGET_INVALID OntologyErrorReason = 50 // 引用目标必须是已声明的注解属性：{}
+	// 父注解属性类型违规 + 自定义注解谓词非本体内注解属性实体 + frame/usage 直查非注解属性实体
+	OntologyErrorReason_ANNOTATION_VALUE_INVALID OntologyErrorReason = 51 // 注解值不合法：{}
 )
 
 // Enum value maps for OntologyErrorReason.
@@ -85,6 +89,8 @@ var (
 		42: "DATA_PROPERTY_SELF_REFERENCE_INVALID",
 		43: "DATA_PROPERTY_TARGET_INVALID",
 		44: "DATA_PROPERTY_CHARACTERISTIC_INVALID",
+		50: "ANNOTATION_PROPERTY_TARGET_INVALID",
+		51: "ANNOTATION_VALUE_INVALID",
 	}
 	OntologyErrorReason_value = map[string]int32{
 		"ONTOLOGY_NOT_FOUND":                   0,
@@ -111,6 +117,8 @@ var (
 		"DATA_PROPERTY_SELF_REFERENCE_INVALID": 42,
 		"DATA_PROPERTY_TARGET_INVALID":         43,
 		"DATA_PROPERTY_CHARACTERISTIC_INVALID": 44,
+		"ANNOTATION_PROPERTY_TARGET_INVALID":   50,
+		"ANNOTATION_VALUE_INVALID":             51,
 	}
 )
 
@@ -145,7 +153,7 @@ var File_ontology_service_v1_ontology_error_proto protoreflect.FileDescriptor
 
 const file_ontology_service_v1_ontology_error_proto_rawDesc = "" +
 	"\n" +
-	"(ontology/service/v1/ontology_error.proto\x12\x13ontology.service.v1\x1a\x13errors/errors.proto*\xf0\x06\n" +
+	"(ontology/service/v1/ontology_error.proto\x12\x13ontology.service.v1\x1a\x13errors/errors.proto*\xc2\a\n" +
 	"\x13OntologyErrorReason\x12\x1c\n" +
 	"\x12ONTOLOGY_NOT_FOUND\x10\x00\x1a\x04\xa8E\x94\x03\x12!\n" +
 	"\x17ONTOLOGY_NAME_DUPLICATE\x10\x01\x1a\x04\xa8E\x99\x03\x12#\n" +
@@ -171,7 +179,9 @@ const file_ontology_service_v1_ontology_error_proto_rawDesc = "" +
 	"\x1bDATA_PROPERTY_RANGE_INVALID\x10)\x1a\x04\xa8E\xa6\x03\x12.\n" +
 	"$DATA_PROPERTY_SELF_REFERENCE_INVALID\x10*\x1a\x04\xa8E\xa6\x03\x12&\n" +
 	"\x1cDATA_PROPERTY_TARGET_INVALID\x10+\x1a\x04\xa8E\xa6\x03\x12.\n" +
-	"$DATA_PROPERTY_CHARACTERISTIC_INVALID\x10,\x1a\x04\xa8E\xa6\x03\x1a\x04\xa0E\xf4\x03B\xd4\x01\n" +
+	"$DATA_PROPERTY_CHARACTERISTIC_INVALID\x10,\x1a\x04\xa8E\xa6\x03\x12,\n" +
+	"\"ANNOTATION_PROPERTY_TARGET_INVALID\x102\x1a\x04\xa8E\xa6\x03\x12\"\n" +
+	"\x18ANNOTATION_VALUE_INVALID\x103\x1a\x04\xa8E\xa6\x03\x1a\x04\xa0E\xf4\x03B\xd4\x01\n" +
 	"\x17com.ontology.service.v1B\x12OntologyErrorProtoP\x01Z7go-wind-admin/api/gen/go/ontology/service/v1;ontologyv1\xa2\x02\x03OSX\xaa\x02\x13Ontology.Service.V1\xca\x02\x13Ontology\\Service\\V1\xe2\x02\x1fOntology\\Service\\V1\\GPBMetadata\xea\x02\x15Ontology::Service::V1b\x06proto3"
 
 var (

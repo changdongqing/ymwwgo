@@ -346,3 +346,31 @@ func IsDataPropertyCharacteristicInvalid(err error) bool {
 func ErrorDataPropertyCharacteristicInvalid(format string, args ...interface{}) *errors.Error {
 	return errors.New(422, OntologyErrorReason_DATA_PROPERTY_CHARACTERISTIC_INVALID.String(), fmt.Sprintf(format, args...))
 }
+
+// ===== 注解属性（源 1-071-005 段，04 期）=====
+func IsAnnotationPropertyTargetInvalid(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == OntologyErrorReason_ANNOTATION_PROPERTY_TARGET_INVALID.String() && e.Code == 422
+}
+
+// ===== 注解属性（源 1-071-005 段，04 期）=====
+func ErrorAnnotationPropertyTargetInvalid(format string, args ...interface{}) *errors.Error {
+	return errors.New(422, OntologyErrorReason_ANNOTATION_PROPERTY_TARGET_INVALID.String(), fmt.Sprintf(format, args...))
+}
+
+// 父注解属性类型违规 + 自定义注解谓词非本体内注解属性实体 + frame/usage 直查非注解属性实体
+func IsAnnotationValueInvalid(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == OntologyErrorReason_ANNOTATION_VALUE_INVALID.String() && e.Code == 422
+}
+
+// 父注解属性类型违规 + 自定义注解谓词非本体内注解属性实体 + frame/usage 直查非注解属性实体
+func ErrorAnnotationValueInvalid(format string, args ...interface{}) *errors.Error {
+	return errors.New(422, OntologyErrorReason_ANNOTATION_VALUE_INVALID.String(), fmt.Sprintf(format, args...))
+}
