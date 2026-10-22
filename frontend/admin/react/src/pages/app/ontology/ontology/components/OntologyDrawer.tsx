@@ -49,24 +49,24 @@ const OntologyDrawer: React.FC<OntologyDrawerProps> = ({ open, mode, data, onClo
 
   const createMutation = useCreateOntology({
     onSuccess: () => {
-      message.success(t('createSuccess'));
+      message.success(t('ontology.createSuccess'));
       queryClient.invalidateQueries({ queryKey: ['listOntologies'] });
       queryClient.invalidateQueries({ queryKey: ['simpleOntologies'] });
       onSuccess();
       onClose();
     },
-    onError: (error: Error) => message.error(error.message || t('createFailed')),
+    onError: (error: Error) => message.error(error.message || t('ontology.createFailed')),
   });
 
   const updateMutation = useUpdateOntology({
     onSuccess: () => {
-      message.success(t('updateSuccess'));
+      message.success(t('ontology.updateSuccess'));
       queryClient.invalidateQueries({ queryKey: ['listOntologies'] });
       queryClient.invalidateQueries({ queryKey: ['simpleOntologies'] });
       onSuccess();
       onClose();
     },
-    onError: (error: Error) => message.error(error.message || t('updateFailed')),
+    onError: (error: Error) => message.error(error.message || t('ontology.updateFailed')),
   });
 
   const handleSubmit = async (values: Record<string, any>) => {
@@ -87,7 +87,7 @@ const OntologyDrawer: React.FC<OntologyDrawerProps> = ({ open, mode, data, onClo
   return (
     <DrawerForm
       formRef={formRef}
-      title={mode === 'create' ? t('create') : t('edit')}
+      title={mode === 'create' ? t('ontology.create') : t('ontology.edit')}
       open={open}
       onOpenChange={(visible) => {
         if (!visible) {
@@ -111,39 +111,39 @@ const OntologyDrawer: React.FC<OntologyDrawerProps> = ({ open, mode, data, onClo
     >
       <ProFormText
         name="ontologyName"
-        label={t('ontologyName')}
-        placeholder={t('ontologyNamePlaceholder')}
-        rules={[{ required: true, message: t('requiredOntologyName') }]}
+        label={t('ontology.ontologyName')}
+        placeholder={t('ontology.ontologyNamePlaceholder')}
+        rules={[{ required: true, message: t('ontology.requiredOntologyName') }]}
         fieldProps={{ allowClear: true }}
       />
 
       <ProFormText
         name="ontologyIri"
-        label={t('ontologyIri')}
-        placeholder={t('ontologyIriPlaceholder')}
+        label={t('ontology.ontologyIri')}
+        placeholder={t('ontology.ontologyIriPlaceholder')}
         rules={[
-          { required: true, message: t('requiredOntologyIri') },
+          { required: true, message: t('ontology.requiredOntologyIri') },
           {
             validator: (_rule, value: string) => {
               if (!value || /^https?:\/\/.+/.test(value.trim())) return Promise.resolve();
-              return Promise.reject(new Error(t('invalidIri')));
+              return Promise.reject(new Error(t('ontology.invalidIri')));
             },
           },
         ]}
         fieldProps={{ allowClear: true, disabled: mode === 'edit' }}
-        extra={t('ontologyIriImmutable')}
+        extra={t('ontology.ontologyIriImmutable')}
       />
 
       <ProFormText
         name="baseIri"
-        label={t('baseIri')}
-        placeholder={t('baseIriPlaceholder')}
+        label={t('ontology.baseIri')}
+        placeholder={t('ontology.baseIriPlaceholder')}
         rules={[
-          { required: true, message: t('requiredBaseIri') },
+          { required: true, message: t('ontology.requiredBaseIri') },
           {
             validator: (_rule, value: string) => {
               if (!value || /^https?:\/\/.+/.test(value.trim())) return Promise.resolve();
-              return Promise.reject(new Error(t('invalidIri')));
+              return Promise.reject(new Error(t('ontology.invalidIri')));
             },
           },
         ]}
@@ -157,19 +157,19 @@ const OntologyDrawer: React.FC<OntologyDrawerProps> = ({ open, mode, data, onClo
         }}
         extra={
           baseIriPreview
-            ? `${t('baseIriPreview')}${baseIriPreview}`
-            : t('baseIriHint')
+            ? `${t('ontology.baseIriPreview')}${baseIriPreview}`
+            : t('ontology.baseIriHint')
         }
       />
 
       <ProFormTextArea
         name="description"
-        label={t('description')}
-        placeholder={t('descriptionPlaceholder')}
+        label={t('ontology.description')}
+        placeholder={t('ontology.descriptionPlaceholder')}
         fieldProps={{ autoSize: { minRows: 2, maxRows: 4 }, maxLength: 512, showCount: true }}
       />
 
-      <ProFormSwitch name="isEnabled" label={t('isEnabled')} />
+      <ProFormSwitch name="isEnabled" label={t('ontology.isEnabled')} />
     </DrawerForm>
   );
 };
