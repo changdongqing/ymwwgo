@@ -276,3 +276,73 @@ func IsPropertyTargetInvalid(err error) bool {
 func ErrorPropertyTargetInvalid(format string, args ...interface{}) *errors.Error {
 	return errors.New(422, OntologyErrorReason_PROPERTY_TARGET_INVALID.String(), fmt.Sprintf(format, args...))
 }
+
+// ===== 数据属性（源 1-071-004 段）=====
+func IsDataPropertyDomainInvalid(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == OntologyErrorReason_DATA_PROPERTY_DOMAIN_INVALID.String() && e.Code == 422
+}
+
+// ===== 数据属性（源 1-071-004 段）=====
+func ErrorDataPropertyDomainInvalid(format string, args ...interface{}) *errors.Error {
+	return errors.New(422, OntologyErrorReason_DATA_PROPERTY_DOMAIN_INVALID.String(), fmt.Sprintf(format, args...))
+}
+
+// 数据属性值域必须是内建数据类型：{}
+func IsDataPropertyRangeInvalid(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == OntologyErrorReason_DATA_PROPERTY_RANGE_INVALID.String() && e.Code == 422
+}
+
+// 数据属性值域必须是内建数据类型：{}
+func ErrorDataPropertyRangeInvalid(format string, args ...interface{}) *errors.Error {
+	return errors.New(422, OntologyErrorReason_DATA_PROPERTY_RANGE_INVALID.String(), fmt.Sprintf(format, args...))
+}
+
+// 属性不能与自身建立该关系：{}（等价/不相交自引用）
+func IsDataPropertySelfReferenceInvalid(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == OntologyErrorReason_DATA_PROPERTY_SELF_REFERENCE_INVALID.String() && e.Code == 422
+}
+
+// 属性不能与自身建立该关系：{}（等价/不相交自引用）
+func ErrorDataPropertySelfReferenceInvalid(format string, args ...interface{}) *errors.Error {
+	return errors.New(422, OntologyErrorReason_DATA_PROPERTY_SELF_REFERENCE_INVALID.String(), fmt.Sprintf(format, args...))
+}
+
+// 引用目标必须是已声明的数据属性：{}
+func IsDataPropertyTargetInvalid(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == OntologyErrorReason_DATA_PROPERTY_TARGET_INVALID.String() && e.Code == 422
+}
+
+// 引用目标必须是已声明的数据属性：{}
+func ErrorDataPropertyTargetInvalid(format string, args ...interface{}) *errors.Error {
+	return errors.New(422, OntologyErrorReason_DATA_PROPERTY_TARGET_INVALID.String(), fmt.Sprintf(format, args...))
+}
+
+// 数据属性仅支持函数性特征：{}
+func IsDataPropertyCharacteristicInvalid(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == OntologyErrorReason_DATA_PROPERTY_CHARACTERISTIC_INVALID.String() && e.Code == 422
+}
+
+// 数据属性仅支持函数性特征：{}
+func ErrorDataPropertyCharacteristicInvalid(format string, args ...interface{}) *errors.Error {
+	return errors.New(422, OntologyErrorReason_DATA_PROPERTY_CHARACTERISTIC_INVALID.String(), fmt.Sprintf(format, args...))
+}

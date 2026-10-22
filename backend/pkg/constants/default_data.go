@@ -108,7 +108,7 @@ var DefaultPermissions = []*permissionV1.Permission{
 			72, 73, 74,
 			80, 81, 82, 83, 84,
 			101, 102,
-			110, 111, 112, 113,
+			110, 111, 112, 113, 114,
 		},
 		ApiIds: []uint32{
 			1, 2, 3, 4, 5, 6, 7, 8, 9,
@@ -1298,6 +1298,22 @@ var DefaultMenus = []*permissionV1.Menu{
 			Title:     trans.Ptr("menu.ontology.objectProperty"),
 			Icon:      trans.Ptr("lucide:arrow-right-left"),
 			Order:     trans.Ptr(int32(3)),
+			Authority: []string{"sys:platform_admin"},
+		},
+	},
+	{
+		// 数据属性：左树右表（03 期，字段词汇表；公理事务管线）
+		Id:        trans.Ptr(uint32(114)),
+		ParentId:  trans.Ptr(uint32(110)),
+		Type:      permissionV1.Menu_MENU.Enum(),
+		Name:      trans.Ptr("OntologyDataProperties"),
+		Path:      trans.Ptr("ontology-data-properties"),
+		Component: trans.Ptr("app/ontology/data-properties/index.tsx"),
+		CreatedAt: timeutil.TimeToTimestamppb(trans.Ptr(time.Now())),
+		Meta: &permissionV1.MenuMeta{
+			Title:     trans.Ptr("menu.ontology.dataProperty"),
+			Icon:      trans.Ptr("lucide:tags"),
+			Order:     trans.Ptr(int32(4)),
 			Authority: []string{"sys:platform_admin"},
 		},
 	},

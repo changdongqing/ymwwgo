@@ -122,6 +122,95 @@ func sortOrderOf(ax *ent.OntAxiom) int32 {
 	return int32(*ax.SortOrder)
 }
 
+// DiffSubjectSideValues 单边值集合 diff（42 数据属性值域：多行 value_text=内建 datatype IRI；
+// 与 DiffSubjectSideRelations 的差异仅在比对键从 object_id 换成 value_text——03 号文档 §4.2，
+// 05 期 facet 定义等场景可复用）。语义（源修订 #2 内化，值域列有顺序语义故收紧）：
+//   - 存量行 value 命中目标 → 保留不动（含其 sort_order）；
+//   - 存量行 value 不在目标 → 删；同 value 多行（脏数据）保留首行、多余行删；
+//   - 目标中新增的 value → 按提交序补行，sort_order 从保留行最大值后顺排；
+//   - 保留行按提交序展开的存量 sort_order 非严格递增（重排编辑）→ 整段重写
+//     （删全部 + 按提交序重建），保证任意混合编辑后回读序 = 提交序。
+//
+// targetValues 允许为空（清空全部值域）；空串/重复项的归一化由服务层完成，本组件对
+// 重复项防御性只补一行。与 DiffCharacteristics 并列（比对键 value_text vs predicate_iri），
+// 避免隐式参数开关（转译差异记录 #3）。
+func DiffSubjectSideValues(subject uint32, axiomType uint32, current []*ent.OntAxiom, targetValues []string) []AxiomChange {
+	firstByValue := make(map[string]*ent.OntAxiom, len(current))
+	for _, ax := range current {
+		v := nilString(ax.ValueText)
+		if _, ok := firstByValue[v]; !ok {
+			firstByValue[v] = ax
+		}
+	}
+
+	// 重排检测：保留行按提交序展开的存量 sort_order 必须严格递增
+	prevSort := int32(-1)
+	reorder := false
+	for _, v := range targetValues {
+		row, ok := firstByValue[v]
+		if !ok {
+			continue
+		}
+		so := sortOrderOf(row)
+		if so <= prevSort {
+			reorder = true
+			break
+		}
+		prevSort = so
+	}
+
+	changes := make([]AxiomChange, 0, len(current)+len(targetValues))
+
+	if reorder {
+		for _, ax := range current {
+			changes = append(changes, AxiomChange{Op: AxiomOpDelete, AxiomID: ax.ID, SubjectID: subject})
+		}
+		for i, v := range targetValues {
+			changes = append(changes, AxiomChange{
+				Op: AxiomOpAdd, AxiomType: axiomType, SubjectID: subject,
+				ValueText: v, SortOrder: int32(i),
+			})
+		}
+		return changes
+	}
+
+	// 删：value 不在目标中的行；同 value 多行时保留首行
+	inTarget := make(map[string]struct{}, len(targetValues))
+	for _, v := range targetValues {
+		inTarget[v] = struct{}{}
+	}
+	keptMax := int32(-1)
+	for _, ax := range current {
+		v := nilString(ax.ValueText)
+		if _, keep := inTarget[v]; keep && firstByValue[v].ID == ax.ID {
+			if so := sortOrderOf(ax); so > keptMax {
+				keptMax = so
+			}
+			continue
+		}
+		changes = append(changes, AxiomChange{Op: AxiomOpDelete, AxiomID: ax.ID, SubjectID: subject})
+	}
+
+	// 增：目标中无存量行的值，按提交序从保留行最大值后顺排（存量行不动）
+	added := make(map[string]struct{}, len(targetValues))
+	seq := keptMax + 1
+	for _, v := range targetValues {
+		if _, ok := firstByValue[v]; ok {
+			continue
+		}
+		if _, dup := added[v]; dup {
+			continue
+		}
+		added[v] = struct{}{}
+		changes = append(changes, AxiomChange{
+			Op: AxiomOpAdd, AxiomType: axiomType, SubjectID: subject,
+			ValueText: v, SortOrder: seq,
+		})
+		seq++
+	}
+	return changes
+}
+
 // SymmetricAxiomPair 对称关系现状：伙伴 + 双向两行公理 id（成对存储）。
 type SymmetricAxiomPair struct {
 	OtherID         uint32
@@ -335,10 +424,11 @@ func chainMembersEqual(a, b []uint32) bool {
 	return true
 }
 
-// DiffCharacteristics 特征 diff（33 型，按 predicate_iri 集合比对——变体：以谓词列而非 object_id
-// 为集合键，02 号文档 §2.4）：现存谓词不在目标中 → 删行；目标谓词无现存行 → 增行。
+// DiffCharacteristics 特征 diff（33 对象属性 / 43 数据属性，按 predicate_iri 集合比对——
+// 变体：以谓词列而非 object_id 为集合键，02 号文档 §2.4；axiomType 参数化以供两期共用）：
+// 现存谓词不在目标中 → 删行；目标谓词无现存行 → 增行。
 // 每特征一行（subject=属性，object_id/value_text 空）。
-func DiffCharacteristics(subject uint32, current []*ent.OntAxiom, targetIRIs []string) []AxiomChange {
+func DiffCharacteristics(subject uint32, axiomType uint32, current []*ent.OntAxiom, targetIRIs []string) []AxiomChange {
 	targetSet := make(map[string]struct{}, len(targetIRIs))
 	for _, iri := range targetIRIs {
 		if iri == "" {
@@ -370,7 +460,7 @@ func DiffCharacteristics(subject uint32, current []*ent.OntAxiom, targetIRIs []s
 		}
 		changes = append(changes, AxiomChange{
 			Op:           AxiomOpAdd,
-			AxiomType:    AxiomObjectPropertyCharacteristic,
+			AxiomType:    axiomType,
 			SubjectID:    subject,
 			PredicateIRI: iri,
 		})

@@ -17,12 +17,12 @@ func TestDiffCharacteristics(t *testing.T) {
 	}
 
 	// 无变化 → 零变更
-	if changes := DiffCharacteristics(me, current, PropertyCharacteristicIRIs[2:4]); len(changes) != 0 {
+	if changes := DiffCharacteristics(me, AxiomObjectPropertyCharacteristic, current, PropertyCharacteristicIRIs[2:4]); len(changes) != 0 {
 		t.Fatalf("无变化应为零变更：%+v", changes)
 	}
 
 	// 增删：去 symmetric、增 functional → 删行 2 + 增 functional
-	changes := DiffCharacteristics(me, current, []string{PropertyCharacteristicIRIs[0], PropertyCharacteristicIRIs[2]})
+	changes := DiffCharacteristics(me, AxiomObjectPropertyCharacteristic, current, []string{PropertyCharacteristicIRIs[0], PropertyCharacteristicIRIs[2]})
 	if len(changes) != 2 {
 		t.Fatalf("应为 2 条变更：%+v", changes)
 	}
@@ -35,7 +35,7 @@ func TestDiffCharacteristics(t *testing.T) {
 	}
 
 	// 清空 → 全删
-	changes = DiffCharacteristics(me, current, nil)
+	changes = DiffCharacteristics(me, AxiomObjectPropertyCharacteristic, current, nil)
 	if len(changes) != 2 {
 		t.Fatalf("清空应删 2 行：%+v", changes)
 	}

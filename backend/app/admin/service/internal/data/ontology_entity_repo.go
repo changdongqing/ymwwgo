@@ -116,6 +116,12 @@ func (r *OntEntityRepo) ListObjectProperties(ctx context.Context, filter ClassLi
 	return r.listEntitiesOfType(ctx, filter, ontology.EntityTypeObjectProperty)
 }
 
+// ListDataProperties 分页查询数据属性列表（铁律 3 contains；无子树范围——属性树不做范围切换）
+func (r *OntEntityRepo) ListDataProperties(ctx context.Context, filter ClassListFilter) ([]*ent.OntEntity, int, error) {
+	filter.SubtreeIDs = nil
+	return r.listEntitiesOfType(ctx, filter, ontology.EntityTypeDataProperty)
+}
+
 // listEntitiesOfType 分页查询指定实体类型列表（ListClasses 的泛化底座）
 func (r *OntEntityRepo) listEntitiesOfType(ctx context.Context, filter ClassListFilter, entityType uint32) ([]*ent.OntEntity, int, error) {
 	q := r.entClient.Client().OntEntity.Query().
@@ -417,6 +423,149 @@ func EntEntityToObjectPropertyDTO(e *ent.OntEntity, agg *ClassAggregate) *ontolo
 		dto.ChildCount = trans.Ptr(agg.ChildCount)
 		dto.Comment = agg.Comment
 		dto.Characteristics = agg.Characteristics
+	}
+	return dto
+}
+
+// DataPropertyAggregate 数据属性列表聚合列（一次分页批量计算）
+type DataPropertyAggregate struct {
+	ParentCount     uint32
+	ChildCount      uint32
+	Comment         *string
+	Characteristics []string // 43 型特征 IRI（V1 至多函数性）
+	RangeIRIs       []string // 42 型值域 datatype IRI（保序 sort_order → id）
+}
+
+// AggregateDataPropertyInfo 批量计算数据属性聚合列：父属性数/直接子属性数（40 型）+
+// 特征 IRI（43 型）+ 值域 datatype IRI（42 型 value_text，保序 sort_order → id）+ 注释首选值。
+func (r *OntEntityRepo) AggregateDataPropertyInfo(ctx context.Context, ontologyID uint32, entityIDs []uint32) (map[uint32]*DataPropertyAggregate, error) {
+	out := make(map[uint32]*DataPropertyAggregate, len(entityIDs))
+	if len(entityIDs) == 0 {
+		return out, nil
+	}
+	for _, id := range entityIDs {
+		out[id] = &DataPropertyAggregate{}
+	}
+
+	type countRow struct {
+		SubjectID uint32 `json:"subject_id"`
+		ObjectID  uint32 `json:"object_id"`
+		Count     int    `json:"count"`
+	}
+
+	// 父属性数：40 型公理以我为主语
+	var parentRows []countRow
+	if err := r.entClient.Client().OntAxiom.Query().
+		Where(ontaxiom.OntologyIDEQ(ontologyID), ontaxiom.AxiomTypeEQ(ontology.AxiomSubDataPropertyOf),
+			ontaxiom.SubjectIDIn(entityIDs...), ontaxiom.DeletedAtIsNil()).
+		GroupBy(ontaxiom.FieldSubjectID).
+		Aggregate(ent.As(ent.Count(), "count")).
+		Scan(ctx, &parentRows); err != nil {
+		return nil, err
+	}
+	for _, row := range parentRows {
+		if agg, ok := out[row.SubjectID]; ok {
+			agg.ParentCount = uint32(row.Count)
+		}
+	}
+
+	// 直接子属性数：40 型公理以我为宾语
+	var childRows []countRow
+	if err := r.entClient.Client().OntAxiom.Query().
+		Where(ontaxiom.OntologyIDEQ(ontologyID), ontaxiom.AxiomTypeEQ(ontology.AxiomSubDataPropertyOf),
+			ontaxiom.ObjectIDIn(entityIDs...), ontaxiom.DeletedAtIsNil()).
+		GroupBy(ontaxiom.FieldObjectID).
+		Aggregate(ent.As(ent.Count(), "count")).
+		Scan(ctx, &childRows); err != nil {
+		return nil, err
+	}
+	for _, row := range childRows {
+		if agg, ok := out[row.ObjectID]; ok {
+			agg.ChildCount = uint32(row.Count)
+		}
+	}
+
+	// 特征 / 值域 / 注释：43 / 42 / 100 型公理
+	axioms, err := r.entClient.Client().OntAxiom.Query().
+		Where(ontaxiom.OntologyIDEQ(ontologyID),
+			ontaxiom.AxiomTypeIn(ontology.AxiomDataPropertyCharacteristic, ontology.AxiomDataPropertyRange, ontology.AxiomAnnotationAssertion),
+			ontaxiom.SubjectIDIn(entityIDs...), ontaxiom.DeletedAtIsNil()).
+		Order(ent.Asc(ontaxiom.FieldSortOrder), ent.Asc(ontaxiom.FieldID)).
+		All(ctx)
+	if err != nil {
+		return nil, err
+	}
+	bySubject := make(map[uint32][]*ent.OntAxiom, len(entityIDs))
+	for _, ax := range axioms {
+		if ax.SubjectID == nil {
+			continue
+		}
+		bySubject[*ax.SubjectID] = append(bySubject[*ax.SubjectID], ax)
+	}
+	for id, agg := range out {
+		agg.Comment = ontology.PickAnnotationPreferred(bySubject[id], ontology.PredicateRDFSComment)
+		agg.Characteristics = orderDataPropertyCharacteristics(bySubject[id])
+		agg.RangeIRIs = rangeIRIsOf(bySubject[id])
+	}
+	return out, nil
+}
+
+// orderDataPropertyCharacteristics 特征 IRI 按声明序（V1 数据属性仅函数性；白名单外防御性补尾）
+func orderDataPropertyCharacteristics(axioms []*ent.OntAxiom) []string {
+	out := make([]string, 0, 1)
+	present := make(map[string]struct{}, 1)
+	for _, ax := range axioms {
+		if ax.AxiomType == nil || *ax.AxiomType != ontology.AxiomDataPropertyCharacteristic || ax.PredicateIri == nil {
+			continue
+		}
+		present[*ax.PredicateIri] = struct{}{}
+	}
+	if _, ok := present[ontology.IRIOWLFunctionalProperty]; ok {
+		out = append(out, ontology.IRIOWLFunctionalProperty)
+		delete(present, ontology.IRIOWLFunctionalProperty)
+	}
+	for _, ax := range axioms { // 白名单外（校验器已拦，防御兼容）按行序补尾
+		if ax.AxiomType == nil || *ax.AxiomType != ontology.AxiomDataPropertyCharacteristic || ax.PredicateIri == nil {
+			continue
+		}
+		if _, ok := present[*ax.PredicateIri]; ok {
+			out = append(out, *ax.PredicateIri)
+			delete(present, *ax.PredicateIri)
+		}
+	}
+	return out
+}
+
+// rangeIRIsOf 值域 datatype IRI 列表（42 型 value_text，按 sort_order → id 保序；空值行跳过）
+func rangeIRIsOf(axioms []*ent.OntAxiom) []string {
+	out := make([]string, 0, 1)
+	for _, ax := range axioms {
+		if ax.AxiomType == nil || *ax.AxiomType != ontology.AxiomDataPropertyRange {
+			continue
+		}
+		if ax.ValueText != nil && *ax.ValueText != "" {
+			out = append(out, *ax.ValueText)
+		}
+	}
+	return out
+}
+
+// EntEntityToDataPropertyDTO 实体行 + 聚合 → DataProperty DTO（服务层组装用）
+func EntEntityToDataPropertyDTO(e *ent.OntEntity, agg *DataPropertyAggregate) *ontologyV1.DataProperty {
+	dto := &ontologyV1.DataProperty{
+		Id:           &e.ID,
+		OntologyId:   e.OntologyID,
+		Iri:          e.Iri,
+		LocalName:    e.LocalName,
+		DisplayLabel: e.DisplayLabel,
+		Deprecated:   e.Deprecated,
+	}
+	if agg != nil {
+		dto.ParentCount = trans.Ptr(agg.ParentCount)
+		dto.ChildCount = trans.Ptr(agg.ChildCount)
+		dto.Comment = agg.Comment
+		dto.Characteristics = agg.Characteristics
+		dto.RangeIris = agg.RangeIRIs
 	}
 	return dto
 }

@@ -1,0 +1,68 @@
+syntax = "proto3";
+
+package admin.service.v1;
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+
+import "ontology/service/v1/ontology.proto";
+import "ontology/service/v1/ontology_data_property.proto";
+
+// 数据属性管理服务（admin 门面）
+//
+// 数据属性 create/update/delete 是自定义 RPC（公理事务管线：diff + 环检测 + 乐观锁 + 校验 + 变更日志），
+// body: "*" 收扁平请求体——不是通用 CRUD，勿按惯例包 { data: {...} }
+// （protojson 会把 data 当未知字段丢弃，接口 200 但字段全空，仓库已知坑）。
+// GET/DELETE 的标量参数由 Kratos 从 query string 按 proto 字段 json 名（camelCase）绑定。
+service OntologyDataPropertyService {
+    // 查询数据属性全量树
+    rpc Tree (ontology.service.v1.GetDataPropertyTreeRequest) returns (ontology.service.v1.DataPropertyTreeResponse) {
+        option (google.api.http) = {
+            get: "/admin/v1/ontology/data-properties/tree"
+        };
+    }
+
+    // 分页查询数据属性列表
+    rpc List (ontology.service.v1.ListDataPropertiesRequest) returns (ontology.service.v1.ListDataPropertiesResponse) {
+        option (google.api.http) = {
+            get: "/admin/v1/ontology/data-properties"
+        };
+    }
+
+    // 查询数据属性 frame 详情
+    rpc Frame (ontology.service.v1.GetDataPropertyFrameRequest) returns (ontology.service.v1.DataPropertyFrame) {
+        option (google.api.http) = {
+            get: "/admin/v1/ontology/data-properties/{id}/frame"
+        };
+    }
+
+    // 查询数据属性引用明细
+    rpc Usage (ontology.service.v1.GetDataPropertyUsageRequest) returns (ontology.service.v1.EntityUsage) {
+        option (google.api.http) = {
+            get: "/admin/v1/ontology/data-properties/{id}/usage"
+        };
+    }
+
+    // 创建数据属性（公理事务管线；返回新实体 id + 变更后版本）
+    rpc Create (ontology.service.v1.CreateDataPropertyRequest) returns (ontology.service.v1.CreateDataPropertyResponse) {
+        option (google.api.http) = {
+            post: "/admin/v1/ontology/data-properties"
+            body: "*"
+        };
+    }
+
+    // 更新数据属性（frame 全量提交，公理事务管线）
+    rpc Update (ontology.service.v1.UpdateDataPropertyRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            put: "/admin/v1/ontology/data-properties/{id}"
+            body: "*"
+        };
+    }
+
+    // 删除数据属性（force=true 级联移除引用公理，子属性自动变根属性）
+    rpc Delete (ontology.service.v1.DeleteDataPropertyRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            delete: "/admin/v1/ontology/data-properties/{id}"
+        };
+    }
+}

@@ -50,6 +50,12 @@ const (
 	OntologyErrorReason_PROPERTY_SELF_REFERENCE_INVALID OntologyErrorReason = 34 // 属性不能与自身建立该关系：{}（等价/不相交自引用）
 	OntologyErrorReason_PROPERTY_CHARACTERISTIC_INVALID OntologyErrorReason = 35 // 未知的对象属性特征：{}
 	OntologyErrorReason_PROPERTY_TARGET_INVALID         OntologyErrorReason = 36 // 引用目标必须是已声明的对象属性：{}
+	// ===== 数据属性（源 1-071-004 段）=====
+	OntologyErrorReason_DATA_PROPERTY_DOMAIN_INVALID         OntologyErrorReason = 40 // 数据属性定义域必须是本体类：{}
+	OntologyErrorReason_DATA_PROPERTY_RANGE_INVALID          OntologyErrorReason = 41 // 数据属性值域必须是内建数据类型：{}
+	OntologyErrorReason_DATA_PROPERTY_SELF_REFERENCE_INVALID OntologyErrorReason = 42 // 属性不能与自身建立该关系：{}（等价/不相交自引用）
+	OntologyErrorReason_DATA_PROPERTY_TARGET_INVALID         OntologyErrorReason = 43 // 引用目标必须是已声明的数据属性：{}
+	OntologyErrorReason_DATA_PROPERTY_CHARACTERISTIC_INVALID OntologyErrorReason = 44 // 数据属性仅支持函数性特征：{}
 )
 
 // Enum value maps for OntologyErrorReason.
@@ -74,27 +80,37 @@ var (
 		34: "PROPERTY_SELF_REFERENCE_INVALID",
 		35: "PROPERTY_CHARACTERISTIC_INVALID",
 		36: "PROPERTY_TARGET_INVALID",
+		40: "DATA_PROPERTY_DOMAIN_INVALID",
+		41: "DATA_PROPERTY_RANGE_INVALID",
+		42: "DATA_PROPERTY_SELF_REFERENCE_INVALID",
+		43: "DATA_PROPERTY_TARGET_INVALID",
+		44: "DATA_PROPERTY_CHARACTERISTIC_INVALID",
 	}
 	OntologyErrorReason_value = map[string]int32{
-		"ONTOLOGY_NOT_FOUND":              0,
-		"ONTOLOGY_NAME_DUPLICATE":         1,
-		"ONTOLOGY_BASE_IRI_INVALID":       2,
-		"ONTOLOGY_VERSION_CONFLICT":       3,
-		"ONTOLOGY_IRI_DUPLICATE":          4,
-		"ENTITY_NOT_FOUND":                10,
-		"ENTITY_IRI_DUPLICATE":            11,
-		"LOCAL_NAME_INVALID":              12,
-		"ENTITY_TYPE_MISMATCH":            13,
-		"AXIOM_INVALID":                   20,
-		"HIERARCHY_CYCLIC":                21,
-		"ENTITY_IN_USE":                   22,
-		"PROPERTY_DOMAIN_INVALID":         30,
-		"PROPERTY_RANGE_INVALID":          31,
-		"PROPERTY_CHAIN_INVALID":          32,
-		"PROPERTY_INVERSE_SELF_INVALID":   33,
-		"PROPERTY_SELF_REFERENCE_INVALID": 34,
-		"PROPERTY_CHARACTERISTIC_INVALID": 35,
-		"PROPERTY_TARGET_INVALID":         36,
+		"ONTOLOGY_NOT_FOUND":                   0,
+		"ONTOLOGY_NAME_DUPLICATE":              1,
+		"ONTOLOGY_BASE_IRI_INVALID":            2,
+		"ONTOLOGY_VERSION_CONFLICT":            3,
+		"ONTOLOGY_IRI_DUPLICATE":               4,
+		"ENTITY_NOT_FOUND":                     10,
+		"ENTITY_IRI_DUPLICATE":                 11,
+		"LOCAL_NAME_INVALID":                   12,
+		"ENTITY_TYPE_MISMATCH":                 13,
+		"AXIOM_INVALID":                        20,
+		"HIERARCHY_CYCLIC":                     21,
+		"ENTITY_IN_USE":                        22,
+		"PROPERTY_DOMAIN_INVALID":              30,
+		"PROPERTY_RANGE_INVALID":               31,
+		"PROPERTY_CHAIN_INVALID":               32,
+		"PROPERTY_INVERSE_SELF_INVALID":        33,
+		"PROPERTY_SELF_REFERENCE_INVALID":      34,
+		"PROPERTY_CHARACTERISTIC_INVALID":      35,
+		"PROPERTY_TARGET_INVALID":              36,
+		"DATA_PROPERTY_DOMAIN_INVALID":         40,
+		"DATA_PROPERTY_RANGE_INVALID":          41,
+		"DATA_PROPERTY_SELF_REFERENCE_INVALID": 42,
+		"DATA_PROPERTY_TARGET_INVALID":         43,
+		"DATA_PROPERTY_CHARACTERISTIC_INVALID": 44,
 	}
 )
 
@@ -129,7 +145,7 @@ var File_ontology_service_v1_ontology_error_proto protoreflect.FileDescriptor
 
 const file_ontology_service_v1_ontology_error_proto_rawDesc = "" +
 	"\n" +
-	"(ontology/service/v1/ontology_error.proto\x12\x13ontology.service.v1\x1a\x13errors/errors.proto*\x99\x05\n" +
+	"(ontology/service/v1/ontology_error.proto\x12\x13ontology.service.v1\x1a\x13errors/errors.proto*\xf0\x06\n" +
 	"\x13OntologyErrorReason\x12\x1c\n" +
 	"\x12ONTOLOGY_NOT_FOUND\x10\x00\x1a\x04\xa8E\x94\x03\x12!\n" +
 	"\x17ONTOLOGY_NAME_DUPLICATE\x10\x01\x1a\x04\xa8E\x99\x03\x12#\n" +
@@ -150,7 +166,12 @@ const file_ontology_service_v1_ontology_error_proto_rawDesc = "" +
 	"\x1dPROPERTY_INVERSE_SELF_INVALID\x10!\x1a\x04\xa8E\xa6\x03\x12)\n" +
 	"\x1fPROPERTY_SELF_REFERENCE_INVALID\x10\"\x1a\x04\xa8E\xa6\x03\x12)\n" +
 	"\x1fPROPERTY_CHARACTERISTIC_INVALID\x10#\x1a\x04\xa8E\xa6\x03\x12!\n" +
-	"\x17PROPERTY_TARGET_INVALID\x10$\x1a\x04\xa8E\xa6\x03\x1a\x04\xa0E\xf4\x03B\xd4\x01\n" +
+	"\x17PROPERTY_TARGET_INVALID\x10$\x1a\x04\xa8E\xa6\x03\x12&\n" +
+	"\x1cDATA_PROPERTY_DOMAIN_INVALID\x10(\x1a\x04\xa8E\xa6\x03\x12%\n" +
+	"\x1bDATA_PROPERTY_RANGE_INVALID\x10)\x1a\x04\xa8E\xa6\x03\x12.\n" +
+	"$DATA_PROPERTY_SELF_REFERENCE_INVALID\x10*\x1a\x04\xa8E\xa6\x03\x12&\n" +
+	"\x1cDATA_PROPERTY_TARGET_INVALID\x10+\x1a\x04\xa8E\xa6\x03\x12.\n" +
+	"$DATA_PROPERTY_CHARACTERISTIC_INVALID\x10,\x1a\x04\xa8E\xa6\x03\x1a\x04\xa0E\xf4\x03B\xd4\x01\n" +
 	"\x17com.ontology.service.v1B\x12OntologyErrorProtoP\x01Z7go-wind-admin/api/gen/go/ontology/service/v1;ontologyv1\xa2\x02\x03OSX\xaa\x02\x13Ontology.Service.V1\xca\x02\x13Ontology\\Service\\V1\xe2\x02\x1fOntology\\Service\\V1\\GPBMetadata\xea\x02\x15Ontology::Service::V1b\x06proto3"
 
 var (

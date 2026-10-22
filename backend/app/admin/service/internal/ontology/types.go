@@ -38,6 +38,13 @@ const (
 	AxiomEquivalentObjectProperties   uint32 = 35  // 等价属性（成对；frame 单值暴露，存储为成对）
 	AxiomDisjointObjectProperties     uint32 = 36  // 不相交属性（成对）
 	AxiomSubPropertyChainOf           uint32 = 37  // 属性链（subject=超属性，value_text=链成员实体 id 的 JSON 字符串数组，保序）
+	AxiomSubDataPropertyOf            uint32 = 40  // 子数据属性（subject=子属性，object_id=父属性）
+	AxiomDataPropertyDomain           uint32 = 41  // 数据属性定义域（subject=属性，object_id=类；多行=多定义域，OWL 交集语义）
+	AxiomDataPropertyRange            uint32 = 42  // 数据属性值域（object_id=NULL，value_text=内建 datatype IRI；多行=多值域；05 期双轨 object_id 预留）
+	AxiomDataPropertyCharacteristic   uint32 = 43  // 数据属性特征（泛型：subject=属性，predicate_iri=特征 IRI；V1 仅函数性）
+	AxiomEquivalentDataProperties     uint32 = 44  // 等价数据属性（成对 (P,Q)+(Q,P) 各一行）
+	AxiomDisjointDataProperties       uint32 = 45  // 不相交数据属性（成对）
+	AxiomDataPropertyAssertion        uint32 = 62  // 数据属性断言（06 期写入方：subject=个体，object_id=数据属性实体，value_text=字面量词形；03 期定稿行语义 + 校验器分支）
 	AxiomAnnotationAssertion          uint32 = 100 // 注解断言，全功能共用
 )
 
@@ -52,20 +59,90 @@ const (
 // IRIOWLThing owl:Thing 虚拟根：不入实体表，由前端固定渲染（源修订 #5，渲染关注点）
 const IRIOWLThing = "http://www.w3.org/2002/07/owl#Thing"
 
-// IRIOWLTopObjectProperty owl:topObjectProperty 虚拟根（对象属性层级的顶点，owl:Thing 模式镜像；
-// 03 期镜像 owl:topDataProperty）
+// IRIOWLTopObjectProperty owl:topObjectProperty 虚拟根（对象属性层级的顶点，owl:Thing 模式镜像）
 const IRIOWLTopObjectProperty = "http://www.w3.org/2002/07/owl#topObjectProperty"
+
+// IRIOWLTopDataProperty owl:topDataProperty 虚拟根（数据属性层级的顶点，OWL 2 规范词汇；
+// 03 期：不入库、不可编辑删除、仅可"新建子属性"，前端固定渲染）
+const IRIOWLTopDataProperty = "http://www.w3.org/2002/07/owl#topDataProperty"
+
+// IRIOWLFunctionalProperty 函数性特征 IRI（OWL 2 词汇表；数据属性 V1 唯一支持的特征——
+// 逆函数性等六种是对象属性专属，03 号文档 §2.3）。PropertyCharacteristicIRIs 首项引用本常量，单一事实源。
+const IRIOWLFunctionalProperty = "http://www.w3.org/2002/07/owl#FunctionalProperty"
 
 // 特征谓词 IRI（OWL 2 词汇表；有序：page/frame 的 characteristics 输出按此声明序——源修订 #5 内化）
 var PropertyCharacteristicIRIs = []string{
-	"http://www.w3.org/2002/07/owl#FunctionalProperty",        // 函数性
-	"http://www.w3.org/2002/07/owl#InverseFunctionalProperty", // 逆函数性
-	"http://www.w3.org/2002/07/owl#TransitiveProperty",        // 传递性
-	"http://www.w3.org/2002/07/owl#SymmetricProperty",         // 对称性
-	"http://www.w3.org/2002/07/owl#AsymmetricProperty",        // 反对称性
-	"http://www.w3.org/2002/07/owl#ReflexiveProperty",         // 自反性
-	"http://www.w3.org/2002/07/owl#IrreflexiveProperty",       // 反自反性
+	IRIOWLFunctionalProperty,                                                  // 函数性
+	"http://www.w3.org/2002/07/owl#InverseFunctionalProperty",                 // 逆函数性
+	"http://www.w3.org/2002/07/owl#TransitiveProperty",                        // 传递性
+	"http://www.w3.org/2002/07/owl#SymmetricProperty",                         // 对称性
+	"http://www.w3.org/2002/07/owl#AsymmetricProperty",                        // 反对称性
+	"http://www.w3.org/2002/07/owl#ReflexiveProperty",                         // 自反性
+	"http://www.w3.org/2002/07/owl#IrreflexiveProperty",                       // 反自反性
 }
+
+// XSD 命名空间前缀（内建 datatype IRI 与渲染短名共用）
+const IRIXSDNamespace = "http://www.w3.org/2001/XMLSchema#"
+
+// rdf:langString（语言文本字面量的 datatype；不进值域白名单——语言文本由 62 行 lang 列承载，
+// 03 号文档 §3.2）
+const IRIRDFLangString = "http://www.w3.org/1999/02/22-rdf-syntax-ns#langString"
+
+// DatatypeKind 内建 datatype 的词法校验分派键（03 号文档 §3.2/§4.4；Go 侧不承载展示文案，
+// 中文标签归前端 i18n 的 DATATYPE_LABELS——转译差异记录 #2）。
+type DatatypeKind uint8
+
+const (
+	KindString       DatatypeKind = iota // xsd:string：任意 Unicode 文本
+	KindBoolean                          // xsd:boolean：true/false/1/0
+	KindDecimal                          // xsd:decimal：可选符号 + 数字 + 可选小数
+	KindInteger                          // xsd:integer 族（integer/long/int/short/byte）：64 位整数解析
+	KindNonNegInteger                    // xsd:nonNegativeInteger：整数且 ≥ 0
+	KindFloat                            // xsd:float / xsd:double：ParseFloat（含科学计数）
+	KindDate                             // xsd:date：YYYY-MM-DD 可选时区后缀
+	KindDateTime                         // xsd:dateTime：RFC3339 同构（要求时区）
+	KindTime                             // xsd:time：HH:MM:SS(.fff)?(Z|±HH:MM)?
+	KindAnyURI                           // xsd:anyURI：非空且无控制字符
+)
+
+// BuiltinDatatype 内建 XSD datatype 白名单项：IRI + 词法校验分派键。
+type BuiltinDatatype struct {
+	IRI  string
+	Kind DatatypeKind
+}
+
+// BuiltinDatatypes 内建 XSD datatype 白名单（15 项，覆盖 06 期编码/名称/数量/日期场景）。
+// 05 期接管扩展（全量内建 + facet + 自定义 datatype 实体管理），见 03 号文档 §2.2/§10。
+var BuiltinDatatypes = []BuiltinDatatype{
+	{IRI: IRIXSDNamespace + "string", Kind: KindString},
+	{IRI: IRIXSDNamespace + "boolean", Kind: KindBoolean},
+	{IRI: IRIXSDNamespace + "decimal", Kind: KindDecimal},
+	{IRI: IRIXSDNamespace + "integer", Kind: KindInteger},
+	{IRI: IRIXSDNamespace + "long", Kind: KindInteger},
+	{IRI: IRIXSDNamespace + "int", Kind: KindInteger},
+	{IRI: IRIXSDNamespace + "short", Kind: KindInteger},
+	{IRI: IRIXSDNamespace + "byte", Kind: KindInteger},
+	{IRI: IRIXSDNamespace + "nonNegativeInteger", Kind: KindNonNegInteger},
+	{IRI: IRIXSDNamespace + "float", Kind: KindFloat},
+	{IRI: IRIXSDNamespace + "double", Kind: KindFloat},
+	{IRI: IRIXSDNamespace + "date", Kind: KindDate},
+	{IRI: IRIXSDNamespace + "dateTime", Kind: KindDateTime},
+	{IRI: IRIXSDNamespace + "time", Kind: KindTime},
+	{IRI: IRIXSDNamespace + "anyURI", Kind: KindAnyURI},
+}
+
+// IsBuiltinDatatype IRI 是否命中内建白名单（命中返回分派键；rdf:langString 不在其中）。
+func IsBuiltinDatatype(iri string) (BuiltinDatatype, bool) {
+	for _, d := range BuiltinDatatypes {
+		if d.IRI == iri {
+			return d, true
+		}
+	}
+	return BuiltinDatatype{}, false
+}
+
+// IRIXMLSchemaString 缺省 datatype xsd:string（62 断言无值域行时的推断缺省，03 号文档 §2.6）
+const IRIXMLSchemaString = IRIXSDNamespace + "string"
 
 // BuiltinAnnotationPredicates 内建注解谓词白名单（校验器注解断言双轨之一）
 var BuiltinAnnotationPredicates = []string{
@@ -76,14 +153,15 @@ var BuiltinAnnotationPredicates = []string{
 }
 
 // ClassUsageAxiomTypes 类删除保护（usage 反查）的引用公理类型集。
-// 02 期对象属性定义域/值域（31/32）已并入；03 期数据属性定义域（41）、06 期个体断型（60）
-// 落地时各自往切片加号段（源修订 #12/#14 的缺口已在本仓前置内化）。
+// 02 期对象属性定义域/值域（31/32）、03 期数据属性定义域（41）已并入；
+// 06 期个体断型（60）落地时再往切片加号段（源修订 #12/#14 的缺口已在本仓前置内化）。
 var ClassUsageAxiomTypes = []uint32{
 	AxiomSubClassOf,
 	AxiomDisjointWith,
 	AxiomEquivalentClasses,
 	AxiomObjectPropertyDomain,
 	AxiomObjectPropertyRange,
+	AxiomDataPropertyDomain,
 }
 
 // ObjectPropertyUsageAxiomTypes 对象属性删除保护（usage 反查）object 侧的引用公理类型集。
@@ -96,6 +174,16 @@ var ObjectPropertyUsageAxiomTypes = []uint32{
 	AxiomDisjointObjectProperties,
 }
 
+// DataPropertyUsageAxiomTypes 数据属性删除保护（usage 反查）object 侧的引用公理类型集：
+// 40 子属性边 / 44 等价 / 45 不相交。数据属性没有属性链（无 37 对应物）；
+// 06 期数据断言（62）的谓词走 object_id=属性实体，命中同一索引，届时往切片追加 62 即可
+// （03 号文档 §4.3）。
+var DataPropertyUsageAxiomTypes = []uint32{
+	AxiomSubDataPropertyOf,
+	AxiomEquivalentDataProperties,
+	AxiomDisjointDataProperties,
+}
+
 // 变更日志操作名（ont_change_logs.operation；03~06 期按需追加）
 const (
 	OpCreateClass = "CREATE_CLASS"
@@ -105,6 +193,10 @@ const (
 	OpCreateObjectProperty = "CREATE_OBJECT_PROPERTY"
 	OpUpdateObjectProperty = "UPDATE_OBJECT_PROPERTY"
 	OpDeleteObjectProperty = "DELETE_OBJECT_PROPERTY"
+
+	OpCreateDataProperty = "CREATE_DATA_PROPERTY"
+	OpUpdateDataProperty = "UPDATE_DATA_PROPERTY"
+	OpDeleteDataProperty = "DELETE_DATA_PROPERTY"
 )
 
 // NavKeepDepth 骨架树无条件保留深度：1=根类、2=域入口；更深的"有父类且无子类"叶子剪掉
@@ -135,6 +227,13 @@ const (
 	ReasonPropertySelfReferenceInvalid  = "PROPERTY_SELF_REFERENCE_INVALID"
 	ReasonPropertyCharacteristicInvalid = "PROPERTY_CHARACTERISTIC_INVALID"
 	ReasonPropertyTargetInvalid         = "PROPERTY_TARGET_INVALID"
+
+	// 03 期数据属性（源 1-071-004 段）
+	ReasonDataPropertyDomainInvalid         = "DATA_PROPERTY_DOMAIN_INVALID"
+	ReasonDataPropertyRangeInvalid          = "DATA_PROPERTY_RANGE_INVALID"
+	ReasonDataPropertySelfReferenceInvalid  = "DATA_PROPERTY_SELF_REFERENCE_INVALID"
+	ReasonDataPropertyTargetInvalid         = "DATA_PROPERTY_TARGET_INVALID"
+	ReasonDataPropertyCharacteristicInvalid = "DATA_PROPERTY_CHARACTERISTIC_INVALID"
 )
 
 // DomainError 域内核错误：携带 reason 与用户可读明细。

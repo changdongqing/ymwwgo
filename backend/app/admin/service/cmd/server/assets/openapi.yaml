@@ -5321,6 +5321,176 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/EntityUsage'
+    /admin/v1/ontology/data-properties:
+        get:
+            tags:
+                - OntologyDataPropertyService
+            description: 分页查询数据属性列表
+            operationId: OntologyDataPropertyService_List
+            parameters:
+                - name: page
+                  in: query
+                  schema:
+                    type: integer
+                    format: uint32
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: uint32
+                - name: ontologyId
+                  in: query
+                  schema:
+                    type: integer
+                    format: uint32
+                - name: localName
+                  in: query
+                  schema:
+                    type: string
+                - name: displayLabel
+                  in: query
+                  schema:
+                    type: string
+                - name: deprecated
+                  in: query
+                  schema:
+                    type: boolean
+                - name: orderBy
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListDataPropertiesResponse'
+        post:
+            tags:
+                - OntologyDataPropertyService
+            description: 创建数据属性（公理事务管线；返回新实体 id + 变更后版本）
+            operationId: OntologyDataPropertyService_Create
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/CreateDataPropertyRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/CreateDataPropertyResponse'
+    /admin/v1/ontology/data-properties/tree:
+        get:
+            tags:
+                - OntologyDataPropertyService
+            description: 查询数据属性全量树
+            operationId: OntologyDataPropertyService_Tree
+            parameters:
+                - name: ontologyId
+                  in: query
+                  schema:
+                    type: integer
+                    format: uint32
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/DataPropertyTreeResponse'
+    /admin/v1/ontology/data-properties/{id}:
+        put:
+            tags:
+                - OntologyDataPropertyService
+            description: 更新数据属性（frame 全量提交，公理事务管线）
+            operationId: OntologyDataPropertyService_Update
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint32
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/UpdateDataPropertyRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+        delete:
+            tags:
+                - OntologyDataPropertyService
+            description: 删除数据属性（force=true 级联移除引用公理，子属性自动变根属性）
+            operationId: OntologyDataPropertyService_Delete
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint32
+                - name: baseVersion
+                  in: query
+                  schema:
+                    type: integer
+                    format: uint32
+                - name: force
+                  in: query
+                  schema:
+                    type: boolean
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+    /admin/v1/ontology/data-properties/{id}/frame:
+        get:
+            tags:
+                - OntologyDataPropertyService
+            description: 查询数据属性 frame 详情
+            operationId: OntologyDataPropertyService_Frame
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint32
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/DataPropertyFrame'
+    /admin/v1/ontology/data-properties/{id}/usage:
+        get:
+            tags:
+                - OntologyDataPropertyService
+            description: 查询数据属性引用明细
+            operationId: OntologyDataPropertyService_Usage
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint32
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/EntityUsage'
     /admin/v1/ontology/object-properties:
         get:
             tags:
@@ -9715,6 +9885,59 @@ components:
                 data:
                     $ref: '#/components/schemas/Config'
             description: 创建系统参数 - 请求
+        CreateDataPropertyRequest:
+            type: object
+            properties:
+                ontologyId:
+                    type: integer
+                    format: uint32
+                localName:
+                    type: string
+                displayLabel:
+                    type: string
+                comment:
+                    type: string
+                deprecated:
+                    type: boolean
+                superPropertyIds:
+                    type: array
+                    items:
+                        type: integer
+                        format: uint32
+                domainIds:
+                    type: array
+                    items:
+                        type: integer
+                        format: uint32
+                rangeIris:
+                    type: array
+                    items:
+                        type: string
+                disjointIds:
+                    type: array
+                    items:
+                        type: integer
+                        format: uint32
+                equivalentId:
+                    type: integer
+                    format: uint32
+                characteristics:
+                    type: array
+                    items:
+                        type: string
+            description: |-
+                创建数据属性 - 请求（自定义 RPC：扁平请求体，勿包 { data }——protojson 会把 data 当未知字段丢弃）。
+                 无 inverse_ids / chains：OWL 2 中逆属性与属性链仅对象属性可用（03 号文档 §2.3）。
+        CreateDataPropertyResponse:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: uint32
+                baseVersion:
+                    type: integer
+                    format: uint32
+            description: 创建数据属性 - 回应（新实体 id + 变更后本体版本）
         CreateDictEntryRequest:
             type: object
             properties:
@@ -10117,6 +10340,174 @@ components:
                     description: 日志创建时间
                     format: date-time
             description: 数据访问审计日志
+        DataProperty:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    description: 实体ID
+                    format: uint32
+                ontologyId:
+                    type: integer
+                    description: 所属本体ID
+                    format: uint32
+                iri:
+                    type: string
+                    description: 完整 IRI
+                localName:
+                    type: string
+                    description: 局部名（创建后不可变）
+                displayLabel:
+                    type: string
+                    description: 显示名（rdfs:label 渲染缓存）
+                deprecated:
+                    type: boolean
+                    description: 是否废弃（owl:deprecated）
+                comment:
+                    type: string
+                    description: 注释（rdfs:comment 注解公理聚合）
+                parentCount:
+                    type: integer
+                    description: 父属性数（子属性公理以我为主语计数）
+                    format: uint32
+                childCount:
+                    type: integer
+                    description: 直接子属性数（子属性公理以我为宾语计数）
+                    format: uint32
+                characteristics:
+                    type: array
+                    items:
+                        type: string
+                    description: 特征 IRI（V1 数据属性至多 owl:FunctionalProperty）
+                rangeIris:
+                    type: array
+                    items:
+                        type: string
+                    description: 值域 datatype IRI 列表（保序；内建 XSD 白名单）
+                createdBy:
+                    type: integer
+                    description: 创建者用户ID
+                    format: uint32
+                updatedBy:
+                    type: integer
+                    description: 更新者用户ID
+                    format: uint32
+                deletedBy:
+                    type: integer
+                    description: 删除者用户ID
+                    format: uint32
+                createdAt:
+                    type: string
+                    description: 创建时间
+                    format: date-time
+                updatedAt:
+                    type: string
+                    description: 更新时间
+                    format: date-time
+                deletedAt:
+                    type: string
+                    description: 删除时间
+                    format: date-time
+            description: 数据属性（列表项，含注解与聚合列）
+        DataPropertyFrame:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: uint32
+                ontologyId:
+                    type: integer
+                    format: uint32
+                iri:
+                    type: string
+                localName:
+                    type: string
+                displayLabel:
+                    type: string
+                comment:
+                    type: string
+                deprecated:
+                    type: boolean
+                superPropertyIds:
+                    type: array
+                    items:
+                        type: integer
+                        format: uint32
+                superProperties:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/EntityBrief'
+                domainIds:
+                    type: array
+                    items:
+                        type: integer
+                        format: uint32
+                domains:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/EntityBrief'
+                rangeIris:
+                    type: array
+                    items:
+                        type: string
+                disjointIds:
+                    type: array
+                    items:
+                        type: integer
+                        format: uint32
+                equivalentId:
+                    type: integer
+                    format: uint32
+                characteristics:
+                    type: array
+                    items:
+                        type: string
+                baseVersion:
+                    type: integer
+                    format: uint32
+                updatedAt:
+                    type: string
+                    format: date-time
+            description: |-
+                数据属性 frame 详情（Protégé Data Property 描述视图对应物；base_version 供乐观锁回传）。
+                 与对象属性 frame 的差异：值域是 datatype IRI 列表（42 型 value_text，非实体引用）；
+                 无逆属性与属性链（OWL 2 语言约束：二者仅对象属性可用）。
+        DataPropertyTreeNode:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    description: 实体ID
+                    format: uint32
+                iri:
+                    type: string
+                    description: 完整 IRI
+                localName:
+                    type: string
+                    description: 局部名
+                displayLabel:
+                    type: string
+                    description: 显示名（rdfs:label 渲染缓存）
+                deprecated:
+                    type: boolean
+                    description: 是否废弃（owl:deprecated）
+                childCount:
+                    type: integer
+                    description: 真实直接子属性数
+                    format: uint32
+                children:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/DataPropertyTreeNode'
+            description: 数据属性树节点（owl:topDataProperty 虚拟根由前端固定渲染，不入库）
+        DataPropertyTreeResponse:
+            type: object
+            properties:
+                roots:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/DataPropertyTreeNode'
+            description: 查询数据属性树 - 回应（根列表；owl:topDataProperty 虚拟根由前端固定渲染）
         DatabaseInfo:
             type: object
             properties:
@@ -11385,6 +11776,16 @@ components:
                 total:
                     type: string
             description: 查询数据访问审计日志列表 - 回应
+        ListDataPropertiesResponse:
+            type: object
+            properties:
+                items:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/DataProperty'
+                total:
+                    type: string
+            description: 查询数据属性列表 - 回应
         ListDictEntryByTypeCodeResponse:
             type: object
             properties:
@@ -15211,6 +15612,48 @@ components:
                     type: boolean
                     description: 如果设置为true的时候，资源不存在则会新增(插入)，并且在这种情况下`updateMask`字段将会被忽略。
             description: 更新系统参数 - 请求
+        UpdateDataPropertyRequest:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: uint32
+                displayLabel:
+                    type: string
+                comment:
+                    type: string
+                deprecated:
+                    type: boolean
+                superPropertyIds:
+                    type: array
+                    items:
+                        type: integer
+                        format: uint32
+                domainIds:
+                    type: array
+                    items:
+                        type: integer
+                        format: uint32
+                rangeIris:
+                    type: array
+                    items:
+                        type: string
+                disjointIds:
+                    type: array
+                    items:
+                        type: integer
+                        format: uint32
+                equivalentId:
+                    type: integer
+                    format: uint32
+                characteristics:
+                    type: array
+                    items:
+                        type: string
+                baseVersion:
+                    type: integer
+                    format: uint32
+            description: 更新数据属性 - 请求（frame 全量提交语义；local_name 忽略——不可变；base_version 缺省 = 跳过乐观锁比对，仅限内部路径）
         UpdateDictEntryRequest:
             type: object
             properties:
@@ -16194,6 +16637,14 @@ tags:
         本体类管理服务（admin 门面）
 
          本体类 create/update/delete 是自定义 RPC（公理事务管线：diff + 环检测 + 乐观锁 + 校验 + 变更日志），
+         body: "*" 收扁平请求体——不是通用 CRUD，勿按惯例包 { data: {...} }
+         （protojson 会把 data 当未知字段丢弃，接口 200 但字段全空，仓库已知坑）。
+         GET/DELETE 的标量参数由 Kratos 从 query string 按 proto 字段 json 名（camelCase）绑定。
+    - name: OntologyDataPropertyService
+      description: |-
+        数据属性管理服务（admin 门面）
+
+         数据属性 create/update/delete 是自定义 RPC（公理事务管线：diff + 环检测 + 乐观锁 + 校验 + 变更日志），
          body: "*" 收扁平请求体——不是通用 CRUD，勿按惯例包 { data: {...} }
          （protojson 会把 data 当未知字段丢弃，接口 200 但字段全空，仓库已知坑）。
          GET/DELETE 的标量参数由 Kratos 从 query string 按 proto 字段 json 名（camelCase）绑定。

@@ -472,7 +472,7 @@ func (s *OntologyObjectPropertyService) Create(ctx context.Context, req *ontolog
 		Changes:     []ontology.AxiomChange{declaration},
 	}
 	appendPropertyRelationAdds(set, superIDs, domainIDs, rangeIDs, inverseIDs, disjointIDs, equivalentID, req.GetChains())
-	appendCharacteristicsAdds(set, req.GetCharacteristics())
+	appendCharacteristicsAdds(set, ontology.AxiomObjectPropertyCharacteristic, req.GetCharacteristics())
 	appendAnnotationAdds(set, req.DisplayLabel, req.Comment, nil, req.Deprecated)
 
 	result, err := s.applier.Apply(ctx, set, operatorUserID(ctx))
@@ -560,7 +560,7 @@ func (s *OntologyObjectPropertyService) Update(ctx context.Context, req *ontolog
 		filterByType(subjectAxioms, ontology.AxiomObjectPropertyDomain), domainIDs)...)
 	changes = append(changes, ontology.DiffSubjectSideRelations(req.GetId(), ontology.AxiomObjectPropertyRange,
 		filterByType(subjectAxioms, ontology.AxiomObjectPropertyRange), rangeIDs)...)
-	changes = append(changes, ontology.DiffCharacteristics(req.GetId(),
+	changes = append(changes, ontology.DiffCharacteristics(req.GetId(), ontology.AxiomObjectPropertyCharacteristic,
 		filterByType(subjectAxioms, ontology.AxiomObjectPropertyCharacteristic), req.GetCharacteristics())...)
 	changes = append(changes, ontology.DiffSymmetricPairs(req.GetId(), ontology.AxiomInverseOf,
 		buildSymmetricPairs(req.GetId(), axioms, ontology.AxiomInverseOf), inverseIDs)...)
@@ -850,15 +850,16 @@ func appendPropertyRelationAdds(
 	}
 }
 
-// appendCharacteristicsAdds 创建时的特征 ADD 变更（每特征一行，object_id/value_text 空）
-func appendCharacteristicsAdds(set *ontology.EntityChangeSet, iris []string) {
+// appendCharacteristicsAdds 创建时的特征 ADD 变更（每特征一行，object_id/value_text 空；
+// axiomType 参数化：33 对象属性 / 43 数据属性共用）
+func appendCharacteristicsAdds(set *ontology.EntityChangeSet, axiomType uint32, iris []string) {
 	for _, iri := range iris {
 		if iri == "" {
 			continue
 		}
 		set.Changes = append(set.Changes, ontology.AxiomChange{
 			Op:                  ontology.AxiomOpAdd,
-			AxiomType:           ontology.AxiomObjectPropertyCharacteristic,
+			AxiomType:           axiomType,
 			SubjectNewEntityRef: 1,
 			PredicateIRI:        iri,
 		})

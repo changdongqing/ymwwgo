@@ -105,7 +105,13 @@ const (
 	OntologyAxiomType_AXIOM_EQUIVALENT_OBJECT_PROPERTIES   OntologyAxiomType = 35 // 02：等价属性（成对；frame 单值暴露，存储为成对）
 	OntologyAxiomType_AXIOM_DISJOINT_OBJECT_PROPERTIES     OntologyAxiomType = 36 // 02：不相交属性（成对）
 	OntologyAxiomType_AXIOM_SUB_PROPERTY_CHAIN_OF          OntologyAxiomType = 37 // 02：属性链（subject=超属性，value_text=链成员实体 id 的 JSON 数组，保序）
-	// 40~45 预留 03 数据属性；46~49 预留 05 数据类型；50 预留 04 注解属性
+	OntologyAxiomType_AXIOM_SUB_DATA_PROPERTY_OF           OntologyAxiomType = 40 // 03：子数据属性（subject=子属性，object_id=父属性）
+	OntologyAxiomType_AXIOM_DATA_PROPERTY_DOMAIN           OntologyAxiomType = 41 // 03：数据属性定义域（subject=属性，object_id=类；多行=多定义域，OWL 交集语义）
+	OntologyAxiomType_AXIOM_DATA_PROPERTY_RANGE            OntologyAxiomType = 42 // 03：数据属性值域（object_id=NULL，value_text=内建 datatype IRI；多行=多值域；05 期双轨 object_id 预留）
+	OntologyAxiomType_AXIOM_DATA_PROPERTY_CHARACTERISTIC   OntologyAxiomType = 43 // 03：数据属性特征（泛型，predicate_iri 区分；V1 仅函数性）
+	OntologyAxiomType_AXIOM_EQUIVALENT_DATA_PROPERTIES     OntologyAxiomType = 44 // 03：等价数据属性（成对 (P,Q)+(Q,P)）
+	OntologyAxiomType_AXIOM_DISJOINT_DATA_PROPERTIES       OntologyAxiomType = 45 // 03：不相交数据属性（成对）
+	// 46~49 预留 05 数据类型；50 预留 04 注解属性
 	// 60~62 预留 06 个体（60 断型 / 61 对象断言 / 62 数据断言）
 	OntologyAxiomType_AXIOM_ANNOTATION_ASSERTION OntologyAxiomType = 100 // 阶段0：注解断言，全功能共用
 )
@@ -126,6 +132,12 @@ var (
 		35:  "AXIOM_EQUIVALENT_OBJECT_PROPERTIES",
 		36:  "AXIOM_DISJOINT_OBJECT_PROPERTIES",
 		37:  "AXIOM_SUB_PROPERTY_CHAIN_OF",
+		40:  "AXIOM_SUB_DATA_PROPERTY_OF",
+		41:  "AXIOM_DATA_PROPERTY_DOMAIN",
+		42:  "AXIOM_DATA_PROPERTY_RANGE",
+		43:  "AXIOM_DATA_PROPERTY_CHARACTERISTIC",
+		44:  "AXIOM_EQUIVALENT_DATA_PROPERTIES",
+		45:  "AXIOM_DISJOINT_DATA_PROPERTIES",
 		100: "AXIOM_ANNOTATION_ASSERTION",
 	}
 	OntologyAxiomType_value = map[string]int32{
@@ -142,6 +154,12 @@ var (
 		"AXIOM_EQUIVALENT_OBJECT_PROPERTIES":   35,
 		"AXIOM_DISJOINT_OBJECT_PROPERTIES":     36,
 		"AXIOM_SUB_PROPERTY_CHAIN_OF":          37,
+		"AXIOM_SUB_DATA_PROPERTY_OF":           40,
+		"AXIOM_DATA_PROPERTY_DOMAIN":           41,
+		"AXIOM_DATA_PROPERTY_RANGE":            42,
+		"AXIOM_DATA_PROPERTY_CHARACTERISTIC":   43,
+		"AXIOM_EQUIVALENT_DATA_PROPERTIES":     44,
+		"AXIOM_DISJOINT_DATA_PROPERTIES":       45,
 		"AXIOM_ANNOTATION_ASSERTION":           100,
 	}
 )
@@ -972,7 +990,7 @@ const file_ontology_service_v1_ontology_proto_rawDesc = "" +
 	"\x19ENTITY_TYPE_DATA_PROPERTY\x10\x1e\x12#\n" +
 	"\x1fENTITY_TYPE_ANNOTATION_PROPERTY\x10(\x12\x18\n" +
 	"\x14ENTITY_TYPE_DATATYPE\x102\x12\x1a\n" +
-	"\x16ENTITY_TYPE_INDIVIDUAL\x10<*\xc8\x03\n" +
+	"\x16ENTITY_TYPE_INDIVIDUAL\x10<*\x99\x05\n" +
 	"\x11OntologyAxiomType\x12\x1a\n" +
 	"\x16AXIOM_TYPE_UNSPECIFIED\x10\x00\x12\x15\n" +
 	"\x11AXIOM_DECLARATION\x10\n" +
@@ -988,6 +1006,12 @@ const file_ontology_service_v1_ontology_proto_rawDesc = "" +
 	"\"AXIOM_EQUIVALENT_OBJECT_PROPERTIES\x10#\x12$\n" +
 	" AXIOM_DISJOINT_OBJECT_PROPERTIES\x10$\x12\x1f\n" +
 	"\x1bAXIOM_SUB_PROPERTY_CHAIN_OF\x10%\x12\x1e\n" +
+	"\x1aAXIOM_SUB_DATA_PROPERTY_OF\x10(\x12\x1e\n" +
+	"\x1aAXIOM_DATA_PROPERTY_DOMAIN\x10)\x12\x1d\n" +
+	"\x19AXIOM_DATA_PROPERTY_RANGE\x10*\x12&\n" +
+	"\"AXIOM_DATA_PROPERTY_CHARACTERISTIC\x10+\x12$\n" +
+	" AXIOM_EQUIVALENT_DATA_PROPERTIES\x10,\x12\"\n" +
+	"\x1eAXIOM_DISJOINT_DATA_PROPERTIES\x10-\x12\x1e\n" +
 	"\x1aAXIOM_ANNOTATION_ASSERTION\x10d2\xff\x03\n" +
 	"\x0fOntologyService\x12P\n" +
 	"\x04List\x12\x19.pagination.PagingRequest\x1a+.ontology.service.v1.ListOntologiesResponse\"\x00\x12Y\n" +

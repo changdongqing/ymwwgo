@@ -139,7 +139,8 @@
       "moduleName": "本体建模",
       "doc": "本体文档",
       "class": "本体类",
-      "objectProperty": "对象属性"
+      "objectProperty": "对象属性",
+      "dataProperty": "数据属性"
     }
   },
   "page": {
@@ -152,5 +153,6 @@
   "ontology": "本体建模",
   "ontology-docs": "本体文档",
   "ontology-classes": "本体类",
-  "ontology-object-properties": "对象属性"
+  "ontology-object-properties": "对象属性",
+  "ontology-data-properties": "数据属性"
 }

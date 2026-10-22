@@ -105,6 +105,30 @@ func RenderAxiom(ax *ent.OntAxiom, entityNames map[uint32]string) string {
 		return b.String()
 	case AxiomAnnotationAssertion:
 		return renderAnnotation(entityName(subject), nilString(ax.PredicateIri), nilString(ax.ValueText), nilString(ax.Lang))
+	case AxiomSubDataPropertyOf:
+		return "SubPropertyOf(" + entityName(subject) + " " + entityName(nilUint(ax.ObjectID)) + ")"
+	case AxiomDataPropertyDomain:
+		return "Domain(" + entityName(subject) + " " + entityName(nilUint(ax.ObjectID)) + ")"
+	case AxiomDataPropertyRange:
+		// 值域渲染 datatype 短名（value_text = 内建 datatype IRI，03 号文档 §4.4）
+		return "Range(" + entityName(subject) + " " + DatatypeShortName(nilString(ax.ValueText)) + ")"
+	case AxiomDataPropertyCharacteristic:
+		return "Characteristic(" + entityName(subject) + ", " + CharacteristicShortName(nilString(ax.PredicateIri)) + ")"
+	case AxiomEquivalentDataProperties, AxiomDisjointDataProperties:
+		// 成对行按无序对去重展示（同 34/35/36）
+		object := nilUint(ax.ObjectID)
+		if subject > object {
+			return ""
+		}
+		name := "EquivalentDataProperties"
+		if *ax.AxiomType == AxiomDisjointDataProperties {
+			name = "DisjointDataProperties"
+		}
+		return name + "(" + entityName(subject) + " " + entityName(object) + ")"
+	case AxiomDataPropertyAssertion:
+		// 62 数据断言（06 期个体 frame 复用）：RenderAxiom 单行入口不带值域上下文，
+		// 字面量渲染为裸词形（带 lang 则 @lang）；^^datatype 后缀走 RenderDataPropertyAssertion
+		return RenderDataPropertyAssertion(ax, entityNames, nil)
 	default:
 		// 未知号段（03~06 期启用后各自补渲染分支）
 		return "Axiom(type=" + strconvFormatUint(*ax.AxiomType) + " subject=" + entityName(subject) + ")"
@@ -125,6 +149,59 @@ func renderAnnotation(subject, predicate, value, lang string) string {
 	}
 	b.WriteString(")")
 	return b.String()
+}
+
+// LiteralDatatypeOf 62 断言字面量 datatype 推断钩子（数据属性实体 id → datatype IRI）。
+// 06 期个体 frame 渲染时由调用方按该属性的值域行（42 型 value_text，缺省 xsd:string）传入。
+type LiteralDatatypeOf func(propertyID uint32) string
+
+// RenderDataPropertyAssertion 62 数据断言渲染：DataPropertyAssertion(个体 P "词形"^^datatype)。
+// datatypeOf 非 nil 且命中内建白名单时字面量带 ^^datatype 后缀；lang 有值按语言文本渲染（@lang，
+// rdf:langString 不落 ^^ 后缀）。RenderAxiom 的 62 分支以 nil 钩子委托至此。
+func RenderDataPropertyAssertion(ax *ent.OntAxiom, entityNames map[uint32]string, datatypeOf LiteralDatatypeOf) string {
+	if ax == nil || ax.AxiomType == nil || *ax.AxiomType != AxiomDataPropertyAssertion {
+		return ""
+	}
+	entityName := func(id uint32) string {
+		if n, ok := entityNames[id]; ok && n != "" {
+			return n
+		}
+		return strconvFormatUint(id)
+	}
+	subject := uint32(0)
+	if ax.SubjectID != nil {
+		subject = *ax.SubjectID
+	}
+	var b strings.Builder
+	b.WriteString("DataPropertyAssertion(")
+	b.WriteString(entityName(subject))
+	b.WriteString(" ")
+	b.WriteString(entityName(nilUint(ax.ObjectID)))
+	b.WriteString(" ")
+	value := nilString(ax.ValueText)
+	b.WriteString(quoteValue(value))
+	if lang := nilString(ax.Lang); lang != "" {
+		b.WriteString("@")
+		b.WriteString(lang)
+	} else if datatypeOf != nil {
+		if dt := datatypeOf(nilUint(ax.ObjectID)); dt != "" {
+			if _, ok := IsBuiltinDatatype(dt); ok {
+				b.WriteString("^^")
+				b.WriteString(DatatypeShortName(dt))
+			}
+		}
+	}
+	b.WriteString(")")
+	return b.String()
+}
+
+// DatatypeShortName datatype IRI 的紧缩渲染名（http://www.w3.org/2001/XMLSchema#integer →
+// xsd:integer）；白名单外返回完整 IRI。
+func DatatypeShortName(iri string) string {
+	if _, ok := IsBuiltinDatatype(iri); ok {
+		return "xsd:" + strings.TrimPrefix(iri, IRIXSDNamespace)
+	}
+	return iri
 }
 
 func quoteValue(v string) string {

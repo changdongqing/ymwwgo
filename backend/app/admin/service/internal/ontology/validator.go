@@ -188,6 +188,122 @@ func ValidateAxioms(ctx context.Context, baseIRI string, entities []*ent.OntEnti
 						"公理 %d 的属性链成员 %d 不是已声明的对象属性", ax.ID, m))
 				}
 			}
+
+		// 2c. 03 期数据属性公理（40~45）+ 62 数据断言分支（03 号文档 §4.4）
+		case AxiomSubDataPropertyOf, AxiomEquivalentDataProperties, AxiomDisjointDataProperties:
+			// 两端实体均存在、未删、entity_type = DATA_PROPERTY
+			if ax.SubjectID == nil || ax.ObjectID == nil {
+				problems = append(problems, NewError(ReasonAxiomInvalid, "公理 %d 缺少属性两端实体", ax.ID))
+				continue
+			}
+			for _, end := range []struct {
+				role string
+				id   uint32
+			}{{"主语", *ax.SubjectID}, {"宾语", *ax.ObjectID}} {
+				if et, ok := entityTypeOf(end.id); !ok {
+					problems = append(problems, NewError(ReasonAxiomInvalid,
+						"公理 %d 的%s实体 %d 不存在或已删除", ax.ID, end.role, end.id))
+				} else if et != EntityTypeDataProperty {
+					problems = append(problems, NewError(ReasonAxiomInvalid,
+						"公理 %d 的%s实体 %d 类型不符（期望数据属性）", ax.ID, end.role, end.id))
+				}
+			}
+		case AxiomDataPropertyDomain:
+			// subject 为数据属性、object 为已声明类
+			if ax.SubjectID == nil || ax.ObjectID == nil {
+				problems = append(problems, NewError(ReasonAxiomInvalid, "公理 %d 缺少主语或宾语实体", ax.ID))
+				continue
+			}
+			if et, ok := entityTypeOf(*ax.SubjectID); !ok {
+				problems = append(problems, NewError(ReasonAxiomInvalid,
+					"公理 %d 的主语实体 %d 不存在或已删除", ax.ID, *ax.SubjectID))
+			} else if et != EntityTypeDataProperty {
+				problems = append(problems, NewError(ReasonAxiomInvalid,
+					"公理 %d 的主语实体 %d 类型不符（期望数据属性）", ax.ID, *ax.SubjectID))
+			}
+			if et, ok := entityTypeOf(*ax.ObjectID); !ok {
+				problems = append(problems, NewError(ReasonAxiomInvalid,
+					"公理 %d 的宾语实体 %d 不存在或已删除", ax.ID, *ax.ObjectID))
+			} else if et != EntityTypeClass {
+				problems = append(problems, NewError(ReasonAxiomInvalid,
+					"公理 %d 的宾语实体 %d 类型不符（期望类）", ax.ID, *ax.ObjectID))
+			}
+		case AxiomDataPropertyRange:
+			// value_text ∈ 内建 datatype 白名单（服务层已拦，校验器兜底直改库脏数据）；
+			// V1 仅 value_text 轨——object_id 槽位留给 05 期自定义 datatype 实体（双轨激活前非空即非法）
+			if ax.SubjectID == nil {
+				problems = append(problems, NewError(ReasonAxiomInvalid, "公理 %d 缺少主语", ax.ID))
+				continue
+			}
+			if et, ok := entityTypeOf(*ax.SubjectID); !ok {
+				problems = append(problems, NewError(ReasonAxiomInvalid,
+					"公理 %d 的主语实体 %d 不存在或已删除", ax.ID, *ax.SubjectID))
+			} else if et != EntityTypeDataProperty {
+				problems = append(problems, NewError(ReasonAxiomInvalid,
+					"公理 %d 的主语实体 %d 类型不符（期望数据属性）", ax.ID, *ax.SubjectID))
+			}
+			if ax.ObjectID != nil && *ax.ObjectID != 0 {
+				problems = append(problems, NewError(ReasonAxiomInvalid,
+					"公理 %d 的值域行占用 object_id（自定义 datatype 实体 05 期开放）", ax.ID))
+			}
+			value := nilString(ax.ValueText)
+			if _, ok := IsBuiltinDatatype(value); !ok {
+				problems = append(problems, NewError(ReasonAxiomInvalid,
+					"公理 %d 的值域 %s 不是内建数据类型", ax.ID, value))
+			}
+		case AxiomDataPropertyCharacteristic:
+			// predicate_iri = 函数性常量（数据属性 V1 唯一特征；≠ 则 AXIOM_INVALID）
+			if ax.SubjectID == nil {
+				problems = append(problems, NewError(ReasonAxiomInvalid, "公理 %d 缺少主语", ax.ID))
+				continue
+			}
+			if et, ok := entityTypeOf(*ax.SubjectID); !ok {
+				problems = append(problems, NewError(ReasonAxiomInvalid,
+					"公理 %d 的主语实体 %d 不存在或已删除", ax.ID, *ax.SubjectID))
+			} else if et != EntityTypeDataProperty {
+				problems = append(problems, NewError(ReasonAxiomInvalid,
+					"公理 %d 的主语实体 %d 类型不符（期望数据属性）", ax.ID, *ax.SubjectID))
+			}
+			predicate := nilString(ax.PredicateIri)
+			if predicate != IRIOWLFunctionalProperty {
+				problems = append(problems, NewError(ReasonAxiomInvalid,
+					"公理 %d 的数据属性特征 %s 非法（数据属性仅支持函数性）", ax.ID, predicate))
+			}
+		case AxiomDataPropertyAssertion:
+			// 62 数据断言（03 期定稿行语义，写入方 06 期）：subject=已声明个体、object=已声明数据属性；
+			// 字面量词法：lang 有值 → 仅要求 value_text 非空（rdf:langString）；
+			// 否则按该属性第一条未删 42 行推断 datatype（缺省 xsd:string）→ 词法校验（03 号文档 §2.6）
+			if ax.SubjectID == nil || ax.ObjectID == nil {
+				problems = append(problems, NewError(ReasonAxiomInvalid, "公理 %d 缺少主语或谓词实体", ax.ID))
+				continue
+			}
+			if et, ok := entityTypeOf(*ax.SubjectID); !ok {
+				problems = append(problems, NewError(ReasonAxiomInvalid,
+					"公理 %d 的主语实体 %d 不存在或已删除", ax.ID, *ax.SubjectID))
+			} else if et != EntityTypeIndividual {
+				problems = append(problems, NewError(ReasonAxiomInvalid,
+					"公理 %d 的主语实体 %d 类型不符（期望个体）", ax.ID, *ax.SubjectID))
+			}
+			if et, ok := entityTypeOf(*ax.ObjectID); !ok {
+				problems = append(problems, NewError(ReasonAxiomInvalid,
+					"公理 %d 的谓词实体 %d 不存在或已删除", ax.ID, *ax.ObjectID))
+			} else if et != EntityTypeDataProperty {
+				problems = append(problems, NewError(ReasonAxiomInvalid,
+					"公理 %d 的谓词实体 %d 类型不符（期望数据属性）", ax.ID, *ax.ObjectID))
+			}
+			value := nilString(ax.ValueText)
+			if ax.Lang != nil && *ax.Lang != "" {
+				if value == "" {
+					problems = append(problems, NewError(ReasonAxiomInvalid,
+						"公理 %d 的语言文本字面量为空", ax.ID))
+				}
+				continue
+			}
+			datatype := datatypeRangeOf(axioms, *ax.ObjectID)
+			if !ValidateLexical(datatype, value) {
+				problems = append(problems, NewError(ReasonAxiomInvalid,
+					"公理 %d 的字面量 %q 不符合 %s 的词法", ax.ID, value, datatype))
+			}
 		}
 	}
 
@@ -261,7 +377,7 @@ func ValidateAxioms(ctx context.Context, baseIRI string, entities []*ent.OntEnti
 		}
 	}
 
-	// 未知 axiom_type：WARN 跳过（03~06 期号段尚未启用，兼容增量）
+	// 未知 axiom_type：WARN 跳过（05~06 期号段尚未启用，兼容增量；62 分支 03 期已定稿启用）
 	known := map[uint32]struct{}{
 		AxiomDeclaration:                  {},
 		AxiomSubClassOf:                   {},
@@ -275,6 +391,13 @@ func ValidateAxioms(ctx context.Context, baseIRI string, entities []*ent.OntEnti
 		AxiomEquivalentObjectProperties:   {},
 		AxiomDisjointObjectProperties:     {},
 		AxiomSubPropertyChainOf:           {},
+		AxiomSubDataPropertyOf:            {},
+		AxiomDataPropertyDomain:           {},
+		AxiomDataPropertyRange:            {},
+		AxiomDataPropertyCharacteristic:   {},
+		AxiomEquivalentDataProperties:     {},
+		AxiomDisjointDataProperties:       {},
+		AxiomDataPropertyAssertion:        {},
 		AxiomAnnotationAssertion:          {},
 	}
 	for _, ax := range axioms {
@@ -295,6 +418,24 @@ func entityLabel(e *ent.OntEntity) string {
 		name = strconv.FormatUint(uint64(e.ID), 10)
 	}
 	return name
+}
+
+// datatypeRangeOf 取数据属性第一条未删 42 行的 value_text 作为断言 datatype 推断依据；
+// 无值域行（或值域行 value_text 为空）缺省 xsd:string（03 号文档 §2.6：datatype 不落列，
+// 由所在属性的值域行推断，避免双事实源漂移）。
+func datatypeRangeOf(axioms []*ent.OntAxiom, propertyID uint32) string {
+	for _, ax := range axioms {
+		if ax.AxiomType == nil || *ax.AxiomType != AxiomDataPropertyRange {
+			continue
+		}
+		if ax.SubjectID == nil || *ax.SubjectID != propertyID {
+			continue
+		}
+		if v := nilString(ax.ValueText); v != "" {
+			return v
+		}
+	}
+	return IRIXMLSchemaString
 }
 
 // isPropertyCharacteristicIRI 特征谓词白名单判定
