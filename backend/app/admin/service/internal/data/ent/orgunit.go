@@ -53,6 +53,8 @@ type OrgUnit struct {
 	LeaderID *uint32 `json:"leader_id,omitempty"`
 	// 组织类型
 	Type *orgunit.Type `json:"type,omitempty"`
+	// 细分类型路径（受控词表 code 数组，从属到叶；门店业态/部门职能/项目类型等）
+	SubtypePath []string `json:"subtype_path,omitempty"`
 	// 组织的业务范围/服务条线
 	BusinessScopes []string `json:"business_scopes,omitempty"`
 	// 外部系统ID
@@ -129,7 +131,7 @@ func (*OrgUnit) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case orgunit.FieldBusinessScopes, orgunit.FieldPermissionTags:
+		case orgunit.FieldSubtypePath, orgunit.FieldBusinessScopes, orgunit.FieldPermissionTags:
 			values[i] = new([]byte)
 		case orgunit.FieldIsLegalEntity:
 			values[i] = new(sql.NullBool)
@@ -280,6 +282,14 @@ func (_m *OrgUnit) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.Type = new(orgunit.Type)
 				*_m.Type = orgunit.Type(value.String)
+			}
+		case orgunit.FieldSubtypePath:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field subtype_path", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &_m.SubtypePath); err != nil {
+					return fmt.Errorf("unmarshal field subtype_path: %w", err)
+				}
 			}
 		case orgunit.FieldBusinessScopes:
 			if value, ok := values[i].(*[]byte); !ok {
@@ -532,6 +542,9 @@ func (_m *OrgUnit) String() string {
 		builder.WriteString("type=")
 		builder.WriteString(fmt.Sprintf("%v", *v))
 	}
+	builder.WriteString(", ")
+	builder.WriteString("subtype_path=")
+	builder.WriteString(fmt.Sprintf("%v", _m.SubtypePath))
 	builder.WriteString(", ")
 	builder.WriteString("business_scopes=")
 	builder.WriteString(fmt.Sprintf("%v", _m.BusinessScopes))

@@ -10720,6 +10720,7 @@ export type identityservicev1_OrgUnit = {
   sortOrder?: number;
   startAt?: wellKnownTimestamp;
   status?: identityservicev1_OrgUnit_Status;
+  subtypePath: string[] | undefined;
   taxId?: string;
   tenantId?: number;
   tenantName?: string;
@@ -10736,9 +10737,11 @@ export type identityservicev1_OrgUnit_Type =
   | 'COMPANY'
   | 'DEPARTMENT'
   | 'DIVISION'
+  | 'GROUP'
   | 'OTHER'
   | 'PROJECT'
   | 'REGION'
+  | 'STORE'
   | 'SUBSIDIARY'
   | 'TEAM';
 // 组织单元状态

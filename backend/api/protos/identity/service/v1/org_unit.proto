@@ -52,6 +52,8 @@ message OrgUnit {
     REGION = 6;       // 区域 (Region)
     SUBSIDIARY = 7;   // 子公司 (Subsidiary)
     BRANCH = 8;       // 分支机构 (Branch)
+    GROUP = 9;        // 集团 (Group)
+    STORE = 10;       // 门店 (Store)
 
     OTHER = 100;      // 其他 (Other)
   }
@@ -168,6 +170,11 @@ message OrgUnit {
     json_name = "contactUserName",
     (gnostic.openapi.v3.property) = {description: "业务联系人用户名称"}
   ]; // 业务联系人用户名称
+
+  repeated string subtype_path = 118 [
+    json_name = "subtypePath",
+    (gnostic.openapi.v3.property) = {description: "细分类型路径（受控词表 code 数组，从属到叶；用于门店业态/部门职能/项目类型等）"}
+  ]; // 细分类型路径
 
   optional uint32 parent_id = 500 [json_name = "parentId", (gnostic.openapi.v3.property) = {description: "父节点ID"}];  // 父节点ID
   repeated OrgUnit children = 501 [json_name = "children", (gnostic.openapi.v3.property) = {description: "子节点树"}];  // 子节点树

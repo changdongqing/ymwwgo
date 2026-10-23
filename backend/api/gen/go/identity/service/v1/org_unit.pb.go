@@ -86,6 +86,8 @@ const (
 	OrgUnit_REGION     OrgUnit_Type = 6   // 区域 (Region)
 	OrgUnit_SUBSIDIARY OrgUnit_Type = 7   // 子公司 (Subsidiary)
 	OrgUnit_BRANCH     OrgUnit_Type = 8   // 分支机构 (Branch)
+	OrgUnit_GROUP      OrgUnit_Type = 9   // 集团 (Group)
+	OrgUnit_STORE      OrgUnit_Type = 10  // 门店 (Store)
 	OrgUnit_OTHER      OrgUnit_Type = 100 // 其他 (Other)
 )
 
@@ -101,6 +103,8 @@ var (
 		6:   "REGION",
 		7:   "SUBSIDIARY",
 		8:   "BRANCH",
+		9:   "GROUP",
+		10:  "STORE",
 		100: "OTHER",
 	}
 	OrgUnit_Type_value = map[string]int32{
@@ -113,6 +117,8 @@ var (
 		"REGION":     6,
 		"SUBSIDIARY": 7,
 		"BRANCH":     8,
+		"GROUP":      9,
+		"STORE":      10,
 		"OTHER":      100,
 	}
 )
@@ -179,6 +185,7 @@ type OrgUnit struct {
 	PermissionTags     []string               `protobuf:"bytes,115,rep,name=permission_tags,json=permissionTags,proto3" json:"permission_tags,omitempty"`                                             // 与权限/角色映射的标签
 	ContactUserId      *uint32                `protobuf:"varint,116,opt,name=contact_user_id,json=contactUserId,proto3,oneof" json:"contact_user_id,omitempty"`                                       // 业务联系人用户ID
 	ContactUserName    *string                `protobuf:"bytes,117,opt,name=contact_user_name,json=contactUserName,proto3,oneof" json:"contact_user_name,omitempty"`                                  // 业务联系人用户名称
+	SubtypePath        []string               `protobuf:"bytes,118,rep,name=subtype_path,json=subtypePath,proto3" json:"subtype_path,omitempty"`                                                      // 细分类型路径
 	ParentId           *uint32                `protobuf:"varint,500,opt,name=parent_id,json=parentId,proto3,oneof" json:"parent_id,omitempty"`                                                        // 父节点ID
 	Children           []*OrgUnit             `protobuf:"bytes,501,rep,name=children,proto3" json:"children,omitempty"`                                                                               // 子节点树
 	CreatedBy          *uint32                `protobuf:"varint,510,opt,name=created_by,json=createdBy,proto3,oneof" json:"created_by,omitempty"`                                                     // 创建者ID
@@ -443,6 +450,13 @@ func (x *OrgUnit) GetContactUserName() string {
 		return *x.ContactUserName
 	}
 	return ""
+}
+
+func (x *OrgUnit) GetSubtypePath() []string {
+	if x != nil {
+		return x.SubtypePath
+	}
+	return nil
 }
 
 func (x *OrgUnit) GetParentId() uint32 {
@@ -946,7 +960,7 @@ var File_identity_service_v1_org_unit_proto protoreflect.FileDescriptor
 
 const file_identity_service_v1_org_unit_proto_rawDesc = "" +
 	"\n" +
-	"\"identity/service/v1/org_unit.proto\x12\x13identity.service.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a google/protobuf/field_mask.proto\x1a\x1epagination/v1/pagination.proto\"\x96\x1c\n" +
+	"\"identity/service/v1/org_unit.proto\x12\x13identity.service.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a google/protobuf/field_mask.proto\x1a\x1epagination/v1/pagination.proto\"\xc9\x1d\n" +
 	"\aOrgUnit\x12)\n" +
 	"\x02id\x18\x01 \x01(\rB\x14\xbaG\x11\x92\x02\x0e组织单元IDH\x00R\x02id\x88\x01\x01\x121\n" +
 	"\x04name\x18\x02 \x01(\tB\x18\xbaG\x15\x92\x02\x12组织单元名称H\x01R\x04name\x88\x01\x01\x12\xac\x01\n" +
@@ -987,7 +1001,8 @@ const file_identity_service_v1_org_unit_proto_rawDesc = "" +
 	"attributes\x12N\n" +
 	"\x0fpermission_tags\x18s \x03(\tB%\xbaG\"\x92\x02\x1f与权限/角色映射的标签R\x0epermissionTags\x12J\n" +
 	"\x0fcontact_user_id\x18t \x01(\rB\x1d\xbaG\x1a\x92\x02\x17业务联系人用户IDH\x1bR\rcontactUserId\x88\x01\x01\x12R\n" +
-	"\x11contact_user_name\x18u \x01(\tB!\xbaG\x1e\x92\x02\x1b业务联系人用户名称H\x1cR\x0fcontactUserName\x88\x01\x01\x124\n" +
+	"\x11contact_user_name\x18u \x01(\tB!\xbaG\x1e\x92\x02\x1b业务联系人用户名称H\x1cR\x0fcontactUserName\x88\x01\x01\x12\x9a\x01\n" +
+	"\fsubtype_path\x18v \x03(\tBw\xbaGt\x92\x02q细分类型路径（受控词表 code 数组，从属到叶；用于门店业态/部门职能/项目类型等）R\vsubtypePath\x124\n" +
 	"\tparent_id\x18\xf4\x03 \x01(\rB\x11\xbaG\x0e\x92\x02\v父节点IDH\x1dR\bparentId\x88\x01\x01\x12M\n" +
 	"\bchildren\x18\xf5\x03 \x03(\v2\x1c.identity.service.v1.OrgUnitB\x12\xbaG\x0f\x92\x02\f子节点树R\bchildren\x126\n" +
 	"\n" +
@@ -1007,7 +1022,7 @@ const file_identity_service_v1_org_unit_proto_rawDesc = "" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\x19\n" +
 	"\x06Status\x12\a\n" +
 	"\x03OFF\x10\x00\x12\x06\n" +
-	"\x02ON\x10\x01\"\x8a\x01\n" +
+	"\x02ON\x10\x01\"\xa0\x01\n" +
 	"\x04Type\x12\v\n" +
 	"\aCOMPANY\x10\x00\x12\f\n" +
 	"\bDIVISION\x10\x01\x12\x0e\n" +
@@ -1022,6 +1037,9 @@ const file_identity_service_v1_org_unit_proto_rawDesc = "" +
 	"SUBSIDIARY\x10\a\x12\n" +
 	"\n" +
 	"\x06BRANCH\x10\b\x12\t\n" +
+	"\x05GROUP\x10\t\x12\t\n" +
+	"\x05STORE\x10\n" +
+	"\x12\t\n" +
 	"\x05OTHER\x10dB\x05\n" +
 	"\x03_idB\a\n" +
 	"\x05_nameB\a\n" +

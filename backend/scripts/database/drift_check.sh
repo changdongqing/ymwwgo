@@ -59,8 +59,12 @@ echo "== 库B($DB_ENT)：Ent schema 全量建表 =="
 (cd "$BACKEND_DIR" && go run ./app/admin/service/cmd/migrate automigrate-ent -dsn "$DSN_COMMON dbname=$DB_ENT")
 
 echo "== 双库 dump + diff（排除 goose 版本表）=="
-# 过滤 pg_dump 新版头部/尾部的 \restrict \unrestrict psql 元命令（内含随机 token，每次 dump 都不同）。
-filter_dump() { sed '/^\\restrict /d;/^\\unrestrict /d'; }
+# 过滤 pg_dump 新版头部/尾部的 \restrict \unrestrict psql 元命令（内含随机 token，每次 dump 都不同）；
+# 归一整表内的列顺序：ADD COLUMN 只能追加到表尾，而 Ent 会把边字段（如 parent_id）排在常规字段之后，
+# 两者列序天然不同。列序不是逻辑结构契约，归一后再 diff，仍能发现缺列/多列/类型差异。
+filter_dump() {
+  sed '/^\\restrict /d;/^\\unrestrict /d' | python3 "$BACKEND_DIR/scripts/database/normalize_dump.py"
+}
 pgdump_exec --schema-only --no-owner --no-privileges -T 'goose_db_version*' "$DB_GOOSE" | filter_dump >"$TMP_DIR/goose.sql"
 pgdump_exec --schema-only --no-owner --no-privileges "$DB_ENT" | filter_dump >"$TMP_DIR/ent.sql"
 

@@ -252,6 +252,12 @@ func (_c *OrgUnitCreate) SetNillableType(v *orgunit.Type) *OrgUnitCreate {
 	return _c
 }
 
+// SetSubtypePath sets the "subtype_path" field.
+func (_c *OrgUnitCreate) SetSubtypePath(v []string) *OrgUnitCreate {
+	_c.mutation.SetSubtypePath(v)
+	return _c
+}
+
 // SetBusinessScopes sets the "business_scopes" field.
 func (_c *OrgUnitCreate) SetBusinessScopes(v []string) *OrgUnitCreate {
 	_c.mutation.SetBusinessScopes(v)
@@ -693,6 +699,10 @@ func (_c *OrgUnitCreate) createSpec() (*OrgUnit, *sqlgraph.CreateSpec) {
 		_spec.SetField(orgunit.FieldType, field.TypeEnum, value)
 		_node.Type = &value
 	}
+	if value, ok := _c.mutation.SubtypePath(); ok {
+		_spec.SetField(orgunit.FieldSubtypePath, field.TypeJSON, value)
+		_node.SubtypePath = value
+	}
 	if value, ok := _c.mutation.BusinessScopes(); ok {
 		_spec.SetField(orgunit.FieldBusinessScopes, field.TypeJSON, value)
 		_node.BusinessScopes = value
@@ -1125,6 +1135,24 @@ func (u *OrgUnitUpsert) SetType(v orgunit.Type) *OrgUnitUpsert {
 // UpdateType sets the "type" field to the value that was provided on create.
 func (u *OrgUnitUpsert) UpdateType() *OrgUnitUpsert {
 	u.SetExcluded(orgunit.FieldType)
+	return u
+}
+
+// SetSubtypePath sets the "subtype_path" field.
+func (u *OrgUnitUpsert) SetSubtypePath(v []string) *OrgUnitUpsert {
+	u.Set(orgunit.FieldSubtypePath, v)
+	return u
+}
+
+// UpdateSubtypePath sets the "subtype_path" field to the value that was provided on create.
+func (u *OrgUnitUpsert) UpdateSubtypePath() *OrgUnitUpsert {
+	u.SetExcluded(orgunit.FieldSubtypePath)
+	return u
+}
+
+// ClearSubtypePath clears the value of the "subtype_path" field.
+func (u *OrgUnitUpsert) ClearSubtypePath() *OrgUnitUpsert {
+	u.SetNull(orgunit.FieldSubtypePath)
 	return u
 }
 
@@ -1838,6 +1866,27 @@ func (u *OrgUnitUpsertOne) SetType(v orgunit.Type) *OrgUnitUpsertOne {
 func (u *OrgUnitUpsertOne) UpdateType() *OrgUnitUpsertOne {
 	return u.Update(func(s *OrgUnitUpsert) {
 		s.UpdateType()
+	})
+}
+
+// SetSubtypePath sets the "subtype_path" field.
+func (u *OrgUnitUpsertOne) SetSubtypePath(v []string) *OrgUnitUpsertOne {
+	return u.Update(func(s *OrgUnitUpsert) {
+		s.SetSubtypePath(v)
+	})
+}
+
+// UpdateSubtypePath sets the "subtype_path" field to the value that was provided on create.
+func (u *OrgUnitUpsertOne) UpdateSubtypePath() *OrgUnitUpsertOne {
+	return u.Update(func(s *OrgUnitUpsert) {
+		s.UpdateSubtypePath()
+	})
+}
+
+// ClearSubtypePath clears the value of the "subtype_path" field.
+func (u *OrgUnitUpsertOne) ClearSubtypePath() *OrgUnitUpsertOne {
+	return u.Update(func(s *OrgUnitUpsert) {
+		s.ClearSubtypePath()
 	})
 }
 
@@ -2772,6 +2821,27 @@ func (u *OrgUnitUpsertBulk) SetType(v orgunit.Type) *OrgUnitUpsertBulk {
 func (u *OrgUnitUpsertBulk) UpdateType() *OrgUnitUpsertBulk {
 	return u.Update(func(s *OrgUnitUpsert) {
 		s.UpdateType()
+	})
+}
+
+// SetSubtypePath sets the "subtype_path" field.
+func (u *OrgUnitUpsertBulk) SetSubtypePath(v []string) *OrgUnitUpsertBulk {
+	return u.Update(func(s *OrgUnitUpsert) {
+		s.SetSubtypePath(v)
+	})
+}
+
+// UpdateSubtypePath sets the "subtype_path" field to the value that was provided on create.
+func (u *OrgUnitUpsertBulk) UpdateSubtypePath() *OrgUnitUpsertBulk {
+	return u.Update(func(s *OrgUnitUpsert) {
+		s.UpdateSubtypePath()
+	})
+}
+
+// ClearSubtypePath clears the value of the "subtype_path" field.
+func (u *OrgUnitUpsertBulk) ClearSubtypePath() *OrgUnitUpsertBulk {
+	return u.Update(func(s *OrgUnitUpsert) {
+		s.ClearSubtypePath()
 	})
 }
 

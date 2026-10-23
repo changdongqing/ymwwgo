@@ -1219,6 +1219,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			orgunit.FieldCode:               {Type: field.TypeString, Column: orgunit.FieldCode},
 			orgunit.FieldLeaderID:           {Type: field.TypeUint32, Column: orgunit.FieldLeaderID},
 			orgunit.FieldType:               {Type: field.TypeEnum, Column: orgunit.FieldType},
+			orgunit.FieldSubtypePath:        {Type: field.TypeJSON, Column: orgunit.FieldSubtypePath},
 			orgunit.FieldBusinessScopes:     {Type: field.TypeJSON, Column: orgunit.FieldBusinessScopes},
 			orgunit.FieldExternalID:         {Type: field.TypeString, Column: orgunit.FieldExternalID},
 			orgunit.FieldIsLegalEntity:      {Type: field.TypeBool, Column: orgunit.FieldIsLegalEntity},
@@ -7069,6 +7070,11 @@ func (f *OrgUnitFilter) WhereLeaderID(p entql.Uint32P) {
 // WhereType applies the entql string predicate on the type field.
 func (f *OrgUnitFilter) WhereType(p entql.StringP) {
 	f.Where(p.Field(orgunit.FieldType))
+}
+
+// WhereSubtypePath applies the entql json.RawMessage predicate on the subtype_path field.
+func (f *OrgUnitFilter) WhereSubtypePath(p entql.BytesP) {
+	f.Where(p.Field(orgunit.FieldSubtypePath))
 }
 
 // WhereBusinessScopes applies the entql json.RawMessage predicate on the business_scopes field.

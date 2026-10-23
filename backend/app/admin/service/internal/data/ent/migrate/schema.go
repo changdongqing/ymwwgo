@@ -2218,7 +2218,8 @@ var (
 		{Name: "name", Type: field.TypeString, Comment: "名称"},
 		{Name: "code", Type: field.TypeString, Nullable: true, Comment: "唯一编码（可用于导入/识别）"},
 		{Name: "leader_id", Type: field.TypeUint32, Nullable: true, Comment: "负责人用户ID"},
-		{Name: "type", Type: field.TypeEnum, Comment: "组织类型", Enums: []string{"COMPANY", "DIVISION", "DEPARTMENT", "TEAM", "PROJECT", "COMMITTEE", "REGION", "OTHER"}, Default: "DEPARTMENT"},
+		{Name: "type", Type: field.TypeEnum, Comment: "组织类型", Enums: []string{"COMPANY", "DIVISION", "DEPARTMENT", "TEAM", "PROJECT", "COMMITTEE", "REGION", "SUBSIDIARY", "BRANCH", "GROUP", "STORE", "OTHER"}, Default: "DEPARTMENT"},
+		{Name: "subtype_path", Type: field.TypeJSON, Nullable: true, Comment: "细分类型路径（受控词表 code 数组，从属到叶；门店业态/部门职能/项目类型等）"},
 		{Name: "business_scopes", Type: field.TypeJSON, Nullable: true, Comment: "组织的业务范围/服务条线"},
 		{Name: "external_id", Type: field.TypeString, Nullable: true, Comment: "外部系统ID"},
 		{Name: "is_legal_entity", Type: field.TypeBool, Nullable: true, Comment: "是否为法定主体", Default: false},
@@ -2247,7 +2248,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "sys_org_units_sys_org_units_children",
-				Columns:    []*schema.Column{SysOrgUnitsColumns[34]},
+				Columns:    []*schema.Column{SysOrgUnitsColumns[35]},
 				RefColumns: []*schema.Column{SysOrgUnitsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -2261,12 +2262,12 @@ var (
 			{
 				Name:    "uix_org_tenant_parent_name",
 				Unique:  true,
-				Columns: []*schema.Column{SysOrgUnitsColumns[9], SysOrgUnitsColumns[34], SysOrgUnitsColumns[13]},
+				Columns: []*schema.Column{SysOrgUnitsColumns[9], SysOrgUnitsColumns[35], SysOrgUnitsColumns[13]},
 			},
 			{
 				Name:    "uix_org_tenant_parent_path",
 				Unique:  true,
-				Columns: []*schema.Column{SysOrgUnitsColumns[9], SysOrgUnitsColumns[34], SysOrgUnitsColumns[12]},
+				Columns: []*schema.Column{SysOrgUnitsColumns[9], SysOrgUnitsColumns[35], SysOrgUnitsColumns[12]},
 			},
 			{
 				Name:    "idx_org_tenant_path",
@@ -2276,7 +2277,7 @@ var (
 			{
 				Name:    "idx_org_parent_id",
 				Unique:  false,
-				Columns: []*schema.Column{SysOrgUnitsColumns[34]},
+				Columns: []*schema.Column{SysOrgUnitsColumns[35]},
 			},
 			{
 				Name:    "idx_org_leader_id",
@@ -2286,7 +2287,15 @@ var (
 			{
 				Name:    "idx_org_contact_user_id",
 				Unique:  false,
-				Columns: []*schema.Column{SysOrgUnitsColumns[32]},
+				Columns: []*schema.Column{SysOrgUnitsColumns[33]},
+			},
+			{
+				Name:    "idx_sys_org_units_subtype_path",
+				Unique:  false,
+				Columns: []*schema.Column{SysOrgUnitsColumns[17]},
+				Annotation: &entsql.IndexAnnotation{
+					Type: "GIN",
+				},
 			},
 			{
 				Name:    "idx_org_type",
@@ -2296,22 +2305,22 @@ var (
 			{
 				Name:    "idx_org_external_id",
 				Unique:  false,
-				Columns: []*schema.Column{SysOrgUnitsColumns[18]},
+				Columns: []*schema.Column{SysOrgUnitsColumns[19]},
 			},
 			{
 				Name:    "idx_org_is_legal_entity",
 				Unique:  false,
-				Columns: []*schema.Column{SysOrgUnitsColumns[19]},
+				Columns: []*schema.Column{SysOrgUnitsColumns[20]},
 			},
 			{
 				Name:    "idx_org_start_at",
 				Unique:  false,
-				Columns: []*schema.Column{SysOrgUnitsColumns[30]},
+				Columns: []*schema.Column{SysOrgUnitsColumns[31]},
 			},
 			{
 				Name:    "idx_org_end_at",
 				Unique:  false,
-				Columns: []*schema.Column{SysOrgUnitsColumns[31]},
+				Columns: []*schema.Column{SysOrgUnitsColumns[32]},
 			},
 			{
 				Name:    "uix_org_tenant_code",

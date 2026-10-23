@@ -277,6 +277,9 @@ func (r *OrgUnitRepo) Create(ctx context.Context, req *identityV1.CreateOrgUnitR
 		SetNillableCreatedBy(req.Data.CreatedBy).
 		SetCreatedAt(time.Now())
 
+	if len(req.Data.GetSubtypePath()) > 0 {
+		builder.SetSubtypePath(req.Data.GetSubtypePath())
+	}
 	if req.Data.BusinessScopes == nil {
 		builder.SetBusinessScopes(req.Data.GetBusinessScopes())
 	}
@@ -354,6 +357,25 @@ func (r *OrgUnitRepo) Update(ctx context.Context, req *identityV1.UpdateOrgUnitR
 				SetNillableContactUserID(req.Data.ContactUserId).
 				SetNillableUpdatedBy(req.Data.UpdatedBy).
 				SetUpdatedAt(time.Now())
+
+			// 空切片代表显式清空；nil 代表本次更新不触碰该列。
+			// mask 含 subtype_path 且值为空时，UpdateX 的 nil 字段掩码会统一置 NULL；
+			// 这里再 Clear 会让同一列被赋值两次（PostgreSQL 42601）。
+			subtypeInMask := req.UpdateMask == nil
+			if req.UpdateMask != nil {
+				for _, path := range req.UpdateMask.GetPaths() {
+					if path == "subtype_path" {
+						subtypeInMask = true
+						break
+					}
+				}
+			}
+			subtypeTouched := req.Data.SubtypePath != nil || req.Data.Type != nil
+			if len(req.Data.GetSubtypePath()) > 0 {
+				builder.SetSubtypePath(req.Data.GetSubtypePath())
+			} else if subtypeTouched && (req.UpdateMask == nil || !subtypeInMask) {
+				builder.ClearSubtypePath()
+			}
 
 			if req.Data.BusinessScopes == nil {
 				builder.SetBusinessScopes(req.Data.GetBusinessScopes())

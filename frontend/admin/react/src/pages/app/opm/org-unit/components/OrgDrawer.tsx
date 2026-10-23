@@ -8,6 +8,8 @@ import {
   ProFormSelect,
   ProFormRadio,
   ProFormSwitch,
+  ProFormCascader,
+  ProFormDependency,
 } from '@ant-design/pro-components';
 import { App, TreeSelect, Form } from 'antd';
 import { useQueryClient } from '@tanstack/react-query';
@@ -16,7 +18,12 @@ import type { identityservicev1_OrgUnit as OrgUnit } from '@/api/generated/admin
 import { PaginationQuery } from '@/core';
 import { useCreateOrgUnit, useUpdateOrgUnit, fetchListOrgUnits } from '@/api/hooks/org-unit';
 import { fetchListUsers } from '@/api/hooks/user';
-import { getStatusOptions, getOrgTypeOptions } from '../constants';
+import {
+  getStatusOptions,
+  getOrgTypeOptions,
+  getSubtypeOptions,
+  SUBTYPE_REQUIRED_TYPES,
+} from '../constants';
 
 interface OrgDrawerProps {
   open: boolean;
@@ -78,6 +85,7 @@ const OrgDrawer: React.FC<OrgDrawerProps> = ({ open, mode, data, onClose, onSucc
           parentId: (data as any).parentId || undefined,
           leaderId: (data as any).leaderId || undefined,
           type: data.type || undefined,
+          subtypePath: (data as any).subtypePath ?? [],
           sortOrder: (data as any).sortOrder ?? 1,
           status: data.status || 'ON',
           isLegalEntity: (data as any).isLegalEntity ?? false,
@@ -210,8 +218,35 @@ const OrgDrawer: React.FC<OrgDrawerProps> = ({ open, mode, data, onClose, onSucc
           allowClear: true,
           filterOption: (input: string, option: any) =>
             (option?.label ?? '').toLowerCase().includes(input.toLowerCase()),
+          // 类型切换后旧细分路径必然失效，先清空再让用户按新类型重选。
+          onChange: () => formRef.current?.setFieldsValue({ subtypePath: undefined }),
         }}
       />
+
+      <ProFormDependency name={['type']}>
+        {({ type }) => {
+          const options = getSubtypeOptions(t, type);
+          if (!options) return null;
+          return (
+            <ProFormCascader
+              name="subtypePath"
+              label={t('subtypeLabel')}
+              placeholder={t('subtypePlaceholder')}
+              rules={
+                SUBTYPE_REQUIRED_TYPES.has(type as string)
+                  ? [{ required: true, message: t('requiredSubtype') }]
+                  : undefined
+              }
+              fieldProps={{
+                options,
+                allowClear: true,
+                showSearch: true,
+                changeOnSelect: false,
+              }}
+            />
+          );
+        }}
+      </ProFormDependency>
 
       <ProFormDigit
         name="sortOrder"

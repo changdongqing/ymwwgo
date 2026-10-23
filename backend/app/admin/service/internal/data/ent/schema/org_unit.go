@@ -52,11 +52,19 @@ func (OrgUnit) Fields() []ent.Field {
 				"Project", "PROJECT",
 				"Committee", "COMMITTEE",
 				"Region", "REGION",
+				"Subsidiary", "SUBSIDIARY",
+				"Branch", "BRANCH",
+				"Group", "GROUP",
+				"Store", "STORE",
 				"Other", "OTHER",
 			).
 			Nillable().
 			Default("DEPARTMENT").
 			Comment("组织类型"),
+
+		field.Strings("subtype_path").
+			Optional().
+			Comment("细分类型路径（受控词表 code 数组，从属到叶；门店业态/部门职能/项目类型等）"),
 
 		field.Strings("business_scopes").
 			Optional().
@@ -187,6 +195,11 @@ func (OrgUnit) Indexes() []ent.Index {
 			StorageKey("idx_org_leader_id"),
 		index.Fields("contact_user_id").
 			StorageKey("idx_org_contact_user_id"),
+
+		// 细分类型路径（jsonb 数组包含判定）走 GIN，供列表按业态/职能筛选
+		index.Fields("subtype_path").
+			Annotations(entsql.IndexType("GIN")).
+			StorageKey("idx_sys_org_units_subtype_path"),
 
 		// 类型、外部ID、法定主体标识等常用筛选列
 		index.Fields("type").

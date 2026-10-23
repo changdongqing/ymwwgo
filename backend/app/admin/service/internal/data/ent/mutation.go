@@ -61926,6 +61926,8 @@ type OrgUnitMutation struct {
 	leader_id              *uint32
 	addleader_id           *int32
 	_type                  *orgunit.Type
+	subtype_path           *[]string
+	appendsubtype_path     []string
 	business_scopes        *[]string
 	appendbusiness_scopes  []string
 	external_id            *string
@@ -62982,6 +62984,71 @@ func (m *OrgUnitMutation) OldType(ctx context.Context) (v *orgunit.Type, err err
 // ResetType resets all changes to the "type" field.
 func (m *OrgUnitMutation) ResetType() {
 	m._type = nil
+}
+
+// SetSubtypePath sets the "subtype_path" field.
+func (m *OrgUnitMutation) SetSubtypePath(s []string) {
+	m.subtype_path = &s
+	m.appendsubtype_path = nil
+}
+
+// SubtypePath returns the value of the "subtype_path" field in the mutation.
+func (m *OrgUnitMutation) SubtypePath() (r []string, exists bool) {
+	v := m.subtype_path
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSubtypePath returns the old "subtype_path" field's value of the OrgUnit entity.
+// If the OrgUnit object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OrgUnitMutation) OldSubtypePath(ctx context.Context) (v []string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSubtypePath is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSubtypePath requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSubtypePath: %w", err)
+	}
+	return oldValue.SubtypePath, nil
+}
+
+// AppendSubtypePath adds s to the "subtype_path" field.
+func (m *OrgUnitMutation) AppendSubtypePath(s []string) {
+	m.appendsubtype_path = append(m.appendsubtype_path, s...)
+}
+
+// AppendedSubtypePath returns the list of values that were appended to the "subtype_path" field in this mutation.
+func (m *OrgUnitMutation) AppendedSubtypePath() ([]string, bool) {
+	if len(m.appendsubtype_path) == 0 {
+		return nil, false
+	}
+	return m.appendsubtype_path, true
+}
+
+// ClearSubtypePath clears the value of the "subtype_path" field.
+func (m *OrgUnitMutation) ClearSubtypePath() {
+	m.subtype_path = nil
+	m.appendsubtype_path = nil
+	m.clearedFields[orgunit.FieldSubtypePath] = struct{}{}
+}
+
+// SubtypePathCleared returns if the "subtype_path" field was cleared in this mutation.
+func (m *OrgUnitMutation) SubtypePathCleared() bool {
+	_, ok := m.clearedFields[orgunit.FieldSubtypePath]
+	return ok
+}
+
+// ResetSubtypePath resets all changes to the "subtype_path" field.
+func (m *OrgUnitMutation) ResetSubtypePath() {
+	m.subtype_path = nil
+	m.appendsubtype_path = nil
+	delete(m.clearedFields, orgunit.FieldSubtypePath)
 }
 
 // SetBusinessScopes sets the "business_scopes" field.
@@ -64048,7 +64115,7 @@ func (m *OrgUnitMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *OrgUnitMutation) Fields() []string {
-	fields := make([]string, 0, 34)
+	fields := make([]string, 0, 35)
 	if m.created_at != nil {
 		fields = append(fields, orgunit.FieldCreatedAt)
 	}
@@ -64099,6 +64166,9 @@ func (m *OrgUnitMutation) Fields() []string {
 	}
 	if m._type != nil {
 		fields = append(fields, orgunit.FieldType)
+	}
+	if m.subtype_path != nil {
+		fields = append(fields, orgunit.FieldSubtypePath)
 	}
 	if m.business_scopes != nil {
 		fields = append(fields, orgunit.FieldBusinessScopes)
@@ -64193,6 +64263,8 @@ func (m *OrgUnitMutation) Field(name string) (ent.Value, bool) {
 		return m.LeaderID()
 	case orgunit.FieldType:
 		return m.GetType()
+	case orgunit.FieldSubtypePath:
+		return m.SubtypePath()
 	case orgunit.FieldBusinessScopes:
 		return m.BusinessScopes()
 	case orgunit.FieldExternalID:
@@ -64270,6 +64342,8 @@ func (m *OrgUnitMutation) OldField(ctx context.Context, name string) (ent.Value,
 		return m.OldLeaderID(ctx)
 	case orgunit.FieldType:
 		return m.OldType(ctx)
+	case orgunit.FieldSubtypePath:
+		return m.OldSubtypePath(ctx)
 	case orgunit.FieldBusinessScopes:
 		return m.OldBusinessScopes(ctx)
 	case orgunit.FieldExternalID:
@@ -64431,6 +64505,13 @@ func (m *OrgUnitMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetType(v)
+		return nil
+	case orgunit.FieldSubtypePath:
+		v, ok := value.([]string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSubtypePath(v)
 		return nil
 	case orgunit.FieldBusinessScopes:
 		v, ok := value.([]string)
@@ -64746,6 +64827,9 @@ func (m *OrgUnitMutation) ClearedFields() []string {
 	if m.FieldCleared(orgunit.FieldLeaderID) {
 		fields = append(fields, orgunit.FieldLeaderID)
 	}
+	if m.FieldCleared(orgunit.FieldSubtypePath) {
+		fields = append(fields, orgunit.FieldSubtypePath)
+	}
 	if m.FieldCleared(orgunit.FieldBusinessScopes) {
 		fields = append(fields, orgunit.FieldBusinessScopes)
 	}
@@ -64852,6 +64936,9 @@ func (m *OrgUnitMutation) ClearField(name string) error {
 		return nil
 	case orgunit.FieldLeaderID:
 		m.ClearLeaderID()
+		return nil
+	case orgunit.FieldSubtypePath:
+		m.ClearSubtypePath()
 		return nil
 	case orgunit.FieldBusinessScopes:
 		m.ClearBusinessScopes()
@@ -64962,6 +65049,9 @@ func (m *OrgUnitMutation) ResetField(name string) error {
 		return nil
 	case orgunit.FieldType:
 		m.ResetType()
+		return nil
+	case orgunit.FieldSubtypePath:
+		m.ResetSubtypePath()
 		return nil
 	case orgunit.FieldBusinessScopes:
 		m.ResetBusinessScopes()

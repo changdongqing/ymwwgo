@@ -49,6 +49,8 @@ const (
 	FieldLeaderID = "leader_id"
 	// FieldType holds the string denoting the type field in the database.
 	FieldType = "type"
+	// FieldSubtypePath holds the string denoting the subtype_path field in the database.
+	FieldSubtypePath = "subtype_path"
 	// FieldBusinessScopes holds the string denoting the business_scopes field in the database.
 	FieldBusinessScopes = "business_scopes"
 	// FieldExternalID holds the string denoting the external_id field in the database.
@@ -119,6 +121,7 @@ var Columns = []string{
 	FieldCode,
 	FieldLeaderID,
 	FieldType,
+	FieldSubtypePath,
 	FieldBusinessScopes,
 	FieldExternalID,
 	FieldIsLegalEntity,
@@ -211,6 +214,10 @@ const (
 	TypeProject    Type = "PROJECT"
 	TypeCommittee  Type = "COMMITTEE"
 	TypeRegion     Type = "REGION"
+	TypeSubsidiary Type = "SUBSIDIARY"
+	TypeBranch     Type = "BRANCH"
+	TypeGroup      Type = "GROUP"
+	TypeStore      Type = "STORE"
 	TypeOther      Type = "OTHER"
 )
 
@@ -221,7 +228,7 @@ func (_type Type) String() string {
 // TypeValidator is a validator for the "type" field enum values. It is called by the builders before save.
 func TypeValidator(_type Type) error {
 	switch _type {
-	case TypeCompany, TypeDivision, TypeDepartment, TypeTeam, TypeProject, TypeCommittee, TypeRegion, TypeOther:
+	case TypeCompany, TypeDivision, TypeDepartment, TypeTeam, TypeProject, TypeCommittee, TypeRegion, TypeSubsidiary, TypeBranch, TypeGroup, TypeStore, TypeOther:
 		return nil
 	default:
 		return fmt.Errorf("orgunit: invalid enum value for type field: %q", _type)

@@ -347,6 +347,24 @@ func (_u *OrgUnitUpdate) SetNillableType(v *orgunit.Type) *OrgUnitUpdate {
 	return _u
 }
 
+// SetSubtypePath sets the "subtype_path" field.
+func (_u *OrgUnitUpdate) SetSubtypePath(v []string) *OrgUnitUpdate {
+	_u.mutation.SetSubtypePath(v)
+	return _u
+}
+
+// AppendSubtypePath appends value to the "subtype_path" field.
+func (_u *OrgUnitUpdate) AppendSubtypePath(v []string) *OrgUnitUpdate {
+	_u.mutation.AppendSubtypePath(v)
+	return _u
+}
+
+// ClearSubtypePath clears the value of the "subtype_path" field.
+func (_u *OrgUnitUpdate) ClearSubtypePath() *OrgUnitUpdate {
+	_u.mutation.ClearSubtypePath()
+	return _u
+}
+
 // SetBusinessScopes sets the "business_scopes" field.
 func (_u *OrgUnitUpdate) SetBusinessScopes(v []string) *OrgUnitUpdate {
 	_u.mutation.SetBusinessScopes(v)
@@ -929,6 +947,17 @@ func (_u *OrgUnitUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if value, ok := _u.mutation.GetType(); ok {
 		_spec.SetField(orgunit.FieldType, field.TypeEnum, value)
 	}
+	if value, ok := _u.mutation.SubtypePath(); ok {
+		_spec.SetField(orgunit.FieldSubtypePath, field.TypeJSON, value)
+	}
+	if value, ok := _u.mutation.AppendedSubtypePath(); ok {
+		_spec.AddModifier(func(u *sql.UpdateBuilder) {
+			sqljson.Append(u, orgunit.FieldSubtypePath, value)
+		})
+	}
+	if _u.mutation.SubtypePathCleared() {
+		_spec.ClearField(orgunit.FieldSubtypePath, field.TypeJSON)
+	}
 	if value, ok := _u.mutation.BusinessScopes(); ok {
 		_spec.SetField(orgunit.FieldBusinessScopes, field.TypeJSON, value)
 	}
@@ -1463,6 +1492,24 @@ func (_u *OrgUnitUpdateOne) SetNillableType(v *orgunit.Type) *OrgUnitUpdateOne {
 	if v != nil {
 		_u.SetType(*v)
 	}
+	return _u
+}
+
+// SetSubtypePath sets the "subtype_path" field.
+func (_u *OrgUnitUpdateOne) SetSubtypePath(v []string) *OrgUnitUpdateOne {
+	_u.mutation.SetSubtypePath(v)
+	return _u
+}
+
+// AppendSubtypePath appends value to the "subtype_path" field.
+func (_u *OrgUnitUpdateOne) AppendSubtypePath(v []string) *OrgUnitUpdateOne {
+	_u.mutation.AppendSubtypePath(v)
+	return _u
+}
+
+// ClearSubtypePath clears the value of the "subtype_path" field.
+func (_u *OrgUnitUpdateOne) ClearSubtypePath() *OrgUnitUpdateOne {
+	_u.mutation.ClearSubtypePath()
 	return _u
 }
 
@@ -2077,6 +2124,17 @@ func (_u *OrgUnitUpdateOne) sqlSave(ctx context.Context) (_node *OrgUnit, err er
 	}
 	if value, ok := _u.mutation.GetType(); ok {
 		_spec.SetField(orgunit.FieldType, field.TypeEnum, value)
+	}
+	if value, ok := _u.mutation.SubtypePath(); ok {
+		_spec.SetField(orgunit.FieldSubtypePath, field.TypeJSON, value)
+	}
+	if value, ok := _u.mutation.AppendedSubtypePath(); ok {
+		_spec.AddModifier(func(u *sql.UpdateBuilder) {
+			sqljson.Append(u, orgunit.FieldSubtypePath, value)
+		})
+	}
+	if _u.mutation.SubtypePathCleared() {
+		_spec.ClearField(orgunit.FieldSubtypePath, field.TypeJSON)
 	}
 	if value, ok := _u.mutation.BusinessScopes(); ok {
 		_spec.SetField(orgunit.FieldBusinessScopes, field.TypeJSON, value)

@@ -2,7 +2,7 @@ import { useRef, useState } from 'react';
 import type { ProColumns, ActionType } from '@ant-design/pro-components';
 import TableExportButton from '@/components/common/TableExportButton';
 import ListTable from '@/components/common/ListTable';
-import { Button, Popconfirm, Tag, App } from 'antd';
+import { Button, Popconfirm, Tag, App, Space } from 'antd';
 import {
   EditOutlined,
   DeleteOutlined,
@@ -17,7 +17,14 @@ import { PaginationQuery } from '@/core';
 import { fetchListOrgUnits, useDeleteOrgUnit } from '@/api/hooks/org-unit';
 import { useProTableScrollY } from '@/hooks/useProTableScrollY';
 import ContentContainer from '@/layouts/components/PageContainer/ContentContainer';
-import { getStatusMap, getStatusOptions, getOrgTypeMap, getOrgTypeOptions } from './constants';
+import {
+  getStatusMap,
+  getStatusOptions,
+  getOrgTypeMap,
+  getOrgTypeOptions,
+  getSubtypeLabelMap,
+  getSubtypeFilterOptions,
+} from './constants';
 import OrgDrawer from './components/OrgDrawer';
 
 /**
@@ -44,6 +51,7 @@ const OrgUnitManagement = () => {
 
   const statusMap = getStatusMap(t);
   const orgTypeMap = getOrgTypeMap(t);
+  const subtypeLabelMap = getSubtypeLabelMap(t);
 
   // 删除操作
   const deleteMutation = useDeleteOrgUnit({
@@ -116,6 +124,30 @@ const OrgUnitManagement = () => {
         const type = record.type as keyof typeof orgTypeMap;
         const config = orgTypeMap[type] || { text: type, color: 'default' };
         return <Tag color={config.color}>{config.text}</Tag>;
+      },
+    },
+    {
+      title: t('subtypeLabel'),
+      dataIndex: 'subtypePath',
+      width: 180,
+      valueType: 'select',
+      fieldProps: {
+        options: getSubtypeFilterOptions(t),
+        showSearch: true,
+        allowClear: true,
+      },
+      render: (_, record) => {
+        const path = record.subtypePath ?? [];
+        if (path.length === 0) return '-';
+        return (
+          <Space size={4} wrap>
+            {path.map((code) => (
+              <Tag key={code} color="blue">
+                {subtypeLabelMap[code] ?? code}
+              </Tag>
+            ))}
+          </Space>
+        );
       },
     },
     {
@@ -226,9 +258,12 @@ const OrgUnitManagement = () => {
               </>
             }
             request={async (params, _sorter, _filter) => {
+              // 细分类型筛选在取回的全量树上做：本页 pagination=false 且
+              // subtype_path 是 jsonb 数组，通用查询层不支持 array_contains。
+              const { subtypePath: subtypeFilter, ...rest } = params as Record<string, any>;
               const query = new PaginationQuery({
                 formValues: Object.fromEntries(
-                  Object.entries(params).filter(
+                  Object.entries(rest).filter(
                     ([key]) => !['current', 'pageSize'].includes(key),
                   ),
                 ),
@@ -238,11 +273,14 @@ const OrgUnitManagement = () => {
               const items = (response.items || []) as OrgUnit[];
               // API 已返回树形结构，只需清理空 children
               cleanEmptyChildren(items as any[]);
-              setTreeData(items);
+              const filtered = subtypeFilter
+                ? filterTreeBySubtype(items, String(subtypeFilter))
+                : items;
+              setTreeData(filtered);
 
               return {
-                data: items,
-                total: (response as any).total ?? items.length,
+                data: filtered,
+                total: subtypeFilter ? countTreeNodes(filtered) : ((response as any).total ?? items.length),
                 success: true,
               };
             }}
@@ -282,5 +320,34 @@ const OrgUnitManagement = () => {
     </>
   );
 };
+
+/**
+ * 按细分 code 过滤组织树：保留命中的节点及其祖先链，
+ * 不展开命中节点的所有后代（后代不一定共享同一细分类型）。
+ */
+function filterTreeBySubtype(nodes: OrgUnit[], code: string): OrgUnit[] {
+  const result: OrgUnit[] = [];
+  nodes.forEach((node) => {
+    const children = node.children ? filterTreeBySubtype(node.children, code) : [];
+    const matched = (node.subtypePath ?? []).includes(code);
+    if (!matched && children.length === 0) return;
+
+    const cloned = { ...node } as OrgUnit;
+    if (children.length > 0) {
+      cloned.children = children;
+    } else {
+      delete cloned.children;
+    }
+    result.push(cloned);
+  });
+  return result;
+}
+
+function countTreeNodes(nodes: OrgUnit[]): number {
+  return nodes.reduce(
+    (sum, node) => sum + 1 + (node.children ? countTreeNodes(node.children) : 0),
+    0,
+  );
+}
 
 export default OrgUnitManagement;

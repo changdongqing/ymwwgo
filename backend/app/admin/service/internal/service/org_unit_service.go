@@ -168,6 +168,17 @@ func (s *OrgUnitService) Create(ctx context.Context, req *identityV1.CreateOrgUn
 		return nil, adminV1.ErrorBadRequest("invalid parameter")
 	}
 
+	// 细分类型校验/规范化；type 未传时 Ent 默认 DEPARTMENT。
+	orgType := identityV1.OrgUnit_DEPARTMENT
+	if req.Data.Type != nil {
+		orgType = req.Data.GetType()
+	}
+	subtypePath, err := normalizeOrgSubtypePath(orgType, req.Data.GetSubtypePath())
+	if err != nil {
+		return nil, err
+	}
+	req.Data.SubtypePath = subtypePath
+
 	// 获取操作人信息
 	operator, err := auth.FromContext(ctx)
 	if err != nil {
@@ -186,6 +197,44 @@ func (s *OrgUnitService) Create(ctx context.Context, req *identityV1.CreateOrgUn
 func (s *OrgUnitService) Update(ctx context.Context, req *identityV1.UpdateOrgUnitRequest) (*emptypb.Empty, error) {
 	if req.Data == nil {
 		return nil, adminV1.ErrorBadRequest("invalid parameter")
+	}
+
+	// 细分类型校验/规范化：只在本次更新确实触碰 type/subtype_path 时执行，
+	// 避免带 update_mask 的部分更新因未传 subtype 被误判为“清空”。
+	// 注意：mask 为 nil 时 updateMaskIncludes 恒真，但字段“没传”不等于“要改”，
+	// 所以还必须同时看 req.Data 里是否真的带了值。
+	typeInUpdate := req.Data.Type != nil && updateMaskIncludes(req.UpdateMask, "type")
+	subtypeInUpdate := req.Data.SubtypePath != nil && updateMaskIncludes(req.UpdateMask, "subtype_path")
+	subtypeMaskedEmpty := req.UpdateMask != nil &&
+		updateMaskIncludes(req.UpdateMask, "subtype_path") &&
+		req.Data.SubtypePath == nil
+	if typeInUpdate || subtypeInUpdate || subtypeMaskedEmpty {
+		orgType := req.Data.GetType()
+		if !typeInUpdate {
+			existing, err := s.orgUnitRepo.Get(ctx, &identityV1.GetOrgUnitRequest{
+				QueryBy: &identityV1.GetOrgUnitRequest_Id{Id: req.GetId()},
+			})
+			if err != nil {
+				return nil, err
+			}
+			orgType = existing.GetType()
+		}
+
+		subtypePath := req.Data.GetSubtypePath()
+		if !subtypeInUpdate {
+			// 只改 type，或 mask 声明了 subtype_path 但没带值：按空路径处理，
+			// 必填类型报错，其余类型清空旧细分。
+			subtypePath = nil
+		}
+		normalized, err := normalizeOrgSubtypePath(orgType, subtypePath)
+		if err != nil {
+			return nil, err
+		}
+		if normalized == nil {
+			// 空切片（而非 nil）作为“显式清空”信号，repo 据此 ClearSubtypePath。
+			normalized = []string{}
+		}
+		req.Data.SubtypePath = normalized
 	}
 
 	// 获取操作人信息

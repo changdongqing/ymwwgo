@@ -1283,7 +1283,7 @@ func init() {
 	// orgunit.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	orgunit.NameValidator = orgunitDescName.Validators[0].(func(string) error)
 	// orgunitDescIsLegalEntity is the schema descriptor for is_legal_entity field.
-	orgunitDescIsLegalEntity := orgunitFields[6].Descriptor()
+	orgunitDescIsLegalEntity := orgunitFields[7].Descriptor()
 	// orgunit.DefaultIsLegalEntity holds the default value on creation for the is_legal_entity field.
 	orgunit.DefaultIsLegalEntity = orgunitDescIsLegalEntity.Default.(bool)
 	// orgunitDescID is the schema descriptor for id field.

@@ -1090,6 +1090,16 @@ func TypeNotIn(vs ...Type) predicate.OrgUnit {
 	return predicate.OrgUnit(sql.FieldNotIn(FieldType, vs...))
 }
 
+// SubtypePathIsNil applies the IsNil predicate on the "subtype_path" field.
+func SubtypePathIsNil() predicate.OrgUnit {
+	return predicate.OrgUnit(sql.FieldIsNull(FieldSubtypePath))
+}
+
+// SubtypePathNotNil applies the NotNil predicate on the "subtype_path" field.
+func SubtypePathNotNil() predicate.OrgUnit {
+	return predicate.OrgUnit(sql.FieldNotNull(FieldSubtypePath))
+}
+
 // BusinessScopesIsNil applies the IsNil predicate on the "business_scopes" field.
 func BusinessScopesIsNil() predicate.OrgUnit {
 	return predicate.OrgUnit(sql.FieldIsNull(FieldBusinessScopes))

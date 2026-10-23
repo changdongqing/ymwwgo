@@ -15056,6 +15056,8 @@ components:
                         - REGION
                         - SUBSIDIARY
                         - BRANCH
+                        - GROUP
+                        - STORE
                         - OTHER
                     type: string
                     description: 组织类型
@@ -15163,6 +15165,11 @@ components:
                 contactUserName:
                     type: string
                     description: 业务联系人用户名称
+                subtypePath:
+                    type: array
+                    items:
+                        type: string
+                    description: 细分类型路径（受控词表 code 数组，从属到叶；用于门店业态/部门职能/项目类型等）
                 parentId:
                     type: integer
                     description: 父节点ID
