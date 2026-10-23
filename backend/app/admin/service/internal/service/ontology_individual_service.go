@@ -132,7 +132,6 @@ func (s *OntologyIndividualService) List(ctx context.Context, req *ontologyV1.Li
 
 	// 第一段：类目过滤（直接实例 / 含子类实例）
 	if req.GetClassId() > 0 {
-		idsConstrained = true
 		classIDs := []uint32{req.GetClassId()}
 		if req.GetIncludeDescendants() {
 			allAxioms, err := s.axiomRepo.ListByOntology(ctx, ontologyID)
@@ -146,7 +145,10 @@ func (s *OntologyIndividualService) List(ctx context.Context, req *ontologyV1.Li
 		if err != nil {
 			return nil, adminV1.ErrorInternalServerError("filter individuals by class failed")
 		}
+		// intersect 用本分支前的约束态：仅 classId 过滤（此前无 keyword/code 约束）时
+		// 直接采纳实例 id 集——先置位再相交会把 nil 前集相交成恒空（06 期遗留 bug）
 		ids = intersectUint32(ids, idsConstrained, instanceIDs)
+		idsConstrained = true
 	}
 
 	if idsConstrained && len(ids) == 0 {

@@ -156,6 +156,9 @@ const IndividualListTable: React.FC<IndividualListTableProps> = ({
       <ListTable<ontologyservicev1_Individual>
         actionRef={actionRef}
         columns={columns}
+        // 左树联动/本体切换的取数触发器：ProTable 只认 params 变化（深比较后重置到第 1 页重取），
+        // request 闭包里读 classId/ontologyId 不会触发重取——漏传时点树节点右表纹丝不动
+        params={{ ontologyId: ontologyId ?? 0, classId: classId ?? 0 }}
         request={async (params) => {
           if (ontologyId == null) {
             return { data: [], total: 0, success: true };
@@ -177,7 +180,8 @@ const IndividualListTable: React.FC<IndividualListTableProps> = ({
           return { data: response.items ?? [], total: response.total ?? 0, success: true };
         }}
         rowKey="id"
-        headerTitle={
+        // 左区表名 + 类目范围 Tag 须走 title（ListTable 约定：headerTitle 与 actions 同传时 headerTitle 被丢弃）
+        title={
           <Space>
             <span>{t('individual.listTitle')}</span>
             {classId != null && classId > 0 && (
