@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ProFormInstance } from '@ant-design/pro-components';
 import { DrawerForm, ProFormCheckbox, ProFormSwitch, ProFormText, ProFormTextArea } from '@ant-design/pro-components';
-import { App, Form, Modal, Select, Tooltip, TreeSelect } from 'antd';
+import { App, Form, Modal, Select, Tooltip, TreeSelect, Typography } from 'antd';
 import type { DataNode } from 'antd/es/tree';
 import { useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 import type {
   ontologyservicev1_CreateDataPropertyRequest,
   ontologyservicev1_DataPropertyTreeNode,
+  ontologyservicev1_ReferencePosition,
 } from '@/api/generated/admin/service/v1';
 import {
   getOntologyErrorReason,
@@ -19,6 +20,7 @@ import {
 } from '@/api/hooks/ontologyDataProperty';
 import { useOntologyClassTree } from '@/api/hooks/ontologyClass';
 import AnnotationListEditor, { cleanAnnotationRows } from '../../components/AnnotationListEditor';
+import EntityReferencesPanel from '../../components/EntityReferencesPanel';
 import { useSimpleDatatypes } from '@/api/hooks/ontologyDatatype';
 import { DATATYPE_LABELS, datatypeShortName, FAMILY_GROUPS } from '../../constants';
 
@@ -34,7 +36,13 @@ interface DataPropertyDrawerProps {
   onSuccess: (saved: { id: number | null; superIds: number[] }) => void;
   /** 乐观锁冲突回调（页面统一刷新树/列表/frame） */
   onVersionConflict: () => void;
+  /** 「被引用」面板点击属性节点 → 切到该属性的编辑抽屉（同页跳转；缺省禁用跳转） */
+  onOpenProperty?: (propertyId: number) => void;
 }
+
+/** 「被引用」默认集（08 号文档 §6.2：数据属性 40/41/42/44/45/62，宾语位）——模块级常量保持引用稳定 */
+const DATA_PROPERTY_REFERENCE_AXIOM_TYPES: number[] = [40, 41, 42, 44, 45, 62];
+const OBJECT_POSITION: ontologyservicev1_ReferencePosition[] = ['REFERENCE_POSITION_OBJECT'];
 
 /** 与后端同口径的局部名正则（NCName 宽松版，允许中文/字母/下划线/连字符，首字符非数字） */
 const LOCAL_NAME_PATTERN = /^[\p{L}_][\p{L}\p{N}_-]*$/u;
@@ -65,6 +73,7 @@ const DataPropertyDrawer: React.FC<DataPropertyDrawerProps> = ({
   onClose,
   onSuccess,
   onVersionConflict,
+  onOpenProperty,
 }) => {
   const { t } = useTranslation('ontology');
   const formRef = useRef<ProFormInstance>(null);
@@ -499,6 +508,24 @@ const DataPropertyDrawer: React.FC<DataPropertyDrawerProps> = ({
       </Form.Item>
 
       <ProFormSwitch name="deprecated" label={t('dataProperty.deprecated')} />
+
+      {/* 「被引用」面板（08 期共享组件：数据属性宾语位，62 断言的 object_id 即属性实体） */}
+      {isEdit && (
+        <div style={{ marginTop: 24, borderTop: '1px solid #f0f0f0', paddingTop: 16 }}>
+          <Typography.Title level={5} style={{ marginTop: 0 }}>
+            {t('reference.sectionTitle')}
+          </Typography.Title>
+          <EntityReferencesPanel
+            ontologyId={ontologyId}
+            entityId={propertyId}
+            defaultAxiomTypes={DATA_PROPERTY_REFERENCE_AXIOM_TYPES}
+            defaultPositions={OBJECT_POSITION}
+            openableEntityType={30}
+            onOpenEntity={onOpenProperty}
+            enabled={open && propertyId != null}
+          />
+        </div>
+      )}
     </DrawerForm>
   );
 };

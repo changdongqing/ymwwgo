@@ -265,6 +265,7 @@ const OntologyDatatypes = () => {
         }}
         onSuccess={refreshAll}
         onVersionConflict={refreshAll}
+        onOpenDatatype={(id) => setEditingDatatype({ id } as ontologyservicev1_Datatype)}
       />
 
       <Modal

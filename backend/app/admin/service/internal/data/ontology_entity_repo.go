@@ -163,6 +163,22 @@ func (r *OntEntityRepo) GetEntityByIRI(ctx context.Context, iri string) ([]*ent.
 		All(ctx)
 }
 
+// GetEntitiesByIRIs 批量 IRI 反查（同本体、未删；08 期反查的 61 谓词节点批量填充——
+// 单条 WHERE iri IN (...) 避免逐 IRI N+1）
+func (r *OntEntityRepo) GetEntitiesByIRIs(ctx context.Context, ontologyID uint32, iris []string) ([]*ent.OntEntity, error) {
+	if len(iris) == 0 {
+		return nil, nil
+	}
+	return r.entClient.Client().OntEntity.Query().
+		Where(
+			ontentity.OntologyIDEQ(ontologyID),
+			ontentity.IriIn(iris...),
+			ontentity.DeletedAtIsNil(),
+		).
+		Order(ent.Asc(ontentity.FieldID)).
+		All(ctx)
+}
+
 // listEntitiesOfType 分页查询指定实体类型列表（ListClasses 的泛化底座）
 func (r *OntEntityRepo) listEntitiesOfType(ctx context.Context, filter ClassListFilter, entityType uint32) ([]*ent.OntEntity, int, error) {
 	q := r.entClient.Client().OntEntity.Query().
@@ -814,7 +830,7 @@ func EntEntityToClassDTO(e *ent.OntEntity, agg *ClassAggregate) *ontologyV1.Onto
 type DatatypeAggregate struct {
 	Comment        *string
 	DefinitionJSON *string // 46 行 value_text（首行；多行脏数据由服务层 diff 自愈，聚合防御取首行）
-	ReferenceCount uint32 // 被 42 行派生轨引用的数据属性数
+	ReferenceCount uint32  // 被 42 行派生轨引用的数据属性数
 }
 
 // AggregateDatatypeInfo 批量计算数据类型聚合列：定义 JSON（46 型首行）+ 被引用数

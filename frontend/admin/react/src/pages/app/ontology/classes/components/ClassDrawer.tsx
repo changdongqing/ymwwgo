@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ProFormInstance } from '@ant-design/pro-components';
 import { DrawerForm, ProFormSwitch, ProFormText, ProFormTextArea } from '@ant-design/pro-components';
-import { App, Form, Modal, Select, TreeSelect } from 'antd';
+import { App, Form, Modal, Select, TreeSelect, Typography } from 'antd';
 import type { DataNode } from 'antd/es/tree';
 import { useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 import type {
   ontologyservicev1_CreateOntologyClassRequest,
   ontologyservicev1_OntologyClassTreeNode,
+  ontologyservicev1_ReferencePosition,
 } from '@/api/generated/admin/service/v1';
 import {
   getOntologyErrorReason,
@@ -18,6 +19,7 @@ import {
   useUpdateOntologyClass,
 } from '@/api/hooks/ontologyClass';
 import AnnotationListEditor, { cleanAnnotationRows } from '../../components/AnnotationListEditor';
+import EntityReferencesPanel from '../../components/EntityReferencesPanel';
 
 interface ClassDrawerProps {
   open: boolean;
@@ -31,12 +33,18 @@ interface ClassDrawerProps {
   onSuccess: (saved: { id: number | null; parentIds: number[] }) => void;
   /** 乐观锁冲突回调（页面统一刷新树/列表/frame） */
   onVersionConflict: () => void;
+  /** 「被引用」面板点击类节点 → 切到该类的编辑抽屉（同页跳转；缺省禁用跳转） */
+  onOpenClass?: (classId: number) => void;
 }
 
 /** 与后端同口径的局部名正则（NCName 宽松版，允许中文/字母/下划线/连字符，首字符非数字） */
 const LOCAL_NAME_PATTERN = /^[\p{L}_][\p{L}\p{N}_-]*$/u;
 /** skos:notation 字符集（06 号文档 §3.3 定案回填：允许点号、首字符须字母/数字，与个体编码同一正则） */
 const NOTATION_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
+
+/** 「被引用」默认集（08 号文档 §6.2：类的 20/21/22/31/32/41/60，宾语位）——模块级常量保持引用稳定 */
+const CLASS_REFERENCE_AXIOM_TYPES: number[] = [20, 21, 22, 31, 32, 41, 60];
+const OBJECT_POSITION: ontologyservicev1_ReferencePosition[] = ['REFERENCE_POSITION_OBJECT'];
 
 /**
  * 本体类表单（DrawerForm + formRef）：父类 TreeSelect（多选 treeCheckStrictly，数据源全量树按需加载，
@@ -53,6 +61,7 @@ const ClassDrawer: React.FC<ClassDrawerProps> = ({
   onClose,
   onSuccess,
   onVersionConflict,
+  onOpenClass,
 }) => {
   const { t } = useTranslation('ontology');
   const formRef = useRef<ProFormInstance>(null);
@@ -417,6 +426,25 @@ const ClassDrawer: React.FC<ClassDrawerProps> = ({
       </Form.Item>
 
       <ProFormSwitch name="deprecated" label={t('class.deprecated')} />
+
+      {/* 「被引用」面板（08 期共享组件；类目标可展开子类实例/子类边） */}
+      {isEdit && (
+        <div style={{ marginTop: 24, borderTop: '1px solid #f0f0f0', paddingTop: 16 }}>
+          <Typography.Title level={5} style={{ marginTop: 0 }}>
+            {t('reference.sectionTitle')}
+          </Typography.Title>
+          <EntityReferencesPanel
+            ontologyId={ontologyId}
+            entityId={classId}
+            defaultAxiomTypes={CLASS_REFERENCE_AXIOM_TYPES}
+            defaultPositions={OBJECT_POSITION}
+            openableEntityType={10}
+            onOpenEntity={onOpenClass}
+            allowIncludeDescendants
+            enabled={open && classId != null}
+          />
+        </div>
+      )}
     </DrawerForm>
   );
 };

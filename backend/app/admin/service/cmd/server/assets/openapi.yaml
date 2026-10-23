@@ -6437,6 +6437,75 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/OwlImportReport'
+    /admin/v1/ontology/references:
+        get:
+            tags:
+                - OntologyReferenceService
+            description: 反查引用目标实体的边（分页；目标作为宾语/谓词/属性链成员）
+            operationId: OntologyReferenceService_ListReferences
+            parameters:
+                - name: ontologyId
+                  in: query
+                  schema:
+                    type: integer
+                    format: uint32
+                - name: targetId
+                  in: query
+                  schema:
+                    type: integer
+                    format: uint32
+                - name: axiomTypes
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        type: integer
+                        format: uint32
+                - name: predicateIri
+                  in: query
+                  schema:
+                    type: string
+                - name: includeDescendants
+                  in: query
+                  schema:
+                    type: boolean
+                - name: excludeDeprecated
+                  in: query
+                  schema:
+                    type: boolean
+                - name: page
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: orderBy
+                  in: query
+                  schema:
+                    type: string
+                - name: positions
+                  in: query
+                  schema:
+                    type: array
+                    items:
+                        enum:
+                            - REFERENCE_POSITION_UNSPECIFIED
+                            - REFERENCE_POSITION_OBJECT
+                            - REFERENCE_POSITION_PREDICATE
+                            - REFERENCE_POSITION_CHAIN_MEMBER
+                        type: string
+                        format: enum
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListReferencesResponse'
     /admin/v1/operation-audit-logs:
         get:
             tags:
@@ -13348,6 +13417,17 @@ components:
                 total:
                     type: string
             description: 获取职位列表 - 答复
+        ListReferencesResponse:
+            type: object
+            properties:
+                edges:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/ReferenceEdge'
+                total:
+                    type: string
+                    description: 去重/过滤后的总边数
+            description: 通用反查 - 回应
         ListRoleResponse:
             type: object
             properties:
@@ -15911,6 +15991,76 @@ components:
                     items:
                         $ref: '#/components/schemas/SlowLogEntry'
             description: Redis缓存监控信息
+        ReferenceEdge:
+            type: object
+            properties:
+                axiomId:
+                    type: string
+                    description: 公理行ID（成对去重后为较小行号）
+                axiomType:
+                    type: integer
+                    description: 公理类型号段（20/21/22/30/31/32/34/35/36/37/40/41/42/44/45/50/60/61/62/100）
+                    format: uint32
+                sortOrder:
+                    type: integer
+                    description: 行内排序值（60 类型断言的主类目序等）
+                    format: uint32
+                subject:
+                    $ref: '#/components/schemas/ReferenceNode'
+                predicate:
+                    $ref: '#/components/schemas/ReferenceNode'
+                object:
+                    $ref: '#/components/schemas/ReferenceNode'
+                literalValue:
+                    type: string
+                    description: 字面量（62/100 的值；42 内建轨 IRI；37 链成员 JSON）
+                lang:
+                    type: string
+                    description: 语言标签（62/100 语言字面量）
+                paired:
+                    type: boolean
+                    description: 成对公理去重标记（21/22/34/35/36/44/45）
+                updatedAt:
+                    type: string
+                    description: 公理行更新时间
+                    format: date-time
+                position:
+                    enum:
+                        - REFERENCE_POSITION_UNSPECIFIED
+                        - REFERENCE_POSITION_OBJECT
+                        - REFERENCE_POSITION_PREDICATE
+                        - REFERENCE_POSITION_CHAIN_MEMBER
+                    type: string
+                    description: 本边命中的位置（同一实体可同时出现在宾语位与谓词位，各为独立边）
+                    format: enum
+            description: 一条引用边 = 一条未删公理行（成对公理已按无序对去重并标记 paired）
+        ReferenceNode:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    description: 实体ID（谓词 IRI 反解失败时为空）
+                    format: uint32
+                entityType:
+                    type: integer
+                    description: 实体类型号段（10 类/20 对象属性/30 数据属性/40 注解属性/50 数据类型/60 个体）
+                    format: uint32
+                localName:
+                    type: string
+                    description: 局部名（未解析时为 IRI 尾段）
+                displayLabel:
+                    type: string
+                    description: 显示名（rdfs:label 渲染缓存）
+                iri:
+                    type: string
+                    description: 完整 IRI
+                deprecated:
+                    type: boolean
+                    description: 是否废弃（owl:deprecated；只标记不过滤）
+                unresolved:
+                    type: boolean
+                    description: 是否为未解析节点（谓词 IRI 无对应实体时以 IRI 尾段构造）
+            description: 引用节点：边的一端（已软删实体不回显；deprecated 仅标记）
         RenderNotificationTemplateRequest:
             type: object
             properties:
@@ -18246,6 +18396,13 @@ tags:
          （protojson 会把 data 当未知字段丢弃，接口 200 但字段全空，仓库已知坑）。
          导出经 google.api.HttpBody 二进制响应（进 openapi 生成与 Api 表同步管线，租户闸门按
          (path, method) 匹配）；导入两步式 preview → execute（reportId 一次性消费）。
+    - name: OntologyReferenceService
+      description: |-
+        通用反查（admin 门面；08 号文档）
+
+         只读端点，GET query 绑定（扁平字段，本 RPC 非 CRUD——铁律 3 的正确适用：不包 {data:{}}）。
+         重复字段在 query 中以重复参数表达：axiomTypes=61&axiomTypes=62、
+         positions=REFERENCE_POSITION_OBJECT&positions=REFERENCE_POSITION_PREDICATE。
     - name: OntologyService
       description: |-
         本体文档管理服务（admin 门面）

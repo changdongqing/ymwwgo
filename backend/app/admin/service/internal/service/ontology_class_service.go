@@ -310,8 +310,13 @@ func (s *OntologyClassService) Usage(ctx context.Context, req *ontologyV1.GetOnt
 		return nil, err
 	}
 
-	// 引用集 = object 侧、ClassUsageAxiomTypes 内的未删公理（02/03/06 期扩号段时改常量切片）
-	axioms, err := s.axiomRepo.ListByObject(ctx, ontologyID, e.ID)
+	// 引用集 = object 侧、ClassUsageAxiomTypes 内的未删公理（02/03/06 期扩号段时改常量切片）；
+	// 类型过滤下沉到与通用反查共用的 repo 方法（08 号文档 §2.4：删除保护与浏览反查同源）
+	axioms, err := s.axiomRepo.ListByObjectFiltered(ctx, data.ObjectReferenceFilter{
+		OntologyID: ontologyID,
+		ObjectIDs:  []uint32{e.ID},
+		AxiomTypes: ontology.ClassUsageAxiomTypes,
+	})
 	if err != nil {
 		return nil, adminV1.ErrorInternalServerError("query references failed")
 	}
@@ -324,9 +329,6 @@ func (s *OntologyClassService) Usage(ctx context.Context, req *ontologyV1.GetOnt
 	refKeys := make([]refKey, 0)
 	for _, ax := range axioms {
 		if ax.SubjectID == nil || ax.AxiomType == nil {
-			continue
-		}
-		if !isClassUsageAxiomType(*ax.AxiomType) {
 			continue
 		}
 		key := refKey{entityID: *ax.SubjectID, axiomType: *ax.AxiomType}
@@ -362,15 +364,6 @@ func (s *OntologyClassService) Usage(ctx context.Context, req *ontologyV1.GetOnt
 		}
 	}
 	return usage, nil
-}
-
-func isClassUsageAxiomType(t uint32) bool {
-	for _, v := range ontology.ClassUsageAxiomTypes {
-		if v == t {
-			return true
-		}
-	}
-	return false
 }
 
 // ---- create / update / delete ----

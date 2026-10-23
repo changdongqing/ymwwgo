@@ -191,6 +191,7 @@ const OntologyIndividualManagement = () => {
         onClose={() => setDrawer({ open: false, individualId: null })}
         onSuccess={refreshAll}
         onVersionConflict={refreshAll}
+        onOpenIndividual={openEdit}
       />
 
       <Modal

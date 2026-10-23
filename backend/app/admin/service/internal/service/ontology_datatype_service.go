@@ -222,7 +222,11 @@ func (s *OntologyDatatypeService) Usage(ctx context.Context, req *ontologyV1.Get
 		return nil, err
 	}
 
-	objectAxioms, err := s.axiomRepo.ListByObject(ctx, ontologyID, e.ID)
+	objectAxioms, err := s.axiomRepo.ListByObjectFiltered(ctx, data.ObjectReferenceFilter{
+		OntologyID: ontologyID,
+		ObjectIDs:  []uint32{e.ID},
+		AxiomTypes: ontology.DatatypeUsageAxiomTypes,
+	})
 	if err != nil {
 		return nil, adminV1.ErrorInternalServerError("query references failed")
 	}
@@ -235,9 +239,6 @@ func (s *OntologyDatatypeService) Usage(ctx context.Context, req *ontologyV1.Get
 	refKeys := make([]refKey, 0)
 	for _, ax := range objectAxioms {
 		if ax.SubjectID == nil || ax.AxiomType == nil {
-			continue
-		}
-		if !isUsageAxiomType(*ax.AxiomType, ontology.DatatypeUsageAxiomTypes) {
 			continue
 		}
 		key := refKey{entityID: *ax.SubjectID, axiomType: *ax.AxiomType}

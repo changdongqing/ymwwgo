@@ -680,5 +680,62 @@
       "execute": "开始导入",
       "executeSuccess": "导入完成"
     }
+  },
+  "reference": {
+    "sectionTitle": "被引用",
+    "empty": "暂无实体引用本实体",
+    "loadFailed": "加载引用明细失败",
+    "refresh": "刷新",
+    "total": "共 {{total}} 条引用",
+    "pairedTag": "成对",
+    "deprecatedTag": "已废弃",
+    "deprecatedHint": "该端实体已标记废弃（owl:deprecated）",
+    "unresolvedHint": "未找到该 IRI 对应的实体：{{iri}}",
+    "col": {
+      "subject": "主语",
+      "predicate": "谓词",
+      "object": "宾语 / 字面量",
+      "axiomType": "公理类型",
+      "position": "位置",
+      "updatedAt": "更新时间"
+    },
+    "filter": {
+      "predicate": "按谓词过滤（对象属性 / 数据属性）",
+      "objectProperties": "对象属性",
+      "dataProperties": "数据属性",
+      "includeDescendants": "含子类"
+    },
+    "position": {
+      "object": "宾语位",
+      "predicate": "谓词位",
+      "chainMember": "属性链成员位"
+    },
+    "axiomType": {
+      "declaration": "声明",
+      "subClassOf": "子类",
+      "disjointWith": "不相交",
+      "equivalentClasses": "等价类",
+      "subObjectPropertyOf": "子对象属性",
+      "objectPropertyDomain": "对象属性定义域",
+      "objectPropertyRange": "对象属性值域",
+      "objectPropertyCharacteristic": "对象属性特征",
+      "inverseOf": "逆属性",
+      "equivalentObjectProperties": "等价对象属性",
+      "disjointObjectProperties": "不相交对象属性",
+      "subPropertyChainOf": "属性链",
+      "subDataPropertyOf": "子数据属性",
+      "dataPropertyDomain": "数据属性定义域",
+      "dataPropertyRange": "数据属性值域",
+      "dataPropertyCharacteristic": "数据属性特征",
+      "equivalentDataProperties": "等价数据属性",
+      "disjointDataProperties": "不相交数据属性",
+      "datatypeDefinition": "数据类型定义",
+      "subAnnotationPropertyOf": "子注解属性",
+      "typeAssertion": "类型断言",
+      "objectPropertyAssertion": "对象属性断言",
+      "dataPropertyAssertion": "数据属性断言",
+      "annotationAssertion": "注解断言",
+      "unknown": "公理 {{code}}"
+    }
   }
 }

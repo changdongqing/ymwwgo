@@ -478,7 +478,11 @@ func (s *OntologyIndividualService) Usage(ctx context.Context, req *ontologyV1.G
 		return nil, err
 	}
 
-	objectAxioms, err := s.axiomRepo.ListByObject(ctx, ontologyID, e.ID)
+	objectAxioms, err := s.axiomRepo.ListByObjectFiltered(ctx, data.ObjectReferenceFilter{
+		OntologyID: ontologyID,
+		ObjectIDs:  []uint32{e.ID},
+		AxiomTypes: []uint32{ontology.AxiomObjectPropertyAssertion},
+	})
 	if err != nil {
 		return nil, adminV1.ErrorInternalServerError("query references failed")
 	}
@@ -489,7 +493,7 @@ func (s *OntologyIndividualService) Usage(ctx context.Context, req *ontologyV1.G
 		if ax.SubjectID == nil || ax.AxiomType == nil {
 			continue
 		}
-		if *ax.AxiomType != ontology.AxiomObjectPropertyAssertion || *ax.SubjectID == e.ID {
+		if *ax.SubjectID == e.ID {
 			continue
 		}
 		if _, ok := seen[*ax.SubjectID]; ok {

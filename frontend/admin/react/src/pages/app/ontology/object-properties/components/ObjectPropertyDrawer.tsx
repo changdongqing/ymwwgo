@@ -11,6 +11,7 @@ import type {
   ontologyservicev1_CreateObjectPropertyRequest,
   ontologyservicev1_ObjectPropertyChain,
   ontologyservicev1_ObjectPropertyTreeNode,
+  ontologyservicev1_ReferencePosition,
 } from '@/api/generated/admin/service/v1';
 import {
   getOntologyErrorReason,
@@ -20,6 +21,7 @@ import {
   useUpdateObjectProperty,
 } from '@/api/hooks/ontologyObjectProperty';
 import AnnotationListEditor, { cleanAnnotationRows } from '../../components/AnnotationListEditor';
+import EntityReferencesPanel from '../../components/EntityReferencesPanel';
 import { useOntologyClassTree } from '@/api/hooks/ontologyClass';
 import { PROPERTY_CHARACTERISTICS } from '../constants';
 
@@ -35,7 +37,17 @@ interface ObjectPropertyDrawerProps {
   onSuccess: (saved: { id: number | null; superIds: number[] }) => void;
   /** 乐观锁冲突回调（页面统一刷新树/列表/frame） */
   onVersionConflict: () => void;
+  /** 「被引用」面板点击属性节点 → 切到该属性的编辑抽屉（同页跳转；缺省禁用跳转） */
+  onOpenProperty?: (propertyId: number) => void;
 }
+
+/** 「被引用」默认集（08 号文档 §6.2：对象属性 30/31/32/34/35/36/37/61，三位置全开）——模块级常量保持引用稳定 */
+const OBJECT_PROPERTY_REFERENCE_AXIOM_TYPES: number[] = [30, 31, 32, 34, 35, 36, 37, 61];
+const OBJECT_PROPERTY_REFERENCE_POSITIONS: ontologyservicev1_ReferencePosition[] = [
+  'REFERENCE_POSITION_OBJECT',
+  'REFERENCE_POSITION_PREDICATE',
+  'REFERENCE_POSITION_CHAIN_MEMBER',
+];
 
 /** 与后端同口径的局部名正则（NCName 宽松版，允许中文/字母/下划线/连字符，首字符非数字） */
 const LOCAL_NAME_PATTERN = /^[\p{L}_][\p{L}\p{N}_-]*$/u;
@@ -62,6 +74,7 @@ const ObjectPropertyDrawer: React.FC<ObjectPropertyDrawerProps> = ({
   onClose,
   onSuccess,
   onVersionConflict,
+  onOpenProperty,
 }) => {
   const { t } = useTranslation('ontology');
   const formRef = useRef<ProFormInstance>(null);
@@ -558,6 +571,24 @@ const ObjectPropertyDrawer: React.FC<ObjectPropertyDrawerProps> = ({
       </Form.Item>
 
       <ProFormSwitch name="deprecated" label={t('objectProperty.deprecated')} />
+
+      {/* 「被引用」面板（08 期共享组件：对象属性三位置全开：宾语位/谓词位/属性链成员位） */}
+      {isEdit && (
+        <div style={{ marginTop: 24, borderTop: '1px solid #f0f0f0', paddingTop: 16 }}>
+          <Typography.Title level={5} style={{ marginTop: 0 }}>
+            {t('reference.sectionTitle')}
+          </Typography.Title>
+          <EntityReferencesPanel
+            ontologyId={ontologyId}
+            entityId={propertyId}
+            defaultAxiomTypes={OBJECT_PROPERTY_REFERENCE_AXIOM_TYPES}
+            defaultPositions={OBJECT_PROPERTY_REFERENCE_POSITIONS}
+            openableEntityType={20}
+            onOpenEntity={onOpenProperty}
+            enabled={open && propertyId != null}
+          />
+        </div>
+      )}
     </DrawerForm>
   );
 };

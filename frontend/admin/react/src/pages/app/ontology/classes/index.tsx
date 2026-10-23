@@ -252,6 +252,7 @@ const OntologyClassManagement = () => {
         onClose={() => setDrawer({ open: false, classId: null, defaultParentIds: [], parentKey: null })}
         onSuccess={handleDrawerSuccess}
         onVersionConflict={refreshAll}
+        onOpenClass={openEdit}
       />
 
       <Modal

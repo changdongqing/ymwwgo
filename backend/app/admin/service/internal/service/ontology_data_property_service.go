@@ -370,7 +370,11 @@ func (s *OntologyDataPropertyService) Usage(ctx context.Context, req *ontologyV1
 
 	// 引用集 = object 侧、DataPropertyUsageAxiomTypes（40/44/45）命中。
 	// 无链扫描（数据属性没有属性链）；06 期 62 断言（谓词走 object_id）命中同一查询，届时类型集追加 62。
-	objectAxioms, err := s.axiomRepo.ListByObject(ctx, ontologyID, e.ID)
+	objectAxioms, err := s.axiomRepo.ListByObjectFiltered(ctx, data.ObjectReferenceFilter{
+		OntologyID: ontologyID,
+		ObjectIDs:  []uint32{e.ID},
+		AxiomTypes: ontology.DataPropertyUsageAxiomTypes,
+	})
 	if err != nil {
 		return nil, adminV1.ErrorInternalServerError("query references failed")
 	}
@@ -383,9 +387,6 @@ func (s *OntologyDataPropertyService) Usage(ctx context.Context, req *ontologyV1
 	refKeys := make([]refKey, 0)
 	for _, ax := range objectAxioms {
 		if ax.SubjectID == nil || ax.AxiomType == nil {
-			continue
-		}
-		if !isUsageAxiomType(*ax.AxiomType, ontology.DataPropertyUsageAxiomTypes) {
 			continue
 		}
 		key := refKey{entityID: *ax.SubjectID, axiomType: *ax.AxiomType}

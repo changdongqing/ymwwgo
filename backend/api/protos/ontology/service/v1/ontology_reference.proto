@@ -1,0 +1,160 @@
+syntax = "proto3";
+
+package ontology.service.v1;
+
+option go_package = "go-wind-admin/api/gen/go/ontology/service/v1;ontologyv1";
+
+import "gnostic/openapi/v3/annotations.proto";
+
+import "google/protobuf/timestamp.proto";
+
+// 通用反查（引用边查询；08 号文档）
+//
+// 只读投影：不产生新事实、不写变更日志、不动本体版本。返回物是「边」（一条未删公理行），
+// 不是「去重实体清单」——与六类实体既有 Usage RPC（删除保护语义）的本质差异。
+// 单端点 + 参数化（axiomTypes / positions），不为六类实体各配一个 References RPC。
+service OntologyReferenceService {
+    // 反查引用目标实体的边（分页；positions 缺省 = 目标作为宾语）
+    rpc ListReferences (ListReferencesRequest) returns (ListReferencesResponse) {}
+}
+
+// 目标实体在公理行内的命中位置（反查方向）
+enum ReferencePosition {
+    REFERENCE_POSITION_UNSPECIFIED = 0;         // 未指定（等价于 OBJECT）
+    REFERENCE_POSITION_OBJECT = 1;              // 目标作为宾语（object_id）
+    REFERENCE_POSITION_PREDICATE = 2;           // 目标 IRI 作为谓词（predicate_iri；61 断言）
+    REFERENCE_POSITION_CHAIN_MEMBER = 3;        // 目标 id 出现在 37 属性链成员 JSON 数组内
+}
+
+// 引用节点：边的一端（已软删实体不回显；deprecated 仅标记）
+message ReferenceNode {
+    optional uint32 id = 1 [
+        json_name = "id",
+        (gnostic.openapi.v3.property) = { description: "实体ID（谓词 IRI 反解失败时为空）" }
+    ]; // 实体ID
+    optional uint32 entity_type = 2 [
+        json_name = "entityType",
+        (gnostic.openapi.v3.property) = { description: "实体类型号段（10 类/20 对象属性/30 数据属性/40 注解属性/50 数据类型/60 个体）" }
+    ]; // 实体类型号段
+    optional string local_name = 3 [
+        json_name = "localName",
+        (gnostic.openapi.v3.property) = { description: "局部名（未解析时为 IRI 尾段）" }
+    ]; // 局部名
+    optional string display_label = 4 [
+        json_name = "displayLabel",
+        (gnostic.openapi.v3.property) = { description: "显示名（rdfs:label 渲染缓存）" }
+    ]; // 显示名
+    optional string iri = 5 [
+        json_name = "iri",
+        (gnostic.openapi.v3.property) = { description: "完整 IRI" }
+    ]; // 完整 IRI
+    optional bool deprecated = 6 [
+        json_name = "deprecated",
+        (gnostic.openapi.v3.property) = { description: "是否废弃（owl:deprecated；只标记不过滤）" }
+    ]; // 是否废弃
+    optional bool unresolved = 7 [
+        json_name = "unresolved",
+        (gnostic.openapi.v3.property) = { description: "是否为未解析节点（谓词 IRI 无对应实体时以 IRI 尾段构造）" }
+    ]; // 是否未解析
+}
+
+// 一条引用边 = 一条未删公理行（成对公理已按无序对去重并标记 paired）
+message ReferenceEdge {
+    optional uint64 axiom_id = 1 [
+        json_name = "axiomId",
+        (gnostic.openapi.v3.property) = { description: "公理行ID（成对去重后为较小行号）" }
+    ]; // 公理行ID
+    optional uint32 axiom_type = 2 [
+        json_name = "axiomType",
+        (gnostic.openapi.v3.property) = { description: "公理类型号段（20/21/22/30/31/32/34/35/36/37/40/41/42/44/45/50/60/61/62/100）" }
+    ]; // 公理类型号段
+    optional uint32 sort_order = 3 [
+        json_name = "sortOrder",
+        (gnostic.openapi.v3.property) = { description: "行内排序值（60 类型断言的主类目序等）" }
+    ]; // 行内排序值
+    optional ReferenceNode subject = 4 [
+        json_name = "subject",
+        (gnostic.openapi.v3.property) = { description: "主语节点（引用方实体）" }
+    ]; // 主语节点
+    optional ReferenceNode predicate = 5 [
+        json_name = "predicate",
+        (gnostic.openapi.v3.property) = { description: "谓词节点（61 谓词 IRI 反解的对象属性；62 的数据属性实体；100 的注解属性实体；其余类型为空）" }
+    ]; // 谓词节点
+    optional ReferenceNode object = 6 [
+        json_name = "object",
+        (gnostic.openapi.v3.property) = { description: "宾语节点（object_id 指向的实体；字面量边为空）" }
+    ]; // 宾语节点
+    optional string literal_value = 7 [
+        json_name = "literalValue",
+        (gnostic.openapi.v3.property) = { description: "字面量（62/100 的值；42 内建轨 IRI；37 链成员 JSON）" }
+    ]; // 字面量
+    optional string lang = 8 [
+        json_name = "lang",
+        (gnostic.openapi.v3.property) = { description: "语言标签（62/100 语言字面量）" }
+    ]; // 语言标签
+    optional bool paired = 9 [
+        json_name = "paired",
+        (gnostic.openapi.v3.property) = { description: "成对公理去重标记（21/22/34/35/36/44/45）" }
+    ]; // 成对公理去重标记
+    optional google.protobuf.Timestamp updated_at = 10 [
+        json_name = "updatedAt",
+        (gnostic.openapi.v3.property) = { description: "公理行更新时间" }
+    ]; // 公理行更新时间
+    optional ReferencePosition position = 11 [
+        json_name = "position",
+        (gnostic.openapi.v3.property) = { description: "本边命中的位置（同一实体可同时出现在宾语位与谓词位，各为独立边）" }
+    ]; // 本边命中的位置
+}
+
+// 通用反查 - 请求（扁平请求体；GET query 绑定支持重复参数 axiomTypes=61&axiomTypes=62）
+message ListReferencesRequest {
+    optional uint32 ontology_id = 1 [
+        json_name = "ontologyId",
+        (gnostic.openapi.v3.property) = { description: "本体ID（必填；跨本体禁止）" }
+    ]; // 本体ID
+    optional uint32 target_id = 2 [
+        json_name = "targetId",
+        (gnostic.openapi.v3.property) = { description: "被反查的实体ID（必填）" }
+    ]; // 被反查的实体ID
+    repeated uint32 axiom_types = 3 [
+        json_name = "axiomTypes",
+        (gnostic.openapi.v3.property) = { description: "反查的公理类型子集（缺省 = 08 号文档 §3.2 默认集；未知号段 400）" }
+    ]; // 反查的公理类型子集
+    optional string predicate_iri = 4 [
+        json_name = "predicateIri",
+        (gnostic.openapi.v3.property) = { description: "谓词收敛 IRI（仅 axiomTypes ⊆ {61,62} 允许；61 按 predicate_iri 匹配，62 按数据属性实体 object_id 匹配）" }
+    ]; // 谓词收敛 IRI
+    optional bool include_descendants = 5 [
+        json_name = "includeDescendants",
+        (gnostic.openapi.v3.property) = { description: "类目标时含子类实例与子类边（仅 60/20；其余类型按目标精确匹配）" }
+    ]; // 含子类
+    optional bool exclude_deprecated = 6 [
+        json_name = "excludeDeprecated",
+        (gnostic.openapi.v3.property) = { description: "是否排除含 deprecated 端的边（缺省 false = 只标记不过滤）" }
+    ]; // 排除废弃端
+    optional int32 page = 7 [
+        json_name = "page",
+        (gnostic.openapi.v3.property) = { description: "页码（≥1，缺省 1）" }
+    ]; // 页码
+    optional int32 page_size = 8 [
+        json_name = "pageSize",
+        (gnostic.openapi.v3.property) = { description: "每页条数（1~200，缺省 20）" }
+    ]; // 每页条数
+    optional string order_by = 9 [
+        json_name = "orderBy",
+        (gnostic.openapi.v3.property) = { description: "排序（JSON 数组字符串，允许 id/updated_at，缺省 [\"-id\"]）" }
+    ]; // 排序
+    repeated ReferencePosition positions = 10 [
+        json_name = "positions",
+        (gnostic.openapi.v3.property) = { description: "命中位置集合（缺省 = [OBJECT]；属性抽屉传三值全开）" }
+    ]; // 命中位置集合
+}
+
+// 通用反查 - 回应
+message ListReferencesResponse {
+    repeated ReferenceEdge edges = 1 [json_name = "edges"]; // 引用边（当前页）
+    optional int64 total = 2 [
+        json_name = "total",
+        (gnostic.openapi.v3.property) = { description: "去重/过滤后的总边数" }
+    ]; // 总边数
+}

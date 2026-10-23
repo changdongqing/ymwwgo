@@ -1,12 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ProFormInstance } from '@ant-design/pro-components';
 import { DrawerForm, ProFormSwitch, ProFormText, ProFormTextArea } from '@ant-design/pro-components';
-import { Alert, App, Button, Form, Input, Modal, Select, Space, Tooltip } from 'antd';
+import { Alert, App, Button, Form, Input, Modal, Select, Space, Tooltip, Typography } from 'antd';
 import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import { useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 
-import type { ontologyservicev1_CreateDatatypeRequest } from '@/api/generated/admin/service/v1';
+import type {
+  ontologyservicev1_CreateDatatypeRequest,
+  ontologyservicev1_ReferencePosition,
+} from '@/api/generated/admin/service/v1';
 import {
   getOntologyErrorReason,
   useCreateDatatype,
@@ -14,6 +17,7 @@ import {
   useUpdateDatatype,
 } from '@/api/hooks/ontologyDatatype';
 import AnnotationListEditor, { cleanAnnotationRows } from '../../components/AnnotationListEditor';
+import EntityReferencesPanel from '../../components/EntityReferencesPanel';
 import {
   DATATYPE_LABELS,
   FACET_META,
@@ -33,7 +37,13 @@ interface DatatypeDrawerProps {
   onSuccess: () => void;
   /** 乐观锁冲突回调（页面统一刷新） */
   onVersionConflict: () => void;
+  /** 「被引用」面板点击数据类型节点 → 切到该数据类型的编辑抽屉（同页跳转；缺省禁用跳转） */
+  onOpenDatatype?: (datatypeId: number) => void;
 }
+
+/** 「被引用」默认集（08 号文档 §6.2：数据类型 42 派生轨 / 46，宾语位）——模块级常量保持引用稳定 */
+const DATATYPE_REFERENCE_AXIOM_TYPES: number[] = [42, 46];
+const OBJECT_POSITION: ontologyservicev1_ReferencePosition[] = ['REFERENCE_POSITION_OBJECT'];
 
 /** 与后端同口径的局部名正则（NCName 宽松版，允许中文/字母/下划线/连字符，首字符非数字） */
 const LOCAL_NAME_PATTERN = /^[\p{L}_][\p{L}\p{N}_-]*$/u;
@@ -59,6 +69,7 @@ const DatatypeDrawer: React.FC<DatatypeDrawerProps> = ({
   onClose,
   onSuccess,
   onVersionConflict,
+  onOpenDatatype,
 }) => {
   const { t } = useTranslation('ontology');
   const formRef = useRef<ProFormInstance>(null);
@@ -464,6 +475,24 @@ const DatatypeDrawer: React.FC<DatatypeDrawerProps> = ({
       </Form.Item>
 
       <ProFormSwitch name="deprecated" label={t('datatype.deprecated')} />
+
+      {/* 「被引用」面板（08 期共享组件：数据类型宾语位，42 值域派生轨） */}
+      {isEdit && (
+        <div style={{ marginTop: 24, borderTop: '1px solid #f0f0f0', paddingTop: 16 }}>
+          <Typography.Title level={5} style={{ marginTop: 0 }}>
+            {t('reference.sectionTitle')}
+          </Typography.Title>
+          <EntityReferencesPanel
+            ontologyId={ontologyId}
+            entityId={datatypeId}
+            defaultAxiomTypes={DATATYPE_REFERENCE_AXIOM_TYPES}
+            defaultPositions={OBJECT_POSITION}
+            openableEntityType={50}
+            onOpenEntity={onOpenDatatype}
+            enabled={open && datatypeId != null}
+          />
+        </div>
+      )}
     </DrawerForm>
   );
 };

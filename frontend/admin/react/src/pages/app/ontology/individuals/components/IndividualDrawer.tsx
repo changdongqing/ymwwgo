@@ -11,6 +11,7 @@ import type {
   ontologyservicev1_DataAssertionInput,
   ontologyservicev1_ObjectAssertionInput,
   ontologyservicev1_OntologyClassTreeNode,
+  ontologyservicev1_ReferencePosition,
   ontologyservicev1_UpdateIndividualRequest,
 } from '@/api/generated/admin/service/v1';
 import {
@@ -25,6 +26,7 @@ import { useOntologyClassTree } from '@/api/hooks/ontologyClass';
 import { useOntologyDataPropertyTree } from '@/api/hooks/ontologyDataProperty';
 import { useOntologyObjectPropertyTree } from '@/api/hooks/ontologyObjectProperty';
 import AnnotationListEditor, { cleanAnnotationRows } from '../../components/AnnotationListEditor';
+import EntityReferencesPanel from '../../components/EntityReferencesPanel';
 
 interface IndividualDrawerProps {
   open: boolean;
@@ -36,10 +38,16 @@ interface IndividualDrawerProps {
   onSuccess: () => void;
   /** 乐观锁冲突回调（页面统一刷新） */
   onVersionConflict: () => void;
+  /** 「被引用」面板点击个体节点 → 切到该个体的编辑抽屉（同页跳转；缺省禁用跳转） */
+  onOpenIndividual?: (individualId: number) => void;
 }
 
 /** 与后端同口径的编码字符集（06 号文档 §3.3：首字符字母/数字，允许点/下划线/连字符） */
 const CODE_CHARSET_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
+
+/** 「被引用」默认集（08 号文档 §6.2：个体的 61/62/100，宾语位）——模块级常量保持引用稳定 */
+const INDIVIDUAL_REFERENCE_AXIOM_TYPES: number[] = [61, 62, 100];
+const OBJECT_POSITION: ontologyservicev1_ReferencePosition[] = ['REFERENCE_POSITION_OBJECT'];
 
 /**
  * 个体表单（DrawerForm + Form 实例，06 号文档 §6.3/§6.4）：
@@ -57,6 +65,7 @@ const IndividualDrawer: React.FC<IndividualDrawerProps> = ({
   onClose,
   onSuccess,
   onVersionConflict,
+  onOpenIndividual,
 }) => {
   const { t } = useTranslation('ontology');
   const [form] = Form.useForm();
@@ -554,6 +563,24 @@ const IndividualDrawer: React.FC<IndividualDrawerProps> = ({
       </Form.Item>
 
       <ProFormSwitch name="deprecated" label={t('individual.deprecated')} />
+
+      {/* 「被引用」面板（08 期共享组件；只读边明细，编辑走各实体既有抽屉） */}
+      {isEdit && (
+        <div style={{ marginTop: 24, borderTop: '1px solid #f0f0f0', paddingTop: 16 }}>
+          <Typography.Title level={5} style={{ marginTop: 0 }}>
+            {t('reference.sectionTitle')}
+          </Typography.Title>
+          <EntityReferencesPanel
+            ontologyId={ontologyId}
+            entityId={individualId}
+            defaultAxiomTypes={INDIVIDUAL_REFERENCE_AXIOM_TYPES}
+            defaultPositions={OBJECT_POSITION}
+            openableEntityType={60}
+            onOpenEntity={onOpenIndividual}
+            enabled={open && individualId != null}
+          />
+        </div>
+      )}
 
       {/* 高级折叠区（仅创建态）：localName 默认折叠于"高级"，编码是独立字段——防止"编码当标识"回潮 */}
       {!isEdit && (

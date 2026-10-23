@@ -15,6 +15,7 @@ import (
 	"go-wind-admin/app/admin/service/internal/data/ent/ontentity"
 	"go-wind-admin/app/admin/service/internal/data/ent/ontontology"
 	"go-wind-admin/app/admin/service/internal/data/ent/ontserial"
+	"go-wind-admin/app/admin/service/internal/data/ent/predicate"
 	"go-wind-admin/app/admin/service/internal/ontology"
 )
 
@@ -179,6 +180,134 @@ func (r *OntAxiomRepo) ListBySubjects(ctx context.Context, ontologyID uint32, su
 		).
 		Order(ent.Asc(ontaxiom.FieldSortOrder), ent.Asc(ontaxiom.FieldID)).
 		All(ctx)
+}
+
+// ---- 08 期通用反查（引用边查询）：目标侧/谓词侧过滤读 ----
+//
+// 与六个 Usage 共用（§2.4）：Usage 是"引用方实体集合"（删除保护），反查是"边明细"（浏览），
+// 但两者取数的索引路径相同，统一收敛到本组方法，避免"弹窗说被引用、面板却说没有"。
+
+// ObjectReferenceFilter 目标侧（object_id）过滤条件。
+// ObjectIDs 支持类目标 includeDescendants 展开后的多类集合；PredicateIRI/PredicateEntityID
+// 是"谓词收敛"（§3.2）：61 行按 predicate_iri 精确匹配，62 行按数据属性实体 object_id 匹配。
+type ObjectReferenceFilter struct {
+	OntologyID        uint32
+	ObjectIDs         []uint32
+	AxiomTypes        []uint32
+	PredicateIRI      string
+	PredicateEntityID uint32
+}
+
+// apply 构造目标侧查询（调用方负责空 ObjectIDs 短路）
+func (f ObjectReferenceFilter) apply(q *ent.OntAxiomQuery) *ent.OntAxiomQuery {
+	q = q.Where(
+		ontaxiom.OntologyIDEQ(f.OntologyID),
+		ontaxiom.ObjectIDIn(f.ObjectIDs...),
+		ontaxiom.DeletedAtIsNil(),
+	)
+	if len(f.AxiomTypes) > 0 {
+		q = q.Where(ontaxiom.AxiomTypeIn(f.AxiomTypes...))
+	}
+	if f.PredicateIRI != "" || f.PredicateEntityID != 0 {
+		cond := make([]predicate.OntAxiom, 0, 2)
+		if f.PredicateIRI != "" {
+			cond = append(cond, ontaxiom.And(
+				ontaxiom.AxiomTypeEQ(ontology.AxiomObjectPropertyAssertion),
+				ontaxiom.PredicateIriEQ(f.PredicateIRI),
+			))
+		}
+		if f.PredicateEntityID != 0 {
+			cond = append(cond, ontaxiom.And(
+				ontaxiom.AxiomTypeEQ(ontology.AxiomDataPropertyAssertion),
+				ontaxiom.ObjectIDEQ(f.PredicateEntityID),
+			))
+		}
+		q = q.Where(ontaxiom.Or(cond...))
+	}
+	return q
+}
+
+// ListByObjectFiltered 目标侧反查全量行（内存合并/去重/分页管线用；按 id 升序稳定）
+func (r *OntAxiomRepo) ListByObjectFiltered(ctx context.Context, filter ObjectReferenceFilter) ([]*ent.OntAxiom, error) {
+	if len(filter.ObjectIDs) == 0 {
+		return nil, nil
+	}
+	return filter.apply(r.entClient.Client().OntAxiom.Query()).
+		Order(ent.Asc(ontaxiom.FieldID)).
+		All(ctx)
+}
+
+// ListByObjectFilteredPage 目标侧反查分页行（单位置直查快路径；与 CountByObjectFiltered 同条件）
+func (r *OntAxiomRepo) ListByObjectFilteredPage(ctx context.Context, filter ObjectReferenceFilter, offset, limit int, desc bool) ([]*ent.OntAxiom, error) {
+	if len(filter.ObjectIDs) == 0 {
+		return nil, nil
+	}
+	q := filter.apply(r.entClient.Client().OntAxiom.Query())
+	if limit > 0 {
+		q = q.Limit(limit)
+	}
+	if offset > 0 {
+		q = q.Offset(offset)
+	}
+	if desc {
+		return q.Order(ent.Desc(ontaxiom.FieldID)).All(ctx)
+	}
+	return q.Order(ent.Asc(ontaxiom.FieldID)).All(ctx)
+}
+
+// CountByObjectFiltered 目标侧反查计数（与 ListByObjectFiltered 同条件）
+func (r *OntAxiomRepo) CountByObjectFiltered(ctx context.Context, filter ObjectReferenceFilter) (int, error) {
+	if len(filter.ObjectIDs) == 0 {
+		return 0, nil
+	}
+	return filter.apply(r.entClient.Client().OntAxiom.Query()).Count(ctx)
+}
+
+// ListBySubjectFiltered 主语侧按类型取数（成对公理反向伙伴行：目标作主语、另一方作宾语）
+func (r *OntAxiomRepo) ListBySubjectFiltered(ctx context.Context, ontologyID uint32, subjectID uint32, axiomTypes []uint32) ([]*ent.OntAxiom, error) {
+	q := r.entClient.Client().OntAxiom.Query().
+		Where(
+			ontaxiom.OntologyIDEQ(ontologyID),
+			ontaxiom.SubjectIDEQ(subjectID),
+			ontaxiom.DeletedAtIsNil(),
+		)
+	if len(axiomTypes) > 0 {
+		q = q.Where(ontaxiom.AxiomTypeIn(axiomTypes...))
+	}
+	return q.Order(ent.Asc(ontaxiom.FieldID)).All(ctx)
+}
+
+// ListByPredicateIRIPaged 谓词侧反查分页行（61 断言；谓词位直查快路径）
+func (r *OntAxiomRepo) ListByPredicateIRIPaged(ctx context.Context, ontologyID uint32, axiomType uint32, predicateIRI string, offset, limit int, desc bool) ([]*ent.OntAxiom, error) {
+	q := r.entClient.Client().OntAxiom.Query().
+		Where(
+			ontaxiom.OntologyIDEQ(ontologyID),
+			ontaxiom.AxiomTypeEQ(axiomType),
+			ontaxiom.PredicateIriEQ(predicateIRI),
+			ontaxiom.DeletedAtIsNil(),
+		)
+	if limit > 0 {
+		q = q.Limit(limit)
+	}
+	if offset > 0 {
+		q = q.Offset(offset)
+	}
+	if desc {
+		return q.Order(ent.Desc(ontaxiom.FieldID)).All(ctx)
+	}
+	return q.Order(ent.Asc(ontaxiom.FieldID)).All(ctx)
+}
+
+// CountByPredicateIRI 谓词侧反查计数（与 ListByPredicateIRIPaged 同条件）
+func (r *OntAxiomRepo) CountByPredicateIRI(ctx context.Context, ontologyID uint32, axiomType uint32, predicateIRI string) (int, error) {
+	return r.entClient.Client().OntAxiom.Query().
+		Where(
+			ontaxiom.OntologyIDEQ(ontologyID),
+			ontaxiom.AxiomTypeEQ(axiomType),
+			ontaxiom.PredicateIriEQ(predicateIRI),
+			ontaxiom.DeletedAtIsNil(),
+		).
+		Count(ctx)
 }
 
 // distinctSubjectIDs 公理行 → 去重主语 id 集（保序）

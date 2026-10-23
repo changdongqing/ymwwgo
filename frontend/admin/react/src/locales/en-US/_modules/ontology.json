@@ -680,5 +680,62 @@
       "execute": "Start import",
       "executeSuccess": "Import completed"
     }
+  },
+  "reference": {
+    "sectionTitle": "References",
+    "empty": "No entity references this entity",
+    "loadFailed": "Failed to load references",
+    "refresh": "Refresh",
+    "total": "{{total}} reference(s)",
+    "pairedTag": "Paired",
+    "deprecatedTag": "Deprecated",
+    "deprecatedHint": "This endpoint entity is marked deprecated (owl:deprecated)",
+    "unresolvedHint": "No entity found for IRI: {{iri}}",
+    "col": {
+      "subject": "Subject",
+      "predicate": "Predicate",
+      "object": "Object / Literal",
+      "axiomType": "Axiom Type",
+      "position": "Position",
+      "updatedAt": "Updated At"
+    },
+    "filter": {
+      "predicate": "Filter by predicate (object / data property)",
+      "objectProperties": "Object Properties",
+      "dataProperties": "Data Properties",
+      "includeDescendants": "Include subclasses"
+    },
+    "position": {
+      "object": "Object position",
+      "predicate": "Predicate position",
+      "chainMember": "Chain member position"
+    },
+    "axiomType": {
+      "declaration": "Declaration",
+      "subClassOf": "Subclass of",
+      "disjointWith": "Disjoint with",
+      "equivalentClasses": "Equivalent classes",
+      "subObjectPropertyOf": "Sub object property of",
+      "objectPropertyDomain": "Object property domain",
+      "objectPropertyRange": "Object property range",
+      "objectPropertyCharacteristic": "Object property characteristic",
+      "inverseOf": "Inverse of",
+      "equivalentObjectProperties": "Equivalent object properties",
+      "disjointObjectProperties": "Disjoint object properties",
+      "subPropertyChainOf": "Property chain",
+      "subDataPropertyOf": "Sub data property of",
+      "dataPropertyDomain": "Data property domain",
+      "dataPropertyRange": "Data property range",
+      "dataPropertyCharacteristic": "Data property characteristic",
+      "equivalentDataProperties": "Equivalent data properties",
+      "disjointDataProperties": "Disjoint data properties",
+      "datatypeDefinition": "Datatype definition",
+      "subAnnotationPropertyOf": "Sub annotation property of",
+      "typeAssertion": "Type assertion",
+      "objectPropertyAssertion": "Object property assertion",
+      "dataPropertyAssertion": "Data property assertion",
+      "annotationAssertion": "Annotation assertion",
+      "unknown": "Axiom {{code}}"
+    }
   }
 }

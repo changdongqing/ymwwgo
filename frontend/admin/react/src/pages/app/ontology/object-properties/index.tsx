@@ -239,6 +239,7 @@ const OntologyObjectPropertyManagement = () => {
         onClose={() => setDrawer({ open: false, propertyId: null, defaultSuperIds: [], parentKey: null })}
         onSuccess={handleDrawerSuccess}
         onVersionConflict={refreshAll}
+        onOpenProperty={openEdit}
       />
 
       <Modal

@@ -10236,6 +10236,143 @@ export type ontologyservicev1_OwlImportExecuteResponse = {
   ontologyId: number | undefined;
 };
 
+// 通用反查（admin 门面；08 号文档）
+//
+// 只读端点，GET query 绑定（扁平字段，本 RPC 非 CRUD——铁律 3 的正确适用：不包 {data:{}}）。
+// 重复字段在 query 中以重复参数表达：axiomTypes=61&axiomTypes=62、
+// positions=REFERENCE_POSITION_OBJECT&positions=REFERENCE_POSITION_PREDICATE。
+export interface OntologyReferenceService {
+  // 反查引用目标实体的边（分页；目标作为宾语/谓词/属性链成员）
+  ListReferences(
+    request: ontologyservicev1_ListReferencesRequest,
+  ): Promise<ontologyservicev1_ListReferencesResponse>;
+}
+
+export function createOntologyReferenceServiceClient(
+  transport: ClientTransport,
+): OntologyReferenceService {
+  return {
+    ListReferences(request) {
+      const path = `/admin/v1/ontology/references`;
+      const body = null;
+      const queryParams: string[] = [];
+      if (request.ontologyId) {
+        queryParams.push(
+          `ontologyId=${encodeURIComponent(request.ontologyId.toString())}`,
+        );
+      }
+      if (request.targetId) {
+        queryParams.push(
+          `targetId=${encodeURIComponent(request.targetId.toString())}`,
+        );
+      }
+      if (request.axiomTypes) {
+        request.axiomTypes.forEach((x) => {
+          queryParams.push(
+            `axiomTypes=${encodeURIComponent(x.toString())}`,
+          );
+        });
+      }
+      if (request.predicateIri) {
+        queryParams.push(
+          `predicateIri=${encodeURIComponent(request.predicateIri.toString())}`,
+        );
+      }
+      if (request.includeDescendants) {
+        queryParams.push(
+          `includeDescendants=${encodeURIComponent(request.includeDescendants.toString())}`,
+        );
+      }
+      if (request.excludeDeprecated) {
+        queryParams.push(
+          `excludeDeprecated=${encodeURIComponent(request.excludeDeprecated.toString())}`,
+        );
+      }
+      if (request.page) {
+        queryParams.push(
+          `page=${encodeURIComponent(request.page.toString())}`,
+        );
+      }
+      if (request.pageSize) {
+        queryParams.push(
+          `pageSize=${encodeURIComponent(request.pageSize.toString())}`,
+        );
+      }
+      if (request.orderBy) {
+        queryParams.push(
+          `orderBy=${encodeURIComponent(request.orderBy.toString())}`,
+        );
+      }
+      if (request.positions) {
+        request.positions.forEach((x) => {
+          queryParams.push(
+            `positions=${encodeURIComponent(x.toString())}`,
+          );
+        });
+      }
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join('&')}`;
+      }
+      return transport.unary(uri, 'GET', body, {
+        service: 'OntologyReferenceService',
+        method: 'ListReferences',
+      }) as Promise<ontologyservicev1_ListReferencesResponse>;
+    },
+  };
+}
+// 通用反查 - 请求（扁平请求体；GET query 绑定支持重复参数 axiomTypes=61&axiomTypes=62）
+export type ontologyservicev1_ListReferencesRequest = {
+  axiomTypes: number[] | undefined;
+  excludeDeprecated?: boolean;
+  includeDescendants?: boolean;
+  ontologyId?: number;
+  orderBy?: string;
+  page?: number;
+  pageSize?: number;
+  positions: ontologyservicev1_ReferencePosition[] | undefined;
+  predicateIri?: string;
+  targetId?: number;
+};
+
+// 目标实体在公理行内的命中位置（反查方向）
+export type ontologyservicev1_ReferencePosition =
+  | 'REFERENCE_POSITION_CHAIN_MEMBER'
+  | 'REFERENCE_POSITION_OBJECT'
+  | 'REFERENCE_POSITION_PREDICATE'
+  | 'REFERENCE_POSITION_UNSPECIFIED';
+// 通用反查 - 回应
+export type ontologyservicev1_ListReferencesResponse = {
+  edges: ontologyservicev1_ReferenceEdge[] | undefined;
+  total?: number;
+};
+
+// 一条引用边 = 一条未删公理行（成对公理已按无序对去重并标记 paired）
+export type ontologyservicev1_ReferenceEdge = {
+  axiomId?: number;
+  axiomType?: number;
+  lang?: string;
+  literalValue?: string;
+  object?: ontologyservicev1_ReferenceNode;
+  paired?: boolean;
+  position?: ontologyservicev1_ReferencePosition;
+  predicate?: ontologyservicev1_ReferenceNode;
+  sortOrder?: number;
+  subject?: ontologyservicev1_ReferenceNode;
+  updatedAt?: wellKnownTimestamp;
+};
+
+// 引用节点：边的一端（已软删实体不回显；deprecated 仅标记）
+export type ontologyservicev1_ReferenceNode = {
+  deprecated?: boolean;
+  displayLabel?: string;
+  entityType?: number;
+  id?: number;
+  iri?: string;
+  localName?: string;
+  unresolved?: boolean;
+};
+
 // 操作审计日志管理服务
 export interface OperationAuditLogService {
   // 查询操作审计日志列表
@@ -14503,6 +14640,7 @@ export class ApiClient {
   private _ontologyIndividualService?: OntologyIndividualService;
   private _ontologyObjectPropertyService?: OntologyObjectPropertyService;
   private _ontologyOwlIOService?: OntologyOwlIOService;
+  private _ontologyReferenceService?: OntologyReferenceService;
   private _ontologyService?: OntologyService;
   private _operationAuditLogService?: OperationAuditLogService;
   private _orgUnitService?: OrgUnitService;
@@ -14708,6 +14846,10 @@ export class ApiClient {
 
   get ontologyOwlIOService(): OntologyOwlIOService {
     return this._ontologyOwlIOService ??= createOntologyOwlIOServiceClient(this._transport);
+  }
+
+  get ontologyReferenceService(): OntologyReferenceService {
+    return this._ontologyReferenceService ??= createOntologyReferenceServiceClient(this._transport);
   }
 
   get ontologyService(): OntologyService {

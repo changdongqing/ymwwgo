@@ -327,7 +327,11 @@ func (s *OntologyAnnotationPropertyService) Usage(ctx context.Context, req *onto
 		return nil, err
 	}
 
-	objectAxioms, err := s.axiomRepo.ListByObject(ctx, ontologyID, e.ID)
+	objectAxioms, err := s.axiomRepo.ListByObjectFiltered(ctx, data.ObjectReferenceFilter{
+		OntologyID: ontologyID,
+		ObjectIDs:  []uint32{e.ID},
+		AxiomTypes: ontology.AnnotationPropertyUsageAxiomTypes,
+	})
 	if err != nil {
 		return nil, adminV1.ErrorInternalServerError("query references failed")
 	}
@@ -340,9 +344,6 @@ func (s *OntologyAnnotationPropertyService) Usage(ctx context.Context, req *onto
 	refKeys := make([]refKey, 0)
 	for _, ax := range objectAxioms {
 		if ax.SubjectID == nil || ax.AxiomType == nil {
-			continue
-		}
-		if !isUsageAxiomType(*ax.AxiomType, ontology.AnnotationPropertyUsageAxiomTypes) {
 			continue
 		}
 		key := refKey{entityID: *ax.SubjectID, axiomType: *ax.AxiomType}

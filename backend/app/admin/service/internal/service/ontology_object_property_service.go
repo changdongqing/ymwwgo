@@ -354,7 +354,11 @@ func (s *OntologyObjectPropertyService) Usage(ctx context.Context, req *ontology
 
 	// 引用集 = ① object 侧、ObjectPropertyUsageAxiomTypes（30/34/35/36）命中；
 	// ② 37 链成员包含（全量 37 行 value_text 判定）
-	objectAxioms, err := s.axiomRepo.ListByObject(ctx, ontologyID, e.ID)
+	objectAxioms, err := s.axiomRepo.ListByObjectFiltered(ctx, data.ObjectReferenceFilter{
+		OntologyID: ontologyID,
+		ObjectIDs:  []uint32{e.ID},
+		AxiomTypes: ontology.ObjectPropertyUsageAxiomTypes,
+	})
 	if err != nil {
 		return nil, adminV1.ErrorInternalServerError("query references failed")
 	}
@@ -372,9 +376,6 @@ func (s *OntologyObjectPropertyService) Usage(ctx context.Context, req *ontology
 	refKeys := make([]refKey, 0)
 	for _, ax := range objectAxioms {
 		if ax.SubjectID == nil || ax.AxiomType == nil {
-			continue
-		}
-		if !isUsageAxiomType(*ax.AxiomType, ontology.ObjectPropertyUsageAxiomTypes) {
 			continue
 		}
 		key := refKey{entityID: *ax.SubjectID, axiomType: *ax.AxiomType}
@@ -435,15 +436,6 @@ func (s *OntologyObjectPropertyService) Usage(ctx context.Context, req *ontology
 		}
 	}
 	return usage, nil
-}
-
-func isUsageAxiomType(t uint32, types []uint32) bool {
-	for _, v := range types {
-		if v == t {
-			return true
-		}
-	}
-	return false
 }
 
 // ---- create / update / delete ----

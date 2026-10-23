@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package admin.service.v1;
+
+import "google/api/annotations.proto";
+
+import "ontology/service/v1/ontology_reference.proto";
+
+// 通用反查（admin 门面；08 号文档）
+//
+// 只读端点，GET query 绑定（扁平字段，本 RPC 非 CRUD——铁律 3 的正确适用：不包 {data:{}}）。
+// 重复字段在 query 中以重复参数表达：axiomTypes=61&axiomTypes=62、
+// positions=REFERENCE_POSITION_OBJECT&positions=REFERENCE_POSITION_PREDICATE。
+service OntologyReferenceService {
+    // 反查引用目标实体的边（分页；目标作为宾语/谓词/属性链成员）
+    rpc ListReferences (ontology.service.v1.ListReferencesRequest) returns (ontology.service.v1.ListReferencesResponse) {
+        option (google.api.http) = {
+            get: "/admin/v1/ontology/references"
+        };
+    }
+}
