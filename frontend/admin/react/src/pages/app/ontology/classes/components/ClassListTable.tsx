@@ -122,7 +122,9 @@ const ClassListTable: React.FC<ClassListTableProps> = ({
       <ListTable<ontologyservicev1_OntologyClass>
         actionRef={actionRef}
         columns={columns}
-        title={t('class.listTitle')}
+        // 左树联动/本体切换的取数触发器：ProTable 只认 params 变化（深比较后重置到第 1 页重取），
+        // request 闭包里读 rootId/ontologyId 不会触发重取——漏传时点树节点右表纹丝不动
+        params={{ ontologyId: ontologyId ?? 0, rootId: rootId ?? 0 }}
         request={async (params) => {
           if (ontologyId == null) {
             return { data: [], total: 0, success: true };
@@ -142,7 +144,8 @@ const ClassListTable: React.FC<ClassListTableProps> = ({
           return { data: response.items ?? [], total: response.total ?? 0, success: true };
         }}
         rowKey="id"
-        headerTitle={
+        // 左区表名 + 子树范围 Tag 须走 title（ListTable 约定：headerTitle 与 title/actions 同传时 headerTitle 被丢弃）
+        title={
           <Space>
             <span>{t('class.listTitle')}</span>
             {rootId != null && rootId > 0 && (
