@@ -50,3 +50,8 @@ gui-test-screenshots/
 
 # 依赖目录兜底（各端自己的 .gitignore 之外，防在错误目录跑包管理器把依赖带进仓）
 node_modules/
+
+# 第三方参考本体库（QUDT 3.4.0 / Brick 1.4 / CCO 2.1 上游 TTL，约 35MB，无随附许可文件）
+# 仅本地建模分析用，按上游官方仓库自取；分析结论与裁剪清单见
+# docs/ontology/建模/建模设计/数据单位清单及种子建模分析.md
+docs/ontology/建模/参考本体库/
