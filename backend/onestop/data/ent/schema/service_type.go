@@ -107,6 +107,22 @@ func (ServiceType) Fields() []ent.Field {
 			Optional().
 			Nillable(),
 
+		// 履约形态：工单对象的「单子怎么履约」开关（与 trigger_mode 正交——后者管
+		// 怎么生单）。NULL = 未设置：细类回退小类；两级都空按推导规则给默认值
+		//（0106 子树→运送；解析后 SCHEDULED→计划任务；否则→事件处置），
+		// 显式设置只用于处理推导覆盖不了的特例（如 010405 被服收发按业务形状归运送）。
+		// 枚举存储值与 proto 枚举值名保持一致（KIND_EVENT...），
+		// 供 mapper.EnumTypeConverter 按名称直转
+		field.Enum("order_kind").
+			Comment("履约形态 KIND_EVENT:事件处置 KIND_TASK:计划任务 KIND_TRANSPORT:运送（未设置回退上级；两级都空按 0106 子树/计划生成/事件顺序推导）").
+			NamedValues(
+				"Event", "KIND_EVENT",
+				"Task", "KIND_TASK",
+				"Transport", "KIND_TRANSPORT",
+			).
+			Optional().
+			Nillable(),
+
 		// jsonb 数组列，语义与 sys_org_units.subtype_path 一致；
 		// 不加 Nillable：空/NULL = 未配置
 		field.Strings("common_phrases").

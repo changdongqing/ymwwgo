@@ -49,12 +49,12 @@ type OntologyDataPropertyServiceHTTPServer interface {
 func RegisterOntologyDataPropertyServiceHTTPServer(s *http.Server, srv OntologyDataPropertyServiceHTTPServer) {
 	r := s.Route("/")
 	r.GET("/admin/v1/ontology/data-properties/tree", _OntologyDataPropertyService_Tree2_HTTP_Handler(srv))
-	r.GET("/admin/v1/ontology/data-properties", _OntologyDataPropertyService_List25_HTTP_Handler(srv))
+	r.GET("/admin/v1/ontology/data-properties", _OntologyDataPropertyService_List26_HTTP_Handler(srv))
 	r.GET("/admin/v1/ontology/data-properties/{id}/frame", _OntologyDataPropertyService_Frame2_HTTP_Handler(srv))
 	r.GET("/admin/v1/ontology/data-properties/{id}/usage", _OntologyDataPropertyService_Usage2_HTTP_Handler(srv))
-	r.POST("/admin/v1/ontology/data-properties", _OntologyDataPropertyService_Create19_HTTP_Handler(srv))
-	r.PUT("/admin/v1/ontology/data-properties/{id}", _OntologyDataPropertyService_Update20_HTTP_Handler(srv))
-	r.DELETE("/admin/v1/ontology/data-properties/{id}", _OntologyDataPropertyService_Delete21_HTTP_Handler(srv))
+	r.POST("/admin/v1/ontology/data-properties", _OntologyDataPropertyService_Create20_HTTP_Handler(srv))
+	r.PUT("/admin/v1/ontology/data-properties/{id}", _OntologyDataPropertyService_Update21_HTTP_Handler(srv))
+	r.DELETE("/admin/v1/ontology/data-properties/{id}", _OntologyDataPropertyService_Delete22_HTTP_Handler(srv))
 }
 
 func _OntologyDataPropertyService_Tree2_HTTP_Handler(srv OntologyDataPropertyServiceHTTPServer) func(ctx http.Context) error {
@@ -76,7 +76,7 @@ func _OntologyDataPropertyService_Tree2_HTTP_Handler(srv OntologyDataPropertySer
 	}
 }
 
-func _OntologyDataPropertyService_List25_HTTP_Handler(srv OntologyDataPropertyServiceHTTPServer) func(ctx http.Context) error {
+func _OntologyDataPropertyService_List26_HTTP_Handler(srv OntologyDataPropertyServiceHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in v1.ListDataPropertiesRequest
 		if err := ctx.BindQuery(&in); err != nil {
@@ -139,7 +139,7 @@ func _OntologyDataPropertyService_Usage2_HTTP_Handler(srv OntologyDataPropertySe
 	}
 }
 
-func _OntologyDataPropertyService_Create19_HTTP_Handler(srv OntologyDataPropertyServiceHTTPServer) func(ctx http.Context) error {
+func _OntologyDataPropertyService_Create20_HTTP_Handler(srv OntologyDataPropertyServiceHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in v1.CreateDataPropertyRequest
 		if err := ctx.Bind(&in); err != nil {
@@ -161,7 +161,7 @@ func _OntologyDataPropertyService_Create19_HTTP_Handler(srv OntologyDataProperty
 	}
 }
 
-func _OntologyDataPropertyService_Update20_HTTP_Handler(srv OntologyDataPropertyServiceHTTPServer) func(ctx http.Context) error {
+func _OntologyDataPropertyService_Update21_HTTP_Handler(srv OntologyDataPropertyServiceHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in v1.UpdateDataPropertyRequest
 		if err := ctx.Bind(&in); err != nil {
@@ -186,7 +186,7 @@ func _OntologyDataPropertyService_Update20_HTTP_Handler(srv OntologyDataProperty
 	}
 }
 
-func _OntologyDataPropertyService_Delete21_HTTP_Handler(srv OntologyDataPropertyServiceHTTPServer) func(ctx http.Context) error {
+func _OntologyDataPropertyService_Delete22_HTTP_Handler(srv OntologyDataPropertyServiceHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in v1.DeleteDataPropertyRequest
 		if err := ctx.BindQuery(&in); err != nil {

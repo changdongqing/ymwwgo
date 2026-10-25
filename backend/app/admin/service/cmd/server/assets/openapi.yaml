@@ -5201,6 +5201,26 @@ paths:
                 "200":
                     description: OK
                     content: {}
+    /admin/v1/onestop/service-types/{id}/effective-config:
+        get:
+            tags:
+                - OneStopServiceTypeService
+            description: 查询类别的生效履约配置（细类→小类回退解析后的完整视图）
+            operationId: OneStopServiceTypeService_GetEffectiveConfig
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint32
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/EffectiveServiceConfig'
     /admin/v1/onestop/transport-routes:
         get:
             tags:
@@ -5353,6 +5373,530 @@ paths:
                   schema:
                     type: integer
                     format: uint32
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+    /admin/v1/onestop/work-orders:
+        get:
+            tags:
+                - OneStopWorkOrderService
+            description: 查询工单列表
+            operationId: OneStopWorkOrderService_List
+            parameters:
+                - name: page
+                  in: query
+                  description: 当前页码（从1开始，默认1）
+                  schema:
+                    type: integer
+                    format: uint32
+                - name: pageSize
+                  in: query
+                  description: 每页条数（默认10，建议设置上限如100）
+                  schema:
+                    type: integer
+                    format: uint32
+                - name: offset
+                  in: query
+                  description: 跳过的记录数（从0开始，默认0）
+                  schema:
+                    type: string
+                - name: limit
+                  in: query
+                  description: 最多返回的记录数（默认10，建议设置上限如100）
+                  schema:
+                    type: integer
+                    format: uint32
+                - name: token
+                  in: query
+                  description: 上一页最后一条记录的游标（如ID/时间戳+ID，首次请求为空）
+                  schema:
+                    type: string
+                - name: noPaging
+                  in: query
+                  description: 是否不分页，如果为true，则page和pageSize参数无效。
+                  schema:
+                    type: boolean
+                - name: query
+                  in: query
+                  description: JSON字符串过滤条件，基础语法：{"field1":"val1", "field2___icontains":"val2"}，具体请参见：https://github.com/tx7do/go-crud/tree/main/pagination/filter/README.md
+                  schema:
+                    type: string
+                - name: filter
+                  in: query
+                  description: Google AIP规范字符串过滤条件
+                  schema:
+                    type: string
+                - name: filterExpr.type
+                  in: query
+                  description: 过滤表达式类型
+                  schema:
+                    enum:
+                        - EXPR_TYPE_UNSPECIFIED
+                        - AND
+                        - OR
+                    type: string
+                    format: enum
+                - name: orderBy
+                  in: query
+                  description: 排序条件
+                  schema:
+                    type: string
+                - name: fieldMask
+                  in: query
+                  description: 字段掩码，其作用为SELECT中的字段，其语法为使用逗号分隔字段名，例如：id,realName,userName。如果为空则选中所有字段，即SELECT *。
+                  schema:
+                    type: string
+                    format: field-mask
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListWorkOrdersResponse'
+        post:
+            tags:
+                - OneStopWorkOrderService
+            description: 创建工单
+            operationId: OneStopWorkOrderService_Create
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/CreateWorkOrderRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+    /admin/v1/onestop/work-orders/{id}:
+        get:
+            tags:
+                - OneStopWorkOrderService
+            description: 查询工单详情
+            operationId: OneStopWorkOrderService_Get
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint32
+                - name: viewMask
+                  in: query
+                  schema:
+                    type: string
+                    format: field-mask
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/WorkOrder'
+        put:
+            tags:
+                - OneStopWorkOrderService
+            description: 更新工单
+            operationId: OneStopWorkOrderService_Update
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint32
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/UpdateWorkOrderRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+        delete:
+            tags:
+                - OneStopWorkOrderService
+            description: 删除工单
+            operationId: OneStopWorkOrderService_Delete
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint32
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+    /admin/v1/onestop/work-orders/{id}/abnormal:
+        post:
+            tags:
+                - OneStopWorkOrderService
+            description: 异常上报
+            operationId: OneStopWorkOrderService_Abnormal
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint32
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/AbnormalWorkOrderRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+    /admin/v1/onestop/work-orders/{id}/approve:
+        post:
+            tags:
+                - OneStopWorkOrderService
+            description: 审批
+            operationId: OneStopWorkOrderService_Approve
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint32
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ApproveWorkOrderRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+    /admin/v1/onestop/work-orders/{id}/arrive:
+        post:
+            tags:
+                - OneStopWorkOrderService
+            description: 到场
+            operationId: OneStopWorkOrderService_Arrive
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint32
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ArriveWorkOrderRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+    /admin/v1/onestop/work-orders/{id}/cancel:
+        post:
+            tags:
+                - OneStopWorkOrderService
+            description: 撤销
+            operationId: OneStopWorkOrderService_Cancel
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint32
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/CancelWorkOrderRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+    /admin/v1/onestop/work-orders/{id}/complete:
+        post:
+            tags:
+                - OneStopWorkOrderService
+            description: 完工提交
+            operationId: OneStopWorkOrderService_Complete
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint32
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/CompleteWorkOrderRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+    /admin/v1/onestop/work-orders/{id}/deliver:
+        post:
+            tags:
+                - OneStopWorkOrderService
+            description: 送达签收
+            operationId: OneStopWorkOrderService_Deliver
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint32
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/DeliverWorkOrderRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+    /admin/v1/onestop/work-orders/{id}/derive:
+        post:
+            tags:
+                - OneStopWorkOrderService
+            description: 派生
+            operationId: OneStopWorkOrderService_Derive
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint32
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/DeriveWorkOrderRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/WorkOrder'
+    /admin/v1/onestop/work-orders/{id}/dispatch:
+        post:
+            tags:
+                - OneStopWorkOrderService
+            description: 派单
+            operationId: OneStopWorkOrderService_Dispatch
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint32
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/DispatchWorkOrderRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+    /admin/v1/onestop/work-orders/{id}/events:
+        get:
+            tags:
+                - OneStopWorkOrderService
+            description: 查询工单事件时间线
+            operationId: OneStopWorkOrderService_ListEvents
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint32
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListWorkOrderEventsResponse'
+    /admin/v1/onestop/work-orders/{id}/items:
+        get:
+            tags:
+                - OneStopWorkOrderService
+            description: 查询工单执行项
+            operationId: OneStopWorkOrderService_ListItems
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint32
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListWorkOrderItemsResponse'
+    /admin/v1/onestop/work-orders/{id}/pickup:
+        post:
+            tags:
+                - OneStopWorkOrderService
+            description: 取件签收
+            operationId: OneStopWorkOrderService_Pickup
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint32
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/PickupWorkOrderRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+    /admin/v1/onestop/work-orders/{id}/reassign:
+        post:
+            tags:
+                - OneStopWorkOrderService
+            description: 改派
+            operationId: OneStopWorkOrderService_Reassign
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint32
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ReassignWorkOrderRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+    /admin/v1/onestop/work-orders/{id}/satisfaction:
+        post:
+            tags:
+                - OneStopWorkOrderService
+            description: 满意度回访补录
+            operationId: OneStopWorkOrderService_Satisfaction
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint32
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/SatisfactionWorkOrderRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+    /admin/v1/onestop/work-orders/{id}/transfer:
+        post:
+            tags:
+                - OneStopWorkOrderService
+            description: 转单
+            operationId: OneStopWorkOrderService_Transfer
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint32
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/TransferWorkOrderRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/WorkOrder'
+    /admin/v1/onestop/work-orders/{id}/urge:
+        post:
+            tags:
+                - OneStopWorkOrderService
+            description: 催办
+            operationId: OneStopWorkOrderService_Urge
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint32
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/UrgeWorkOrderRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+    /admin/v1/onestop/work-orders/{id}/verify:
+        post:
+            tags:
+                - OneStopWorkOrderService
+            description: 验收
+            operationId: OneStopWorkOrderService_Verify
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint32
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/VerifyWorkOrderRequest'
+                required: true
             responses:
                 "200":
                     description: OK
@@ -9821,6 +10365,26 @@ paths:
                                 $ref: '#/components/schemas/UserExistsResponse'
 components:
     schemas:
+        AbnormalWorkOrderRequest:
+            type: object
+            properties:
+                id:
+                    readOnly: true
+                    type: integer
+                    description: 工单ID
+                    format: uint32
+                desc:
+                    type: string
+                    description: 异常描述
+                photos:
+                    type: array
+                    items:
+                        type: string
+                    description: 异常照片
+                note:
+                    type: string
+                    description: 附言
+            description: 异常上报 - 请求
         AccessKey:
             type: object
             properties:
@@ -10717,6 +11281,38 @@ components:
                     description: 日志创建时间
                     format: date-time
             description: 接口审计日志
+        ApproveWorkOrderRequest:
+            type: object
+            properties:
+                id:
+                    readOnly: true
+                    type: integer
+                    description: 工单ID
+                    format: uint32
+                passed:
+                    type: boolean
+                    description: 是否通过（false = 驳回并关闭）
+                note:
+                    type: string
+                    description: 审批意见
+            description: 审批 - 请求
+        ArriveWorkOrderRequest:
+            type: object
+            properties:
+                id:
+                    readOnly: true
+                    type: integer
+                    description: 工单ID
+                    format: uint32
+                note:
+                    type: string
+                    description: 到场附言
+                photos:
+                    type: array
+                    items:
+                        type: string
+                    description: 到场留证照片
+            description: 到场 - 请求（事件/任务形态）
         AskAiQueryRequest:
             type: object
             properties:
@@ -10797,6 +11393,18 @@ components:
                 code:
                     type: string
                     description: 验证码
+        CancelWorkOrderRequest:
+            type: object
+            properties:
+                id:
+                    readOnly: true
+                    type: integer
+                    description: 工单ID
+                    format: uint32
+                reason:
+                    type: string
+                    description: 撤销原因（必填）
+            description: 撤销 - 请求
         ChangePasswordRequest:
             type: object
             properties:
@@ -10887,6 +11495,37 @@ components:
                     description: 租户ID
                     format: uint32
             description: 清理租户数据 - 请求
+        CompleteWorkOrderRequest:
+            type: object
+            properties:
+                id:
+                    readOnly: true
+                    type: integer
+                    description: 工单ID
+                    format: uint32
+                resultDesc:
+                    type: string
+                    description: 完工结果描述
+                resultPhotos:
+                    type: array
+                    items:
+                        type: string
+                    description: 完工结果照片
+                usedMaterials:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/WorkOrderMaterial'
+                    description: 备件/耗材领用记录
+                actualWorkHours:
+                    type: number
+                    description: 实际工时（小时）
+                    format: double
+                items:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/WorkOrderItemSubmission'
+                    description: 执行项结果（计划任务形态，逐项回填）
+            description: 完工提交 - 请求（事件/任务形态；执行项结果一次性提交，存在未执行项时 422）
         Config:
             type: object
             properties:
@@ -11512,6 +12151,12 @@ components:
                     type: string
                     description: 用户登录密码
             description: 创建用户 - 请求
+        CreateWorkOrderRequest:
+            type: object
+            properties:
+                data:
+                    $ref: '#/components/schemas/WorkOrder'
+            description: 创建工单 - 请求（CRUD 包 data；order_kind/快照字段由服务端解析落库）
         DashboardOverviewResponse:
             type: object
             properties:
@@ -12002,6 +12647,45 @@ components:
                         type: integer
                         format: uint32
                     description: 收件箱记录ID列表，为空表示清空收件箱
+        DeliverWorkOrderRequest:
+            type: object
+            properties:
+                id:
+                    readOnly: true
+                    type: integer
+                    description: 工单ID
+                    format: uint32
+                signer:
+                    type: string
+                    description: 送达签收人
+                photos:
+                    type: array
+                    items:
+                        type: string
+                    description: 送达签收照片（验收留证）
+                note:
+                    type: string
+                    description: 附言
+            description: 送达签收 - 请求（运送形态，送达即完结）
+        DeriveWorkOrderRequest:
+            type: object
+            properties:
+                id:
+                    readOnly: true
+                    type: integer
+                    description: 工单ID
+                    format: uint32
+                toTypeId:
+                    type: integer
+                    description: 目标服务类型ID（启用细类）
+                    format: uint32
+                description:
+                    type: string
+                    description: 新单需求描述（默认带入旧单摘要，可改写）
+                note:
+                    type: string
+                    description: 派生附言
+            description: 派生 - 请求（旧单不动，按新类型关联生成新单；返回新单）
         DeviceInfo:
             type: object
             properties:
@@ -12258,6 +12942,28 @@ components:
                          仅平台管理员可指定他人，用于用户认证器丢失时的救援解绑（按 method 清空该用户全部因子）。
                     format: uint32
             description: Disable / remove
+        DispatchWorkOrderRequest:
+            type: object
+            properties:
+                id:
+                    readOnly: true
+                    type: integer
+                    description: 工单ID
+                    format: uint32
+                post:
+                    type: string
+                    description: 执行岗位（为空沿用快照岗位）
+                assigneeId:
+                    type: integer
+                    description: 执行人用户ID（可空 = 岗位派单）
+                    format: uint32
+                assigneeName:
+                    type: string
+                    description: 执行人姓名快照
+                note:
+                    type: string
+                    description: 派单附言
+            description: 派单 - 请求（扁平 body；assignee 可空 = 岗位派单）
         DistributionItem:
             type: object
             properties:
@@ -12308,6 +13014,18 @@ components:
                     type: string
                     description: 新密码
             description: 强制修改用户密码（不验证） - 请求
+        EffectiveServiceConfig:
+            type: object
+            properties:
+                effective:
+                    $ref: '#/components/schemas/ServiceType'
+            description: |-
+                生效履约配置 - 回应
+
+                 effective 是解析后的合并视图：单值列（细类为空回退小类）与数组列（整组
+                 覆盖或整组继承，不做数组内 merge）都已按「细类 → 小类」回退填齐；
+                 trigger_mode / order_kind 为解析后的生效值（含推导）。发起端表单预填与
+                 工单创建快照共用本接口口径，前端发起弹窗无须自行实现继承链。
         EmailVerification:
             required:
                 - code
@@ -13868,6 +14586,34 @@ components:
                 total:
                     type: string
             description: 获取用户列表 - 答复
+        ListWorkOrderEventsResponse:
+            type: object
+            properties:
+                items:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/WorkOrderEvent'
+                total:
+                    type: string
+        ListWorkOrderItemsResponse:
+            type: object
+            properties:
+                items:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/WorkOrderItem'
+                total:
+                    type: string
+        ListWorkOrdersResponse:
+            type: object
+            properties:
+                items:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/WorkOrder'
+                total:
+                    type: string
+            description: 查询工单列表 - 回应
         LoginAuditLog:
             type: object
             properties:
@@ -16060,6 +16806,26 @@ components:
                     type: string
                     description: 短信验证码
             description: 手机验证
+        PickupWorkOrderRequest:
+            type: object
+            properties:
+                id:
+                    readOnly: true
+                    type: integer
+                    description: 工单ID
+                    format: uint32
+                signer:
+                    type: string
+                    description: 取件签收人
+                photos:
+                    type: array
+                    items:
+                        type: string
+                    description: 取件签收照片
+                note:
+                    type: string
+                    description: 附言
+            description: 取件签收 - 请求（运送形态）
         Plan:
             type: object
             properties:
@@ -16445,6 +17211,28 @@ components:
                     type: string
                     description: 配额上限值
             description: 配额用量项
+        ReassignWorkOrderRequest:
+            type: object
+            properties:
+                id:
+                    readOnly: true
+                    type: integer
+                    description: 工单ID
+                    format: uint32
+                post:
+                    type: string
+                    description: 新执行岗位（为空沿用）
+                assigneeId:
+                    type: integer
+                    description: 新执行人用户ID
+                    format: uint32
+                assigneeName:
+                    type: string
+                    description: 新执行人姓名快照
+                note:
+                    type: string
+                    description: 改派附言
+            description: 改派 - 请求（同单换岗位/执行人，不换类型）
         RebuildSearchIndexResponse:
             type: object
             properties:
@@ -16752,6 +17540,22 @@ components:
                     type: string
                 code:
                     type: string
+        SatisfactionWorkOrderRequest:
+            type: object
+            properties:
+                id:
+                    readOnly: true
+                    type: integer
+                    description: 工单ID
+                    format: uint32
+                score:
+                    type: integer
+                    description: 满意度评分（1-5）
+                    format: uint32
+                comment:
+                    type: string
+                    description: 回访意见
+            description: 满意度回访补录 - 请求（仅已完结单）
         Script:
             type: object
             properties:
@@ -17114,6 +17918,15 @@ components:
                         - TRIGGER_SCHEDULED
                     type: string
                     description: 任务触发方式：按需发起（工单由用户/呼叫触发）或计划生成（可挂周期计划，任务按频率生成）；未设置回退上级，默认按需
+                    format: enum
+                orderKind:
+                    enum:
+                        - KIND_UNSPECIFIED
+                        - KIND_EVENT
+                        - KIND_TASK
+                        - KIND_TRANSPORT
+                    type: string
+                    description: 履约形态：事件处置/计划任务/运送，驱动工单状态机分支与界面面板；未设置回退上级，两级都空按推导规则（0106 子树/计划生成/事件顺序）
                     format: enum
                 createdBy:
                     type: integer
@@ -17665,6 +18478,22 @@ components:
                 durationMs:
                     type: string
             description: 试运行脚本 - 回应
+        TransferWorkOrderRequest:
+            type: object
+            properties:
+                id:
+                    readOnly: true
+                    type: integer
+                    description: 工单ID
+                    format: uint32
+                toTypeId:
+                    type: integer
+                    description: 目标服务类型ID（启用细类）
+                    format: uint32
+                note:
+                    type: string
+                    description: 转单附言
+            description: 转单 - 请求（旧单关闭，按新类型开新单；返回新单）
         TransportRoute:
             type: object
             properties:
@@ -18560,6 +19389,23 @@ components:
                     type: boolean
                     description: 如果设置为true的时候，资源不存在则会新增(插入)，并且在这种情况下`updateMask`字段将会被忽略。
             description: 更新用户 - 请求
+        UpdateWorkOrderRequest:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: uint32
+                data:
+                    $ref: '#/components/schemas/WorkOrder'
+                updateMask:
+                    example: id,description,location,images
+                    type: string
+                    description: 要更新的字段列表
+                    format: field-mask
+                allowMissing:
+                    type: boolean
+                    description: 如果设置为true的时候，资源不存在则会新增(插入)，并且在这种情况下`updateMask`字段将会被忽略。
+            description: 更新工单 - 请求（仅待派单/审批中可改发起信息组字段）
         UploadAiDocFileRequest:
             type: object
             properties:
@@ -18640,6 +19486,18 @@ components:
                 publicUrl:
                     type: string
                     description: 签名公开访问 URL
+        UrgeWorkOrderRequest:
+            type: object
+            properties:
+                id:
+                    readOnly: true
+                    type: integer
+                    description: 工单ID
+                    format: uint32
+                note:
+                    type: string
+                    description: 催办附言
+            description: 催办 - 请求
         UsageSummaryResponse:
             type: object
             properties:
@@ -18859,6 +19717,34 @@ components:
                     $ref: '#/components/schemas/WebAuthnAssertion'
                 backupCode:
                     type: string
+        VerifyWorkOrderRequest:
+            type: object
+            properties:
+                id:
+                    readOnly: true
+                    type: integer
+                    description: 工单ID
+                    format: uint32
+                passed:
+                    type: boolean
+                    description: 是否通过（false = 驳回返工）
+                signer:
+                    type: string
+                    description: 验收签收人
+                photos:
+                    type: array
+                    items:
+                        type: string
+                    description: 验收照片
+                note:
+                    type: string
+                    description: 验收意见（驳回时必填）
+                itemsResult:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/WorkOrderAcceptanceResult'
+                    description: 验收项逐项勾选结果
+            description: 验收 - 请求（事件/任务形态；passed=false 返工，deadline 不重算）
         WebAuthnAssertion:
             type: object
             properties:
@@ -18881,6 +19767,497 @@ components:
                     type: string
                 rpId:
                     type: string
+        WorkOrder:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    description: 工单ID
+                    format: uint32
+                orderNo:
+                    type: string
+                    description: 工单号：WO- + 8 位零填自增ID（同事务派生）
+                serviceTypeId:
+                    type: integer
+                    description: 服务类型ID（创建时必须为启用细类）
+                    format: uint32
+                serviceTypeCode:
+                    type: string
+                    description: 服务类型编码快照
+                serviceTypeName:
+                    type: string
+                    description: 服务类型名称快照
+                orderKind:
+                    enum:
+                        - KIND_UNSPECIFIED
+                        - KIND_EVENT
+                        - KIND_TASK
+                        - KIND_TRANSPORT
+                    type: string
+                    description: 履约形态（创建时按类型解析快照，不接受请求指定）
+                    format: enum
+                source:
+                    enum:
+                        - SOURCE_UNSPECIFIED
+                        - SOURCE_MANUAL
+                        - SOURCE_PLAN
+                        - SOURCE_ROUTE
+                        - SOURCE_TRANSFER
+                        - SOURCE_DERIVED
+                    type: string
+                    description: 生单来源（手动/计划展开/路线班次/转单/派生）
+                    format: enum
+                channel:
+                    enum:
+                        - CHANNEL_UNSPECIFIED
+                        - CHANNEL_DESK
+                        - CHANNEL_PHONE
+                    type: string
+                    description: 发起渠道（手动单：坐席台/电话）
+                    format: enum
+                sourceOrderId:
+                    type: integer
+                    description: 来源工单ID（转单/派生时的旧单）
+                    format: uint32
+                requesterName:
+                    type: string
+                    description: 发起人称呼
+                requesterPhone:
+                    type: string
+                    description: 发起人联系电话
+                requesterUserId:
+                    type: integer
+                    description: 发起用户ID（登录用户发起时记录）
+                    format: uint32
+                location:
+                    type: string
+                    description: 位置描述（楼/层/房间）
+                equipmentDesc:
+                    type: string
+                    description: 服务对象描述（报修的故障设备/设施）
+                description:
+                    type: string
+                    description: 需求/现象描述
+                images:
+                    type: array
+                    items:
+                        type: string
+                    description: 发起现场照片
+                commonPhrase:
+                    type: string
+                    description: 命中的快捷语句
+                executionPost:
+                    type: string
+                    description: 执行岗位快照（计划单优先计划级岗位）
+                assigneeId:
+                    type: integer
+                    description: 执行人用户ID（岗位派单时可空）
+                    format: uint32
+                assigneeName:
+                    type: string
+                    description: 执行人姓名快照
+                planId:
+                    type: integer
+                    description: 来源周期计划ID（调度幂等键组成部分）
+                    format: uint32
+                routeId:
+                    type: integer
+                    description: 来源运送路线ID（班次单幂等键组成部分）
+                    format: uint32
+                priority:
+                    enum:
+                        - PRIORITY_UNSPECIFIED
+                        - PRIORITY_NORMAL
+                        - PRIORITY_URGENT
+                        - PRIORITY_EMERGENCY
+                    type: string
+                    description: 优先级快照（默认取类别，可覆盖）
+                    format: enum
+                responseTimeLimit:
+                    type: integer
+                    description: 响应时限快照（分钟，受理→到场/取件；空=不限时）
+                    format: uint32
+                completionTimeLimit:
+                    type: integer
+                    description: 完成时限快照（分钟，受理→完工/送达/办结；空=不限时）
+                    format: uint32
+                status:
+                    enum:
+                        - STATUS_UNSPECIFIED
+                        - STATUS_PENDING
+                        - STATUS_APPROVING
+                        - STATUS_DISPATCHED
+                        - STATUS_PROCESSING
+                        - STATUS_COMPLETED
+                        - STATUS_CLOSED
+                        - STATUS_CANCELLED
+                    type: string
+                    description: 状态（三形态共用统一状态机）
+                    format: enum
+                cancelReason:
+                    type: string
+                    description: 撤销/驳回/转单关闭原因
+                hasAbnormality:
+                    type: boolean
+                    description: 是否存在异常（事件或执行项异常置位）
+                urgeCount:
+                    type: integer
+                    description: 催办次数（明细在事件表）
+                    format: uint32
+                origin:
+                    type: string
+                    description: 起点（取件地；手动单必填，班次单快照自路线）
+                destination:
+                    type: string
+                    description: 终点（送达地）
+                viaPoints:
+                    type: array
+                    items:
+                        type: string
+                    description: 途经点列表（快照自路线）
+                roundTrip:
+                    type: boolean
+                    description: 是否往返（路线快照）
+                estDurationMinutes:
+                    type: integer
+                    description: 预计单程时长（分钟，路线快照，ETA 基准）
+                    format: uint32
+                temperatureRequirement:
+                    enum:
+                        - TEMP_UNSPECIFIED
+                        - TEMP_NORMAL
+                        - TEMP_COLD
+                        - TEMP_FROZEN
+                        - TEMP_WARM
+                    type: string
+                    description: 温控要求快照
+                    format: enum
+                cargoDesc:
+                    type: string
+                    description: 本单承运物品描述
+                resultDesc:
+                    type: string
+                    description: 完工结果描述
+                resultPhotos:
+                    type: array
+                    items:
+                        type: string
+                    description: 完工结果照片
+                usedMaterials:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/WorkOrderMaterial'
+                    description: 备件/耗材领用记录
+                actualWorkHours:
+                    type: number
+                    description: 实际工时（小时，绩效核算预留）
+                    format: double
+                acceptanceModes:
+                    type: array
+                    items:
+                        type: string
+                    description: 验收方式快照（多选：SIGN/SCAN/PHOTO/DUAL）
+                acceptanceItems:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/ServiceAcceptanceItem'
+                    description: 验收项清单快照（创建时从类别快照）
+                acceptanceResult:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/WorkOrderAcceptanceResult'
+                    description: 验收项结果（验收动作提交）
+                acceptancePhotos:
+                    type: array
+                    items:
+                        type: string
+                    description: 验收照片
+                acceptanceSigner:
+                    type: string
+                    description: 验收签收人
+                satisfactionScore:
+                    type: integer
+                    description: 满意度评分（1-5，仅已完结单可补录）
+                    format: uint32
+                satisfactionComment:
+                    type: string
+                    description: 满意度回访意见
+                assignedAt:
+                    type: string
+                    description: 派单时间（计划/班次单=生成时刻）
+                    format: date-time
+                plannedExecAt:
+                    type: string
+                    description: 计划执行时刻（计划/班次单必填）
+                    format: date-time
+                responseDeadline:
+                    type: string
+                    description: 响应截止时刻（手动单=建单+时限；计划单=计划时刻+时限）
+                    format: date-time
+                completionDeadline:
+                    type: string
+                    description: 完成截止时刻
+                    format: date-time
+                intakeAt:
+                    type: string
+                    description: 受理时间（手动单=建单即受理；计划单=生成时刻）
+                    format: date-time
+                respondedAt:
+                    type: string
+                    description: 响应达成时间（事件/任务=到场；运送=取件）
+                    format: date-time
+                completedAt:
+                    type: string
+                    description: 完成时间（事件/任务=完工提交；运送=送达签收）
+                    format: date-time
+                verifiedAt:
+                    type: string
+                    description: 验收通过时间（运送=送达即验收）
+                    format: date-time
+                pickedUpAt:
+                    type: string
+                    description: 取件签收时间（运送）
+                    format: date-time
+                deliveredAt:
+                    type: string
+                    description: 送达签收时间（运送）
+                    format: date-time
+                pickedSigner:
+                    type: string
+                    description: 取件签收人
+                pickedPhotos:
+                    type: array
+                    items:
+                        type: string
+                    description: 取件签收照片
+                deliveredSigner:
+                    type: string
+                    description: 送达签收人
+                deliveredPhotos:
+                    type: array
+                    items:
+                        type: string
+                    description: 送达签收照片
+                revisitedAt:
+                    type: string
+                    description: 回访补录时间
+                    format: date-time
+                createdBy:
+                    type: integer
+                    description: 创建者ID
+                    format: uint32
+                updatedBy:
+                    type: integer
+                    description: 更新者ID
+                    format: uint32
+                deletedBy:
+                    type: integer
+                    description: 删除者用户ID
+                    format: uint32
+                createdAt:
+                    type: string
+                    description: 创建时间
+                    format: date-time
+                updatedAt:
+                    type: string
+                    description: 更新时间
+                    format: date-time
+                deletedAt:
+                    type: string
+                    description: 删除时间
+                    format: date-time
+            description: 一站式工单（统一工单底座主实体）
+        WorkOrderAcceptanceResult:
+            type: object
+            properties:
+                name:
+                    type: string
+                    description: 验收项名称
+                passed:
+                    type: boolean
+                    description: 该项是否通过
+                remark:
+                    type: string
+                    description: 该项备注
+            description: 验收项结果（verify 动作逐项勾选，name 对应创建时快照的验收项）
+        WorkOrderEvent:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    description: 事件ID
+                    format: uint32
+                workOrderId:
+                    type: integer
+                    description: 工单ID
+                    format: uint32
+                action:
+                    enum:
+                        - ACTION_UNSPECIFIED
+                        - ACTION_CREATE
+                        - ACTION_DISPATCH
+                        - ACTION_REASSIGN
+                        - ACTION_ARRIVE
+                        - ACTION_PICKUP
+                        - ACTION_DELIVER
+                        - ACTION_COMPLETE
+                        - ACTION_VERIFY_PASS
+                        - ACTION_VERIFY_REJECT
+                        - ACTION_CANCEL
+                        - ACTION_URGE
+                        - ACTION_ABNORMAL
+                        - ACTION_TRANSFER
+                        - ACTION_DERIVE
+                        - ACTION_APPROVE_PASS
+                        - ACTION_APPROVE_REJECT
+                        - ACTION_CLAIM
+                        - ACTION_SATISFACTION
+                    type: string
+                    description: 动作类型
+                    format: enum
+                statusFrom:
+                    enum:
+                        - STATUS_UNSPECIFIED
+                        - STATUS_PENDING
+                        - STATUS_APPROVING
+                        - STATUS_DISPATCHED
+                        - STATUS_PROCESSING
+                        - STATUS_COMPLETED
+                        - STATUS_CLOSED
+                        - STATUS_CANCELLED
+                    type: string
+                    description: 动作前状态（不改状态的动作与动作后相同）
+                    format: enum
+                statusTo:
+                    enum:
+                        - STATUS_UNSPECIFIED
+                        - STATUS_PENDING
+                        - STATUS_APPROVING
+                        - STATUS_DISPATCHED
+                        - STATUS_PROCESSING
+                        - STATUS_COMPLETED
+                        - STATUS_CLOSED
+                        - STATUS_CANCELLED
+                    type: string
+                    description: 动作后状态
+                    format: enum
+                note:
+                    type: string
+                    description: 动作附言（改派目标/签收人/转单去向等摘要）
+                photos:
+                    type: array
+                    items:
+                        type: string
+                    description: 动作留证照片
+                createdBy:
+                    type: integer
+                    description: 操作人ID（系统动作为系统上下文）
+                    format: uint32
+                createdAt:
+                    type: string
+                    description: 动作时间
+                    format: date-time
+            description: 工单事件（时间线：动作 + 状态迁移 + 附言/照片，按时间倒序即跟进记录）
+        WorkOrderItem:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    description: 执行项ID
+                    format: uint32
+                workOrderId:
+                    type: integer
+                    description: 工单ID
+                    format: uint32
+                scope:
+                    enum:
+                        - SCOPE_UNSPECIFIED
+                        - SCOPE_SPACE
+                        - SCOPE_EQUIPMENT
+                    type: string
+                    description: 点表分组（空间/设备；手动创建的计划任务单为空）
+                    format: enum
+                name:
+                    type: string
+                    description: 执行项名称（点表快照）
+                sort:
+                    type: integer
+                    description: 展开顺序
+                    format: uint32
+                result:
+                    enum:
+                        - ITEM_RESULT_UNSPECIFIED
+                        - ITEM_PENDING
+                        - ITEM_NORMAL
+                        - ITEM_ABNORMAL
+                        - ITEM_SKIPPED
+                    type: string
+                    description: 执行结果（未执行项不可完工提交）
+                    format: enum
+                value:
+                    type: string
+                    description: 读数/测量值（抄表、检测类）
+                photos:
+                    type: array
+                    items:
+                        type: string
+                    description: 该项留证照片
+                remark:
+                    type: string
+                    description: 该项备注
+                spaceRef:
+                    type: string
+                    description: 空间对象引用（预留）
+                equipmentRef:
+                    type: string
+                    description: 设备对象引用（预留）
+            description: 工单执行项（计划任务形态的逐项作业记录：点表快照 + 结果回填）
+        WorkOrderItemSubmission:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    description: 执行项ID
+                    format: uint32
+                result:
+                    enum:
+                        - ITEM_RESULT_UNSPECIFIED
+                        - ITEM_PENDING
+                        - ITEM_NORMAL
+                        - ITEM_ABNORMAL
+                        - ITEM_SKIPPED
+                    type: string
+                    description: 执行结果
+                    format: enum
+                value:
+                    type: string
+                    description: 读数/测量值（抄表、检测类）
+                photos:
+                    type: array
+                    items:
+                        type: string
+                    description: 该项留证照片
+                remark:
+                    type: string
+                    description: 该项备注
+            description: 工单执行项结果提交（complete 请求内一次性回填）
+        WorkOrderMaterial:
+            type: object
+            properties:
+                name:
+                    type: string
+                    description: 物品名称
+                qty:
+                    type: number
+                    description: 数量
+                    format: double
+                unit:
+                    type: string
+                    description: 单位（个/套/米…）
+                remark:
+                    type: string
+                    description: 备注
+            description: 备件/耗材领用记录（本期手工填，库存联动未落地）
     responses:
         default:
             description: default kratos response
@@ -19017,6 +20394,14 @@ tags:
          生成时 onestop/service/v1 的 go_package 被指到 module 的 gen 包
          （go-wind-admin/onestop/api/gen/go/onestop/service/v1;onestopv1，见 buf.gen.yaml），
          因此本服务生成的 HTTP 接口与 module 内 service 的方法签名完全一致，可直接注册。
+    - name: OneStopWorkOrderService
+      description: |-
+        一站式工单管理服务（admin 门面）
+
+         源领域 proto 在 onestop/service/v1（独立 Go module go-wind-admin/onestop 拥有
+         自己的同名生成包 onestopv1）；本门面只挂 HTTP 路由，消息类型直接引用源领域，
+         生成时 onestop/service/v1 的 go_package 被指到 module 的 gen 包，因此本服务
+         生成的 HTTP 接口与 module 内 service 的方法签名完全一致，可直接注册。
     - name: OnlineSessionService
       description: 在线会话管理服务（在线用户列表 + 强制下线）
     - name: OntologyAnnotationPropertyService

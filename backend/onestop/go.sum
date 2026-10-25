@@ -144,8 +144,8 @@ github.com/tx7do/go-crud/entgo v0.0.57 h1:WZMhR8eSE9b/7qtvvMttJt4r8q6bI4Xkw7nwZT
 github.com/tx7do/go-crud/entgo v0.0.57/go.mod h1:7KCTCJpRKLoDoiJc0iwBB1jkEFxgju9stqFSWIERM94=
 github.com/tx7do/go-crud/pagination v0.0.16 h1:vzj50KnqeZTMjm+bf/hvpTy7X/0+1cQyqUIMKNkt4wo=
 github.com/tx7do/go-crud/pagination v0.0.16/go.mod h1:d8zSInft//2K6i3Gk320L//COCMXC5zrtcyh7XGroD4=
-github.com/tx7do/go-crud/viewer v0.0.7 h1:HF/1d85fv+fhZ8cNHtFCOOEQDEZUDQFUX3V0+RK5RJk=
-github.com/tx7do/go-crud/viewer v0.0.7/go.mod h1:t5MGistb4OfREu9aMj85eeYJqswnNpFRWgbL4nHTXiY=
+github.com/tx7do/go-crud/viewer v0.0.8 h1:z0/oRsOhvDs41P0Lm5d3KUHVAS9f5ZVzyPQlOi39k8s=
+github.com/tx7do/go-crud/viewer v0.0.8/go.mod h1:t5MGistb4OfREu9aMj85eeYJqswnNpFRWgbL4nHTXiY=
 github.com/tx7do/go-utils v1.1.42 h1:/k4bF5B0kQAIO2MwY1e1g19obvJ/anRMjon1uXCW30I=
 github.com/tx7do/go-utils v1.1.42/go.mod h1:A5zjhW0UTM6veYuCbq7/mcwDXaBw8UhBnvaLSwURBRg=
 github.com/tx7do/go-utils/copierutil v0.0.8 h1:zH1qAEuJMO1xrO4A5A3xZllS4o6/E0F5q7xuaHHnRko=

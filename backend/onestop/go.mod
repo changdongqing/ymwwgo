@@ -9,6 +9,7 @@ require (
 	github.com/lib/pq v1.12.3
 	github.com/tx7do/go-crud/api v0.0.7
 	github.com/tx7do/go-crud/entgo v0.0.57
+	github.com/tx7do/go-crud/viewer v0.0.8
 	github.com/tx7do/go-utils v1.1.42
 	github.com/tx7do/go-utils/copierutil v0.0.8
 	github.com/tx7do/go-utils/mapper v0.0.3
@@ -68,7 +69,6 @@ require (
 	github.com/tx7do/go-crud/audit v0.0.3 // indirect
 	github.com/tx7do/go-crud/cache v0.0.2 // indirect
 	github.com/tx7do/go-crud/pagination v0.0.16 // indirect
-	github.com/tx7do/go-crud/viewer v0.0.7 // indirect
 	github.com/tx7do/go-utils/id v0.0.6 // indirect
 	github.com/tx7do/go-wind v0.0.2 // indirect
 	github.com/tx7do/go-wind-plugins/encoding v0.0.1 // indirect

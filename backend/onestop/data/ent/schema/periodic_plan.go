@@ -139,12 +139,15 @@ func (PeriodicPlan) Fields() []ent.Field {
 }
 
 // Mixin of the PeriodicPlan.
-// 本期跟随 onestop 现状挂平台级（不挂 TenantID）；工单对象落地时一并评估租户态。
+// 租户运营配置：计划是「某租户的运营安排」（本院每日巡查两次），挂 TenantID
+// 与其自带租户 Privacy（类型字典保持平台级全局）。0 = 平台（内置模板）；
+// 租户用户仅见本租户计划，平台/系统上下文放行（调度器按计划的租户生单）。
 func (PeriodicPlan) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		mixin.AutoIncrementId{},
 		mixin.TimeAt{},
 		mixin.OperatorID{},
+		mixin.TenantID[uint32]{},
 		mixin.IsEnabled{},
 	}
 }
@@ -154,5 +157,6 @@ func (PeriodicPlan) Indexes() []ent.Index {
 	return []ent.Index{
 		index.Fields("service_type_id"),
 		index.Fields("freq_type"),
+		index.Fields("tenant_id"),
 	}
 }

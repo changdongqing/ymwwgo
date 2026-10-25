@@ -3,7 +3,8 @@
 一站式服务业务域的独立 Go module（`go-wind-admin/onestop`），由 admin 服务
 （`go-wind-admin` 主 module）以 `replace` 本地引入装配，**不是**独立运行的微服务：
 HTTP 路由挂在 admin 服务 `:7788` 的 Kratos REST server 上，认证/鉴权/审计/租户闸门
-全部复用宿主中间件链。未来服务对象、工单对象及其跟进流程都在本 module 内扩展。
+全部复用宿主中间件链。工单对象（统一工单底座）已于 2026-10-26 落地，
+设计文档见 [docs/yizhanshi/onestop-unified-work-order.md](../../docs/yizhanshi/onestop-unified-work-order.md)。
 
 ## 模块布局
 
@@ -18,12 +19,15 @@ onestop/
 │   ├── seeds/                # 内置服务类型字典（README 全量 299 节点）+ 周期计划/运送路线模板
 │   ├── entclient.go          # Ent 客户端（不做 DDL，goose 迁移由 admin 服务承载）
 │   ├── service_type_repo.go / periodic_plan_repo.go / transport_route_repo.go
+│   ├── work_order_repo.go    # 工单仓储（建单事务+工单号派生+状态迁移守卫+幂等生单）
 │   ├── service_type_seed.go  # 空表播种（count == 0 守卫）
-│   └── periodic_plan_seed_test.go / service_type_seed_test.go / transport_route_seed_test.go
+│   └── *_seed_test.go / work_order_scheduler_test.go
 └── service/
-    ├── service_type_service.go       # 业务规则 + HTTP 接口实现（onestopv1）
+    ├── service_type_service.go       # 业务规则 + HTTP 接口实现（onestopv1）+ effective-config 解析
     ├── periodic_plan_service.go
-    └── transport_route_service.go
+    ├── transport_route_service.go
+    ├── work_order_service.go         # 统一工单底座：CRUD + 13 个动作 RPC（状态机矩阵）
+    └── work_order_scheduler.go       # onestop_plan_expand 计划/班次展开调度器（asynq 系统级 cron）
 ```
 
 proto 源文件在主仓：`backend/api/protos/onestop/service/v1/`（源领域，HTTP 注解直挂

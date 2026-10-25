@@ -22,11 +22,12 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	OneStopServiceTypeService_List_FullMethodName   = "/admin.service.v1.OneStopServiceTypeService/List"
-	OneStopServiceTypeService_Get_FullMethodName    = "/admin.service.v1.OneStopServiceTypeService/Get"
-	OneStopServiceTypeService_Create_FullMethodName = "/admin.service.v1.OneStopServiceTypeService/Create"
-	OneStopServiceTypeService_Update_FullMethodName = "/admin.service.v1.OneStopServiceTypeService/Update"
-	OneStopServiceTypeService_Delete_FullMethodName = "/admin.service.v1.OneStopServiceTypeService/Delete"
+	OneStopServiceTypeService_List_FullMethodName               = "/admin.service.v1.OneStopServiceTypeService/List"
+	OneStopServiceTypeService_Get_FullMethodName                = "/admin.service.v1.OneStopServiceTypeService/Get"
+	OneStopServiceTypeService_Create_FullMethodName             = "/admin.service.v1.OneStopServiceTypeService/Create"
+	OneStopServiceTypeService_Update_FullMethodName             = "/admin.service.v1.OneStopServiceTypeService/Update"
+	OneStopServiceTypeService_Delete_FullMethodName             = "/admin.service.v1.OneStopServiceTypeService/Delete"
+	OneStopServiceTypeService_GetEffectiveConfig_FullMethodName = "/admin.service.v1.OneStopServiceTypeService/GetEffectiveConfig"
 )
 
 // OneStopServiceTypeServiceClient is the client API for OneStopServiceTypeService service.
@@ -51,6 +52,8 @@ type OneStopServiceTypeServiceClient interface {
 	Update(ctx context.Context, in *v11.UpdateServiceTypeRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// 删除服务类型
 	Delete(ctx context.Context, in *v11.DeleteServiceTypeRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	// 查询类别的生效履约配置（细类→小类回退解析后的完整视图）
+	GetEffectiveConfig(ctx context.Context, in *v11.GetEffectiveConfigRequest, opts ...grpc.CallOption) (*v11.EffectiveServiceConfig, error)
 }
 
 type oneStopServiceTypeServiceClient struct {
@@ -111,6 +114,16 @@ func (c *oneStopServiceTypeServiceClient) Delete(ctx context.Context, in *v11.De
 	return out, nil
 }
 
+func (c *oneStopServiceTypeServiceClient) GetEffectiveConfig(ctx context.Context, in *v11.GetEffectiveConfigRequest, opts ...grpc.CallOption) (*v11.EffectiveServiceConfig, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(v11.EffectiveServiceConfig)
+	err := c.cc.Invoke(ctx, OneStopServiceTypeService_GetEffectiveConfig_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // OneStopServiceTypeServiceServer is the server API for OneStopServiceTypeService service.
 // All implementations must embed UnimplementedOneStopServiceTypeServiceServer
 // for forward compatibility.
@@ -133,6 +146,8 @@ type OneStopServiceTypeServiceServer interface {
 	Update(context.Context, *v11.UpdateServiceTypeRequest) (*emptypb.Empty, error)
 	// 删除服务类型
 	Delete(context.Context, *v11.DeleteServiceTypeRequest) (*emptypb.Empty, error)
+	// 查询类别的生效履约配置（细类→小类回退解析后的完整视图）
+	GetEffectiveConfig(context.Context, *v11.GetEffectiveConfigRequest) (*v11.EffectiveServiceConfig, error)
 	mustEmbedUnimplementedOneStopServiceTypeServiceServer()
 }
 
@@ -157,6 +172,9 @@ func (UnimplementedOneStopServiceTypeServiceServer) Update(context.Context, *v11
 }
 func (UnimplementedOneStopServiceTypeServiceServer) Delete(context.Context, *v11.DeleteServiceTypeRequest) (*emptypb.Empty, error) {
 	return nil, status.Error(codes.Unimplemented, "method Delete not implemented")
+}
+func (UnimplementedOneStopServiceTypeServiceServer) GetEffectiveConfig(context.Context, *v11.GetEffectiveConfigRequest) (*v11.EffectiveServiceConfig, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetEffectiveConfig not implemented")
 }
 func (UnimplementedOneStopServiceTypeServiceServer) mustEmbedUnimplementedOneStopServiceTypeServiceServer() {
 }
@@ -270,6 +288,24 @@ func _OneStopServiceTypeService_Delete_Handler(srv interface{}, ctx context.Cont
 	return interceptor(ctx, in, info, handler)
 }
 
+func _OneStopServiceTypeService_GetEffectiveConfig_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(v11.GetEffectiveConfigRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OneStopServiceTypeServiceServer).GetEffectiveConfig(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: OneStopServiceTypeService_GetEffectiveConfig_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OneStopServiceTypeServiceServer).GetEffectiveConfig(ctx, req.(*v11.GetEffectiveConfigRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // OneStopServiceTypeService_ServiceDesc is the grpc.ServiceDesc for OneStopServiceTypeService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -296,6 +332,10 @@ var OneStopServiceTypeService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Delete",
 			Handler:    _OneStopServiceTypeService_Delete_Handler,
+		},
+		{
+			MethodName: "GetEffectiveConfig",
+			Handler:    _OneStopServiceTypeService_GetEffectiveConfig_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

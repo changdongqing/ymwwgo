@@ -54,6 +54,8 @@ type ServiceType struct {
 	CompletionTimeLimit *uint32 `json:"completion_time_limit,omitempty"`
 	// 标准指导说明：作业 SOP 与安全注意事项
 	Guidance *string `json:"guidance,omitempty"`
+	// 履约形态 KIND_EVENT:事件处置 KIND_TASK:计划任务 KIND_TRANSPORT:运送（未设置回退上级；两级都空按 0106 子树/计划生成/事件顺序推导）
+	OrderKind *servicetype.OrderKind `json:"order_kind,omitempty"`
 	// 常见语句清单：发起端快捷语句，兼作语义归型语料
 	CommonPhrases []string `json:"common_phrases,omitempty"`
 	// 服务标准工具清单：出工标配工具
@@ -126,7 +128,7 @@ func (*ServiceType) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullFloat64)
 		case servicetype.FieldID, servicetype.FieldCreatedBy, servicetype.FieldUpdatedBy, servicetype.FieldDeletedBy, servicetype.FieldParentID, servicetype.FieldResponseTimeLimit, servicetype.FieldCompletionTimeLimit:
 			values[i] = new(sql.NullInt64)
-		case servicetype.FieldCode, servicetype.FieldName, servicetype.FieldLevel, servicetype.FieldDescription, servicetype.FieldExecutionPost, servicetype.FieldGuidance, servicetype.FieldTriggerMode, servicetype.FieldDefaultPriority, servicetype.FieldTemperatureRequirement:
+		case servicetype.FieldCode, servicetype.FieldName, servicetype.FieldLevel, servicetype.FieldDescription, servicetype.FieldExecutionPost, servicetype.FieldGuidance, servicetype.FieldOrderKind, servicetype.FieldTriggerMode, servicetype.FieldDefaultPriority, servicetype.FieldTemperatureRequirement:
 			values[i] = new(sql.NullString)
 		case servicetype.FieldCreatedAt, servicetype.FieldUpdatedAt, servicetype.FieldDeletedAt:
 			values[i] = new(sql.NullTime)
@@ -269,6 +271,13 @@ func (_m *ServiceType) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.Guidance = new(string)
 				*_m.Guidance = value.String
+			}
+		case servicetype.FieldOrderKind:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field order_kind", values[i])
+			} else if value.Valid {
+				_m.OrderKind = new(servicetype.OrderKind)
+				*_m.OrderKind = servicetype.OrderKind(value.String)
 			}
 		case servicetype.FieldCommonPhrases:
 			if value, ok := values[i].(*[]byte); !ok {
@@ -482,6 +491,11 @@ func (_m *ServiceType) String() string {
 	if v := _m.Guidance; v != nil {
 		builder.WriteString("guidance=")
 		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.OrderKind; v != nil {
+		builder.WriteString("order_kind=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
 	}
 	builder.WriteString(", ")
 	builder.WriteString("common_phrases=")

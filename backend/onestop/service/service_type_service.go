@@ -9,6 +9,7 @@ import (
 	"github.com/tx7do/go-utils/trans"
 	"github.com/tx7do/kratos-bootstrap/bootstrap"
 	bLogger "github.com/tx7do/kratos-bootstrap/logger"
+	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/emptypb"
 
 	onestopV1 "go-wind-admin/onestop/api/gen/go/onestop/service/v1"
@@ -71,6 +72,147 @@ func ResolveTriggerMode(ctx context.Context, typeRepo *data.ServiceTypeRepo, ent
 	return onestopV1.TriggerMode_TRIGGER_ON_DEMAND, nil
 }
 
+// ResolveOrderKind 解析类别节点生效的履约形态（工单「怎么履约」的开关）：
+// 自身已设置以自身为准；细类未设置回退小类；两级都空按推导规则——
+// 0106 子树（运送配送）→ 运送；解析后计划生成 → 计划任务；否则 → 事件处置。
+// 显式设置的意义就是覆盖推导（如 010405 被服收发按业务形状归运送）。
+func ResolveOrderKind(ctx context.Context, typeRepo *data.ServiceTypeRepo, entity *onestopV1.ServiceType) (onestopV1.OrderKind, error) {
+	if entity.OrderKind != nil && entity.GetOrderKind() != onestopV1.OrderKind_KIND_UNSPECIFIED {
+		return entity.GetOrderKind(), nil
+	}
+	parent := entity
+	if entity.GetLevel() == onestopV1.Level_LEVEL_DETAIL && entity.GetParentId() != 0 {
+		p, err := typeRepo.GetByID(ctx, entity.GetParentId())
+		if err != nil {
+			return onestopV1.OrderKind_KIND_UNSPECIFIED, err
+		}
+		if p.OrderKind != nil && p.GetOrderKind() != onestopV1.OrderKind_KIND_UNSPECIFIED {
+			return p.GetOrderKind(), nil
+		}
+		parent = p
+	}
+	// 推导：0106 子树 → 运送；SCHEDULED → 计划任务；否则事件处置。
+	// 触发方式解析复用 ResolveTriggerMode（parent 为小类时其自身解析已含回退）
+	if strings.HasPrefix(parent.GetCode(), transportSubtreePrefix) {
+		return onestopV1.OrderKind_KIND_TRANSPORT, nil
+	}
+	trigger, err := ResolveTriggerMode(ctx, typeRepo, parent)
+	if err != nil {
+		return onestopV1.OrderKind_KIND_UNSPECIFIED, err
+	}
+	if trigger == onestopV1.TriggerMode_TRIGGER_SCHEDULED {
+		return onestopV1.OrderKind_KIND_TASK, nil
+	}
+	return onestopV1.OrderKind_KIND_EVENT, nil
+}
+
+// transportSubtreePrefix 运送配送中类编码前缀（履约形态推导用，
+// 与字典 docs/leixing/biaodan 的 0106 对应）。
+const transportSubtreePrefix = "0106"
+
+// ResolveEffectiveConfig 解析类别节点的生效履约配置（合并视图）：
+// 单值列细类为空回退小类；数组列整组覆盖或整组继承（不做数组内 merge）；
+// trigger_mode / order_kind 为解析后的生效值（含推导）。发起端表单预填与
+// 工单创建快照共用本口径（P1 设计 §8 预留的 effective-config 机制）。
+// entity 须为小类或细类。
+func ResolveEffectiveConfig(ctx context.Context, typeRepo *data.ServiceTypeRepo, entity *onestopV1.ServiceType) (*onestopV1.ServiceType, error) {
+	view := proto.Clone(entity).(*onestopV1.ServiceType)
+
+	var parent *onestopV1.ServiceType
+	if entity.GetLevel() == onestopV1.Level_LEVEL_DETAIL && entity.GetParentId() != 0 {
+		p, err := typeRepo.GetByID(ctx, entity.GetParentId())
+		if err != nil {
+			return nil, err
+		}
+		parent = p
+	}
+
+	fallbackStr := func(dst **string, src *string) {
+		if *dst == nil && src != nil {
+			*dst = src
+		}
+	}
+	fallbackU32 := func(dst **uint32, src *uint32) {
+		if *dst == nil && src != nil {
+			*dst = src
+		}
+	}
+	fallbackF64 := func(dst **float64, src *float64) {
+		if *dst == nil && src != nil {
+			*dst = src
+		}
+	}
+	fallbackEnum := func(dst any, src any) {
+		// 枚举在 proto 生成代码里都是指针（optional），统一按非 nil 判断
+		switch d := dst.(type) {
+		case **onestopV1.ServicePriority:
+			if *d == nil {
+				if s, ok := src.(*onestopV1.ServicePriority); ok && s != nil {
+					*d = s
+				}
+			}
+		case **onestopV1.TemperatureRequirement:
+			if *d == nil {
+				if s, ok := src.(*onestopV1.TemperatureRequirement); ok && s != nil {
+					*d = s
+				}
+			}
+		case **bool:
+			if *d == nil {
+				if s, ok := src.(*bool); ok && s != nil {
+					*d = s
+				}
+			}
+		}
+	}
+
+	if parent != nil {
+		fallbackStr(&view.ExecutionPost, parent.ExecutionPost)
+		fallbackF64(&view.StandardWorkHours, parent.StandardWorkHours)
+		fallbackU32(&view.ResponseTimeLimit, parent.ResponseTimeLimit)
+		fallbackU32(&view.CompletionTimeLimit, parent.CompletionTimeLimit)
+		fallbackStr(&view.Guidance, parent.Guidance)
+		if len(view.GetCommonPhrases()) == 0 {
+			view.CommonPhrases = parent.CommonPhrases
+		}
+		if len(view.GetStandardTools()) == 0 {
+			view.StandardTools = parent.StandardTools
+		}
+		if len(view.GetSpareParts()) == 0 {
+			view.SpareParts = parent.SpareParts
+		}
+		if len(view.GetStandardItems()) == 0 {
+			view.StandardItems = parent.StandardItems
+		}
+		if len(view.GetCargoTypes()) == 0 {
+			view.CargoTypes = parent.CargoTypes
+		}
+		if len(view.GetAcceptanceModes()) == 0 {
+			view.AcceptanceModes = parent.AcceptanceModes
+		}
+		if len(view.GetAcceptanceItems()) == 0 {
+			view.AcceptanceItems = parent.AcceptanceItems
+		}
+		fallbackEnum(&view.DefaultPriority, parent.DefaultPriority)
+		fallbackEnum(&view.TemperatureRequirement, parent.TemperatureRequirement)
+		fallbackEnum(&view.RequiresApproval, parent.RequiresApproval)
+	}
+
+	trigger, err := ResolveTriggerMode(ctx, typeRepo, entity)
+	if err != nil {
+		return nil, err
+	}
+	view.TriggerMode = trigger.Enum()
+
+	kind, err := ResolveOrderKind(ctx, typeRepo, entity)
+	if err != nil {
+		return nil, err
+	}
+	view.OrderKind = kind.Enum()
+
+	return view, nil
+}
+
 // hasConfigPayload 判断提交数据是否携带任一履约配置（未配置 = NULL/空）。
 // repeated 空切片不算（那是显式清空）；requiresApproval 仅 true 算（false 是默认值）。
 // 用于结构层（大类/中类）拒绝配置字段：结构节点只承载分类，不承载履约参数。
@@ -90,7 +232,8 @@ func hasConfigPayload(d *onestopV1.ServiceType) bool {
 		d.DefaultPriority != nil ||
 		d.TemperatureRequirement != nil ||
 		d.GetRequiresApproval() ||
-		d.TriggerMode != nil
+		d.TriggerMode != nil ||
+		d.OrderKind != nil
 }
 
 type ServiceTypeService struct {
@@ -152,6 +295,15 @@ func (s *ServiceTypeService) validate(ctx context.Context, data *onestopV1.Servi
 		case onestopV1.TriggerMode_TRIGGER_ON_DEMAND, onestopV1.TriggerMode_TRIGGER_SCHEDULED:
 		default:
 			return onestopV1.ErrorUnprocessableEntity("trigger mode must be TRIGGER_ON_DEMAND or TRIGGER_SCHEDULED")
+		}
+	}
+
+	// 履约形态：值域校验（收口同上）
+	if data.OrderKind != nil {
+		switch data.GetOrderKind() {
+		case onestopV1.OrderKind_KIND_EVENT, onestopV1.OrderKind_KIND_TASK, onestopV1.OrderKind_KIND_TRANSPORT:
+		default:
+			return onestopV1.ErrorUnprocessableEntity("order kind must be KIND_EVENT, KIND_TASK or KIND_TRANSPORT")
 		}
 	}
 
@@ -401,4 +553,28 @@ func (s *ServiceTypeService) Delete(ctx context.Context, req *onestopV1.DeleteSe
 	}
 
 	return &emptypb.Empty{}, nil
+}
+
+// GetEffectiveConfig 查询类别的生效履约配置（细类→小类回退解析后的完整视图）：
+// 发起端表单预填与工单创建快照共用同一解析口径。id 须为小类/细类
+//（大类/中类是纯结构节点，无履约语义）。
+func (s *ServiceTypeService) GetEffectiveConfig(ctx context.Context, req *onestopV1.GetEffectiveConfigRequest) (*onestopV1.EffectiveServiceConfig, error) {
+	if req.GetId() == 0 {
+		return nil, onestopV1.ErrorBadRequest("id is required")
+	}
+
+	entity, err := s.repo.GetByID(ctx, req.GetId())
+	if err != nil {
+		return nil, err
+	}
+	if len(entity.GetCode()) != 6 && len(entity.GetCode()) != 8 {
+		return nil, onestopV1.ErrorUnprocessableEntity("effective config is only available on minor/detail level service types")
+	}
+
+	view, err := ResolveEffectiveConfig(ctx, s.repo, entity)
+	if err != nil {
+		return nil, err
+	}
+
+	return &onestopV1.EffectiveServiceConfig{Effective: view}, nil
 }

@@ -44,6 +44,42 @@ func (f TransportRouteFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Val
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.TransportRouteMutation", m)
 }
 
+// The WorkOrderFunc type is an adapter to allow the use of ordinary
+// function as WorkOrder mutator.
+type WorkOrderFunc func(context.Context, *ent.WorkOrderMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f WorkOrderFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.WorkOrderMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.WorkOrderMutation", m)
+}
+
+// The WorkOrderEventFunc type is an adapter to allow the use of ordinary
+// function as WorkOrderEvent mutator.
+type WorkOrderEventFunc func(context.Context, *ent.WorkOrderEventMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f WorkOrderEventFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.WorkOrderEventMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.WorkOrderEventMutation", m)
+}
+
+// The WorkOrderItemFunc type is an adapter to allow the use of ordinary
+// function as WorkOrderItem mutator.
+type WorkOrderItemFunc func(context.Context, *ent.WorkOrderItemMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f WorkOrderItemFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.WorkOrderItemMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.WorkOrderItemMutation", m)
+}
+
 // Condition is a hook condition function.
 type Condition func(context.Context, ent.Mutation) bool
 

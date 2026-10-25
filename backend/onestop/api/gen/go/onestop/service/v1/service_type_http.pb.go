@@ -24,6 +24,7 @@ const _ = http.SupportPackageIsVersion1
 const OperationOneStopServiceTypeServiceCreate = "/onestop.service.v1.OneStopServiceTypeService/Create"
 const OperationOneStopServiceTypeServiceDelete = "/onestop.service.v1.OneStopServiceTypeService/Delete"
 const OperationOneStopServiceTypeServiceGet = "/onestop.service.v1.OneStopServiceTypeService/Get"
+const OperationOneStopServiceTypeServiceGetEffectiveConfig = "/onestop.service.v1.OneStopServiceTypeService/GetEffectiveConfig"
 const OperationOneStopServiceTypeServiceList = "/onestop.service.v1.OneStopServiceTypeService/List"
 const OperationOneStopServiceTypeServiceUpdate = "/onestop.service.v1.OneStopServiceTypeService/Update"
 
@@ -34,6 +35,9 @@ type OneStopServiceTypeServiceHTTPServer interface {
 	Delete(context.Context, *DeleteServiceTypeRequest) (*emptypb.Empty, error)
 	// Get 查询服务类型详情
 	Get(context.Context, *GetServiceTypeRequest) (*ServiceType, error)
+	// GetEffectiveConfig 查询类别的生效履约配置（细类→小类回退解析后的完整视图）：
+	// 发起端表单预填与工单创建快照共用同一解析口径。
+	GetEffectiveConfig(context.Context, *GetEffectiveConfigRequest) (*EffectiveServiceConfig, error)
 	// List 查询服务类型列表
 	List(context.Context, *v1.PagingRequest) (*ListServiceTypeResponse, error)
 	// Update 更新服务类型
@@ -47,6 +51,7 @@ func RegisterOneStopServiceTypeServiceHTTPServer(s *http.Server, srv OneStopServ
 	r.POST("/admin/v1/onestop/service-types", _OneStopServiceTypeService_Create1_HTTP_Handler(srv))
 	r.PUT("/admin/v1/onestop/service-types/{id}", _OneStopServiceTypeService_Update1_HTTP_Handler(srv))
 	r.DELETE("/admin/v1/onestop/service-types/{id}", _OneStopServiceTypeService_Delete1_HTTP_Handler(srv))
+	r.GET("/admin/v1/onestop/service-types/{id}/effective-config", _OneStopServiceTypeService_GetEffectiveConfig0_HTTP_Handler(srv))
 }
 
 func _OneStopServiceTypeService_List1_HTTP_Handler(srv OneStopServiceTypeServiceHTTPServer) func(ctx http.Context) error {
@@ -159,6 +164,28 @@ func _OneStopServiceTypeService_Delete1_HTTP_Handler(srv OneStopServiceTypeServi
 	}
 }
 
+func _OneStopServiceTypeService_GetEffectiveConfig0_HTTP_Handler(srv OneStopServiceTypeServiceHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in GetEffectiveConfigRequest
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindVars(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationOneStopServiceTypeServiceGetEffectiveConfig)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.GetEffectiveConfig(ctx, req.(*GetEffectiveConfigRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*EffectiveServiceConfig)
+		return ctx.Result(200, reply)
+	}
+}
+
 type OneStopServiceTypeServiceHTTPClient interface {
 	// Create 创建服务类型
 	Create(ctx context.Context, req *CreateServiceTypeRequest, opts ...http.CallOption) (rsp *emptypb.Empty, err error)
@@ -166,6 +193,9 @@ type OneStopServiceTypeServiceHTTPClient interface {
 	Delete(ctx context.Context, req *DeleteServiceTypeRequest, opts ...http.CallOption) (rsp *emptypb.Empty, err error)
 	// Get 查询服务类型详情
 	Get(ctx context.Context, req *GetServiceTypeRequest, opts ...http.CallOption) (rsp *ServiceType, err error)
+	// GetEffectiveConfig 查询类别的生效履约配置（细类→小类回退解析后的完整视图）：
+	// 发起端表单预填与工单创建快照共用同一解析口径。
+	GetEffectiveConfig(ctx context.Context, req *GetEffectiveConfigRequest, opts ...http.CallOption) (rsp *EffectiveServiceConfig, err error)
 	// List 查询服务类型列表
 	List(ctx context.Context, req *v1.PagingRequest, opts ...http.CallOption) (rsp *ListServiceTypeResponse, err error)
 	// Update 更新服务类型
@@ -214,6 +244,21 @@ func (c *OneStopServiceTypeServiceHTTPClientImpl) Get(ctx context.Context, in *G
 	pattern := "/admin/v1/onestop/service-types/{id}"
 	path := binding.EncodeURL(pattern, in, true)
 	opts = append(opts, http.Operation(OperationOneStopServiceTypeServiceGet))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+// GetEffectiveConfig 查询类别的生效履约配置（细类→小类回退解析后的完整视图）：
+// 发起端表单预填与工单创建快照共用同一解析口径。
+func (c *OneStopServiceTypeServiceHTTPClientImpl) GetEffectiveConfig(ctx context.Context, in *GetEffectiveConfigRequest, opts ...http.CallOption) (*EffectiveServiceConfig, error) {
+	var out EffectiveServiceConfig
+	pattern := "/admin/v1/onestop/service-types/{id}/effective-config"
+	path := binding.EncodeURL(pattern, in, true)
+	opts = append(opts, http.Operation(OperationOneStopServiceTypeServiceGetEffectiveConfig))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
 	if err != nil {

@@ -228,6 +228,15 @@ func initApp(ctx *bootstrap.Context) (*kratos.App, func(), error) {
 		}
 		return operator.UserId, nil
 	})
+	// 工单（统一工单底座）：依赖类型/计划/路线三个仓储（快照解析 + 调度展开）
+	oneStopWorkOrderRepo := onestopData.NewWorkOrderRepo(ctx, oneStopEntClient)
+	oneStopWorkOrderService := onestopService.NewWorkOrderService(ctx, oneStopWorkOrderRepo, oneStopServiceTypeRepo, oneStopPeriodicPlanRepo, oneStopTransportRouteRepo, func(ctx context.Context) (uint32, error) {
+		operator, err := auth.FromContext(ctx)
+		if err != nil {
+			return 0, err
+		}
+		return operator.UserId, nil
+	})
 
 	// 通知投递：渠道注册表（EMAIL / WEBHOOK / SMS / INTERNAL）→ NotificationService → 各业务 service 只拿 Notifier。
 	// 注册顺序即装配位置：新增一种渠道 = 在这里多 Register 一个 Sender，业务调用方不动。
@@ -428,13 +437,14 @@ func initApp(ctx *bootstrap.Context) (*kratos.App, func(), error) {
 		oneStopServiceTypeService,
 		oneStopPeriodicPlanService,
 		oneStopTransportRouteService,
+		oneStopWorkOrderService,
 	)
 	if err != nil {
 		rollback()
 		return nil, nil, err
 	}
 
-	asynqServer, err := server.NewAsynqServer(ctx, taskService, internalMessageService, notificationService, monitorAlertService, scriptRuntime, aiKnowledgeService, auditDigestService, planQuotaWatermarkService)
+	asynqServer, err := server.NewAsynqServer(ctx, taskService, internalMessageService, notificationService, monitorAlertService, scriptRuntime, aiKnowledgeService, auditDigestService, planQuotaWatermarkService, oneStopWorkOrderService)
 	if err != nil {
 		rollback()
 		return nil, nil, err

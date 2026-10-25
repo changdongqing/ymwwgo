@@ -14,6 +14,9 @@ import (
 	"go-wind-admin/onestop/data/ent/periodicplan"
 	"go-wind-admin/onestop/data/ent/servicetype"
 	"go-wind-admin/onestop/data/ent/transportroute"
+	"go-wind-admin/onestop/data/ent/workorder"
+	"go-wind-admin/onestop/data/ent/workorderevent"
+	"go-wind-admin/onestop/data/ent/workorderitem"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect"
@@ -32,6 +35,12 @@ type Client struct {
 	ServiceType *ServiceTypeClient
 	// TransportRoute is the client for interacting with the TransportRoute builders.
 	TransportRoute *TransportRouteClient
+	// WorkOrder is the client for interacting with the WorkOrder builders.
+	WorkOrder *WorkOrderClient
+	// WorkOrderEvent is the client for interacting with the WorkOrderEvent builders.
+	WorkOrderEvent *WorkOrderEventClient
+	// WorkOrderItem is the client for interacting with the WorkOrderItem builders.
+	WorkOrderItem *WorkOrderItemClient
 }
 
 // NewClient creates a new client configured with the given options.
@@ -46,6 +55,9 @@ func (c *Client) init() {
 	c.PeriodicPlan = NewPeriodicPlanClient(c.config)
 	c.ServiceType = NewServiceTypeClient(c.config)
 	c.TransportRoute = NewTransportRouteClient(c.config)
+	c.WorkOrder = NewWorkOrderClient(c.config)
+	c.WorkOrderEvent = NewWorkOrderEventClient(c.config)
+	c.WorkOrderItem = NewWorkOrderItemClient(c.config)
 }
 
 type (
@@ -141,6 +153,9 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		PeriodicPlan:   NewPeriodicPlanClient(cfg),
 		ServiceType:    NewServiceTypeClient(cfg),
 		TransportRoute: NewTransportRouteClient(cfg),
+		WorkOrder:      NewWorkOrderClient(cfg),
+		WorkOrderEvent: NewWorkOrderEventClient(cfg),
+		WorkOrderItem:  NewWorkOrderItemClient(cfg),
 	}, nil
 }
 
@@ -163,6 +178,9 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		PeriodicPlan:   NewPeriodicPlanClient(cfg),
 		ServiceType:    NewServiceTypeClient(cfg),
 		TransportRoute: NewTransportRouteClient(cfg),
+		WorkOrder:      NewWorkOrderClient(cfg),
+		WorkOrderEvent: NewWorkOrderEventClient(cfg),
+		WorkOrderItem:  NewWorkOrderItemClient(cfg),
 	}, nil
 }
 
@@ -191,17 +209,23 @@ func (c *Client) Close() error {
 // Use adds the mutation hooks to all the entity clients.
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
-	c.PeriodicPlan.Use(hooks...)
-	c.ServiceType.Use(hooks...)
-	c.TransportRoute.Use(hooks...)
+	for _, n := range []interface{ Use(...Hook) }{
+		c.PeriodicPlan, c.ServiceType, c.TransportRoute, c.WorkOrder, c.WorkOrderEvent,
+		c.WorkOrderItem,
+	} {
+		n.Use(hooks...)
+	}
 }
 
 // Intercept adds the query interceptors to all the entity clients.
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
-	c.PeriodicPlan.Intercept(interceptors...)
-	c.ServiceType.Intercept(interceptors...)
-	c.TransportRoute.Intercept(interceptors...)
+	for _, n := range []interface{ Intercept(...Interceptor) }{
+		c.PeriodicPlan, c.ServiceType, c.TransportRoute, c.WorkOrder, c.WorkOrderEvent,
+		c.WorkOrderItem,
+	} {
+		n.Intercept(interceptors...)
+	}
 }
 
 // Mutate implements the ent.Mutator interface.
@@ -213,6 +237,12 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.ServiceType.mutate(ctx, m)
 	case *TransportRouteMutation:
 		return c.TransportRoute.mutate(ctx, m)
+	case *WorkOrderMutation:
+		return c.WorkOrder.mutate(ctx, m)
+	case *WorkOrderEventMutation:
+		return c.WorkOrderEvent.mutate(ctx, m)
+	case *WorkOrderItemMutation:
+		return c.WorkOrderItem.mutate(ctx, m)
 	default:
 		return nil, fmt.Errorf("ent: unknown mutation type %T", m)
 	}
@@ -328,7 +358,8 @@ func (c *PeriodicPlanClient) GetX(ctx context.Context, id uint32) *PeriodicPlan 
 
 // Hooks returns the client hooks.
 func (c *PeriodicPlanClient) Hooks() []Hook {
-	return c.hooks.PeriodicPlan
+	hooks := c.hooks.PeriodicPlan
+	return append(hooks[:len(hooks):len(hooks)], periodicplan.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
@@ -626,7 +657,8 @@ func (c *TransportRouteClient) GetX(ctx context.Context, id uint32) *TransportRo
 
 // Hooks returns the client hooks.
 func (c *TransportRouteClient) Hooks() []Hook {
-	return c.hooks.TransportRoute
+	hooks := c.hooks.TransportRoute
+	return append(hooks[:len(hooks):len(hooks)], transportroute.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
@@ -649,12 +681,416 @@ func (c *TransportRouteClient) mutate(ctx context.Context, m *TransportRouteMuta
 	}
 }
 
+// WorkOrderClient is a client for the WorkOrder schema.
+type WorkOrderClient struct {
+	config
+}
+
+// NewWorkOrderClient returns a client for the WorkOrder from the given config.
+func NewWorkOrderClient(c config) *WorkOrderClient {
+	return &WorkOrderClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `workorder.Hooks(f(g(h())))`.
+func (c *WorkOrderClient) Use(hooks ...Hook) {
+	c.hooks.WorkOrder = append(c.hooks.WorkOrder, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `workorder.Intercept(f(g(h())))`.
+func (c *WorkOrderClient) Intercept(interceptors ...Interceptor) {
+	c.inters.WorkOrder = append(c.inters.WorkOrder, interceptors...)
+}
+
+// Create returns a builder for creating a WorkOrder entity.
+func (c *WorkOrderClient) Create() *WorkOrderCreate {
+	mutation := newWorkOrderMutation(c.config, OpCreate)
+	return &WorkOrderCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of WorkOrder entities.
+func (c *WorkOrderClient) CreateBulk(builders ...*WorkOrderCreate) *WorkOrderCreateBulk {
+	return &WorkOrderCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *WorkOrderClient) MapCreateBulk(slice any, setFunc func(*WorkOrderCreate, int)) *WorkOrderCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &WorkOrderCreateBulk{err: fmt.Errorf("calling to WorkOrderClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*WorkOrderCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &WorkOrderCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for WorkOrder.
+func (c *WorkOrderClient) Update() *WorkOrderUpdate {
+	mutation := newWorkOrderMutation(c.config, OpUpdate)
+	return &WorkOrderUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *WorkOrderClient) UpdateOne(_m *WorkOrder) *WorkOrderUpdateOne {
+	mutation := newWorkOrderMutation(c.config, OpUpdateOne, withWorkOrder(_m))
+	return &WorkOrderUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *WorkOrderClient) UpdateOneID(id uint32) *WorkOrderUpdateOne {
+	mutation := newWorkOrderMutation(c.config, OpUpdateOne, withWorkOrderID(id))
+	return &WorkOrderUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for WorkOrder.
+func (c *WorkOrderClient) Delete() *WorkOrderDelete {
+	mutation := newWorkOrderMutation(c.config, OpDelete)
+	return &WorkOrderDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *WorkOrderClient) DeleteOne(_m *WorkOrder) *WorkOrderDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *WorkOrderClient) DeleteOneID(id uint32) *WorkOrderDeleteOne {
+	builder := c.Delete().Where(workorder.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &WorkOrderDeleteOne{builder}
+}
+
+// Query returns a query builder for WorkOrder.
+func (c *WorkOrderClient) Query() *WorkOrderQuery {
+	return &WorkOrderQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeWorkOrder},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a WorkOrder entity by its id.
+func (c *WorkOrderClient) Get(ctx context.Context, id uint32) (*WorkOrder, error) {
+	return c.Query().Where(workorder.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *WorkOrderClient) GetX(ctx context.Context, id uint32) *WorkOrder {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *WorkOrderClient) Hooks() []Hook {
+	hooks := c.hooks.WorkOrder
+	return append(hooks[:len(hooks):len(hooks)], workorder.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *WorkOrderClient) Interceptors() []Interceptor {
+	return c.inters.WorkOrder
+}
+
+func (c *WorkOrderClient) mutate(ctx context.Context, m *WorkOrderMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&WorkOrderCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&WorkOrderUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&WorkOrderUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&WorkOrderDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown WorkOrder mutation op: %q", m.Op())
+	}
+}
+
+// WorkOrderEventClient is a client for the WorkOrderEvent schema.
+type WorkOrderEventClient struct {
+	config
+}
+
+// NewWorkOrderEventClient returns a client for the WorkOrderEvent from the given config.
+func NewWorkOrderEventClient(c config) *WorkOrderEventClient {
+	return &WorkOrderEventClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `workorderevent.Hooks(f(g(h())))`.
+func (c *WorkOrderEventClient) Use(hooks ...Hook) {
+	c.hooks.WorkOrderEvent = append(c.hooks.WorkOrderEvent, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `workorderevent.Intercept(f(g(h())))`.
+func (c *WorkOrderEventClient) Intercept(interceptors ...Interceptor) {
+	c.inters.WorkOrderEvent = append(c.inters.WorkOrderEvent, interceptors...)
+}
+
+// Create returns a builder for creating a WorkOrderEvent entity.
+func (c *WorkOrderEventClient) Create() *WorkOrderEventCreate {
+	mutation := newWorkOrderEventMutation(c.config, OpCreate)
+	return &WorkOrderEventCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of WorkOrderEvent entities.
+func (c *WorkOrderEventClient) CreateBulk(builders ...*WorkOrderEventCreate) *WorkOrderEventCreateBulk {
+	return &WorkOrderEventCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *WorkOrderEventClient) MapCreateBulk(slice any, setFunc func(*WorkOrderEventCreate, int)) *WorkOrderEventCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &WorkOrderEventCreateBulk{err: fmt.Errorf("calling to WorkOrderEventClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*WorkOrderEventCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &WorkOrderEventCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for WorkOrderEvent.
+func (c *WorkOrderEventClient) Update() *WorkOrderEventUpdate {
+	mutation := newWorkOrderEventMutation(c.config, OpUpdate)
+	return &WorkOrderEventUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *WorkOrderEventClient) UpdateOne(_m *WorkOrderEvent) *WorkOrderEventUpdateOne {
+	mutation := newWorkOrderEventMutation(c.config, OpUpdateOne, withWorkOrderEvent(_m))
+	return &WorkOrderEventUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *WorkOrderEventClient) UpdateOneID(id uint32) *WorkOrderEventUpdateOne {
+	mutation := newWorkOrderEventMutation(c.config, OpUpdateOne, withWorkOrderEventID(id))
+	return &WorkOrderEventUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for WorkOrderEvent.
+func (c *WorkOrderEventClient) Delete() *WorkOrderEventDelete {
+	mutation := newWorkOrderEventMutation(c.config, OpDelete)
+	return &WorkOrderEventDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *WorkOrderEventClient) DeleteOne(_m *WorkOrderEvent) *WorkOrderEventDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *WorkOrderEventClient) DeleteOneID(id uint32) *WorkOrderEventDeleteOne {
+	builder := c.Delete().Where(workorderevent.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &WorkOrderEventDeleteOne{builder}
+}
+
+// Query returns a query builder for WorkOrderEvent.
+func (c *WorkOrderEventClient) Query() *WorkOrderEventQuery {
+	return &WorkOrderEventQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeWorkOrderEvent},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a WorkOrderEvent entity by its id.
+func (c *WorkOrderEventClient) Get(ctx context.Context, id uint32) (*WorkOrderEvent, error) {
+	return c.Query().Where(workorderevent.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *WorkOrderEventClient) GetX(ctx context.Context, id uint32) *WorkOrderEvent {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *WorkOrderEventClient) Hooks() []Hook {
+	hooks := c.hooks.WorkOrderEvent
+	return append(hooks[:len(hooks):len(hooks)], workorderevent.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *WorkOrderEventClient) Interceptors() []Interceptor {
+	return c.inters.WorkOrderEvent
+}
+
+func (c *WorkOrderEventClient) mutate(ctx context.Context, m *WorkOrderEventMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&WorkOrderEventCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&WorkOrderEventUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&WorkOrderEventUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&WorkOrderEventDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown WorkOrderEvent mutation op: %q", m.Op())
+	}
+}
+
+// WorkOrderItemClient is a client for the WorkOrderItem schema.
+type WorkOrderItemClient struct {
+	config
+}
+
+// NewWorkOrderItemClient returns a client for the WorkOrderItem from the given config.
+func NewWorkOrderItemClient(c config) *WorkOrderItemClient {
+	return &WorkOrderItemClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `workorderitem.Hooks(f(g(h())))`.
+func (c *WorkOrderItemClient) Use(hooks ...Hook) {
+	c.hooks.WorkOrderItem = append(c.hooks.WorkOrderItem, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `workorderitem.Intercept(f(g(h())))`.
+func (c *WorkOrderItemClient) Intercept(interceptors ...Interceptor) {
+	c.inters.WorkOrderItem = append(c.inters.WorkOrderItem, interceptors...)
+}
+
+// Create returns a builder for creating a WorkOrderItem entity.
+func (c *WorkOrderItemClient) Create() *WorkOrderItemCreate {
+	mutation := newWorkOrderItemMutation(c.config, OpCreate)
+	return &WorkOrderItemCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of WorkOrderItem entities.
+func (c *WorkOrderItemClient) CreateBulk(builders ...*WorkOrderItemCreate) *WorkOrderItemCreateBulk {
+	return &WorkOrderItemCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *WorkOrderItemClient) MapCreateBulk(slice any, setFunc func(*WorkOrderItemCreate, int)) *WorkOrderItemCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &WorkOrderItemCreateBulk{err: fmt.Errorf("calling to WorkOrderItemClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*WorkOrderItemCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &WorkOrderItemCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for WorkOrderItem.
+func (c *WorkOrderItemClient) Update() *WorkOrderItemUpdate {
+	mutation := newWorkOrderItemMutation(c.config, OpUpdate)
+	return &WorkOrderItemUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *WorkOrderItemClient) UpdateOne(_m *WorkOrderItem) *WorkOrderItemUpdateOne {
+	mutation := newWorkOrderItemMutation(c.config, OpUpdateOne, withWorkOrderItem(_m))
+	return &WorkOrderItemUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *WorkOrderItemClient) UpdateOneID(id uint32) *WorkOrderItemUpdateOne {
+	mutation := newWorkOrderItemMutation(c.config, OpUpdateOne, withWorkOrderItemID(id))
+	return &WorkOrderItemUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for WorkOrderItem.
+func (c *WorkOrderItemClient) Delete() *WorkOrderItemDelete {
+	mutation := newWorkOrderItemMutation(c.config, OpDelete)
+	return &WorkOrderItemDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *WorkOrderItemClient) DeleteOne(_m *WorkOrderItem) *WorkOrderItemDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *WorkOrderItemClient) DeleteOneID(id uint32) *WorkOrderItemDeleteOne {
+	builder := c.Delete().Where(workorderitem.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &WorkOrderItemDeleteOne{builder}
+}
+
+// Query returns a query builder for WorkOrderItem.
+func (c *WorkOrderItemClient) Query() *WorkOrderItemQuery {
+	return &WorkOrderItemQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeWorkOrderItem},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a WorkOrderItem entity by its id.
+func (c *WorkOrderItemClient) Get(ctx context.Context, id uint32) (*WorkOrderItem, error) {
+	return c.Query().Where(workorderitem.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *WorkOrderItemClient) GetX(ctx context.Context, id uint32) *WorkOrderItem {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *WorkOrderItemClient) Hooks() []Hook {
+	hooks := c.hooks.WorkOrderItem
+	return append(hooks[:len(hooks):len(hooks)], workorderitem.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *WorkOrderItemClient) Interceptors() []Interceptor {
+	return c.inters.WorkOrderItem
+}
+
+func (c *WorkOrderItemClient) mutate(ctx context.Context, m *WorkOrderItemMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&WorkOrderItemCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&WorkOrderItemUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&WorkOrderItemUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&WorkOrderItemDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown WorkOrderItem mutation op: %q", m.Op())
+	}
+}
+
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		PeriodicPlan, ServiceType, TransportRoute []ent.Hook
+		PeriodicPlan, ServiceType, TransportRoute, WorkOrder, WorkOrderEvent,
+		WorkOrderItem []ent.Hook
 	}
 	inters struct {
-		PeriodicPlan, ServiceType, TransportRoute []ent.Interceptor
+		PeriodicPlan, ServiceType, TransportRoute, WorkOrder, WorkOrderEvent,
+		WorkOrderItem []ent.Interceptor
 	}
 )

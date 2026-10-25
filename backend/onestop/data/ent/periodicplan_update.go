@@ -593,6 +593,9 @@ func (_u *PeriodicPlanUpdate) sqlSave(ctx context.Context) (_node int, err error
 	if _u.mutation.DeletedByCleared() {
 		_spec.ClearField(periodicplan.FieldDeletedBy, field.TypeUint32)
 	}
+	if _u.mutation.TenantIDCleared() {
+		_spec.ClearField(periodicplan.FieldTenantID, field.TypeUint32)
+	}
 	if value, ok := _u.mutation.IsEnabled(); ok {
 		_spec.SetField(periodicplan.FieldIsEnabled, field.TypeBool, value)
 	}
@@ -1356,6 +1359,9 @@ func (_u *PeriodicPlanUpdateOne) sqlSave(ctx context.Context) (_node *PeriodicPl
 	}
 	if _u.mutation.DeletedByCleared() {
 		_spec.ClearField(periodicplan.FieldDeletedBy, field.TypeUint32)
+	}
+	if _u.mutation.TenantIDCleared() {
+		_spec.ClearField(periodicplan.FieldTenantID, field.TypeUint32)
 	}
 	if value, ok := _u.mutation.IsEnabled(); ok {
 		_spec.SetField(periodicplan.FieldIsEnabled, field.TypeBool, value)

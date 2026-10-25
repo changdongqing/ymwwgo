@@ -144,6 +144,9 @@
       "annotationProperty": "Annotation Properties",
       "datatype": "Data Types",
       "individual": "Individuals"
+    },
+    "onestop": {
+      "workOrders": "Work Orders"
     }
   },
   "page": {
@@ -160,5 +163,6 @@
   "ontology-data-properties": "Data Properties",
   "annotation-properties": "Annotation Properties",
   "datatypes": "Data Types",
-  "individuals": "Individuals"
+  "individuals": "Individuals",
+  "onestop-work-orders": "Work Orders"
 }

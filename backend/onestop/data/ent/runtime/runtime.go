@@ -2,7 +2,472 @@
 
 package runtime
 
-// The schema-stitching logic is generated in go-wind-admin/onestop/data/ent/runtime.go
+import (
+	"context"
+	"go-wind-admin/onestop/data/ent/periodicplan"
+	"go-wind-admin/onestop/data/ent/schema"
+	"go-wind-admin/onestop/data/ent/servicetype"
+	"go-wind-admin/onestop/data/ent/transportroute"
+	"go-wind-admin/onestop/data/ent/workorder"
+	"go-wind-admin/onestop/data/ent/workorderevent"
+	"go-wind-admin/onestop/data/ent/workorderitem"
+
+	"entgo.io/ent"
+	"entgo.io/ent/privacy"
+)
+
+// The init function reads all schema descriptors with runtime code
+// (default values, validators, hooks and policies) and stitches it
+// to their package variables.
+func init() {
+	periodicplanMixin := schema.PeriodicPlan{}.Mixin()
+	periodicplan.Policy = privacy.NewPolicies(periodicplanMixin[3], schema.PeriodicPlan{})
+	periodicplan.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := periodicplan.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	periodicplanMixinFields0 := periodicplanMixin[0].Fields()
+	_ = periodicplanMixinFields0
+	periodicplanMixinFields3 := periodicplanMixin[3].Fields()
+	_ = periodicplanMixinFields3
+	periodicplanMixinFields4 := periodicplanMixin[4].Fields()
+	_ = periodicplanMixinFields4
+	periodicplanFields := schema.PeriodicPlan{}.Fields()
+	_ = periodicplanFields
+	// periodicplanDescTenantID is the schema descriptor for tenant_id field.
+	periodicplanDescTenantID := periodicplanMixinFields3[0].Descriptor()
+	// periodicplan.DefaultTenantID holds the default value on creation for the tenant_id field.
+	periodicplan.DefaultTenantID = periodicplanDescTenantID.Default.(uint32)
+	// periodicplanDescIsEnabled is the schema descriptor for is_enabled field.
+	periodicplanDescIsEnabled := periodicplanMixinFields4[0].Descriptor()
+	// periodicplan.DefaultIsEnabled holds the default value on creation for the is_enabled field.
+	periodicplan.DefaultIsEnabled = periodicplanDescIsEnabled.Default.(bool)
+	// periodicplanDescName is the schema descriptor for name field.
+	periodicplanDescName := periodicplanFields[0].Descriptor()
+	// periodicplan.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	periodicplan.NameValidator = func() func(string) error {
+		validators := periodicplanDescName.Validators
+		fns := [...]func(string) error{
+			validators[0].(func(string) error),
+			validators[1].(func(string) error),
+		}
+		return func(name string) error {
+			for _, fn := range fns {
+				if err := fn(name); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	// periodicplanDescClampToMonthEnd is the schema descriptor for clamp_to_month_end field.
+	periodicplanDescClampToMonthEnd := periodicplanFields[6].Descriptor()
+	// periodicplan.DefaultClampToMonthEnd holds the default value on creation for the clamp_to_month_end field.
+	periodicplan.DefaultClampToMonthEnd = periodicplanDescClampToMonthEnd.Default.(bool)
+	// periodicplanDescPost is the schema descriptor for post field.
+	periodicplanDescPost := periodicplanFields[9].Descriptor()
+	// periodicplan.PostValidator is a validator for the "post" field. It is called by the builders before save.
+	periodicplan.PostValidator = periodicplanDescPost.Validators[0].(func(string) error)
+	// periodicplanDescID is the schema descriptor for id field.
+	periodicplanDescID := periodicplanMixinFields0[0].Descriptor()
+	// periodicplan.IDValidator is a validator for the "id" field. It is called by the builders before save.
+	periodicplan.IDValidator = periodicplanDescID.Validators[0].(func(uint32) error)
+	servicetypeMixin := schema.ServiceType{}.Mixin()
+	servicetypeMixinFields0 := servicetypeMixin[0].Fields()
+	_ = servicetypeMixinFields0
+	servicetypeMixinFields4 := servicetypeMixin[4].Fields()
+	_ = servicetypeMixinFields4
+	servicetypeFields := schema.ServiceType{}.Fields()
+	_ = servicetypeFields
+	// servicetypeDescIsEnabled is the schema descriptor for is_enabled field.
+	servicetypeDescIsEnabled := servicetypeMixinFields4[0].Descriptor()
+	// servicetype.DefaultIsEnabled holds the default value on creation for the is_enabled field.
+	servicetype.DefaultIsEnabled = servicetypeDescIsEnabled.Default.(bool)
+	// servicetypeDescCode is the schema descriptor for code field.
+	servicetypeDescCode := servicetypeFields[0].Descriptor()
+	// servicetype.CodeValidator is a validator for the "code" field. It is called by the builders before save.
+	servicetype.CodeValidator = func() func(string) error {
+		validators := servicetypeDescCode.Validators
+		fns := [...]func(string) error{
+			validators[0].(func(string) error),
+			validators[1].(func(string) error),
+		}
+		return func(code string) error {
+			for _, fn := range fns {
+				if err := fn(code); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	// servicetypeDescName is the schema descriptor for name field.
+	servicetypeDescName := servicetypeFields[1].Descriptor()
+	// servicetype.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	servicetype.NameValidator = func() func(string) error {
+		validators := servicetypeDescName.Validators
+		fns := [...]func(string) error{
+			validators[0].(func(string) error),
+			validators[1].(func(string) error),
+		}
+		return func(name string) error {
+			for _, fn := range fns {
+				if err := fn(name); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	// servicetypeDescDescription is the schema descriptor for description field.
+	servicetypeDescDescription := servicetypeFields[3].Descriptor()
+	// servicetype.DefaultDescription holds the default value on creation for the description field.
+	servicetype.DefaultDescription = servicetypeDescDescription.Default.(string)
+	// servicetype.DescriptionValidator is a validator for the "description" field. It is called by the builders before save.
+	servicetype.DescriptionValidator = servicetypeDescDescription.Validators[0].(func(string) error)
+	// servicetypeDescExecutionPost is the schema descriptor for execution_post field.
+	servicetypeDescExecutionPost := servicetypeFields[4].Descriptor()
+	// servicetype.ExecutionPostValidator is a validator for the "execution_post" field. It is called by the builders before save.
+	servicetype.ExecutionPostValidator = servicetypeDescExecutionPost.Validators[0].(func(string) error)
+	// servicetypeDescGuidance is the schema descriptor for guidance field.
+	servicetypeDescGuidance := servicetypeFields[8].Descriptor()
+	// servicetype.GuidanceValidator is a validator for the "guidance" field. It is called by the builders before save.
+	servicetype.GuidanceValidator = servicetypeDescGuidance.Validators[0].(func(string) error)
+	// servicetypeDescRequiresApproval is the schema descriptor for requires_approval field.
+	servicetypeDescRequiresApproval := servicetypeFields[18].Descriptor()
+	// servicetype.DefaultRequiresApproval holds the default value on creation for the requires_approval field.
+	servicetype.DefaultRequiresApproval = servicetypeDescRequiresApproval.Default.(bool)
+	// servicetypeDescID is the schema descriptor for id field.
+	servicetypeDescID := servicetypeMixinFields0[0].Descriptor()
+	// servicetype.IDValidator is a validator for the "id" field. It is called by the builders before save.
+	servicetype.IDValidator = servicetypeDescID.Validators[0].(func(uint32) error)
+	transportrouteMixin := schema.TransportRoute{}.Mixin()
+	transportroute.Policy = privacy.NewPolicies(transportrouteMixin[3], schema.TransportRoute{})
+	transportroute.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := transportroute.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	transportrouteMixinFields0 := transportrouteMixin[0].Fields()
+	_ = transportrouteMixinFields0
+	transportrouteMixinFields3 := transportrouteMixin[3].Fields()
+	_ = transportrouteMixinFields3
+	transportrouteMixinFields4 := transportrouteMixin[4].Fields()
+	_ = transportrouteMixinFields4
+	transportrouteFields := schema.TransportRoute{}.Fields()
+	_ = transportrouteFields
+	// transportrouteDescTenantID is the schema descriptor for tenant_id field.
+	transportrouteDescTenantID := transportrouteMixinFields3[0].Descriptor()
+	// transportroute.DefaultTenantID holds the default value on creation for the tenant_id field.
+	transportroute.DefaultTenantID = transportrouteDescTenantID.Default.(uint32)
+	// transportrouteDescIsEnabled is the schema descriptor for is_enabled field.
+	transportrouteDescIsEnabled := transportrouteMixinFields4[0].Descriptor()
+	// transportroute.DefaultIsEnabled holds the default value on creation for the is_enabled field.
+	transportroute.DefaultIsEnabled = transportrouteDescIsEnabled.Default.(bool)
+	// transportrouteDescName is the schema descriptor for name field.
+	transportrouteDescName := transportrouteFields[0].Descriptor()
+	// transportroute.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	transportroute.NameValidator = func() func(string) error {
+		validators := transportrouteDescName.Validators
+		fns := [...]func(string) error{
+			validators[0].(func(string) error),
+			validators[1].(func(string) error),
+		}
+		return func(name string) error {
+			for _, fn := range fns {
+				if err := fn(name); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	// transportrouteDescOrigin is the schema descriptor for origin field.
+	transportrouteDescOrigin := transportrouteFields[2].Descriptor()
+	// transportroute.OriginValidator is a validator for the "origin" field. It is called by the builders before save.
+	transportroute.OriginValidator = func() func(string) error {
+		validators := transportrouteDescOrigin.Validators
+		fns := [...]func(string) error{
+			validators[0].(func(string) error),
+			validators[1].(func(string) error),
+		}
+		return func(origin string) error {
+			for _, fn := range fns {
+				if err := fn(origin); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	// transportrouteDescDestination is the schema descriptor for destination field.
+	transportrouteDescDestination := transportrouteFields[3].Descriptor()
+	// transportroute.DestinationValidator is a validator for the "destination" field. It is called by the builders before save.
+	transportroute.DestinationValidator = func() func(string) error {
+		validators := transportrouteDescDestination.Validators
+		fns := [...]func(string) error{
+			validators[0].(func(string) error),
+			validators[1].(func(string) error),
+		}
+		return func(destination string) error {
+			for _, fn := range fns {
+				if err := fn(destination); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	// transportrouteDescRoundTrip is the schema descriptor for round_trip field.
+	transportrouteDescRoundTrip := transportrouteFields[6].Descriptor()
+	// transportroute.DefaultRoundTrip holds the default value on creation for the round_trip field.
+	transportroute.DefaultRoundTrip = transportrouteDescRoundTrip.Default.(bool)
+	// transportrouteDescID is the schema descriptor for id field.
+	transportrouteDescID := transportrouteMixinFields0[0].Descriptor()
+	// transportroute.IDValidator is a validator for the "id" field. It is called by the builders before save.
+	transportroute.IDValidator = transportrouteDescID.Validators[0].(func(uint32) error)
+	workorderMixin := schema.WorkOrder{}.Mixin()
+	workorder.Policy = privacy.NewPolicies(workorderMixin[3], schema.WorkOrder{})
+	workorder.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := workorder.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	workorderMixinFields0 := workorderMixin[0].Fields()
+	_ = workorderMixinFields0
+	workorderMixinFields3 := workorderMixin[3].Fields()
+	_ = workorderMixinFields3
+	workorderFields := schema.WorkOrder{}.Fields()
+	_ = workorderFields
+	// workorderDescTenantID is the schema descriptor for tenant_id field.
+	workorderDescTenantID := workorderMixinFields3[0].Descriptor()
+	// workorder.DefaultTenantID holds the default value on creation for the tenant_id field.
+	workorder.DefaultTenantID = workorderDescTenantID.Default.(uint32)
+	// workorderDescOrderNo is the schema descriptor for order_no field.
+	workorderDescOrderNo := workorderFields[0].Descriptor()
+	// workorder.OrderNoValidator is a validator for the "order_no" field. It is called by the builders before save.
+	workorder.OrderNoValidator = func() func(string) error {
+		validators := workorderDescOrderNo.Validators
+		fns := [...]func(string) error{
+			validators[0].(func(string) error),
+			validators[1].(func(string) error),
+		}
+		return func(order_no string) error {
+			for _, fn := range fns {
+				if err := fn(order_no); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	// workorderDescServiceTypeCode is the schema descriptor for service_type_code field.
+	workorderDescServiceTypeCode := workorderFields[2].Descriptor()
+	// workorder.ServiceTypeCodeValidator is a validator for the "service_type_code" field. It is called by the builders before save.
+	workorder.ServiceTypeCodeValidator = workorderDescServiceTypeCode.Validators[0].(func(string) error)
+	// workorderDescServiceTypeName is the schema descriptor for service_type_name field.
+	workorderDescServiceTypeName := workorderFields[3].Descriptor()
+	// workorder.ServiceTypeNameValidator is a validator for the "service_type_name" field. It is called by the builders before save.
+	workorder.ServiceTypeNameValidator = workorderDescServiceTypeName.Validators[0].(func(string) error)
+	// workorderDescRequesterName is the schema descriptor for requester_name field.
+	workorderDescRequesterName := workorderFields[8].Descriptor()
+	// workorder.RequesterNameValidator is a validator for the "requester_name" field. It is called by the builders before save.
+	workorder.RequesterNameValidator = workorderDescRequesterName.Validators[0].(func(string) error)
+	// workorderDescRequesterPhone is the schema descriptor for requester_phone field.
+	workorderDescRequesterPhone := workorderFields[9].Descriptor()
+	// workorder.RequesterPhoneValidator is a validator for the "requester_phone" field. It is called by the builders before save.
+	workorder.RequesterPhoneValidator = workorderDescRequesterPhone.Validators[0].(func(string) error)
+	// workorderDescLocation is the schema descriptor for location field.
+	workorderDescLocation := workorderFields[11].Descriptor()
+	// workorder.LocationValidator is a validator for the "location" field. It is called by the builders before save.
+	workorder.LocationValidator = workorderDescLocation.Validators[0].(func(string) error)
+	// workorderDescEquipmentDesc is the schema descriptor for equipment_desc field.
+	workorderDescEquipmentDesc := workorderFields[12].Descriptor()
+	// workorder.EquipmentDescValidator is a validator for the "equipment_desc" field. It is called by the builders before save.
+	workorder.EquipmentDescValidator = workorderDescEquipmentDesc.Validators[0].(func(string) error)
+	// workorderDescDescription is the schema descriptor for description field.
+	workorderDescDescription := workorderFields[13].Descriptor()
+	// workorder.DescriptionValidator is a validator for the "description" field. It is called by the builders before save.
+	workorder.DescriptionValidator = func() func(string) error {
+		validators := workorderDescDescription.Validators
+		fns := [...]func(string) error{
+			validators[0].(func(string) error),
+			validators[1].(func(string) error),
+		}
+		return func(description string) error {
+			for _, fn := range fns {
+				if err := fn(description); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	// workorderDescCommonPhrase is the schema descriptor for common_phrase field.
+	workorderDescCommonPhrase := workorderFields[15].Descriptor()
+	// workorder.CommonPhraseValidator is a validator for the "common_phrase" field. It is called by the builders before save.
+	workorder.CommonPhraseValidator = workorderDescCommonPhrase.Validators[0].(func(string) error)
+	// workorderDescExecutionPost is the schema descriptor for execution_post field.
+	workorderDescExecutionPost := workorderFields[16].Descriptor()
+	// workorder.ExecutionPostValidator is a validator for the "execution_post" field. It is called by the builders before save.
+	workorder.ExecutionPostValidator = workorderDescExecutionPost.Validators[0].(func(string) error)
+	// workorderDescAssigneeName is the schema descriptor for assignee_name field.
+	workorderDescAssigneeName := workorderFields[18].Descriptor()
+	// workorder.AssigneeNameValidator is a validator for the "assignee_name" field. It is called by the builders before save.
+	workorder.AssigneeNameValidator = workorderDescAssigneeName.Validators[0].(func(string) error)
+	// workorderDescCancelReason is the schema descriptor for cancel_reason field.
+	workorderDescCancelReason := workorderFields[33].Descriptor()
+	// workorder.CancelReasonValidator is a validator for the "cancel_reason" field. It is called by the builders before save.
+	workorder.CancelReasonValidator = workorderDescCancelReason.Validators[0].(func(string) error)
+	// workorderDescHasAbnormality is the schema descriptor for has_abnormality field.
+	workorderDescHasAbnormality := workorderFields[34].Descriptor()
+	// workorder.DefaultHasAbnormality holds the default value on creation for the has_abnormality field.
+	workorder.DefaultHasAbnormality = workorderDescHasAbnormality.Default.(bool)
+	// workorderDescUrgeCount is the schema descriptor for urge_count field.
+	workorderDescUrgeCount := workorderFields[35].Descriptor()
+	// workorder.DefaultUrgeCount holds the default value on creation for the urge_count field.
+	workorder.DefaultUrgeCount = workorderDescUrgeCount.Default.(uint32)
+	// workorderDescOrigin is the schema descriptor for origin field.
+	workorderDescOrigin := workorderFields[36].Descriptor()
+	// workorder.OriginValidator is a validator for the "origin" field. It is called by the builders before save.
+	workorder.OriginValidator = workorderDescOrigin.Validators[0].(func(string) error)
+	// workorderDescDestination is the schema descriptor for destination field.
+	workorderDescDestination := workorderFields[37].Descriptor()
+	// workorder.DestinationValidator is a validator for the "destination" field. It is called by the builders before save.
+	workorder.DestinationValidator = workorderDescDestination.Validators[0].(func(string) error)
+	// workorderDescRoundTrip is the schema descriptor for round_trip field.
+	workorderDescRoundTrip := workorderFields[39].Descriptor()
+	// workorder.DefaultRoundTrip holds the default value on creation for the round_trip field.
+	workorder.DefaultRoundTrip = workorderDescRoundTrip.Default.(bool)
+	// workorderDescCargoDesc is the schema descriptor for cargo_desc field.
+	workorderDescCargoDesc := workorderFields[42].Descriptor()
+	// workorder.CargoDescValidator is a validator for the "cargo_desc" field. It is called by the builders before save.
+	workorder.CargoDescValidator = workorderDescCargoDesc.Validators[0].(func(string) error)
+	// workorderDescPickedSigner is the schema descriptor for picked_signer field.
+	workorderDescPickedSigner := workorderFields[44].Descriptor()
+	// workorder.PickedSignerValidator is a validator for the "picked_signer" field. It is called by the builders before save.
+	workorder.PickedSignerValidator = workorderDescPickedSigner.Validators[0].(func(string) error)
+	// workorderDescDeliveredSigner is the schema descriptor for delivered_signer field.
+	workorderDescDeliveredSigner := workorderFields[47].Descriptor()
+	// workorder.DeliveredSignerValidator is a validator for the "delivered_signer" field. It is called by the builders before save.
+	workorder.DeliveredSignerValidator = workorderDescDeliveredSigner.Validators[0].(func(string) error)
+	// workorderDescResultDesc is the schema descriptor for result_desc field.
+	workorderDescResultDesc := workorderFields[49].Descriptor()
+	// workorder.ResultDescValidator is a validator for the "result_desc" field. It is called by the builders before save.
+	workorder.ResultDescValidator = workorderDescResultDesc.Validators[0].(func(string) error)
+	// workorderDescAcceptanceSigner is the schema descriptor for acceptance_signer field.
+	workorderDescAcceptanceSigner := workorderFields[57].Descriptor()
+	// workorder.AcceptanceSignerValidator is a validator for the "acceptance_signer" field. It is called by the builders before save.
+	workorder.AcceptanceSignerValidator = workorderDescAcceptanceSigner.Validators[0].(func(string) error)
+	// workorderDescSatisfactionComment is the schema descriptor for satisfaction_comment field.
+	workorderDescSatisfactionComment := workorderFields[59].Descriptor()
+	// workorder.SatisfactionCommentValidator is a validator for the "satisfaction_comment" field. It is called by the builders before save.
+	workorder.SatisfactionCommentValidator = workorderDescSatisfactionComment.Validators[0].(func(string) error)
+	// workorderDescID is the schema descriptor for id field.
+	workorderDescID := workorderMixinFields0[0].Descriptor()
+	// workorder.IDValidator is a validator for the "id" field. It is called by the builders before save.
+	workorder.IDValidator = workorderDescID.Validators[0].(func(uint32) error)
+	workordereventMixin := schema.WorkOrderEvent{}.Mixin()
+	workorderevent.Policy = privacy.NewPolicies(workordereventMixin[3], schema.WorkOrderEvent{})
+	workorderevent.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := workorderevent.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	workordereventMixinFields0 := workordereventMixin[0].Fields()
+	_ = workordereventMixinFields0
+	workordereventMixinFields3 := workordereventMixin[3].Fields()
+	_ = workordereventMixinFields3
+	workordereventFields := schema.WorkOrderEvent{}.Fields()
+	_ = workordereventFields
+	// workordereventDescTenantID is the schema descriptor for tenant_id field.
+	workordereventDescTenantID := workordereventMixinFields3[0].Descriptor()
+	// workorderevent.DefaultTenantID holds the default value on creation for the tenant_id field.
+	workorderevent.DefaultTenantID = workordereventDescTenantID.Default.(uint32)
+	// workordereventDescNote is the schema descriptor for note field.
+	workordereventDescNote := workordereventFields[4].Descriptor()
+	// workorderevent.NoteValidator is a validator for the "note" field. It is called by the builders before save.
+	workorderevent.NoteValidator = workordereventDescNote.Validators[0].(func(string) error)
+	// workordereventDescID is the schema descriptor for id field.
+	workordereventDescID := workordereventMixinFields0[0].Descriptor()
+	// workorderevent.IDValidator is a validator for the "id" field. It is called by the builders before save.
+	workorderevent.IDValidator = workordereventDescID.Validators[0].(func(uint32) error)
+	workorderitemMixin := schema.WorkOrderItem{}.Mixin()
+	workorderitem.Policy = privacy.NewPolicies(workorderitemMixin[3], schema.WorkOrderItem{})
+	workorderitem.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := workorderitem.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	workorderitemMixinFields0 := workorderitemMixin[0].Fields()
+	_ = workorderitemMixinFields0
+	workorderitemMixinFields3 := workorderitemMixin[3].Fields()
+	_ = workorderitemMixinFields3
+	workorderitemFields := schema.WorkOrderItem{}.Fields()
+	_ = workorderitemFields
+	// workorderitemDescTenantID is the schema descriptor for tenant_id field.
+	workorderitemDescTenantID := workorderitemMixinFields3[0].Descriptor()
+	// workorderitem.DefaultTenantID holds the default value on creation for the tenant_id field.
+	workorderitem.DefaultTenantID = workorderitemDescTenantID.Default.(uint32)
+	// workorderitemDescName is the schema descriptor for name field.
+	workorderitemDescName := workorderitemFields[2].Descriptor()
+	// workorderitem.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	workorderitem.NameValidator = func() func(string) error {
+		validators := workorderitemDescName.Validators
+		fns := [...]func(string) error{
+			validators[0].(func(string) error),
+			validators[1].(func(string) error),
+		}
+		return func(name string) error {
+			for _, fn := range fns {
+				if err := fn(name); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	// workorderitemDescSort is the schema descriptor for sort field.
+	workorderitemDescSort := workorderitemFields[3].Descriptor()
+	// workorderitem.DefaultSort holds the default value on creation for the sort field.
+	workorderitem.DefaultSort = workorderitemDescSort.Default.(uint32)
+	// workorderitemDescValue is the schema descriptor for value field.
+	workorderitemDescValue := workorderitemFields[5].Descriptor()
+	// workorderitem.ValueValidator is a validator for the "value" field. It is called by the builders before save.
+	workorderitem.ValueValidator = workorderitemDescValue.Validators[0].(func(string) error)
+	// workorderitemDescRemark is the schema descriptor for remark field.
+	workorderitemDescRemark := workorderitemFields[7].Descriptor()
+	// workorderitem.RemarkValidator is a validator for the "remark" field. It is called by the builders before save.
+	workorderitem.RemarkValidator = workorderitemDescRemark.Validators[0].(func(string) error)
+	// workorderitemDescSpaceRef is the schema descriptor for space_ref field.
+	workorderitemDescSpaceRef := workorderitemFields[8].Descriptor()
+	// workorderitem.SpaceRefValidator is a validator for the "space_ref" field. It is called by the builders before save.
+	workorderitem.SpaceRefValidator = workorderitemDescSpaceRef.Validators[0].(func(string) error)
+	// workorderitemDescEquipmentRef is the schema descriptor for equipment_ref field.
+	workorderitemDescEquipmentRef := workorderitemFields[9].Descriptor()
+	// workorderitem.EquipmentRefValidator is a validator for the "equipment_ref" field. It is called by the builders before save.
+	workorderitem.EquipmentRefValidator = workorderitemDescEquipmentRef.Validators[0].(func(string) error)
+	// workorderitemDescID is the schema descriptor for id field.
+	workorderitemDescID := workorderitemMixinFields0[0].Descriptor()
+	// workorderitem.IDValidator is a validator for the "id" field. It is called by the builders before save.
+	workorderitem.IDValidator = workorderitemDescID.Validators[0].(func(uint32) error)
+}
 
 const (
 	Version = "v0.14.6"                                         // Version of ent codegen.

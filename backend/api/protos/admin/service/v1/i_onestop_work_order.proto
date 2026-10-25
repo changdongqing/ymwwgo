@@ -1,0 +1,181 @@
+syntax = "proto3";
+
+package admin.service.v1;
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+
+import "pagination/v1/pagination.proto";
+
+import "onestop/service/v1/work_order.proto";
+
+// 一站式工单管理服务（admin 门面）
+//
+// 源领域 proto 在 onestop/service/v1（独立 Go module go-wind-admin/onestop 拥有
+// 自己的同名生成包 onestopv1）；本门面只挂 HTTP 路由，消息类型直接引用源领域，
+// 生成时 onestop/service/v1 的 go_package 被指到 module 的 gen 包，因此本服务
+// 生成的 HTTP 接口与 module 内 service 的方法签名完全一致，可直接注册。
+service OneStopWorkOrderService {
+  // 查询工单列表
+  rpc List (pagination.PagingRequest) returns (onestop.service.v1.ListWorkOrdersResponse) {
+    option (google.api.http) = {
+      get: "/admin/v1/onestop/work-orders"
+    };
+  }
+
+  // 查询工单详情
+  rpc Get (onestop.service.v1.GetWorkOrderRequest) returns (onestop.service.v1.WorkOrder) {
+    option (google.api.http) = {
+      get: "/admin/v1/onestop/work-orders/{id}"
+    };
+  }
+
+  // 创建工单
+  rpc Create (onestop.service.v1.CreateWorkOrderRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/admin/v1/onestop/work-orders"
+      body: "*"
+    };
+  }
+
+  // 更新工单
+  rpc Update (onestop.service.v1.UpdateWorkOrderRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      put: "/admin/v1/onestop/work-orders/{id}"
+      body: "*"
+    };
+  }
+
+  // 删除工单
+  rpc Delete (onestop.service.v1.DeleteWorkOrderRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete: "/admin/v1/onestop/work-orders/{id}"
+    };
+  }
+
+  // 查询工单事件时间线
+  rpc ListEvents (onestop.service.v1.ListWorkOrderEventsRequest) returns (onestop.service.v1.ListWorkOrderEventsResponse) {
+    option (google.api.http) = {
+      get: "/admin/v1/onestop/work-orders/{id}/events"
+    };
+  }
+
+  // 查询工单执行项
+  rpc ListItems (onestop.service.v1.ListWorkOrderItemsRequest) returns (onestop.service.v1.ListWorkOrderItemsResponse) {
+    option (google.api.http) = {
+      get: "/admin/v1/onestop/work-orders/{id}/items"
+    };
+  }
+
+  // 派单
+  rpc Dispatch (onestop.service.v1.DispatchWorkOrderRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/admin/v1/onestop/work-orders/{id}/dispatch"
+      body: "*"
+    };
+  }
+
+  // 审批
+  rpc Approve (onestop.service.v1.ApproveWorkOrderRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/admin/v1/onestop/work-orders/{id}/approve"
+      body: "*"
+    };
+  }
+
+  // 到场
+  rpc Arrive (onestop.service.v1.ArriveWorkOrderRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/admin/v1/onestop/work-orders/{id}/arrive"
+      body: "*"
+    };
+  }
+
+  // 取件签收
+  rpc Pickup (onestop.service.v1.PickupWorkOrderRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/admin/v1/onestop/work-orders/{id}/pickup"
+      body: "*"
+    };
+  }
+
+  // 送达签收
+  rpc Deliver (onestop.service.v1.DeliverWorkOrderRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/admin/v1/onestop/work-orders/{id}/deliver"
+      body: "*"
+    };
+  }
+
+  // 完工提交
+  rpc Complete (onestop.service.v1.CompleteWorkOrderRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/admin/v1/onestop/work-orders/{id}/complete"
+      body: "*"
+    };
+  }
+
+  // 验收
+  rpc Verify (onestop.service.v1.VerifyWorkOrderRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/admin/v1/onestop/work-orders/{id}/verify"
+      body: "*"
+    };
+  }
+
+  // 撤销
+  rpc Cancel (onestop.service.v1.CancelWorkOrderRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/admin/v1/onestop/work-orders/{id}/cancel"
+      body: "*"
+    };
+  }
+
+  // 催办
+  rpc Urge (onestop.service.v1.UrgeWorkOrderRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/admin/v1/onestop/work-orders/{id}/urge"
+      body: "*"
+    };
+  }
+
+  // 改派
+  rpc Reassign (onestop.service.v1.ReassignWorkOrderRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/admin/v1/onestop/work-orders/{id}/reassign"
+      body: "*"
+    };
+  }
+
+  // 转单
+  rpc Transfer (onestop.service.v1.TransferWorkOrderRequest) returns (onestop.service.v1.WorkOrder) {
+    option (google.api.http) = {
+      post: "/admin/v1/onestop/work-orders/{id}/transfer"
+      body: "*"
+    };
+  }
+
+  // 派生
+  rpc Derive (onestop.service.v1.DeriveWorkOrderRequest) returns (onestop.service.v1.WorkOrder) {
+    option (google.api.http) = {
+      post: "/admin/v1/onestop/work-orders/{id}/derive"
+      body: "*"
+    };
+  }
+
+  // 异常上报
+  rpc Abnormal (onestop.service.v1.AbnormalWorkOrderRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/admin/v1/onestop/work-orders/{id}/abnormal"
+      body: "*"
+    };
+  }
+
+  // 满意度回访补录
+  rpc Satisfaction (onestop.service.v1.SatisfactionWorkOrderRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/admin/v1/onestop/work-orders/{id}/satisfaction"
+      body: "*"
+    };
+  }
+}

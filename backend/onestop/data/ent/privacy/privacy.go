@@ -183,6 +183,78 @@ func (f TransportRouteMutationRuleFunc) EvalMutation(ctx context.Context, m ent.
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.TransportRouteMutation", m)
 }
 
+// The WorkOrderQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type WorkOrderQueryRuleFunc func(context.Context, *ent.WorkOrderQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f WorkOrderQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.WorkOrderQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.WorkOrderQuery", q)
+}
+
+// The WorkOrderMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type WorkOrderMutationRuleFunc func(context.Context, *ent.WorkOrderMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f WorkOrderMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.WorkOrderMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.WorkOrderMutation", m)
+}
+
+// The WorkOrderEventQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type WorkOrderEventQueryRuleFunc func(context.Context, *ent.WorkOrderEventQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f WorkOrderEventQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.WorkOrderEventQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.WorkOrderEventQuery", q)
+}
+
+// The WorkOrderEventMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type WorkOrderEventMutationRuleFunc func(context.Context, *ent.WorkOrderEventMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f WorkOrderEventMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.WorkOrderEventMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.WorkOrderEventMutation", m)
+}
+
+// The WorkOrderItemQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type WorkOrderItemQueryRuleFunc func(context.Context, *ent.WorkOrderItemQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f WorkOrderItemQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.WorkOrderItemQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.WorkOrderItemQuery", q)
+}
+
+// The WorkOrderItemMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type WorkOrderItemMutationRuleFunc func(context.Context, *ent.WorkOrderItemMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f WorkOrderItemMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.WorkOrderItemMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.WorkOrderItemMutation", m)
+}
+
 type (
 	// Filter is the interface that wraps the Where function
 	// for filtering nodes in queries and mutations.
@@ -224,6 +296,12 @@ func queryFilter(q ent.Query) (Filter, error) {
 		return q.Filter(), nil
 	case *ent.TransportRouteQuery:
 		return q.Filter(), nil
+	case *ent.WorkOrderQuery:
+		return q.Filter(), nil
+	case *ent.WorkOrderEventQuery:
+		return q.Filter(), nil
+	case *ent.WorkOrderItemQuery:
+		return q.Filter(), nil
 	default:
 		return nil, Denyf("ent/privacy: unexpected query type %T for query filter", q)
 	}
@@ -236,6 +314,12 @@ func mutationFilter(m ent.Mutation) (Filter, error) {
 	case *ent.ServiceTypeMutation:
 		return m.Filter(), nil
 	case *ent.TransportRouteMutation:
+		return m.Filter(), nil
+	case *ent.WorkOrderMutation:
+		return m.Filter(), nil
+	case *ent.WorkOrderEventMutation:
+		return m.Filter(), nil
+	case *ent.WorkOrderItemMutation:
 		return m.Filter(), nil
 	default:
 		return nil, Denyf("ent/privacy: unexpected mutation type %T for mutation filter", m)

@@ -151,6 +151,38 @@ export function triggerColor(mode?: TriggerModeValue | null): string {
   return mode === 'TRIGGER_SCHEDULED' ? 'blue' : 'default';
 }
 
+/** 履约形态值域 */
+export type OrderKindValue =
+  | import('@/api/generated/admin/service/v1').onestopservicev1_OrderKind
+  | 'KIND_UNSPECIFIED';
+
+/** 履约形态展示名 */
+export function orderKindName(kind?: OrderKindValue | null): string {
+  switch (kind) {
+    case 'KIND_EVENT':
+      return '事件处置';
+    case 'KIND_TASK':
+      return '计划任务';
+    case 'KIND_TRANSPORT':
+      return '运送';
+    default:
+      return '-';
+  }
+}
+
+export function orderKindColor(kind?: OrderKindValue | null): string {
+  switch (kind) {
+    case 'KIND_EVENT':
+      return 'orange';
+    case 'KIND_TASK':
+      return 'blue';
+    case 'KIND_TRANSPORT':
+      return 'purple';
+    default:
+      return 'default';
+  }
+}
+
 /**
  * 解析类别节点生效的触发方式（与后端 ResolveTriggerMode 同口径）：
  * 自身已设置以自身为准；细类未设置回退小类；仍未设置按 TRIGGER_ON_DEMAND。
@@ -164,8 +196,10 @@ type TriggerModeLike =
 interface TriggerResolvable {
   id?: number;
   parentId?: number;
+  code?: string;
   level?: import('@/api/generated/admin/service/v1').onestopservicev1_Level;
   triggerMode?: TriggerModeLike;
+  orderKind?: OrderKindValue | null;
 }
 
 export function resolveTriggerMode(items: TriggerResolvable[], target: TriggerResolvable): TriggerModeValue {
@@ -179,6 +213,30 @@ export function resolveTriggerMode(items: TriggerResolvable[], target: TriggerRe
     }
   }
   return 'TRIGGER_ON_DEMAND';
+}
+
+/**
+ * 解析类别节点生效的履约形态（与后端 ResolveOrderKind 同口径）：
+ * 自身已设置以自身为准；细类未设置回退小类；两级都空按推导规则——
+ * 0106 子树 → 运送；解析后计划生成 → 计划任务；否则 → 事件处置。
+ */
+export function resolveOrderKind(items: TriggerResolvable[], target: TriggerResolvable): OrderKindValue {
+  if (target.orderKind && target.orderKind !== 'KIND_UNSPECIFIED') {
+    return target.orderKind;
+  }
+  if (target.level === 'LEVEL_DETAIL' && target.parentId) {
+    const parent = items.find((item) => item.id === target.parentId);
+    if (parent?.orderKind && parent.orderKind !== 'KIND_UNSPECIFIED') {
+      return parent.orderKind;
+    }
+  }
+  const base = target.level === 'LEVEL_DETAIL'
+    ? items.find((item) => item.id === target.parentId) ?? target
+    : target;
+  if (base.code?.startsWith(TRANSPORT_CATEGORY_CODE)) {
+    return 'KIND_TRANSPORT';
+  }
+  return resolveTriggerMode(items, base) === 'TRIGGER_SCHEDULED' ? 'KIND_TASK' : 'KIND_EVENT';
 }
 
 // —— 展示矩阵：中类编码 → 专项属性可见性 / 文案覆盖 / 新建触发方式建议 ——

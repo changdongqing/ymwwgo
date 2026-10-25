@@ -9,6 +9,9 @@ import (
 	"go-wind-admin/onestop/data/ent/periodicplan"
 	"go-wind-admin/onestop/data/ent/servicetype"
 	"go-wind-admin/onestop/data/ent/transportroute"
+	"go-wind-admin/onestop/data/ent/workorder"
+	"go-wind-admin/onestop/data/ent/workorderevent"
+	"go-wind-admin/onestop/data/ent/workorderitem"
 	"reflect"
 	"sync"
 
@@ -78,6 +81,9 @@ func checkColumn(t, c string) error {
 			periodicplan.Table:   periodicplan.ValidColumn,
 			servicetype.Table:    servicetype.ValidColumn,
 			transportroute.Table: transportroute.ValidColumn,
+			workorder.Table:      workorder.ValidColumn,
+			workorderevent.Table: workorderevent.ValidColumn,
+			workorderitem.Table:  workorderitem.ValidColumn,
 		})
 	})
 	return columnCheck(t, c)

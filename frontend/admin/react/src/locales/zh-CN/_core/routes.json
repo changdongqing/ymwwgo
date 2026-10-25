@@ -144,6 +144,9 @@
       "annotationProperty": "注解属性",
       "datatype": "数据类型",
       "individual": "个体"
+    },
+    "onestop": {
+      "workOrders": "工单管理"
     }
   },
   "page": {
@@ -160,5 +163,6 @@
   "ontology-data-properties": "数据属性",
   "annotation-properties": "注解属性",
   "datatypes": "数据类型",
-  "individuals": "个体"
+  "individuals": "个体",
+  "onestop-work-orders": "工单管理"
 }

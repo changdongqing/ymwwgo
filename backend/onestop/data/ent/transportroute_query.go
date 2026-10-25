@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"go-wind-admin/onestop/data/ent/predicate"
 	"go-wind-admin/onestop/data/ent/transportroute"
@@ -329,6 +330,12 @@ func (_q *TransportRouteQuery) prepareQuery(ctx context.Context) error {
 			return err
 		}
 		_q.sql = prev
+	}
+	if transportroute.Policy == nil {
+		return errors.New("ent: uninitialized transportroute.Policy (forgotten import ent/runtime?)")
+	}
+	if err := transportroute.Policy.EvalQuery(ctx, _q); err != nil {
+		return err
 	}
 	return nil
 }

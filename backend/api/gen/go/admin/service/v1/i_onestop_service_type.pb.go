@@ -28,24 +28,27 @@ var File_admin_service_v1_i_onestop_service_type_proto protoreflect.FileDescript
 
 const file_admin_service_v1_i_onestop_service_type_proto_rawDesc = "" +
 	"\n" +
-	"-admin/service/v1/i_onestop_service_type.proto\x12\x10admin.service.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1epagination/v1/pagination.proto\x1a%onestop/service/v1/service_type.proto2\x90\x05\n" +
+	"-admin/service/v1/i_onestop_service_type.proto\x12\x10admin.service.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1epagination/v1/pagination.proto\x1a%onestop/service/v1/service_type.proto2\xc1\x06\n" +
 	"\x19OneStopServiceTypeService\x12w\n" +
 	"\x04List\x12\x19.pagination.PagingRequest\x1a+.onestop.service.v1.ListServiceTypeResponse\"'\x82\xd3\xe4\x93\x02!\x12\x1f/admin/v1/onestop/service-types\x12\x7f\n" +
 	"\x03Get\x12).onestop.service.v1.GetServiceTypeRequest\x1a\x1f.onestop.service.v1.ServiceType\",\x82\xd3\xe4\x93\x02&\x12$/admin/v1/onestop/service-types/{id}\x12z\n" +
 	"\x06Create\x12,.onestop.service.v1.CreateServiceTypeRequest\x1a\x16.google.protobuf.Empty\"*\x82\xd3\xe4\x93\x02$:\x01*\"\x1f/admin/v1/onestop/service-types\x12\x7f\n" +
 	"\x06Update\x12,.onestop.service.v1.UpdateServiceTypeRequest\x1a\x16.google.protobuf.Empty\"/\x82\xd3\xe4\x93\x02):\x01*\x1a$/admin/v1/onestop/service-types/{id}\x12|\n" +
-	"\x06Delete\x12,.onestop.service.v1.DeleteServiceTypeRequest\x1a\x16.google.protobuf.Empty\",\x82\xd3\xe4\x93\x02&*$/admin/v1/onestop/service-types/{id}B\xc5\x01\n" +
+	"\x06Delete\x12,.onestop.service.v1.DeleteServiceTypeRequest\x1a\x16.google.protobuf.Empty\",\x82\xd3\xe4\x93\x02&*$/admin/v1/onestop/service-types/{id}\x12\xae\x01\n" +
+	"\x12GetEffectiveConfig\x12-.onestop.service.v1.GetEffectiveConfigRequest\x1a*.onestop.service.v1.EffectiveServiceConfig\"=\x82\xd3\xe4\x93\x027\x125/admin/v1/onestop/service-types/{id}/effective-configB\xc5\x01\n" +
 	"\x14com.admin.service.v1B\x18IOnestopServiceTypeProtoP\x01Z1go-wind-admin/api/gen/go/admin/service/v1;adminpb\xa2\x02\x03ASX\xaa\x02\x10Admin.Service.V1\xca\x02\x10Admin\\Service\\V1\xe2\x02\x1cAdmin\\Service\\V1\\GPBMetadata\xea\x02\x12Admin::Service::V1b\x06proto3"
 
 var file_admin_service_v1_i_onestop_service_type_proto_goTypes = []any{
-	(*v1.PagingRequest)(nil),             // 0: pagination.PagingRequest
-	(*v11.GetServiceTypeRequest)(nil),    // 1: onestop.service.v1.GetServiceTypeRequest
-	(*v11.CreateServiceTypeRequest)(nil), // 2: onestop.service.v1.CreateServiceTypeRequest
-	(*v11.UpdateServiceTypeRequest)(nil), // 3: onestop.service.v1.UpdateServiceTypeRequest
-	(*v11.DeleteServiceTypeRequest)(nil), // 4: onestop.service.v1.DeleteServiceTypeRequest
-	(*v11.ListServiceTypeResponse)(nil),  // 5: onestop.service.v1.ListServiceTypeResponse
-	(*v11.ServiceType)(nil),              // 6: onestop.service.v1.ServiceType
-	(*emptypb.Empty)(nil),                // 7: google.protobuf.Empty
+	(*v1.PagingRequest)(nil),              // 0: pagination.PagingRequest
+	(*v11.GetServiceTypeRequest)(nil),     // 1: onestop.service.v1.GetServiceTypeRequest
+	(*v11.CreateServiceTypeRequest)(nil),  // 2: onestop.service.v1.CreateServiceTypeRequest
+	(*v11.UpdateServiceTypeRequest)(nil),  // 3: onestop.service.v1.UpdateServiceTypeRequest
+	(*v11.DeleteServiceTypeRequest)(nil),  // 4: onestop.service.v1.DeleteServiceTypeRequest
+	(*v11.GetEffectiveConfigRequest)(nil), // 5: onestop.service.v1.GetEffectiveConfigRequest
+	(*v11.ListServiceTypeResponse)(nil),   // 6: onestop.service.v1.ListServiceTypeResponse
+	(*v11.ServiceType)(nil),               // 7: onestop.service.v1.ServiceType
+	(*emptypb.Empty)(nil),                 // 8: google.protobuf.Empty
+	(*v11.EffectiveServiceConfig)(nil),    // 9: onestop.service.v1.EffectiveServiceConfig
 }
 var file_admin_service_v1_i_onestop_service_type_proto_depIdxs = []int32{
 	0, // 0: admin.service.v1.OneStopServiceTypeService.List:input_type -> pagination.PagingRequest
@@ -53,13 +56,15 @@ var file_admin_service_v1_i_onestop_service_type_proto_depIdxs = []int32{
 	2, // 2: admin.service.v1.OneStopServiceTypeService.Create:input_type -> onestop.service.v1.CreateServiceTypeRequest
 	3, // 3: admin.service.v1.OneStopServiceTypeService.Update:input_type -> onestop.service.v1.UpdateServiceTypeRequest
 	4, // 4: admin.service.v1.OneStopServiceTypeService.Delete:input_type -> onestop.service.v1.DeleteServiceTypeRequest
-	5, // 5: admin.service.v1.OneStopServiceTypeService.List:output_type -> onestop.service.v1.ListServiceTypeResponse
-	6, // 6: admin.service.v1.OneStopServiceTypeService.Get:output_type -> onestop.service.v1.ServiceType
-	7, // 7: admin.service.v1.OneStopServiceTypeService.Create:output_type -> google.protobuf.Empty
-	7, // 8: admin.service.v1.OneStopServiceTypeService.Update:output_type -> google.protobuf.Empty
-	7, // 9: admin.service.v1.OneStopServiceTypeService.Delete:output_type -> google.protobuf.Empty
-	5, // [5:10] is the sub-list for method output_type
-	0, // [0:5] is the sub-list for method input_type
+	5, // 5: admin.service.v1.OneStopServiceTypeService.GetEffectiveConfig:input_type -> onestop.service.v1.GetEffectiveConfigRequest
+	6, // 6: admin.service.v1.OneStopServiceTypeService.List:output_type -> onestop.service.v1.ListServiceTypeResponse
+	7, // 7: admin.service.v1.OneStopServiceTypeService.Get:output_type -> onestop.service.v1.ServiceType
+	8, // 8: admin.service.v1.OneStopServiceTypeService.Create:output_type -> google.protobuf.Empty
+	8, // 9: admin.service.v1.OneStopServiceTypeService.Update:output_type -> google.protobuf.Empty
+	8, // 10: admin.service.v1.OneStopServiceTypeService.Delete:output_type -> google.protobuf.Empty
+	9, // 11: admin.service.v1.OneStopServiceTypeService.GetEffectiveConfig:output_type -> onestop.service.v1.EffectiveServiceConfig
+	6, // [6:12] is the sub-list for method output_type
+	0, // [0:6] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
 	0, // [0:0] is the sub-list for extension extendee
 	0, // [0:0] is the sub-list for field type_name

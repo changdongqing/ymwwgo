@@ -14,3 +14,12 @@ type ServiceType func(*sql.Selector)
 
 // TransportRoute is the predicate function for transportroute builders.
 type TransportRoute func(*sql.Selector)
+
+// WorkOrder is the predicate function for workorder builders.
+type WorkOrder func(*sql.Selector)
+
+// WorkOrderEvent is the predicate function for workorderevent builders.
+type WorkOrderEvent func(*sql.Selector)
+
+// WorkOrderItem is the predicate function for workorderitem builders.
+type WorkOrderItem func(*sql.Selector)

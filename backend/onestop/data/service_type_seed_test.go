@@ -121,6 +121,19 @@ func TestServiceTypeSeedData(t *testing.T) {
 			scheduledCount++
 		}
 
+		// —— 履约形态矩阵：种子只显式覆写推导覆盖不了的特例——
+		//    010405 被服收发按业务形状（收送交接）归运送，其余全部留空走推导
+		//    （0106 子树→运送 / 解析后计划生成→计划任务 / 否则→事件处置）。
+		//    与迁移 00013 的 UPDATE 前缀清单三处同步维护。
+		if seed.OrderKind != nil {
+			if *seed.OrderKind != "KIND_TRANSPORT" {
+				t.Errorf("seed %q: 种子履约形态只显式标记 KIND_TRANSPORT（其余走推导），got %q", seed.Code, *seed.OrderKind)
+			}
+			if len(seed.Code) < 6 || seed.Code[:6] != "010405" {
+				t.Errorf("seed %q: 不在履约形态覆写矩阵（010405 被服收发）内却显式标记", seed.Code)
+			}
+		}
+
 		// —— 标准作业项目库：非空、组内不重复，只配在计划型（SCHEDULED）小类/细类
 		//    （0103 的每日/每月防火检查两个细类带各自点表，是细类层的既有样例）——
 		if len(seed.StandardItems) > 0 {
@@ -203,6 +216,17 @@ func TestServiceTypeSeedData(t *testing.T) {
 	}
 	if standardItemsSeeded != 27 {
 		t.Errorf("标准作业项目库覆盖节点数 = %d, want 27（0103 既有 10 + 统一期新增 17 个计划型小类）", standardItemsSeeded)
+	}
+
+	// 履约形态显式覆写总数：010405 小类 + 2 细类 = 3（迁移 00013 回填同口径）
+	orderKindOverrides := 0
+	for _, seed := range seeds {
+		if seed.OrderKind != nil {
+			orderKindOverrides++
+		}
+	}
+	if orderKindOverrides != 3 {
+		t.Errorf("履约形态显式覆写节点数 = %d, want 3（010405 被服收发小类 + 2 细类）", orderKindOverrides)
 	}
 
 	// 电梯困人是全字典唯一的 SLA 覆盖样例：10 分钟到场、30 分钟完成救援

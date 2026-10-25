@@ -1,0 +1,1155 @@
+syntax = "proto3";
+
+package onestop.service.v1;
+
+import "gnostic/openapi/v3/annotations.proto";
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/field_mask.proto";
+import "google/protobuf/timestamp.proto";
+
+import "pagination/v1/pagination.proto";
+
+import "onestop/service/v1/service_type.proto";
+
+// 一站式工单管理服务（统一工单底座）
+//
+// 三种履约形态（KIND_EVENT 事件处置 / KIND_TASK 计划任务 / KIND_TRANSPORT 运送）
+// 共用一张主表与一套状态机，形态只驱动状态机分支与界面面板。创建时从类型
+// effective-config（细类→小类回退）快照运行期判定字段（岗位/优先级/SLA/验收），
+// 此后类型修改不影响存量单。CRUD 请求体包 { data: {...} }；动作 RPC 收扁平
+// 请求体（全仓铁律 3），全部动作落事件表（时间线），主表只存当前态。
+service OneStopWorkOrderService {
+  // 查询工单列表（过滤参数走 query JSON：status__in / orderKind__eq /
+  // serviceTypeCode__like / description__contains / assigneeId__eq / createdFrom 等）
+  rpc List (pagination.PagingRequest) returns (ListWorkOrdersResponse) {
+    option (google.api.http) = {
+      get: "/admin/v1/onestop/work-orders"
+    };
+  }
+
+  // 查询工单详情
+  rpc Get (GetWorkOrderRequest) returns (WorkOrder) {
+    option (google.api.http) = {
+      get: "/admin/v1/onestop/work-orders/{id}"
+    };
+  }
+
+  // 创建工单（坐席代发起：快照解析 + requires_approval 时先进审批段）
+  rpc Create (CreateWorkOrderRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/admin/v1/onestop/work-orders"
+      body: "*"
+    };
+  }
+
+  // 更新工单（仅待派单/审批中可改发起信息组字段，其余状态走动作接口）
+  rpc Update (UpdateWorkOrderRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      put: "/admin/v1/onestop/work-orders/{id}"
+      body: "*"
+    };
+  }
+
+  // 删除工单（管理清理，软删，同事务清理执行项与事件）
+  rpc Delete (DeleteWorkOrderRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete: "/admin/v1/onestop/work-orders/{id}"
+    };
+  }
+
+  // 查询工单事件时间线（时间倒序 = 详情页跟进记录）
+  rpc ListEvents (ListWorkOrderEventsRequest) returns (ListWorkOrderEventsResponse) {
+    option (google.api.http) = {
+      get: "/admin/v1/onestop/work-orders/{id}/events"
+    };
+  }
+
+  // 查询工单执行项（计划任务形态的逐项作业记录）
+  rpc ListItems (ListWorkOrderItemsRequest) returns (ListWorkOrderItemsResponse) {
+    option (google.api.http) = {
+      get: "/admin/v1/onestop/work-orders/{id}/items"
+    };
+  }
+
+  // 派单（待派单 → 已派单；assignee 可空 = 岗位派单，接单后补）
+  rpc Dispatch (DispatchWorkOrderRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/admin/v1/onestop/work-orders/{id}/dispatch"
+      body: "*"
+    };
+  }
+
+  // 审批（通过 → 待派单；驳回 → 已撤销）
+  rpc Approve (ApproveWorkOrderRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/admin/v1/onestop/work-orders/{id}/approve"
+      body: "*"
+    };
+  }
+
+  // 到场（已派单 → 执行中，事件/任务形态；记录响应达成时间）
+  rpc Arrive (ArriveWorkOrderRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/admin/v1/onestop/work-orders/{id}/arrive"
+      body: "*"
+    };
+  }
+
+  // 取件签收（已派单 → 执行中，运送形态；记录响应达成时间与签收人）
+  rpc Pickup (PickupWorkOrderRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/admin/v1/onestop/work-orders/{id}/pickup"
+      body: "*"
+    };
+  }
+
+  // 送达签收（执行中 → 已完结，运送形态；双签收内嵌验收，送达即完结）
+  rpc Deliver (DeliverWorkOrderRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/admin/v1/onestop/work-orders/{id}/deliver"
+      body: "*"
+    };
+  }
+
+  // 完工提交（执行中 → 已完工待验收，事件/任务形态；执行项结果随请求一次性提交）
+  rpc Complete (CompleteWorkOrderRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/admin/v1/onestop/work-orders/{id}/complete"
+      body: "*"
+    };
+  }
+
+  // 验收（通过 → 已完结；驳回 → 执行中返工，deadline 不重算）
+  rpc Verify (VerifyWorkOrderRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/admin/v1/onestop/work-orders/{id}/verify"
+      body: "*"
+    };
+  }
+
+  // 撤销（非终态可撤，已完工不可撤——验收打回走 verify 驳回；reason 必填）
+  rpc Cancel (CancelWorkOrderRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/admin/v1/onestop/work-orders/{id}/cancel"
+      body: "*"
+    };
+  }
+
+  // 催办（不改状态，主表冗余计数 +1）
+  rpc Urge (UrgeWorkOrderRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/admin/v1/onestop/work-orders/{id}/urge"
+      body: "*"
+    };
+  }
+
+  // 改派（已派单/执行中 → 已派单；同单换岗位/执行人，不换类型）
+  rpc Reassign (ReassignWorkOrderRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/admin/v1/onestop/work-orders/{id}/reassign"
+      body: "*"
+    };
+  }
+
+  // 转单（旧单关闭，按新类型开新单：复制发起信息、重新解析快照，来源单回链）
+  rpc Transfer (TransferWorkOrderRequest) returns (WorkOrder) {
+    option (google.api.http) = {
+      post: "/admin/v1/onestop/work-orders/{id}/transfer"
+      body: "*"
+    };
+  }
+
+  // 派生（旧单不动，按新类型关联生成新单：典型巡检执行项异常 → 派生报修）
+  rpc Derive (DeriveWorkOrderRequest) returns (WorkOrder) {
+    option (google.api.http) = {
+      post: "/admin/v1/onestop/work-orders/{id}/derive"
+      body: "*"
+    };
+  }
+
+  // 异常上报（不改状态，置异常标记；可配合派生动作生成处置单）
+  rpc Abnormal (AbnormalWorkOrderRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/admin/v1/onestop/work-orders/{id}/abnormal"
+      body: "*"
+    };
+  }
+
+  // 满意度回访补录（仅已完结单；1-5 分）
+  rpc Satisfaction (SatisfactionWorkOrderRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/admin/v1/onestop/work-orders/{id}/satisfaction"
+      body: "*"
+    };
+  }
+}
+
+// 履约形态 OrderKind / 优先级 ServicePriority / 温控 TemperatureRequirement /
+// 验收项 ServiceAcceptanceItem 均定义于 service_type.proto（同 package 共享）。
+
+// 生单来源：工单怎么来的（与发起渠道正交——渠道描述手动单从哪进来）
+enum WorkOrderSource {
+  SOURCE_UNSPECIFIED = 0; // 未指定（按手动创建处理）
+  SOURCE_MANUAL = 1; // 手动创建（坐席台建单）
+  SOURCE_PLAN = 2; // 计划展开（调度器按周期计划生成）
+  SOURCE_ROUTE = 3; // 路线班次（调度器按路线发班时刻生成）
+  SOURCE_TRANSFER = 4; // 转单（旧单关闭后按新类型重开）
+  SOURCE_DERIVED = 5; // 派生（旧单不动，关联生成：巡检异常→报修等）
+}
+
+// 发起渠道（手动单）：小程序/开放 API 为预留枚举位
+enum WorkOrderChannel {
+  CHANNEL_UNSPECIFIED = 0; // 未指定
+  CHANNEL_DESK = 1; // 坐席台（管理端代发起）
+  CHANNEL_PHONE = 2; // 电话呼叫（坐席接听代录）
+}
+
+// 工单状态：三形态共用的统一状态机。
+// 运送形态无独立验收步（送达签收即完结）是唯一按形态收窄的转移。
+enum WorkOrderStatus {
+  STATUS_UNSPECIFIED = 0; // 未指定
+  STATUS_PENDING = 1; // 待派单（手动单起步态：已受理未派）
+  STATUS_APPROVING = 2; // 审批中（requires_approval 的单建单后先走审批段）
+  STATUS_DISPATCHED = 3; // 已派单（含计划/班次单生成即派岗；待到场/取件）
+  STATUS_PROCESSING = 4; // 执行中（已到场/已取件）
+  STATUS_COMPLETED = 5; // 已完工待验收（事件/任务形态）
+  STATUS_CLOSED = 6; // 已完结（终态：验收通过；运送=送达签收直接进入）
+  STATUS_CANCELLED = 7; // 已撤销（终态：撤销/审批驳回/转单关闭）
+}
+
+// 执行项分组（计划单两组点表各自展开；手动创建的计划任务单 scope 为空）
+enum WorkOrderItemScope {
+  SCOPE_UNSPECIFIED = 0; // 未分组（手动创建的计划任务单）
+  SCOPE_SPACE = 1; // 空间点表（源自计划 space_items）
+  SCOPE_EQUIPMENT = 2; // 设备点表（源自计划 equipment_items）
+}
+
+// 执行项结果（存在未执行项时不可完工提交——要么给结果要么显式跳过）
+enum WorkOrderItemResult {
+  ITEM_RESULT_UNSPECIFIED = 0; // 未指定
+  ITEM_PENDING = 1; // 未执行
+  ITEM_NORMAL = 2; // 正常
+  ITEM_ABNORMAL = 3; // 异常（联动主表异常标记，可派生报修）
+  ITEM_SKIPPED = 4; // 跳过（须显式勾选）
+}
+
+// 工单事件动作（时间线）；ACTION_CLAIM 为移动端接单预留枚举位
+enum WorkOrderEventAction {
+  ACTION_UNSPECIFIED = 0; // 未指定
+  ACTION_CREATE = 1; // 创建
+  ACTION_DISPATCH = 2; // 派单
+  ACTION_REASSIGN = 3; // 改派
+  ACTION_ARRIVE = 4; // 到场
+  ACTION_PICKUP = 5; // 取件签收
+  ACTION_DELIVER = 6; // 送达签收
+  ACTION_COMPLETE = 7; // 完工提交
+  ACTION_VERIFY_PASS = 8; // 验收通过
+  ACTION_VERIFY_REJECT = 9; // 验收驳回（返工）
+  ACTION_CANCEL = 10; // 撤销
+  ACTION_URGE = 11; // 催办
+  ACTION_ABNORMAL = 12; // 异常上报
+  ACTION_TRANSFER = 13; // 转单（旧单关闭）
+  ACTION_DERIVE = 14; // 派生（生成关联新单）
+  ACTION_APPROVE_PASS = 15; // 审批通过
+  ACTION_APPROVE_REJECT = 16; // 审批驳回
+  ACTION_CLAIM = 17; // 接单（移动端预留，本期不实现）
+  ACTION_SATISFACTION = 18; // 满意度回访补录
+}
+
+// 备件/耗材领用记录（本期手工填，库存联动未落地）
+message WorkOrderMaterial {
+  string name = 1 [
+    json_name = "name",
+    (gnostic.openapi.v3.property) = { description: "物品名称" }
+  ]; // 物品名称
+
+  double qty = 2 [
+    json_name = "qty",
+    (gnostic.openapi.v3.property) = { description: "数量" }
+  ]; // 数量
+
+  string unit = 3 [
+    json_name = "unit",
+    (gnostic.openapi.v3.property) = { description: "单位（个/套/米…）" }
+  ]; // 单位
+
+  string remark = 4 [
+    json_name = "remark",
+    (gnostic.openapi.v3.property) = { description: "备注" }
+  ]; // 备注
+}
+
+// 验收项结果（verify 动作逐项勾选，name 对应创建时快照的验收项）
+message WorkOrderAcceptanceResult {
+  string name = 1 [
+    json_name = "name",
+    (gnostic.openapi.v3.property) = { description: "验收项名称" }
+  ]; // 验收项名称
+
+  bool passed = 2 [
+    json_name = "passed",
+    (gnostic.openapi.v3.property) = { description: "该项是否通过" }
+  ]; // 该项是否通过
+
+  string remark = 3 [
+    json_name = "remark",
+    (gnostic.openapi.v3.property) = { description: "该项备注" }
+  ]; // 该项备注
+}
+
+// 工单执行项结果提交（complete 请求内一次性回填）
+message WorkOrderItemSubmission {
+  uint32 id = 1 [
+    json_name = "id",
+    (gnostic.openapi.v3.property) = { description: "执行项ID" }
+  ]; // 执行项ID
+
+  WorkOrderItemResult result = 2 [
+    json_name = "result",
+    (gnostic.openapi.v3.property) = { description: "执行结果" }
+  ]; // 执行结果
+
+  string value = 3 [
+    json_name = "value",
+    (gnostic.openapi.v3.property) = { description: "读数/测量值（抄表、检测类）" }
+  ]; // 读数/测量值
+
+  repeated string photos = 4 [
+    json_name = "photos",
+    (gnostic.openapi.v3.property) = { description: "该项留证照片" }
+  ]; // 该项留证照片
+
+  string remark = 5 [
+    json_name = "remark",
+    (gnostic.openapi.v3.property) = { description: "该项备注" }
+  ]; // 该项备注
+}
+
+// 一站式工单（统一工单底座主实体）
+message WorkOrder {
+  optional uint32 id = 1 [
+    json_name = "id",
+    (gnostic.openapi.v3.property) = { description: "工单ID" }
+  ]; // 工单ID
+
+  optional string order_no = 2 [
+    json_name = "orderNo",
+    (gnostic.openapi.v3.property) = { description: "工单号：WO- + 8 位零填自增ID（同事务派生）" }
+  ]; // 工单号
+
+  // —— 标识与归属 ——
+  optional uint32 service_type_id = 3 [
+    json_name = "serviceTypeId",
+    (gnostic.openapi.v3.property) = { description: "服务类型ID（创建时必须为启用细类）" }
+  ]; // 服务类型ID
+
+  optional string service_type_code = 4 [
+    json_name = "serviceTypeCode",
+    (gnostic.openapi.v3.property) = { description: "服务类型编码快照" }
+  ]; // 服务类型编码快照
+
+  optional string service_type_name = 5 [
+    json_name = "serviceTypeName",
+    (gnostic.openapi.v3.property) = { description: "服务类型名称快照" }
+  ]; // 服务类型名称快照
+
+  optional OrderKind order_kind = 6 [
+    json_name = "orderKind",
+    (gnostic.openapi.v3.property) = { description: "履约形态（创建时按类型解析快照，不接受请求指定）" }
+  ]; // 履约形态
+
+  optional WorkOrderSource source = 7 [
+    json_name = "source",
+    (gnostic.openapi.v3.property) = { description: "生单来源（手动/计划展开/路线班次/转单/派生）" }
+  ]; // 生单来源
+
+  optional WorkOrderChannel channel = 8 [
+    json_name = "channel",
+    (gnostic.openapi.v3.property) = { description: "发起渠道（手动单：坐席台/电话）" }
+  ]; // 发起渠道
+
+  optional uint32 source_order_id = 9 [
+    json_name = "sourceOrderId",
+    (gnostic.openapi.v3.property) = { description: "来源工单ID（转单/派生时的旧单）" }
+  ]; // 来源工单ID
+
+  // —— 发起信息 ——
+  optional string requester_name = 10 [
+    json_name = "requesterName",
+    (gnostic.openapi.v3.property) = { description: "发起人称呼" }
+  ]; // 发起人称呼
+
+  optional string requester_phone = 11 [
+    json_name = "requesterPhone",
+    (gnostic.openapi.v3.property) = { description: "发起人联系电话" }
+  ]; // 发起人联系电话
+
+  optional uint32 requester_user_id = 12 [
+    json_name = "requesterUserId",
+    (gnostic.openapi.v3.property) = { description: "发起用户ID（登录用户发起时记录）" }
+  ]; // 发起用户ID
+
+  optional string location = 13 [
+    json_name = "location",
+    (gnostic.openapi.v3.property) = { description: "位置描述（楼/层/房间）" }
+  ]; // 位置描述
+
+  optional string equipment_desc = 14 [
+    json_name = "equipmentDesc",
+    (gnostic.openapi.v3.property) = { description: "服务对象描述（报修的故障设备/设施）" }
+  ]; // 服务对象描述
+
+  optional string description = 15 [
+    json_name = "description",
+    (gnostic.openapi.v3.property) = { description: "需求/现象描述" }
+  ]; // 需求/现象描述
+
+  repeated string images = 16 [
+    json_name = "images",
+    (gnostic.openapi.v3.property) = { description: "发起现场照片" }
+  ]; // 发起现场照片
+
+  optional string common_phrase = 17 [
+    json_name = "commonPhrase",
+    (gnostic.openapi.v3.property) = { description: "命中的快捷语句" }
+  ]; // 命中的快捷语句
+
+  // —— 派单与执行 ——
+  optional string execution_post = 18 [
+    json_name = "executionPost",
+    (gnostic.openapi.v3.property) = { description: "执行岗位快照（计划单优先计划级岗位）" }
+  ]; // 执行岗位快照
+
+  optional uint32 assignee_id = 19 [
+    json_name = "assigneeId",
+    (gnostic.openapi.v3.property) = { description: "执行人用户ID（岗位派单时可空）" }
+  ]; // 执行人用户ID
+
+  optional string assignee_name = 20 [
+    json_name = "assigneeName",
+    (gnostic.openapi.v3.property) = { description: "执行人姓名快照" }
+  ]; // 执行人姓名快照
+
+  optional uint32 plan_id = 21 [
+    json_name = "planId",
+    (gnostic.openapi.v3.property) = { description: "来源周期计划ID（调度幂等键组成部分）" }
+  ]; // 来源周期计划ID
+
+  optional uint32 route_id = 22 [
+    json_name = "routeId",
+    (gnostic.openapi.v3.property) = { description: "来源运送路线ID（班次单幂等键组成部分）" }
+  ]; // 来源运送路线ID
+
+  // —— SLA（快照 + deadline 落库）——
+  optional ServicePriority priority = 23 [
+    json_name = "priority",
+    (gnostic.openapi.v3.property) = { description: "优先级快照（默认取类别，可覆盖）" }
+  ]; // 优先级
+
+  optional uint32 response_time_limit = 24 [
+    json_name = "responseTimeLimit",
+    (gnostic.openapi.v3.property) = { description: "响应时限快照（分钟，受理→到场/取件；空=不限时）" }
+  ]; // 响应时限快照
+
+  optional uint32 completion_time_limit = 25 [
+    json_name = "completionTimeLimit",
+    (gnostic.openapi.v3.property) = { description: "完成时限快照（分钟，受理→完工/送达/办结；空=不限时）" }
+  ]; // 完成时限快照
+
+  // —— 状态与跟进 ——
+  optional WorkOrderStatus status = 26 [
+    json_name = "status",
+    (gnostic.openapi.v3.property) = { description: "状态（三形态共用统一状态机）" }
+  ]; // 状态
+
+  optional string cancel_reason = 27 [
+    json_name = "cancelReason",
+    (gnostic.openapi.v3.property) = { description: "撤销/驳回/转单关闭原因" }
+  ]; // 撤销原因
+
+  optional bool has_abnormality = 28 [
+    json_name = "hasAbnormality",
+    (gnostic.openapi.v3.property) = { description: "是否存在异常（事件或执行项异常置位）" }
+  ]; // 异常标记
+
+  optional uint32 urge_count = 29 [
+    json_name = "urgeCount",
+    (gnostic.openapi.v3.property) = { description: "催办次数（明细在事件表）" }
+  ]; // 催办次数
+
+  // —— 运送专项（KIND_TRANSPORT）——
+  optional string origin = 30 [
+    json_name = "origin",
+    (gnostic.openapi.v3.property) = { description: "起点（取件地；手动单必填，班次单快照自路线）" }
+  ]; // 起点
+
+  optional string destination = 31 [
+    json_name = "destination",
+    (gnostic.openapi.v3.property) = { description: "终点（送达地）" }
+  ]; // 终点
+
+  repeated string via_points = 32 [
+    json_name = "viaPoints",
+    (gnostic.openapi.v3.property) = { description: "途经点列表（快照自路线）" }
+  ]; // 途经点列表
+
+  optional bool round_trip = 33 [
+    json_name = "roundTrip",
+    (gnostic.openapi.v3.property) = { description: "是否往返（路线快照）" }
+  ]; // 是否往返
+
+  optional uint32 est_duration_minutes = 34 [
+    json_name = "estDurationMinutes",
+    (gnostic.openapi.v3.property) = { description: "预计单程时长（分钟，路线快照，ETA 基准）" }
+  ]; // 预计单程时长
+
+  optional TemperatureRequirement temperature_requirement = 35 [
+    json_name = "temperatureRequirement",
+    (gnostic.openapi.v3.property) = { description: "温控要求快照" }
+  ]; // 温控要求快照
+
+  optional string cargo_desc = 36 [
+    json_name = "cargoDesc",
+    (gnostic.openapi.v3.property) = { description: "本单承运物品描述" }
+  ]; // 本单承运物品描述
+
+  // —— 完工与验收（事件/任务形态）——
+  optional string result_desc = 37 [
+    json_name = "resultDesc",
+    (gnostic.openapi.v3.property) = { description: "完工结果描述" }
+  ]; // 完工结果描述
+
+  repeated string result_photos = 38 [
+    json_name = "resultPhotos",
+    (gnostic.openapi.v3.property) = { description: "完工结果照片" }
+  ]; // 完工结果照片
+
+  repeated WorkOrderMaterial used_materials = 39 [
+    json_name = "usedMaterials",
+    (gnostic.openapi.v3.property) = { description: "备件/耗材领用记录" }
+  ]; // 备件/耗材领用记录
+
+  optional double actual_work_hours = 40 [
+    json_name = "actualWorkHours",
+    (gnostic.openapi.v3.property) = { description: "实际工时（小时，绩效核算预留）" }
+  ]; // 实际工时
+
+  repeated string acceptance_modes = 41 [
+    json_name = "acceptanceModes",
+    (gnostic.openapi.v3.property) = { description: "验收方式快照（多选：SIGN/SCAN/PHOTO/DUAL）" }
+  ]; // 验收方式快照
+
+  repeated ServiceAcceptanceItem acceptance_items = 42 [
+    json_name = "acceptanceItems",
+    (gnostic.openapi.v3.property) = { description: "验收项清单快照（创建时从类别快照）" }
+  ]; // 验收项清单快照
+
+  repeated WorkOrderAcceptanceResult acceptance_result = 43 [
+    json_name = "acceptanceResult",
+    (gnostic.openapi.v3.property) = { description: "验收项结果（验收动作提交）" }
+  ]; // 验收项结果
+
+  repeated string acceptance_photos = 44 [
+    json_name = "acceptancePhotos",
+    (gnostic.openapi.v3.property) = { description: "验收照片" }
+  ]; // 验收照片
+
+  optional string acceptance_signer = 45 [
+    json_name = "acceptanceSigner",
+    (gnostic.openapi.v3.property) = { description: "验收签收人" }
+  ]; // 验收签收人
+
+  // —— 回访 ——
+  optional uint32 satisfaction_score = 46 [
+    json_name = "satisfactionScore",
+    (gnostic.openapi.v3.property) = { description: "满意度评分（1-5，仅已完结单可补录）" }
+  ]; // 满意度评分
+
+  optional string satisfaction_comment = 47 [
+    json_name = "satisfactionComment",
+    (gnostic.openapi.v3.property) = { description: "满意度回访意见" }
+  ]; // 满意度回访意见
+
+  // —— 关键时间戳（SLA 起算/止算与 deadline，创建时计算落库）——
+  optional google.protobuf.Timestamp assigned_at = 50 [
+    json_name = "assignedAt",
+    (gnostic.openapi.v3.property) = { description: "派单时间（计划/班次单=生成时刻）" }
+  ]; // 派单时间
+
+  optional google.protobuf.Timestamp planned_exec_at = 51 [
+    json_name = "plannedExecAt",
+    (gnostic.openapi.v3.property) = { description: "计划执行时刻（计划/班次单必填）" }
+  ]; // 计划执行时刻
+
+  optional google.protobuf.Timestamp response_deadline = 52 [
+    json_name = "responseDeadline",
+    (gnostic.openapi.v3.property) = { description: "响应截止时刻（手动单=建单+时限；计划单=计划时刻+时限）" }
+  ]; // 响应截止时刻
+
+  optional google.protobuf.Timestamp completion_deadline = 53 [
+    json_name = "completionDeadline",
+    (gnostic.openapi.v3.property) = { description: "完成截止时刻" }
+  ]; // 完成截止时刻
+
+  optional google.protobuf.Timestamp intake_at = 54 [
+    json_name = "intakeAt",
+    (gnostic.openapi.v3.property) = { description: "受理时间（手动单=建单即受理；计划单=生成时刻）" }
+  ]; // 受理时间
+
+  optional google.protobuf.Timestamp responded_at = 55 [
+    json_name = "respondedAt",
+    (gnostic.openapi.v3.property) = { description: "响应达成时间（事件/任务=到场；运送=取件）" }
+  ]; // 响应达成时间
+
+  optional google.protobuf.Timestamp completed_at = 56 [
+    json_name = "completedAt",
+    (gnostic.openapi.v3.property) = { description: "完成时间（事件/任务=完工提交；运送=送达签收）" }
+  ]; // 完成时间
+
+  optional google.protobuf.Timestamp verified_at = 57 [
+    json_name = "verifiedAt",
+    (gnostic.openapi.v3.property) = { description: "验收通过时间（运送=送达即验收）" }
+  ]; // 验收通过时间
+
+  optional google.protobuf.Timestamp picked_up_at = 58 [
+    json_name = "pickedUpAt",
+    (gnostic.openapi.v3.property) = { description: "取件签收时间（运送）" }
+  ]; // 取件签收时间
+
+  optional google.protobuf.Timestamp delivered_at = 59 [
+    json_name = "deliveredAt",
+    (gnostic.openapi.v3.property) = { description: "送达签收时间（运送）" }
+  ]; // 送达签收时间
+
+  optional string picked_signer = 60 [
+    json_name = "pickedSigner",
+    (gnostic.openapi.v3.property) = { description: "取件签收人" }
+  ]; // 取件签收人
+
+  repeated string picked_photos = 61 [
+    json_name = "pickedPhotos",
+    (gnostic.openapi.v3.property) = { description: "取件签收照片" }
+  ]; // 取件签收照片
+
+  optional string delivered_signer = 62 [
+    json_name = "deliveredSigner",
+    (gnostic.openapi.v3.property) = { description: "送达签收人" }
+  ]; // 送达签收人
+
+  repeated string delivered_photos = 63 [
+    json_name = "deliveredPhotos",
+    (gnostic.openapi.v3.property) = { description: "送达签收照片" }
+  ]; // 送达签收照片
+
+  optional google.protobuf.Timestamp revisited_at = 64 [
+    json_name = "revisitedAt",
+    (gnostic.openapi.v3.property) = { description: "回访补录时间" }
+  ]; // 回访补录时间
+
+  optional uint32 created_by = 100 [json_name = "createdBy", (gnostic.openapi.v3.property) = {description: "创建者ID"}]; // 创建者ID
+  optional uint32 updated_by = 101 [json_name = "updatedBy", (gnostic.openapi.v3.property) = {description: "更新者ID"}]; // 更新者ID
+  optional uint32 deleted_by = 102 [json_name = "deletedBy", (gnostic.openapi.v3.property) = {description: "删除者用户ID"}]; // 删除者用户ID
+
+  optional google.protobuf.Timestamp created_at = 200 [json_name = "createdAt", (gnostic.openapi.v3.property) = {description: "创建时间"}];// 创建时间
+  optional google.protobuf.Timestamp updated_at = 201 [json_name = "updatedAt", (gnostic.openapi.v3.property) = {description: "更新时间"}];// 更新时间
+  optional google.protobuf.Timestamp deleted_at = 202 [json_name = "deletedAt", (gnostic.openapi.v3.property) = {description: "删除时间"}];// 删除时间
+}
+
+// 工单执行项（计划任务形态的逐项作业记录：点表快照 + 结果回填）
+message WorkOrderItem {
+  optional uint32 id = 1 [
+    json_name = "id",
+    (gnostic.openapi.v3.property) = { description: "执行项ID" }
+  ]; // 执行项ID
+
+  optional uint32 work_order_id = 2 [
+    json_name = "workOrderId",
+    (gnostic.openapi.v3.property) = { description: "工单ID" }
+  ]; // 工单ID
+
+  optional WorkOrderItemScope scope = 3 [
+    json_name = "scope",
+    (gnostic.openapi.v3.property) = { description: "点表分组（空间/设备；手动创建的计划任务单为空）" }
+  ]; // 点表分组
+
+  optional string name = 4 [
+    json_name = "name",
+    (gnostic.openapi.v3.property) = { description: "执行项名称（点表快照）" }
+  ]; // 执行项名称
+
+  optional uint32 sort = 5 [
+    json_name = "sort",
+    (gnostic.openapi.v3.property) = { description: "展开顺序" }
+  ]; // 展开顺序
+
+  optional WorkOrderItemResult result = 6 [
+    json_name = "result",
+    (gnostic.openapi.v3.property) = { description: "执行结果（未执行项不可完工提交）" }
+  ]; // 执行结果
+
+  optional string value = 7 [
+    json_name = "value",
+    (gnostic.openapi.v3.property) = { description: "读数/测量值（抄表、检测类）" }
+  ]; // 读数/测量值
+
+  repeated string photos = 8 [
+    json_name = "photos",
+    (gnostic.openapi.v3.property) = { description: "该项留证照片" }
+  ]; // 该项留证照片
+
+  optional string remark = 9 [
+    json_name = "remark",
+    (gnostic.openapi.v3.property) = { description: "该项备注" }
+  ]; // 该项备注
+
+  // —— 预留：空间/设备对象模块落地后启用 ——
+  optional string space_ref = 10 [
+    json_name = "spaceRef",
+    (gnostic.openapi.v3.property) = { description: "空间对象引用（预留）" }
+  ]; // 空间对象引用
+
+  optional string equipment_ref = 11 [
+    json_name = "equipmentRef",
+    (gnostic.openapi.v3.property) = { description: "设备对象引用（预留）" }
+  ]; // 设备对象引用
+}
+
+// 工单事件（时间线：动作 + 状态迁移 + 附言/照片，按时间倒序即跟进记录）
+message WorkOrderEvent {
+  optional uint32 id = 1 [
+    json_name = "id",
+    (gnostic.openapi.v3.property) = { description: "事件ID" }
+  ]; // 事件ID
+
+  optional uint32 work_order_id = 2 [
+    json_name = "workOrderId",
+    (gnostic.openapi.v3.property) = { description: "工单ID" }
+  ]; // 工单ID
+
+  optional WorkOrderEventAction action = 3 [
+    json_name = "action",
+    (gnostic.openapi.v3.property) = { description: "动作类型" }
+  ]; // 动作类型
+
+  optional WorkOrderStatus status_from = 4 [
+    json_name = "statusFrom",
+    (gnostic.openapi.v3.property) = { description: "动作前状态（不改状态的动作与动作后相同）" }
+  ]; // 动作前状态
+
+  optional WorkOrderStatus status_to = 5 [
+    json_name = "statusTo",
+    (gnostic.openapi.v3.property) = { description: "动作后状态" }
+  ]; // 动作后状态
+
+  optional string note = 6 [
+    json_name = "note",
+    (gnostic.openapi.v3.property) = { description: "动作附言（改派目标/签收人/转单去向等摘要）" }
+  ]; // 动作附言
+
+  repeated string photos = 7 [
+    json_name = "photos",
+    (gnostic.openapi.v3.property) = { description: "动作留证照片" }
+  ]; // 动作留证照片
+
+  optional uint32 created_by = 100 [json_name = "createdBy", (gnostic.openapi.v3.property) = {description: "操作人ID（系统动作为系统上下文）"}]; // 操作人ID
+
+  optional google.protobuf.Timestamp created_at = 200 [json_name = "createdAt", (gnostic.openapi.v3.property) = {description: "动作时间"}];// 动作时间
+}
+
+// 查询工单列表 - 回应
+message ListWorkOrdersResponse {
+  repeated WorkOrder items = 1;
+  uint64 total = 2;
+}
+
+// 查询工单详情 - 请求
+message GetWorkOrderRequest {
+  oneof query_by {
+    uint32 id = 1 [
+      (gnostic.openapi.v3.property) = {description: "ID", read_only: true},
+      json_name = "id"
+    ]; // ID
+  }
+
+  optional google.protobuf.FieldMask view_mask = 100 [
+    json_name = "viewMask",
+    (gnostic.openapi.v3.property) = {
+      description: "视图字段过滤器，用于控制返回的字段"
+    }
+  ]; // 视图字段过滤器
+}
+
+// 创建工单 - 请求（CRUD 包 data；order_kind/快照字段由服务端解析落库）
+message CreateWorkOrderRequest {
+  WorkOrder data = 1;
+}
+
+// 更新工单 - 请求（仅待派单/审批中可改发起信息组字段）
+message UpdateWorkOrderRequest {
+  uint32 id = 1;
+
+  WorkOrder data = 2;
+
+  google.protobuf.FieldMask update_mask = 3 [
+    (gnostic.openapi.v3.property) = {
+      description: "要更新的字段列表",
+      example: {yaml : "id,description,location,images"}
+    },
+    json_name = "updateMask"
+  ]; // 要更新的字段列表
+
+  optional bool allow_missing = 4 [
+    (gnostic.openapi.v3.property) = {description: "如果设置为true的时候，资源不存在则会新增(插入)，并且在这种情况下`updateMask`字段将会被忽略。"},
+    json_name = "allowMissing"
+  ]; // 资源不存在时是否新增
+}
+
+// 删除工单 - 请求
+message DeleteWorkOrderRequest {
+  oneof query_by {
+    uint32 id = 1 [
+      (gnostic.openapi.v3.property) = {description: "ID", read_only: true},
+      json_name = "id"
+    ]; // ID
+  }
+}
+
+// 查询工单事件 - 请求/回应
+message ListWorkOrderEventsRequest {
+  uint32 id = 1 [
+    (gnostic.openapi.v3.property) = {description: "工单ID", read_only: true},
+    json_name = "id"
+  ]; // 工单ID
+}
+
+message ListWorkOrderEventsResponse {
+  repeated WorkOrderEvent items = 1;
+  uint64 total = 2;
+}
+
+// 查询工单执行项 - 请求/回应
+message ListWorkOrderItemsRequest {
+  uint32 id = 1 [
+    (gnostic.openapi.v3.property) = {description: "工单ID", read_only: true},
+    json_name = "id"
+  ]; // 工单ID
+}
+
+message ListWorkOrderItemsResponse {
+  repeated WorkOrderItem items = 1;
+  uint64 total = 2;
+}
+
+// 派单 - 请求（扁平 body；assignee 可空 = 岗位派单）
+message DispatchWorkOrderRequest {
+  uint32 id = 1 [
+    (gnostic.openapi.v3.property) = {description: "工单ID", read_only: true},
+    json_name = "id"
+  ]; // 工单ID
+
+  optional string post = 2 [
+    json_name = "post",
+    (gnostic.openapi.v3.property) = { description: "执行岗位（为空沿用快照岗位）" }
+  ]; // 执行岗位
+
+  optional uint32 assignee_id = 3 [
+    json_name = "assigneeId",
+    (gnostic.openapi.v3.property) = { description: "执行人用户ID（可空 = 岗位派单）" }
+  ]; // 执行人用户ID
+
+  optional string assignee_name = 4 [
+    json_name = "assigneeName",
+    (gnostic.openapi.v3.property) = { description: "执行人姓名快照" }
+  ]; // 执行人姓名快照
+
+  optional string note = 5 [
+    json_name = "note",
+    (gnostic.openapi.v3.property) = { description: "派单附言" }
+  ]; // 派单附言
+}
+
+// 审批 - 请求
+message ApproveWorkOrderRequest {
+  uint32 id = 1 [
+    (gnostic.openapi.v3.property) = {description: "工单ID", read_only: true},
+    json_name = "id"
+  ]; // 工单ID
+
+  bool passed = 2 [
+    json_name = "passed",
+    (gnostic.openapi.v3.property) = { description: "是否通过（false = 驳回并关闭）" }
+  ]; // 是否通过
+
+  optional string note = 3 [
+    json_name = "note",
+    (gnostic.openapi.v3.property) = { description: "审批意见" }
+  ]; // 审批意见
+}
+
+// 到场 - 请求（事件/任务形态）
+message ArriveWorkOrderRequest {
+  uint32 id = 1 [
+    (gnostic.openapi.v3.property) = {description: "工单ID", read_only: true},
+    json_name = "id"
+  ]; // 工单ID
+
+  optional string note = 2 [
+    json_name = "note",
+    (gnostic.openapi.v3.property) = { description: "到场附言" }
+  ]; // 到场附言
+
+  repeated string photos = 3 [
+    json_name = "photos",
+    (gnostic.openapi.v3.property) = { description: "到场留证照片" }
+  ]; // 到场留证照片
+}
+
+// 取件签收 - 请求（运送形态）
+message PickupWorkOrderRequest {
+  uint32 id = 1 [
+    (gnostic.openapi.v3.property) = {description: "工单ID", read_only: true},
+    json_name = "id"
+  ]; // 工单ID
+
+  string signer = 2 [
+    json_name = "signer",
+    (gnostic.openapi.v3.property) = { description: "取件签收人" }
+  ]; // 取件签收人
+
+  repeated string photos = 3 [
+    json_name = "photos",
+    (gnostic.openapi.v3.property) = { description: "取件签收照片" }
+  ]; // 取件签收照片
+
+  optional string note = 4 [
+    json_name = "note",
+    (gnostic.openapi.v3.property) = { description: "附言" }
+  ]; // 附言
+}
+
+// 送达签收 - 请求（运送形态，送达即完结）
+message DeliverWorkOrderRequest {
+  uint32 id = 1 [
+    (gnostic.openapi.v3.property) = {description: "工单ID", read_only: true},
+    json_name = "id"
+  ]; // 工单ID
+
+  string signer = 2 [
+    json_name = "signer",
+    (gnostic.openapi.v3.property) = { description: "送达签收人" }
+  ]; // 送达签收人
+
+  repeated string photos = 3 [
+    json_name = "photos",
+    (gnostic.openapi.v3.property) = { description: "送达签收照片（验收留证）" }
+  ]; // 送达签收照片
+
+  optional string note = 4 [
+    json_name = "note",
+    (gnostic.openapi.v3.property) = { description: "附言" }
+  ]; // 附言
+}
+
+// 完工提交 - 请求（事件/任务形态；执行项结果一次性提交，存在未执行项时 422）
+message CompleteWorkOrderRequest {
+  uint32 id = 1 [
+    (gnostic.openapi.v3.property) = {description: "工单ID", read_only: true},
+    json_name = "id"
+  ]; // 工单ID
+
+  optional string result_desc = 2 [
+    json_name = "resultDesc",
+    (gnostic.openapi.v3.property) = { description: "完工结果描述" }
+  ]; // 完工结果描述
+
+  repeated string result_photos = 3 [
+    json_name = "resultPhotos",
+    (gnostic.openapi.v3.property) = { description: "完工结果照片" }
+  ]; // 完工结果照片
+
+  repeated WorkOrderMaterial used_materials = 4 [
+    json_name = "usedMaterials",
+    (gnostic.openapi.v3.property) = { description: "备件/耗材领用记录" }
+  ]; // 备件/耗材领用记录
+
+  optional double actual_work_hours = 5 [
+    json_name = "actualWorkHours",
+    (gnostic.openapi.v3.property) = { description: "实际工时（小时）" }
+  ]; // 实际工时
+
+  repeated WorkOrderItemSubmission items = 6 [
+    json_name = "items",
+    (gnostic.openapi.v3.property) = { description: "执行项结果（计划任务形态，逐项回填）" }
+  ]; // 执行项结果
+}
+
+// 验收 - 请求（事件/任务形态；passed=false 返工，deadline 不重算）
+message VerifyWorkOrderRequest {
+  uint32 id = 1 [
+    (gnostic.openapi.v3.property) = {description: "工单ID", read_only: true},
+    json_name = "id"
+  ]; // 工单ID
+
+  bool passed = 2 [
+    json_name = "passed",
+    (gnostic.openapi.v3.property) = { description: "是否通过（false = 驳回返工）" }
+  ]; // 是否通过
+
+  optional string signer = 3 [
+    json_name = "signer",
+    (gnostic.openapi.v3.property) = { description: "验收签收人" }
+  ]; // 验收签收人
+
+  repeated string photos = 4 [
+    json_name = "photos",
+    (gnostic.openapi.v3.property) = { description: "验收照片" }
+  ]; // 验收照片
+
+  optional string note = 5 [
+    json_name = "note",
+    (gnostic.openapi.v3.property) = { description: "验收意见（驳回时必填）" }
+  ]; // 验收意见
+
+  repeated WorkOrderAcceptanceResult items_result = 6 [
+    json_name = "itemsResult",
+    (gnostic.openapi.v3.property) = { description: "验收项逐项勾选结果" }
+  ]; // 验收项逐项结果
+}
+
+// 撤销 - 请求
+message CancelWorkOrderRequest {
+  uint32 id = 1 [
+    (gnostic.openapi.v3.property) = {description: "工单ID", read_only: true},
+    json_name = "id"
+  ]; // 工单ID
+
+  string reason = 2 [
+    json_name = "reason",
+    (gnostic.openapi.v3.property) = { description: "撤销原因（必填）" }
+  ]; // 撤销原因
+}
+
+// 催办 - 请求
+message UrgeWorkOrderRequest {
+  uint32 id = 1 [
+    (gnostic.openapi.v3.property) = {description: "工单ID", read_only: true},
+    json_name = "id"
+  ]; // 工单ID
+
+  optional string note = 2 [
+    json_name = "note",
+    (gnostic.openapi.v3.property) = { description: "催办附言" }
+  ]; // 催办附言
+}
+
+// 改派 - 请求（同单换岗位/执行人，不换类型）
+message ReassignWorkOrderRequest {
+  uint32 id = 1 [
+    (gnostic.openapi.v3.property) = {description: "工单ID", read_only: true},
+    json_name = "id"
+  ]; // 工单ID
+
+  optional string post = 2 [
+    json_name = "post",
+    (gnostic.openapi.v3.property) = { description: "新执行岗位（为空沿用）" }
+  ]; // 新执行岗位
+
+  optional uint32 assignee_id = 3 [
+    json_name = "assigneeId",
+    (gnostic.openapi.v3.property) = { description: "新执行人用户ID" }
+  ]; // 新执行人用户ID
+
+  optional string assignee_name = 4 [
+    json_name = "assigneeName",
+    (gnostic.openapi.v3.property) = { description: "新执行人姓名快照" }
+  ]; // 新执行人姓名快照
+
+  optional string note = 5 [
+    json_name = "note",
+    (gnostic.openapi.v3.property) = { description: "改派附言" }
+  ]; // 改派附言
+}
+
+// 转单 - 请求（旧单关闭，按新类型开新单；返回新单）
+message TransferWorkOrderRequest {
+  uint32 id = 1 [
+    (gnostic.openapi.v3.property) = {description: "工单ID", read_only: true},
+    json_name = "id"
+  ]; // 工单ID
+
+  uint32 to_type_id = 2 [
+    json_name = "toTypeId",
+    (gnostic.openapi.v3.property) = { description: "目标服务类型ID（启用细类）" }
+  ]; // 目标服务类型ID
+
+  optional string note = 3 [
+    json_name = "note",
+    (gnostic.openapi.v3.property) = { description: "转单附言" }
+  ]; // 转单附言
+}
+
+// 派生 - 请求（旧单不动，按新类型关联生成新单；返回新单）
+message DeriveWorkOrderRequest {
+  uint32 id = 1 [
+    (gnostic.openapi.v3.property) = {description: "工单ID", read_only: true},
+    json_name = "id"
+  ]; // 工单ID
+
+  uint32 to_type_id = 2 [
+    json_name = "toTypeId",
+    (gnostic.openapi.v3.property) = { description: "目标服务类型ID（启用细类）" }
+  ]; // 目标服务类型ID
+
+  string description = 3 [
+    json_name = "description",
+    (gnostic.openapi.v3.property) = { description: "新单需求描述（默认带入旧单摘要，可改写）" }
+  ]; // 新单需求描述
+
+  optional string note = 4 [
+    json_name = "note",
+    (gnostic.openapi.v3.property) = { description: "派生附言" }
+  ]; // 派生附言
+}
+
+// 异常上报 - 请求
+message AbnormalWorkOrderRequest {
+  uint32 id = 1 [
+    (gnostic.openapi.v3.property) = {description: "工单ID", read_only: true},
+    json_name = "id"
+  ]; // 工单ID
+
+  string desc = 2 [
+    json_name = "desc",
+    (gnostic.openapi.v3.property) = { description: "异常描述" }
+  ]; // 异常描述
+
+  repeated string photos = 3 [
+    json_name = "photos",
+    (gnostic.openapi.v3.property) = { description: "异常照片" }
+  ]; // 异常照片
+
+  optional string note = 4 [
+    json_name = "note",
+    (gnostic.openapi.v3.property) = { description: "附言" }
+  ]; // 附言
+}
+
+// 满意度回访补录 - 请求（仅已完结单）
+message SatisfactionWorkOrderRequest {
+  uint32 id = 1 [
+    (gnostic.openapi.v3.property) = {description: "工单ID", read_only: true},
+    json_name = "id"
+  ]; // 工单ID
+
+  uint32 score = 2 [
+    json_name = "score",
+    (gnostic.openapi.v3.property) = { description: "满意度评分（1-5）" }
+  ]; // 满意度评分
+
+  optional string comment = 3 [
+    json_name = "comment",
+    (gnostic.openapi.v3.property) = { description: "回访意见" }
+  ]; // 回访意见
+}

@@ -648,7 +648,8 @@
       "清点数量与登记",
       "封闭运送不落地",
       "净被服按数发放"
-    ]
+    ],
+    "orderKind": "KIND_TRANSPORT"
   },
   {
     "code": "010406",
@@ -2485,14 +2486,16 @@
     "name": "脏被服收集",
     "level": "LEVEL_DETAIL",
     "parentCode": "010405",
-    "triggerMode": "TRIGGER_SCHEDULED"
+    "triggerMode": "TRIGGER_SCHEDULED",
+    "orderKind": "KIND_TRANSPORT"
   },
   {
     "code": "01040502",
     "name": "净被服发放",
     "level": "LEVEL_DETAIL",
     "parentCode": "010405",
-    "triggerMode": "TRIGGER_SCHEDULED"
+    "triggerMode": "TRIGGER_SCHEDULED",
+    "orderKind": "KIND_TRANSPORT"
   },
   {
     "code": "01040601",

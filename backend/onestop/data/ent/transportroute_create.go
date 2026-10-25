@@ -106,6 +106,20 @@ func (_c *TransportRouteCreate) SetNillableDeletedBy(v *uint32) *TransportRouteC
 	return _c
 }
 
+// SetTenantID sets the "tenant_id" field.
+func (_c *TransportRouteCreate) SetTenantID(v uint32) *TransportRouteCreate {
+	_c.mutation.SetTenantID(v)
+	return _c
+}
+
+// SetNillableTenantID sets the "tenant_id" field if the given value is not nil.
+func (_c *TransportRouteCreate) SetNillableTenantID(v *uint32) *TransportRouteCreate {
+	if v != nil {
+		_c.SetTenantID(*v)
+	}
+	return _c
+}
+
 // SetIsEnabled sets the "is_enabled" field.
 func (_c *TransportRouteCreate) SetIsEnabled(v bool) *TransportRouteCreate {
 	_c.mutation.SetIsEnabled(v)
@@ -229,7 +243,9 @@ func (_c *TransportRouteCreate) Mutation() *TransportRouteMutation {
 
 // Save creates the TransportRoute in the database.
 func (_c *TransportRouteCreate) Save(ctx context.Context) (*TransportRoute, error) {
-	_c.defaults()
+	if err := _c.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
@@ -256,7 +272,11 @@ func (_c *TransportRouteCreate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (_c *TransportRouteCreate) defaults() {
+func (_c *TransportRouteCreate) defaults() error {
+	if _, ok := _c.mutation.TenantID(); !ok {
+		v := transportroute.DefaultTenantID
+		_c.mutation.SetTenantID(v)
+	}
 	if _, ok := _c.mutation.IsEnabled(); !ok {
 		v := transportroute.DefaultIsEnabled
 		_c.mutation.SetIsEnabled(v)
@@ -265,6 +285,7 @@ func (_c *TransportRouteCreate) defaults() {
 		v := transportroute.DefaultRoundTrip
 		_c.mutation.SetRoundTrip(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -345,6 +366,10 @@ func (_c *TransportRouteCreate) createSpec() (*TransportRoute, *sqlgraph.CreateS
 	if value, ok := _c.mutation.DeletedBy(); ok {
 		_spec.SetField(transportroute.FieldDeletedBy, field.TypeUint32, value)
 		_node.DeletedBy = &value
+	}
+	if value, ok := _c.mutation.TenantID(); ok {
+		_spec.SetField(transportroute.FieldTenantID, field.TypeUint32, value)
+		_node.TenantID = &value
 	}
 	if value, ok := _c.mutation.IsEnabled(); ok {
 		_spec.SetField(transportroute.FieldIsEnabled, field.TypeBool, value)
@@ -735,6 +760,9 @@ func (u *TransportRouteUpsertOne) UpdateNewValues() *TransportRouteUpsertOne {
 		}
 		if _, exists := u.create.mutation.CreatedAt(); exists {
 			s.SetIgnore(transportroute.FieldCreatedAt)
+		}
+		if _, exists := u.create.mutation.TenantID(); exists {
+			s.SetIgnore(transportroute.FieldTenantID)
 		}
 	}))
 	return u
@@ -1280,6 +1308,9 @@ func (u *TransportRouteUpsertBulk) UpdateNewValues() *TransportRouteUpsertBulk {
 			}
 			if _, exists := b.mutation.CreatedAt(); exists {
 				s.SetIgnore(transportroute.FieldCreatedAt)
+			}
+			if _, exists := b.mutation.TenantID(); exists {
+				s.SetIgnore(transportroute.FieldTenantID)
 			}
 		}
 	}))

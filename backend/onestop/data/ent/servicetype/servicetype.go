@@ -48,6 +48,8 @@ const (
 	FieldCompletionTimeLimit = "completion_time_limit"
 	// FieldGuidance holds the string denoting the guidance field in the database.
 	FieldGuidance = "guidance"
+	// FieldOrderKind holds the string denoting the order_kind field in the database.
+	FieldOrderKind = "order_kind"
 	// FieldCommonPhrases holds the string denoting the common_phrases field in the database.
 	FieldCommonPhrases = "common_phrases"
 	// FieldStandardTools holds the string denoting the standard_tools field in the database.
@@ -106,6 +108,7 @@ var Columns = []string{
 	FieldResponseTimeLimit,
 	FieldCompletionTimeLimit,
 	FieldGuidance,
+	FieldOrderKind,
 	FieldCommonPhrases,
 	FieldStandardTools,
 	FieldSpareParts,
@@ -172,6 +175,30 @@ func LevelValidator(l Level) error {
 		return nil
 	default:
 		return fmt.Errorf("servicetype: invalid enum value for level field: %q", l)
+	}
+}
+
+// OrderKind defines the type for the "order_kind" enum field.
+type OrderKind string
+
+// OrderKind values.
+const (
+	OrderKindEvent     OrderKind = "KIND_EVENT"
+	OrderKindTask      OrderKind = "KIND_TASK"
+	OrderKindTransport OrderKind = "KIND_TRANSPORT"
+)
+
+func (ok OrderKind) String() string {
+	return string(ok)
+}
+
+// OrderKindValidator is a validator for the "order_kind" field enum values. It is called by the builders before save.
+func OrderKindValidator(ok OrderKind) error {
+	switch ok {
+	case OrderKindEvent, OrderKindTask, OrderKindTransport:
+		return nil
+	default:
+		return fmt.Errorf("servicetype: invalid enum value for order_kind field: %q", ok)
 	}
 }
 
@@ -338,6 +365,11 @@ func ByCompletionTimeLimit(opts ...sql.OrderTermOption) OrderOption {
 // ByGuidance orders the results by the guidance field.
 func ByGuidance(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldGuidance, opts...).ToFunc()
+}
+
+// ByOrderKind orders the results by the order_kind field.
+func ByOrderKind(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldOrderKind, opts...).ToFunc()
 }
 
 // ByTriggerMode orders the results by the trigger_mode field.

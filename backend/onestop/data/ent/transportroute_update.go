@@ -453,6 +453,9 @@ func (_u *TransportRouteUpdate) sqlSave(ctx context.Context) (_node int, err err
 	if _u.mutation.DeletedByCleared() {
 		_spec.ClearField(transportroute.FieldDeletedBy, field.TypeUint32)
 	}
+	if _u.mutation.TenantIDCleared() {
+		_spec.ClearField(transportroute.FieldTenantID, field.TypeUint32)
+	}
 	if value, ok := _u.mutation.IsEnabled(); ok {
 		_spec.SetField(transportroute.FieldIsEnabled, field.TypeBool, value)
 	}
@@ -997,6 +1000,9 @@ func (_u *TransportRouteUpdateOne) sqlSave(ctx context.Context) (_node *Transpor
 	}
 	if _u.mutation.DeletedByCleared() {
 		_spec.ClearField(transportroute.FieldDeletedBy, field.TypeUint32)
+	}
+	if _u.mutation.TenantIDCleared() {
+		_spec.ClearField(transportroute.FieldTenantID, field.TypeUint32)
 	}
 	if value, ok := _u.mutation.IsEnabled(); ok {
 		_spec.SetField(transportroute.FieldIsEnabled, field.TypeBool, value)

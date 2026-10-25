@@ -12,6 +12,7 @@ import (
 
 	paginationV1 "github.com/tx7do/go-crud/api/gen/go/pagination/v1"
 	entCrud "github.com/tx7do/go-crud/entgo"
+	"github.com/tx7do/go-crud/viewer"
 
 	"github.com/tx7do/go-utils/copierutil"
 	"github.com/tx7do/go-utils/mapper"
@@ -279,12 +280,33 @@ type transportRouteSeed struct {
 	DepartureTimes     []string `json:"departureTimes,omitempty"`
 }
 
+// ListTimetableEntities 全部带定时班次的启用路线（ent 实体，含租户列）：
+// 调度器按 departure_times 展开班次单，须以系统上下文调用。
+func (r *TransportRouteRepo) ListTimetableEntities(ctx context.Context) ([]*ent.TransportRoute, error) {
+	routes, err := r.entClient.Client().TransportRoute.Query().
+		Where(
+			transportroute.IsEnabledEQ(true),
+			transportroute.DeletedAtIsNil(),
+			transportroute.DepartureTimesNotNil(),
+		).
+		All(ctx)
+	if err != nil {
+		r.log.Errorf(ctx, "list timetable transport routes failed: %s", err.Error())
+		return nil, onestopV1.ErrorInternalServerError("query transport routes failed")
+	}
+	return routes, nil
+}
+
 //go:embed seeds/transport_routes.json
 var transportRouteSeedData []byte
 
 // SeedDefaults 在运送路线表为空时播种内置行业模板路线；非空表不做任何写入。
 // 路线按编码挂到已存在的服务类型上（服务类型种子先行），查不到类别的条目跳过并留痕。
 func (r *TransportRouteRepo) SeedDefaults(ctx context.Context) error {
+	// 路线挂租户 Privacy 后所有查询都要求 viewer 上下文；启动期播种以系统
+	// 上下文执行（平台视图放行，写库 tenant_id 走列默认 0 = 平台模板）。
+	ctx = viewer.WithSystemContext(ctx)
+
 	count, err := r.entClient.Client().TransportRoute.Query().Count(ctx)
 	if err != nil {
 		r.log.Errorf(ctx, "count transport routes before seeding failed: %v", err)

@@ -261,6 +261,20 @@ func (_c *ServiceTypeCreate) SetNillableGuidance(v *string) *ServiceTypeCreate {
 	return _c
 }
 
+// SetOrderKind sets the "order_kind" field.
+func (_c *ServiceTypeCreate) SetOrderKind(v servicetype.OrderKind) *ServiceTypeCreate {
+	_c.mutation.SetOrderKind(v)
+	return _c
+}
+
+// SetNillableOrderKind sets the "order_kind" field if the given value is not nil.
+func (_c *ServiceTypeCreate) SetNillableOrderKind(v *servicetype.OrderKind) *ServiceTypeCreate {
+	if v != nil {
+		_c.SetOrderKind(*v)
+	}
+	return _c
+}
+
 // SetCommonPhrases sets the "common_phrases" field.
 func (_c *ServiceTypeCreate) SetCommonPhrases(v []string) *ServiceTypeCreate {
 	_c.mutation.SetCommonPhrases(v)
@@ -466,6 +480,11 @@ func (_c *ServiceTypeCreate) check() error {
 			return &ValidationError{Name: "guidance", err: fmt.Errorf(`ent: validator failed for field "ServiceType.guidance": %w`, err)}
 		}
 	}
+	if v, ok := _c.mutation.OrderKind(); ok {
+		if err := servicetype.OrderKindValidator(v); err != nil {
+			return &ValidationError{Name: "order_kind", err: fmt.Errorf(`ent: validator failed for field "ServiceType.order_kind": %w`, err)}
+		}
+	}
 	if v, ok := _c.mutation.TriggerMode(); ok {
 		if err := servicetype.TriggerModeValidator(v); err != nil {
 			return &ValidationError{Name: "trigger_mode", err: fmt.Errorf(`ent: validator failed for field "ServiceType.trigger_mode": %w`, err)}
@@ -582,6 +601,10 @@ func (_c *ServiceTypeCreate) createSpec() (*ServiceType, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.Guidance(); ok {
 		_spec.SetField(servicetype.FieldGuidance, field.TypeString, value)
 		_node.Guidance = &value
+	}
+	if value, ok := _c.mutation.OrderKind(); ok {
+		_spec.SetField(servicetype.FieldOrderKind, field.TypeEnum, value)
+		_node.OrderKind = &value
 	}
 	if value, ok := _c.mutation.CommonPhrases(); ok {
 		_spec.SetField(servicetype.FieldCommonPhrases, field.TypeJSON, value)
@@ -1033,6 +1056,24 @@ func (u *ServiceTypeUpsert) UpdateGuidance() *ServiceTypeUpsert {
 // ClearGuidance clears the value of the "guidance" field.
 func (u *ServiceTypeUpsert) ClearGuidance() *ServiceTypeUpsert {
 	u.SetNull(servicetype.FieldGuidance)
+	return u
+}
+
+// SetOrderKind sets the "order_kind" field.
+func (u *ServiceTypeUpsert) SetOrderKind(v servicetype.OrderKind) *ServiceTypeUpsert {
+	u.Set(servicetype.FieldOrderKind, v)
+	return u
+}
+
+// UpdateOrderKind sets the "order_kind" field to the value that was provided on create.
+func (u *ServiceTypeUpsert) UpdateOrderKind() *ServiceTypeUpsert {
+	u.SetExcluded(servicetype.FieldOrderKind)
+	return u
+}
+
+// ClearOrderKind clears the value of the "order_kind" field.
+func (u *ServiceTypeUpsert) ClearOrderKind() *ServiceTypeUpsert {
+	u.SetNull(servicetype.FieldOrderKind)
 	return u
 }
 
@@ -1660,6 +1701,27 @@ func (u *ServiceTypeUpsertOne) UpdateGuidance() *ServiceTypeUpsertOne {
 func (u *ServiceTypeUpsertOne) ClearGuidance() *ServiceTypeUpsertOne {
 	return u.Update(func(s *ServiceTypeUpsert) {
 		s.ClearGuidance()
+	})
+}
+
+// SetOrderKind sets the "order_kind" field.
+func (u *ServiceTypeUpsertOne) SetOrderKind(v servicetype.OrderKind) *ServiceTypeUpsertOne {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.SetOrderKind(v)
+	})
+}
+
+// UpdateOrderKind sets the "order_kind" field to the value that was provided on create.
+func (u *ServiceTypeUpsertOne) UpdateOrderKind() *ServiceTypeUpsertOne {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.UpdateOrderKind()
+	})
+}
+
+// ClearOrderKind clears the value of the "order_kind" field.
+func (u *ServiceTypeUpsertOne) ClearOrderKind() *ServiceTypeUpsertOne {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.ClearOrderKind()
 	})
 }
 
@@ -2486,6 +2548,27 @@ func (u *ServiceTypeUpsertBulk) UpdateGuidance() *ServiceTypeUpsertBulk {
 func (u *ServiceTypeUpsertBulk) ClearGuidance() *ServiceTypeUpsertBulk {
 	return u.Update(func(s *ServiceTypeUpsert) {
 		s.ClearGuidance()
+	})
+}
+
+// SetOrderKind sets the "order_kind" field.
+func (u *ServiceTypeUpsertBulk) SetOrderKind(v servicetype.OrderKind) *ServiceTypeUpsertBulk {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.SetOrderKind(v)
+	})
+}
+
+// UpdateOrderKind sets the "order_kind" field to the value that was provided on create.
+func (u *ServiceTypeUpsertBulk) UpdateOrderKind() *ServiceTypeUpsertBulk {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.UpdateOrderKind()
+	})
+}
+
+// ClearOrderKind clears the value of the "order_kind" field.
+func (u *ServiceTypeUpsertBulk) ClearOrderKind() *ServiceTypeUpsertBulk {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.ClearOrderKind()
 	})
 }
 

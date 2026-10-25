@@ -393,6 +393,26 @@ func (_u *ServiceTypeUpdate) ClearGuidance() *ServiceTypeUpdate {
 	return _u
 }
 
+// SetOrderKind sets the "order_kind" field.
+func (_u *ServiceTypeUpdate) SetOrderKind(v servicetype.OrderKind) *ServiceTypeUpdate {
+	_u.mutation.SetOrderKind(v)
+	return _u
+}
+
+// SetNillableOrderKind sets the "order_kind" field if the given value is not nil.
+func (_u *ServiceTypeUpdate) SetNillableOrderKind(v *servicetype.OrderKind) *ServiceTypeUpdate {
+	if v != nil {
+		_u.SetOrderKind(*v)
+	}
+	return _u
+}
+
+// ClearOrderKind clears the value of the "order_kind" field.
+func (_u *ServiceTypeUpdate) ClearOrderKind() *ServiceTypeUpdate {
+	_u.mutation.ClearOrderKind()
+	return _u
+}
+
 // SetCommonPhrases sets the "common_phrases" field.
 func (_u *ServiceTypeUpdate) SetCommonPhrases(v []string) *ServiceTypeUpdate {
 	_u.mutation.SetCommonPhrases(v)
@@ -710,6 +730,11 @@ func (_u *ServiceTypeUpdate) check() error {
 			return &ValidationError{Name: "guidance", err: fmt.Errorf(`ent: validator failed for field "ServiceType.guidance": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.OrderKind(); ok {
+		if err := servicetype.OrderKindValidator(v); err != nil {
+			return &ValidationError{Name: "order_kind", err: fmt.Errorf(`ent: validator failed for field "ServiceType.order_kind": %w`, err)}
+		}
+	}
 	if v, ok := _u.mutation.TriggerMode(); ok {
 		if err := servicetype.TriggerModeValidator(v); err != nil {
 			return &ValidationError{Name: "trigger_mode", err: fmt.Errorf(`ent: validator failed for field "ServiceType.trigger_mode": %w`, err)}
@@ -856,6 +881,12 @@ func (_u *ServiceTypeUpdate) sqlSave(ctx context.Context) (_node int, err error)
 	}
 	if _u.mutation.GuidanceCleared() {
 		_spec.ClearField(servicetype.FieldGuidance, field.TypeString)
+	}
+	if value, ok := _u.mutation.OrderKind(); ok {
+		_spec.SetField(servicetype.FieldOrderKind, field.TypeEnum, value)
+	}
+	if _u.mutation.OrderKindCleared() {
+		_spec.ClearField(servicetype.FieldOrderKind, field.TypeEnum)
 	}
 	if value, ok := _u.mutation.CommonPhrases(); ok {
 		_spec.SetField(servicetype.FieldCommonPhrases, field.TypeJSON, value)
@@ -1416,6 +1447,26 @@ func (_u *ServiceTypeUpdateOne) ClearGuidance() *ServiceTypeUpdateOne {
 	return _u
 }
 
+// SetOrderKind sets the "order_kind" field.
+func (_u *ServiceTypeUpdateOne) SetOrderKind(v servicetype.OrderKind) *ServiceTypeUpdateOne {
+	_u.mutation.SetOrderKind(v)
+	return _u
+}
+
+// SetNillableOrderKind sets the "order_kind" field if the given value is not nil.
+func (_u *ServiceTypeUpdateOne) SetNillableOrderKind(v *servicetype.OrderKind) *ServiceTypeUpdateOne {
+	if v != nil {
+		_u.SetOrderKind(*v)
+	}
+	return _u
+}
+
+// ClearOrderKind clears the value of the "order_kind" field.
+func (_u *ServiceTypeUpdateOne) ClearOrderKind() *ServiceTypeUpdateOne {
+	_u.mutation.ClearOrderKind()
+	return _u
+}
+
 // SetCommonPhrases sets the "common_phrases" field.
 func (_u *ServiceTypeUpdateOne) SetCommonPhrases(v []string) *ServiceTypeUpdateOne {
 	_u.mutation.SetCommonPhrases(v)
@@ -1746,6 +1797,11 @@ func (_u *ServiceTypeUpdateOne) check() error {
 			return &ValidationError{Name: "guidance", err: fmt.Errorf(`ent: validator failed for field "ServiceType.guidance": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.OrderKind(); ok {
+		if err := servicetype.OrderKindValidator(v); err != nil {
+			return &ValidationError{Name: "order_kind", err: fmt.Errorf(`ent: validator failed for field "ServiceType.order_kind": %w`, err)}
+		}
+	}
 	if v, ok := _u.mutation.TriggerMode(); ok {
 		if err := servicetype.TriggerModeValidator(v); err != nil {
 			return &ValidationError{Name: "trigger_mode", err: fmt.Errorf(`ent: validator failed for field "ServiceType.trigger_mode": %w`, err)}
@@ -1909,6 +1965,12 @@ func (_u *ServiceTypeUpdateOne) sqlSave(ctx context.Context) (_node *ServiceType
 	}
 	if _u.mutation.GuidanceCleared() {
 		_spec.ClearField(servicetype.FieldGuidance, field.TypeString)
+	}
+	if value, ok := _u.mutation.OrderKind(); ok {
+		_spec.SetField(servicetype.FieldOrderKind, field.TypeEnum, value)
+	}
+	if _u.mutation.OrderKindCleared() {
+		_spec.ClearField(servicetype.FieldOrderKind, field.TypeEnum)
 	}
 	if value, ok := _u.mutation.CommonPhrases(); ok {
 		_spec.SetField(servicetype.FieldCommonPhrases, field.TypeJSON, value)

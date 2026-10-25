@@ -12,12 +12,14 @@ import (
 
 	"go-wind-admin/app/admin/service/internal/service"
 
+	onestopService "go-wind-admin/onestop/service"
+
 	"github.com/tx7do/go-crud/viewer"
 	"go-wind-admin/pkg/task"
 )
 
 // NewAsynqServer creates a new asynq server.
-func NewAsynqServer(ctx *bootstrap.Context, taskService *service.TaskService, internalMessageService *service.InternalMessageService, notificationService *service.NotificationService, monitorAlertService *service.MonitorAlertService, scriptRuntime *service.ScriptRuntime, aiKnowledgeService *service.AiKnowledgeService, aiDigestService *service.AiDigestService, planQuotaWatermarkService *service.PlanQuotaWatermarkService) (*asynqServer.Server, error) {
+func NewAsynqServer(ctx *bootstrap.Context, taskService *service.TaskService, internalMessageService *service.InternalMessageService, notificationService *service.NotificationService, monitorAlertService *service.MonitorAlertService, scriptRuntime *service.ScriptRuntime, aiKnowledgeService *service.AiKnowledgeService, aiDigestService *service.AiDigestService, planQuotaWatermarkService *service.PlanQuotaWatermarkService, oneStopWorkOrderService *onestopService.WorkOrderService) (*asynqServer.Server, error) {
 	cfg := ctx.GetConfig()
 
 	if cfg == nil || cfg.Server == nil || cfg.Server.Asynq == nil {
@@ -145,6 +147,15 @@ func NewAsynqServer(ctx *bootstrap.Context, taskService *service.TaskService, in
 	if err = asynqServer.RegisterSubscriber(srv, task.NotificationDeliverySweepTaskType, notificationService.AsyncDeliverySweep); err != nil {
 		log.Error(err)
 		return nil, err
+	}
+
+	// 一站式计划展开 handler（系统级常驻 cron，每分钟滚动生成当日+次日的
+	// 计划/班次工单）。周期调度在 startAllTask 末尾注册（同其他系统级任务）。
+	if oneStopWorkOrderService != nil {
+		if err = asynqServer.RegisterSubscriber(srv, onestopService.OnestopPlanExpandTaskType, oneStopWorkOrderService.AsyncPlanExpand); err != nil {
+			log.Error(err)
+			return nil, err
+		}
 	}
 
 	// 启动所有的任务

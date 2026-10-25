@@ -14,6 +14,7 @@ import (
 
 	paginationV1 "github.com/tx7do/go-crud/api/gen/go/pagination/v1"
 	entCrud "github.com/tx7do/go-crud/entgo"
+	"github.com/tx7do/go-crud/viewer"
 
 	"github.com/tx7do/go-utils/copierutil"
 	"github.com/tx7do/go-utils/mapper"
@@ -112,6 +113,19 @@ func (r *PeriodicPlanRepo) init() {
 			return planItemsToDTO(items)
 		},
 	))
+}
+
+// ListEnabledEntities 全部启用计划（ent 实体，含租户列）：调度器展开用，
+// 须以系统上下文调用（计划挂租户 Privacy）。
+func (r *PeriodicPlanRepo) ListEnabledEntities(ctx context.Context) ([]*ent.PeriodicPlan, error) {
+	plans, err := r.entClient.Client().PeriodicPlan.Query().
+		Where(periodicplan.IsEnabledEQ(true), periodicplan.DeletedAtIsNil()).
+		All(ctx)
+	if err != nil {
+		r.log.Errorf(ctx, "list enabled periodic plans failed: %s", err.Error())
+		return nil, onestopV1.ErrorInternalServerError("query periodic plans failed")
+	}
+	return plans, nil
 }
 
 // CountByServiceTypeIDs 统计挂在给定类别节点上的计划数（ids 为空返回 0）。
@@ -398,6 +412,10 @@ var periodicPlanSeedData []byte
 // SeedDefaults 在周期计划表为空时播种内置行业模板计划；非空表不做任何写入。
 // 计划按编码挂到已存在的服务类型上（服务类型种子先行），查不到类别的条目跳过并留痕。
 func (r *PeriodicPlanRepo) SeedDefaults(ctx context.Context) error {
+	// 计划挂租户 Privacy 后所有查询都要求 viewer 上下文；启动期播种以系统
+	// 上下文执行（平台视图放行，写库 tenant_id 走列默认 0 = 平台模板）。
+	ctx = viewer.WithSystemContext(ctx)
+
 	count, err := r.entClient.Client().PeriodicPlan.Query().Count(ctx)
 	if err != nil {
 		r.log.Errorf(ctx, "count periodic plans before seeding failed: %v", err)

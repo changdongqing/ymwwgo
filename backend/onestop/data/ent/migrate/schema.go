@@ -18,6 +18,7 @@ var (
 		{Name: "created_by", Type: field.TypeUint32, Nullable: true, Comment: "创建者ID"},
 		{Name: "updated_by", Type: field.TypeUint32, Nullable: true, Comment: "更新者ID"},
 		{Name: "deleted_by", Type: field.TypeUint32, Nullable: true, Comment: "删除者ID"},
+		{Name: "tenant_id", Type: field.TypeUint32, Nullable: true, Comment: "租户ID", Default: 0},
 		{Name: "is_enabled", Type: field.TypeBool, Nullable: true, Comment: "是否启用", Default: true},
 		{Name: "name", Type: field.TypeString, Nullable: true, Size: 128, Comment: "计划名称"},
 		{Name: "service_type_id", Type: field.TypeUint32, Nullable: true, Comment: "计划类别ID（onestop_service_types.id，触发模式为计划生成的小类/细类）"},
@@ -46,12 +47,17 @@ var (
 			{
 				Name:    "periodicplan_service_type_id",
 				Unique:  false,
-				Columns: []*schema.Column{OnestopPeriodicPlansColumns[9]},
+				Columns: []*schema.Column{OnestopPeriodicPlansColumns[10]},
 			},
 			{
 				Name:    "periodicplan_freq_type",
 				Unique:  false,
-				Columns: []*schema.Column{OnestopPeriodicPlansColumns[10]},
+				Columns: []*schema.Column{OnestopPeriodicPlansColumns[11]},
+			},
+			{
+				Name:    "periodicplan_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{OnestopPeriodicPlansColumns[7]},
 			},
 		},
 	}
@@ -74,6 +80,7 @@ var (
 		{Name: "response_time_limit", Type: field.TypeUint32, Nullable: true, Comment: "响应时限（分钟）：受理到到场的 SLA"},
 		{Name: "completion_time_limit", Type: field.TypeUint32, Nullable: true, Comment: "完成时限（分钟）：受理到完工的 SLA"},
 		{Name: "guidance", Type: field.TypeString, Nullable: true, Size: 2048, Comment: "标准指导说明：作业 SOP 与安全注意事项"},
+		{Name: "order_kind", Type: field.TypeEnum, Nullable: true, Comment: "履约形态 KIND_EVENT:事件处置 KIND_TASK:计划任务 KIND_TRANSPORT:运送（未设置回退上级；两级都空按 0106 子树/计划生成/事件顺序推导）", Enums: []string{"KIND_EVENT", "KIND_TASK", "KIND_TRANSPORT"}},
 		{Name: "common_phrases", Type: field.TypeJSON, Nullable: true, Comment: "常见语句清单：发起端快捷语句，兼作语义归型语料"},
 		{Name: "standard_tools", Type: field.TypeJSON, Nullable: true, Comment: "服务标准工具清单：出工标配工具"},
 		{Name: "spare_parts", Type: field.TypeJSON, Nullable: true, Comment: "常用备件/耗材清单：出工常备，配合库存领用"},
@@ -96,7 +103,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "onestop_service_types_onestop_service_types_children",
-				Columns:    []*schema.Column{OnestopServiceTypesColumns[28]},
+				Columns:    []*schema.Column{OnestopServiceTypesColumns[29]},
 				RefColumns: []*schema.Column{OnestopServiceTypesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -105,7 +112,7 @@ var (
 			{
 				Name:    "servicetype_parent_id",
 				Unique:  false,
-				Columns: []*schema.Column{OnestopServiceTypesColumns[28]},
+				Columns: []*schema.Column{OnestopServiceTypesColumns[29]},
 			},
 			{
 				Name:    "servicetype_level",
@@ -123,6 +130,7 @@ var (
 		{Name: "created_by", Type: field.TypeUint32, Nullable: true, Comment: "创建者ID"},
 		{Name: "updated_by", Type: field.TypeUint32, Nullable: true, Comment: "更新者ID"},
 		{Name: "deleted_by", Type: field.TypeUint32, Nullable: true, Comment: "删除者ID"},
+		{Name: "tenant_id", Type: field.TypeUint32, Nullable: true, Comment: "租户ID", Default: 0},
 		{Name: "is_enabled", Type: field.TypeBool, Nullable: true, Comment: "是否启用", Default: true},
 		{Name: "name", Type: field.TypeString, Nullable: true, Size: 128, Comment: "路线名称"},
 		{Name: "service_type_id", Type: field.TypeUint32, Nullable: true, Comment: "运送类别ID（onestop_service_types.id，0106 子树）"},
@@ -143,7 +151,210 @@ var (
 			{
 				Name:    "transportroute_service_type_id",
 				Unique:  false,
-				Columns: []*schema.Column{OnestopTransportRoutesColumns[9]},
+				Columns: []*schema.Column{OnestopTransportRoutesColumns[10]},
+			},
+			{
+				Name:    "transportroute_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{OnestopTransportRoutesColumns[7]},
+			},
+		},
+	}
+	// OnestopWorkOrdersColumns holds the columns for the "onestop_work_orders" table.
+	OnestopWorkOrdersColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUint32, Increment: true, Comment: "id"},
+		{Name: "created_at", Type: field.TypeTime, Nullable: true, Comment: "创建时间"},
+		{Name: "updated_at", Type: field.TypeTime, Nullable: true, Comment: "更新时间"},
+		{Name: "deleted_at", Type: field.TypeTime, Nullable: true, Comment: "删除时间"},
+		{Name: "created_by", Type: field.TypeUint32, Nullable: true, Comment: "创建者ID"},
+		{Name: "updated_by", Type: field.TypeUint32, Nullable: true, Comment: "更新者ID"},
+		{Name: "deleted_by", Type: field.TypeUint32, Nullable: true, Comment: "删除者ID"},
+		{Name: "tenant_id", Type: field.TypeUint32, Nullable: true, Comment: "租户ID", Default: 0},
+		{Name: "order_no", Type: field.TypeString, Unique: true, Nullable: true, Size: 32, Comment: "工单号：WO- + 8 位全局序列，排序友好"},
+		{Name: "service_type_id", Type: field.TypeUint32, Nullable: true, Comment: "服务类型ID（onestop_service_types.id，创建时必须为启用细类）"},
+		{Name: "service_type_code", Type: field.TypeString, Nullable: true, Size: 8, Comment: "服务类型编码快照（创建时落库，历史单不受字典调整影响）"},
+		{Name: "service_type_name", Type: field.TypeString, Nullable: true, Size: 128, Comment: "服务类型名称快照（创建时落库）"},
+		{Name: "order_kind", Type: field.TypeEnum, Nullable: true, Comment: "履约形态 KIND_EVENT:事件处置 KIND_TASK:计划任务 KIND_TRANSPORT:运送", Enums: []string{"KIND_EVENT", "KIND_TASK", "KIND_TRANSPORT"}},
+		{Name: "source", Type: field.TypeEnum, Nullable: true, Comment: "生单来源 SOURCE_MANUAL:手动创建 SOURCE_PLAN:计划展开 SOURCE_ROUTE:路线班次 SOURCE_TRANSFER:转单 SOURCE_DERIVED:派生", Enums: []string{"SOURCE_MANUAL", "SOURCE_PLAN", "SOURCE_ROUTE", "SOURCE_TRANSFER", "SOURCE_DERIVED"}},
+		{Name: "channel", Type: field.TypeEnum, Nullable: true, Comment: "发起渠道（手动单）CHANNEL_DESK:坐席台 CHANNEL_PHONE:电话，小程序/开放API预留", Enums: []string{"CHANNEL_DESK", "CHANNEL_PHONE"}},
+		{Name: "source_order_id", Type: field.TypeUint32, Nullable: true, Comment: "来源工单ID（转单/派生时的旧单，onestop_work_orders.id）"},
+		{Name: "requester_name", Type: field.TypeString, Nullable: true, Size: 64, Comment: "发起人称呼（电话呼叫方常无账号，自由文本）"},
+		{Name: "requester_phone", Type: field.TypeString, Nullable: true, Size: 32, Comment: "发起人联系电话"},
+		{Name: "requester_user_id", Type: field.TypeUint32, Nullable: true, Comment: "发起用户ID（登录用户发起时记录；坐席代录时记录最终用户）"},
+		{Name: "location", Type: field.TypeString, Nullable: true, Size: 256, Comment: "位置描述（楼/层/房间自由描述；空间对象引用待空间模块落地预留）"},
+		{Name: "equipment_desc", Type: field.TypeString, Nullable: true, Size: 256, Comment: "服务对象描述（报修的故障设备/设施，与现象描述分开；设备引用预留）"},
+		{Name: "description", Type: field.TypeString, Nullable: true, Size: 1024, Comment: "需求/现象描述（一句话也算）"},
+		{Name: "images", Type: field.TypeJSON, Nullable: true, Comment: "发起现场照片"},
+		{Name: "common_phrase", Type: field.TypeString, Nullable: true, Size: 128, Comment: "命中的快捷语句（发起端语义归型语料回流预留）"},
+		{Name: "execution_post", Type: field.TypeString, Nullable: true, Size: 64, Comment: "执行岗位快照（派单目标岗位；计划单优先计划级岗位覆盖类别岗位）"},
+		{Name: "assignee_id", Type: field.TypeUint32, Nullable: true, Comment: "执行人用户ID（岗位派单时可空，接单后补）"},
+		{Name: "assignee_name", Type: field.TypeString, Nullable: true, Size: 64, Comment: "执行人姓名快照（防改名影响历史展示）"},
+		{Name: "assigned_at", Type: field.TypeTime, Nullable: true, Comment: "派单时间（手动单=派单动作；计划/班次单=生成时刻即视为已派岗）"},
+		{Name: "planned_exec_at", Type: field.TypeTime, Nullable: true, Comment: "计划执行时刻（计划/班次单必填：计划时刻或发班时刻；事件单为空）"},
+		{Name: "plan_id", Type: field.TypeUint32, Nullable: true, Comment: "来源周期计划ID（onestop_periodic_plans.id；调度幂等键组成部分）"},
+		{Name: "route_id", Type: field.TypeUint32, Nullable: true, Comment: "来源运送路线ID（onestop_transport_routes.id；班次单幂等键组成部分）"},
+		{Name: "priority", Type: field.TypeEnum, Nullable: true, Comment: "优先级快照 PRIORITY_NORMAL:常规 PRIORITY_URGENT:加急 PRIORITY_EMERGENCY:特急（默认取类别，可覆盖）", Enums: []string{"PRIORITY_NORMAL", "PRIORITY_URGENT", "PRIORITY_EMERGENCY"}},
+		{Name: "response_time_limit", Type: field.TypeUint32, Nullable: true, Comment: "响应时限快照（分钟，受理→到场/取件；空=不限时）"},
+		{Name: "completion_time_limit", Type: field.TypeUint32, Nullable: true, Comment: "完成时限快照（分钟，受理→完工/送达/办结；空=不限时）"},
+		{Name: "response_deadline", Type: field.TypeTime, Nullable: true, Comment: "响应截止时刻（手动单=建单+时限；计划/班次单=计划执行时刻+时限）"},
+		{Name: "completion_deadline", Type: field.TypeTime, Nullable: true, Comment: "完成截止时刻（同响应截止的起算口径）"},
+		{Name: "intake_at", Type: field.TypeTime, Nullable: true, Comment: "受理时间（手动单=建单即受理；计划/班次单=生成时刻）"},
+		{Name: "responded_at", Type: field.TypeTime, Nullable: true, Comment: "响应达成时间（事件/任务=到场；运送=取件）"},
+		{Name: "completed_at", Type: field.TypeTime, Nullable: true, Comment: "完成时间（事件/任务=完工提交；运送=送达签收）"},
+		{Name: "verified_at", Type: field.TypeTime, Nullable: true, Comment: "验收通过时间（事件/任务=验收动作；运送=送达即验收）"},
+		{Name: "status", Type: field.TypeEnum, Nullable: true, Comment: "状态 STATUS_PENDING:待派单 STATUS_APPROVING:审批中 STATUS_DISPATCHED:已派单 STATUS_PROCESSING:执行中 STATUS_COMPLETED:已完工待验收 STATUS_CLOSED:已完结 STATUS_CANCELLED:已撤销", Enums: []string{"STATUS_PENDING", "STATUS_APPROVING", "STATUS_DISPATCHED", "STATUS_PROCESSING", "STATUS_COMPLETED", "STATUS_CLOSED", "STATUS_CANCELLED"}},
+		{Name: "cancel_reason", Type: field.TypeString, Nullable: true, Size: 256, Comment: "撤销/驳回/转单关闭原因（cancel 必填；转单自动生成「转单至 WO-xxx」）"},
+		{Name: "has_abnormality", Type: field.TypeBool, Nullable: true, Comment: "是否存在异常（异常上报事件或执行项异常置位，列表过滤用）", Default: false},
+		{Name: "urge_count", Type: field.TypeUint32, Nullable: true, Comment: "催办次数（明细在事件表，主表冗余计数便于列表）", Default: 0},
+		{Name: "origin", Type: field.TypeString, Nullable: true, Size: 128, Comment: "起点（取件地；手动单必填，班次单快照自路线）"},
+		{Name: "destination", Type: field.TypeString, Nullable: true, Size: 128, Comment: "终点（送达地）"},
+		{Name: "via_points", Type: field.TypeJSON, Nullable: true, Comment: "途经点列表（快照自路线，按序途经）"},
+		{Name: "round_trip", Type: field.TypeBool, Nullable: true, Comment: "是否往返（送达后原路返回，路线快照）", Default: false},
+		{Name: "est_duration_minutes", Type: field.TypeUint32, Nullable: true, Comment: "预计单程时长（分钟，路线快照，ETA 基准）"},
+		{Name: "temperature_requirement", Type: field.TypeEnum, Nullable: true, Comment: "温控要求快照 TEMP_NORMAL:常温 TEMP_COLD:冷藏2-8℃ TEMP_FROZEN:冷冻 TEMP_WARM:保温", Enums: []string{"TEMP_NORMAL", "TEMP_COLD", "TEMP_FROZEN", "TEMP_WARM"}},
+		{Name: "cargo_desc", Type: field.TypeString, Nullable: true, Size: 256, Comment: "本单承运物品描述（类型级 cargo_types 是承接范围，单级是实例）"},
+		{Name: "picked_up_at", Type: field.TypeTime, Nullable: true, Comment: "取件签收时间（运送）"},
+		{Name: "picked_signer", Type: field.TypeString, Nullable: true, Size: 64, Comment: "取件签收人"},
+		{Name: "picked_photos", Type: field.TypeJSON, Nullable: true, Comment: "取件签收照片"},
+		{Name: "delivered_at", Type: field.TypeTime, Nullable: true, Comment: "送达签收时间（运送，送达即完结）"},
+		{Name: "delivered_signer", Type: field.TypeString, Nullable: true, Size: 64, Comment: "送达签收人"},
+		{Name: "delivered_photos", Type: field.TypeJSON, Nullable: true, Comment: "送达签收照片"},
+		{Name: "result_desc", Type: field.TypeString, Nullable: true, Size: 1024, Comment: "完工结果描述（完工提交）"},
+		{Name: "result_photos", Type: field.TypeJSON, Nullable: true, Comment: "完工结果照片"},
+		{Name: "used_materials", Type: field.TypeJSON, Nullable: true, Comment: "备件/耗材领用记录 [{name,qty,unit,remark}]（本期手工填，库存联动未落地）"},
+		{Name: "actual_work_hours", Type: field.TypeFloat64, Nullable: true, Comment: "实际工时（小时，完工时手填，绩效核算预留）"},
+		{Name: "acceptance_modes", Type: field.TypeJSON, Nullable: true, Comment: "验收方式快照（多选 ACCEPT_SIGN:签名确认 ACCEPT_SCAN:扫码核对 ACCEPT_PHOTO:拍照留证 ACCEPT_DUAL:双人验收）"},
+		{Name: "acceptance_items", Type: field.TypeJSON, Nullable: true, Comment: "验收项清单快照 [{name,required}]（创建时从类别快照，验收逐项勾选）"},
+		{Name: "acceptance_result", Type: field.TypeJSON, Nullable: true, Comment: "验收项结果 [{name,passed,remark}]（验收动作提交）"},
+		{Name: "acceptance_photos", Type: field.TypeJSON, Nullable: true, Comment: "验收照片"},
+		{Name: "acceptance_signer", Type: field.TypeString, Nullable: true, Size: 64, Comment: "验收签收人"},
+		{Name: "satisfaction_score", Type: field.TypeUint32, Nullable: true, Comment: "满意度评分（1-5，仅已完结单可补录）"},
+		{Name: "satisfaction_comment", Type: field.TypeString, Nullable: true, Size: 512, Comment: "满意度回访意见"},
+		{Name: "revisited_at", Type: field.TypeTime, Nullable: true, Comment: "回访补录时间"},
+	}
+	// OnestopWorkOrdersTable holds the schema information for the "onestop_work_orders" table.
+	OnestopWorkOrdersTable = &schema.Table{
+		Name:       "onestop_work_orders",
+		Comment:    "一站式工单表（统一工单底座：事件处置/计划任务/运送三形态，快照+事件流）",
+		Columns:    OnestopWorkOrdersColumns,
+		PrimaryKey: []*schema.Column{OnestopWorkOrdersColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "workorder_tenant_status",
+				Unique:  false,
+				Columns: []*schema.Column{OnestopWorkOrdersColumns[7], OnestopWorkOrdersColumns[40]},
+			},
+			{
+				Name:    "workorder_service_type_id",
+				Unique:  false,
+				Columns: []*schema.Column{OnestopWorkOrdersColumns[9]},
+			},
+			{
+				Name:    "workorder_assignee_id",
+				Unique:  false,
+				Columns: []*schema.Column{OnestopWorkOrdersColumns[25]},
+			},
+			{
+				Name:    "workorder_planned_exec_at",
+				Unique:  false,
+				Columns: []*schema.Column{OnestopWorkOrdersColumns[28]},
+			},
+			{
+				Name:    "workorder_response_deadline",
+				Unique:  false,
+				Columns: []*schema.Column{OnestopWorkOrdersColumns[34]},
+			},
+			{
+				Name:    "workorder_completion_deadline",
+				Unique:  false,
+				Columns: []*schema.Column{OnestopWorkOrdersColumns[35]},
+			},
+			{
+				Name:    "workorder_created_at",
+				Unique:  false,
+				Columns: []*schema.Column{OnestopWorkOrdersColumns[1]},
+			},
+			{
+				Name:    "workorder_plan_instance",
+				Unique:  true,
+				Columns: []*schema.Column{OnestopWorkOrdersColumns[29], OnestopWorkOrdersColumns[28]},
+				Annotation: &entsql.IndexAnnotation{
+					Where: "plan_id IS NOT NULL AND deleted_at IS NULL",
+				},
+			},
+			{
+				Name:    "workorder_route_instance",
+				Unique:  true,
+				Columns: []*schema.Column{OnestopWorkOrdersColumns[30], OnestopWorkOrdersColumns[28]},
+				Annotation: &entsql.IndexAnnotation{
+					Where: "route_id IS NOT NULL AND deleted_at IS NULL",
+				},
+			},
+		},
+	}
+	// OnestopWorkOrderEventsColumns holds the columns for the "onestop_work_order_events" table.
+	OnestopWorkOrderEventsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUint32, Increment: true, Comment: "id"},
+		{Name: "created_at", Type: field.TypeTime, Nullable: true, Comment: "创建时间"},
+		{Name: "updated_at", Type: field.TypeTime, Nullable: true, Comment: "更新时间"},
+		{Name: "deleted_at", Type: field.TypeTime, Nullable: true, Comment: "删除时间"},
+		{Name: "created_by", Type: field.TypeUint32, Nullable: true, Comment: "创建者ID"},
+		{Name: "updated_by", Type: field.TypeUint32, Nullable: true, Comment: "更新者ID"},
+		{Name: "deleted_by", Type: field.TypeUint32, Nullable: true, Comment: "删除者ID"},
+		{Name: "tenant_id", Type: field.TypeUint32, Nullable: true, Comment: "租户ID", Default: 0},
+		{Name: "work_order_id", Type: field.TypeUint32, Nullable: true, Comment: "工单ID（onestop_work_orders.id）"},
+		{Name: "action", Type: field.TypeEnum, Nullable: true, Comment: "动作 ACTION_CREATE:创建 ACTION_DISPATCH:派单 ACTION_REASSIGN:改派 ACTION_ARRIVE:到场 ACTION_PICKUP:取件签收 ACTION_DELIVER:送达签收 ACTION_COMPLETE:完工提交 ACTION_VERIFY_PASS:验收通过 ACTION_VERIFY_REJECT:验收驳回 ACTION_CANCEL:撤销 ACTION_URGE:催办 ACTION_ABNORMAL:异常上报 ACTION_TRANSFER:转单 ACTION_DERIVE:派生 ACTION_APPROVE_PASS:审批通过 ACTION_APPROVE_REJECT:审批驳回 ACTION_CLAIM:接单(预留) ACTION_SATISFACTION:满意度回访补录", Enums: []string{"ACTION_CREATE", "ACTION_DISPATCH", "ACTION_REASSIGN", "ACTION_ARRIVE", "ACTION_PICKUP", "ACTION_DELIVER", "ACTION_COMPLETE", "ACTION_VERIFY_PASS", "ACTION_VERIFY_REJECT", "ACTION_CANCEL", "ACTION_URGE", "ACTION_ABNORMAL", "ACTION_TRANSFER", "ACTION_DERIVE", "ACTION_APPROVE_PASS", "ACTION_APPROVE_REJECT", "ACTION_CLAIM", "ACTION_SATISFACTION"}},
+		{Name: "status_from", Type: field.TypeEnum, Nullable: true, Comment: "动作前状态（不改状态的动作与动作后相同或为空）", Enums: []string{"STATUS_PENDING", "STATUS_APPROVING", "STATUS_DISPATCHED", "STATUS_PROCESSING", "STATUS_COMPLETED", "STATUS_CLOSED", "STATUS_CANCELLED"}},
+		{Name: "status_to", Type: field.TypeEnum, Nullable: true, Comment: "动作后状态", Enums: []string{"STATUS_PENDING", "STATUS_APPROVING", "STATUS_DISPATCHED", "STATUS_PROCESSING", "STATUS_COMPLETED", "STATUS_CLOSED", "STATUS_CANCELLED"}},
+		{Name: "note", Type: field.TypeString, Nullable: true, Size: 512, Comment: "动作附言（改派目标/签收人/转单去向等摘要在附言承载）"},
+		{Name: "photos", Type: field.TypeJSON, Nullable: true, Comment: "动作留证照片"},
+	}
+	// OnestopWorkOrderEventsTable holds the schema information for the "onestop_work_order_events" table.
+	OnestopWorkOrderEventsTable = &schema.Table{
+		Name:       "onestop_work_order_events",
+		Comment:    "一站式工单事件表（时间线：派单/到场/取件/送达/完工/验收/催办等动作记录）",
+		Columns:    OnestopWorkOrderEventsColumns,
+		PrimaryKey: []*schema.Column{OnestopWorkOrderEventsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "workorderevent_work_order_id",
+				Unique:  false,
+				Columns: []*schema.Column{OnestopWorkOrderEventsColumns[8]},
+			},
+		},
+	}
+	// OnestopWorkOrderItemsColumns holds the columns for the "onestop_work_order_items" table.
+	OnestopWorkOrderItemsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUint32, Increment: true, Comment: "id"},
+		{Name: "created_at", Type: field.TypeTime, Nullable: true, Comment: "创建时间"},
+		{Name: "updated_at", Type: field.TypeTime, Nullable: true, Comment: "更新时间"},
+		{Name: "deleted_at", Type: field.TypeTime, Nullable: true, Comment: "删除时间"},
+		{Name: "created_by", Type: field.TypeUint32, Nullable: true, Comment: "创建者ID"},
+		{Name: "updated_by", Type: field.TypeUint32, Nullable: true, Comment: "更新者ID"},
+		{Name: "deleted_by", Type: field.TypeUint32, Nullable: true, Comment: "删除者ID"},
+		{Name: "tenant_id", Type: field.TypeUint32, Nullable: true, Comment: "租户ID", Default: 0},
+		{Name: "work_order_id", Type: field.TypeUint32, Nullable: true, Comment: "工单ID（onestop_work_orders.id，随工单同事务创建/清理）"},
+		{Name: "scope", Type: field.TypeEnum, Nullable: true, Comment: "点表分组 SCOPE_SPACE:空间点表 SCOPE_EQUIPMENT:设备点表（手动创建的计划任务单 scope 为空）", Enums: []string{"SCOPE_SPACE", "SCOPE_EQUIPMENT"}},
+		{Name: "name", Type: field.TypeString, Nullable: true, Size: 128, Comment: "执行项名称（点表快照）"},
+		{Name: "sort", Type: field.TypeUint32, Nullable: true, Comment: "展开顺序（按点表顺序落库）", Default: 0},
+		{Name: "result", Type: field.TypeEnum, Nullable: true, Comment: "执行结果 ITEM_PENDING:未执行 ITEM_NORMAL:正常 ITEM_ABNORMAL:异常 ITEM_SKIPPED:跳过（须显式）", Enums: []string{"ITEM_PENDING", "ITEM_NORMAL", "ITEM_ABNORMAL", "ITEM_SKIPPED"}, Default: "ITEM_PENDING"},
+		{Name: "value", Type: field.TypeString, Nullable: true, Size: 128, Comment: "读数/测量值（抄表、检测类）"},
+		{Name: "photos", Type: field.TypeJSON, Nullable: true, Comment: "该项留证照片"},
+		{Name: "remark", Type: field.TypeString, Nullable: true, Size: 512, Comment: "该项备注"},
+		{Name: "space_ref", Type: field.TypeString, Nullable: true, Size: 64, Comment: "空间对象引用（预留）"},
+		{Name: "equipment_ref", Type: field.TypeString, Nullable: true, Size: 64, Comment: "设备对象引用（预留）"},
+	}
+	// OnestopWorkOrderItemsTable holds the schema information for the "onestop_work_order_items" table.
+	OnestopWorkOrderItemsTable = &schema.Table{
+		Name:       "onestop_work_order_items",
+		Comment:    "一站式工单执行项表（计划任务形态的逐项作业记录：点表快照+结果回填）",
+		Columns:    OnestopWorkOrderItemsColumns,
+		PrimaryKey: []*schema.Column{OnestopWorkOrderItemsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "workorderitem_work_order_id",
+				Unique:  false,
+				Columns: []*schema.Column{OnestopWorkOrderItemsColumns[8]},
 			},
 		},
 	}
@@ -152,6 +363,9 @@ var (
 		OnestopPeriodicPlansTable,
 		OnestopServiceTypesTable,
 		OnestopTransportRoutesTable,
+		OnestopWorkOrdersTable,
+		OnestopWorkOrderEventsTable,
+		OnestopWorkOrderItemsTable,
 	}
 )
 
@@ -165,5 +379,14 @@ func init() {
 	}
 	OnestopTransportRoutesTable.Annotation = &entsql.Annotation{
 		Table: "onestop_transport_routes",
+	}
+	OnestopWorkOrdersTable.Annotation = &entsql.Annotation{
+		Table: "onestop_work_orders",
+	}
+	OnestopWorkOrderEventsTable.Annotation = &entsql.Annotation{
+		Table: "onestop_work_order_events",
+	}
+	OnestopWorkOrderItemsTable.Annotation = &entsql.Annotation{
+		Table: "onestop_work_order_items",
 	}
 }

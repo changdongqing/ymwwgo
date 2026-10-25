@@ -78,6 +78,7 @@ var ServiceTagToBusinessModule = map[string]identityV1.Module{
 	"OneStopServiceTypeService":    identityV1.Module_SYSTEM,
 	"OneStopPeriodicPlanService":   identityV1.Module_SYSTEM,
 	"OneStopTransportRouteService": identityV1.Module_SYSTEM,
+	"OneStopWorkOrderService":      identityV1.Module_SYSTEM,
 
 	// 本体建模（ont_* 四表）：平台级共享知识资产，暂挂 SYSTEM 模块
 	// （菜单侧以 sys:platform_admin 收权，与 onestop 同 rationale）。

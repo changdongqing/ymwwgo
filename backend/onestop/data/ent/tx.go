@@ -18,6 +18,12 @@ type Tx struct {
 	ServiceType *ServiceTypeClient
 	// TransportRoute is the client for interacting with the TransportRoute builders.
 	TransportRoute *TransportRouteClient
+	// WorkOrder is the client for interacting with the WorkOrder builders.
+	WorkOrder *WorkOrderClient
+	// WorkOrderEvent is the client for interacting with the WorkOrderEvent builders.
+	WorkOrderEvent *WorkOrderEventClient
+	// WorkOrderItem is the client for interacting with the WorkOrderItem builders.
+	WorkOrderItem *WorkOrderItemClient
 
 	// lazily loaded.
 	client     *Client
@@ -152,6 +158,9 @@ func (tx *Tx) init() {
 	tx.PeriodicPlan = NewPeriodicPlanClient(tx.config)
 	tx.ServiceType = NewServiceTypeClient(tx.config)
 	tx.TransportRoute = NewTransportRouteClient(tx.config)
+	tx.WorkOrder = NewWorkOrderClient(tx.config)
+	tx.WorkOrderEvent = NewWorkOrderEventClient(tx.config)
+	tx.WorkOrderItem = NewWorkOrderItemClient(tx.config)
 }
 
 // txDriver wraps the given dialect.Tx with a nop dialect.Driver implementation.

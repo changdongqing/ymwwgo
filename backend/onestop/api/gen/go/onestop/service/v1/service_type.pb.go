@@ -245,6 +245,62 @@ func (TriggerMode) EnumDescriptor() ([]byte, []int) {
 	return file_onestop_service_v1_service_type_proto_rawDescGZIP(), []int{3}
 }
 
+// 履约形态：工单「怎么履约」的开关，与任务触发方式（怎么生单）正交。
+// 细类未设置回退小类；两级都空按推导规则（0106 子树→运送；解析后计划
+// 生成→计划任务；否则→事件处置），显式设置只处理推导覆盖不了的特例
+// （如 010405 被服收发按业务形状归运送）。
+type OrderKind int32
+
+const (
+	OrderKind_KIND_UNSPECIFIED OrderKind = 0 // 未指定（回退上级，最终按推导规则）
+	OrderKind_KIND_EVENT       OrderKind = 1 // 事件处置：受理→派单→到场→完工→验收（报修/投诉/应急）
+	OrderKind_KIND_TASK        OrderKind = 2 // 计划任务：计划生成→逐项执行→确认（维保/巡检/保洁）
+	OrderKind_KIND_TRANSPORT   OrderKind = 3 // 运送：取件签收→送达签收（急送/陪检/巡回/押运/被服收发）
+)
+
+// Enum value maps for OrderKind.
+var (
+	OrderKind_name = map[int32]string{
+		0: "KIND_UNSPECIFIED",
+		1: "KIND_EVENT",
+		2: "KIND_TASK",
+		3: "KIND_TRANSPORT",
+	}
+	OrderKind_value = map[string]int32{
+		"KIND_UNSPECIFIED": 0,
+		"KIND_EVENT":       1,
+		"KIND_TASK":        2,
+		"KIND_TRANSPORT":   3,
+	}
+)
+
+func (x OrderKind) Enum() *OrderKind {
+	p := new(OrderKind)
+	*p = x
+	return p
+}
+
+func (x OrderKind) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (OrderKind) Descriptor() protoreflect.EnumDescriptor {
+	return file_onestop_service_v1_service_type_proto_enumTypes[4].Descriptor()
+}
+
+func (OrderKind) Type() protoreflect.EnumType {
+	return &file_onestop_service_v1_service_type_proto_enumTypes[4]
+}
+
+func (x OrderKind) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use OrderKind.Descriptor instead.
+func (OrderKind) EnumDescriptor() ([]byte, []int) {
+	return file_onestop_service_v1_service_type_proto_rawDescGZIP(), []int{4}
+}
+
 // 验收项：完工（报修）/送达（运送）确认页逐项核对的 checklist 项
 type ServiceAcceptanceItem struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -324,6 +380,7 @@ type ServiceType struct {
 	ExecutionPost          *string                  `protobuf:"bytes,25,opt,name=execution_post,json=executionPost,proto3,oneof" json:"execution_post,omitempty"`                                                                            // 执行岗位
 	StandardItems          []string                 `protobuf:"bytes,26,rep,name=standard_items,json=standardItems,proto3" json:"standard_items,omitempty"`                                                                                  // 标准作业项目库
 	TriggerMode            *TriggerMode             `protobuf:"varint,27,opt,name=trigger_mode,json=triggerMode,proto3,enum=onestop.service.v1.TriggerMode,oneof" json:"trigger_mode,omitempty"`                                             // 任务触发方式
+	OrderKind              *OrderKind               `protobuf:"varint,28,opt,name=order_kind,json=orderKind,proto3,enum=onestop.service.v1.OrderKind,oneof" json:"order_kind,omitempty"`                                                     // 履约形态
 	CreatedBy              *uint32                  `protobuf:"varint,100,opt,name=created_by,json=createdBy,proto3,oneof" json:"created_by,omitempty"`                                                                                      // 创建者ID
 	UpdatedBy              *uint32                  `protobuf:"varint,101,opt,name=updated_by,json=updatedBy,proto3,oneof" json:"updated_by,omitempty"`                                                                                      // 更新者ID
 	DeletedBy              *uint32                  `protobuf:"varint,102,opt,name=deleted_by,json=deletedBy,proto3,oneof" json:"deleted_by,omitempty"`                                                                                      // 删除者用户ID
@@ -523,6 +580,13 @@ func (x *ServiceType) GetTriggerMode() TriggerMode {
 		return *x.TriggerMode
 	}
 	return TriggerMode_TRIGGER_UNSPECIFIED
+}
+
+func (x *ServiceType) GetOrderKind() OrderKind {
+	if x != nil && x.OrderKind != nil {
+		return *x.OrderKind
+	}
+	return OrderKind_KIND_UNSPECIFIED
 }
 
 func (x *ServiceType) GetCreatedBy() uint32 {
@@ -876,6 +940,101 @@ type DeleteServiceTypeRequest_Id struct {
 
 func (*DeleteServiceTypeRequest_Id) isDeleteServiceTypeRequest_QueryBy() {}
 
+// 查询生效履约配置 - 请求（id 须为小类/细类，其余层级 422）
+type GetEffectiveConfigRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            uint32                 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"` // 服务类型ID
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetEffectiveConfigRequest) Reset() {
+	*x = GetEffectiveConfigRequest{}
+	mi := &file_onestop_service_v1_service_type_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetEffectiveConfigRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetEffectiveConfigRequest) ProtoMessage() {}
+
+func (x *GetEffectiveConfigRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_onestop_service_v1_service_type_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetEffectiveConfigRequest.ProtoReflect.Descriptor instead.
+func (*GetEffectiveConfigRequest) Descriptor() ([]byte, []int) {
+	return file_onestop_service_v1_service_type_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *GetEffectiveConfigRequest) GetId() uint32 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+// 生效履约配置 - 回应
+//
+// effective 是解析后的合并视图：单值列（细类为空回退小类）与数组列（整组
+// 覆盖或整组继承，不做数组内 merge）都已按「细类 → 小类」回退填齐；
+// trigger_mode / order_kind 为解析后的生效值（含推导）。发起端表单预填与
+// 工单创建快照共用本接口口径，前端发起弹窗无须自行实现继承链。
+type EffectiveServiceConfig struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Effective     *ServiceType           `protobuf:"bytes,1,opt,name=effective,proto3" json:"effective,omitempty"` // 解析后的生效配置
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *EffectiveServiceConfig) Reset() {
+	*x = EffectiveServiceConfig{}
+	mi := &file_onestop_service_v1_service_type_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *EffectiveServiceConfig) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*EffectiveServiceConfig) ProtoMessage() {}
+
+func (x *EffectiveServiceConfig) ProtoReflect() protoreflect.Message {
+	mi := &file_onestop_service_v1_service_type_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use EffectiveServiceConfig.ProtoReflect.Descriptor instead.
+func (*EffectiveServiceConfig) Descriptor() ([]byte, []int) {
+	return file_onestop_service_v1_service_type_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *EffectiveServiceConfig) GetEffective() *ServiceType {
+	if x != nil {
+		return x.Effective
+	}
+	return nil
+}
+
 var File_onestop_service_v1_service_type_proto protoreflect.FileDescriptor
 
 const file_onestop_service_v1_service_type_proto_rawDesc = "" +
@@ -883,7 +1042,7 @@ const file_onestop_service_v1_service_type_proto_rawDesc = "" +
 	"%onestop/service/v1/service_type.proto\x12\x12onestop.service.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a google/protobuf/field_mask.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1epagination/v1/pagination.proto\"\xc2\x01\n" +
 	"\x15ServiceAcceptanceItem\x12S\n" +
 	"\x04name\x18\x01 \x01(\tB?\xbaG<\x92\x029验收项名称（如：数量准确、现场已清理）R\x04name\x12T\n" +
-	"\brequired\x18\x02 \x01(\bB8\xbaG5\x92\x022是否必检项（false = 提示项，可跳过）R\brequired\"\xd3\x1e\n" +
+	"\brequired\x18\x02 \x01(\bB8\xbaG5\x92\x022是否必检项（false = 提示项，可跳过）R\brequired\"\xee \n" +
 	"\vServiceType\x12)\n" +
 	"\x02id\x18\x01 \x01(\rB\x14\xbaG\x11\x92\x02\x0e服务类型IDH\x00R\x02id\x88\x01\x01\x12Z\n" +
 	"\x04code\x18\x02 \x01(\tBA\xbaG>\x92\x02;服务编码，2/4/6/8 位数字字符串，位数即层级H\x01R\x04code\x88\x01\x01\x12+\n" +
@@ -912,19 +1071,21 @@ const file_onestop_service_v1_service_type_proto_rawDesc = "" +
 	"cargoTypes\x12y\n" +
 	"\x0eexecution_post\x18\x19 \x01(\tBM\xbaGJ\x92\x02G执行岗位（派单目标岗位，如：电工/运送员/保洁员）H\x0eR\rexecutionPost\x88\x01\x01\x12\x8f\x01\n" +
 	"\x0estandard_items\x18\x1a \x03(\tBh\xbaGe\x92\x02b标准作业项目库：周期计划点表模板（巡检点/维保项目单/保洁作业标准）R\rstandardItems\x12\xfb\x01\n" +
-	"\ftrigger_mode\x18\x1b \x01(\x0e2\x1f.onestop.service.v1.TriggerModeB\xb1\x01\xbaG\xad\x01\x92\x02\xa9\x01任务触发方式：按需发起（工单由用户/呼叫触发）或计划生成（可挂周期计划，任务按频率生成）；未设置回退上级，默认按需H\x0fR\vtriggerMode\x88\x01\x01\x125\n" +
+	"\ftrigger_mode\x18\x1b \x01(\x0e2\x1f.onestop.service.v1.TriggerModeB\xb1\x01\xbaG\xad\x01\x92\x02\xa9\x01任务触发方式：按需发起（工单由用户/呼叫触发）或计划生成（可挂周期计划，任务按频率生成）；未设置回退上级，默认按需H\x0fR\vtriggerMode\x88\x01\x01\x12\x89\x02\n" +
 	"\n" +
-	"created_by\x18d \x01(\rB\x11\xbaG\x0e\x92\x02\v创建者IDH\x10R\tcreatedBy\x88\x01\x01\x125\n" +
+	"order_kind\x18\x1c \x01(\x0e2\x1d.onestop.service.v1.OrderKindB\xc5\x01\xbaG\xc1\x01\x92\x02\xbd\x01履约形态：事件处置/计划任务/运送，驱动工单状态机分支与界面面板；未设置回退上级，两级都空按推导规则（0106 子树/计划生成/事件顺序）H\x10R\torderKind\x88\x01\x01\x125\n" +
 	"\n" +
-	"updated_by\x18e \x01(\rB\x11\xbaG\x0e\x92\x02\v更新者IDH\x11R\tupdatedBy\x88\x01\x01\x12;\n" +
+	"created_by\x18d \x01(\rB\x11\xbaG\x0e\x92\x02\v创建者IDH\x11R\tcreatedBy\x88\x01\x01\x125\n" +
 	"\n" +
-	"deleted_by\x18f \x01(\rB\x17\xbaG\x14\x92\x02\x11删除者用户IDH\x12R\tdeletedBy\x88\x01\x01\x12S\n" +
+	"updated_by\x18e \x01(\rB\x11\xbaG\x0e\x92\x02\v更新者IDH\x12R\tupdatedBy\x88\x01\x01\x12;\n" +
 	"\n" +
-	"created_at\x18\xc8\x01 \x01(\v2\x1a.google.protobuf.TimestampB\x12\xbaG\x0f\x92\x02\f创建时间H\x13R\tcreatedAt\x88\x01\x01\x12S\n" +
+	"deleted_by\x18f \x01(\rB\x17\xbaG\x14\x92\x02\x11删除者用户IDH\x13R\tdeletedBy\x88\x01\x01\x12S\n" +
 	"\n" +
-	"updated_at\x18\xc9\x01 \x01(\v2\x1a.google.protobuf.TimestampB\x12\xbaG\x0f\x92\x02\f更新时间H\x14R\tupdatedAt\x88\x01\x01\x12S\n" +
+	"created_at\x18\xc8\x01 \x01(\v2\x1a.google.protobuf.TimestampB\x12\xbaG\x0f\x92\x02\f创建时间H\x14R\tcreatedAt\x88\x01\x01\x12S\n" +
 	"\n" +
-	"deleted_at\x18\xca\x01 \x01(\v2\x1a.google.protobuf.TimestampB\x12\xbaG\x0f\x92\x02\f删除时间H\x15R\tdeletedAt\x88\x01\x01B\x05\n" +
+	"updated_at\x18\xc9\x01 \x01(\v2\x1a.google.protobuf.TimestampB\x12\xbaG\x0f\x92\x02\f更新时间H\x15R\tupdatedAt\x88\x01\x01\x12S\n" +
+	"\n" +
+	"deleted_at\x18\xca\x01 \x01(\v2\x1a.google.protobuf.TimestampB\x12\xbaG\x0f\x92\x02\f删除时间H\x16R\tdeletedAt\x88\x01\x01B\x05\n" +
 	"\x03_idB\a\n" +
 	"\x05_codeB\a\n" +
 	"\x05_nameB\b\n" +
@@ -942,6 +1103,7 @@ const file_onestop_service_v1_service_type_proto_rawDesc = "" +
 	"\x12_requires_approvalB\x11\n" +
 	"\x0f_execution_postB\x0f\n" +
 	"\r_trigger_modeB\r\n" +
+	"\v_order_kindB\r\n" +
 	"\v_created_byB\r\n" +
 	"\v_updated_byB\r\n" +
 	"\v_deleted_byB\r\n" +
@@ -974,7 +1136,11 @@ const file_onestop_service_v1_service_type_proto_rawDesc = "" +
 	"\x02id\x18\x01 \x01(\rB\n" +
 	"\xbaG\a\x18\x01\x92\x02\x02IDH\x00R\x02idB\n" +
 	"\n" +
-	"\bquery_by*d\n" +
+	"\bquery_by\"V\n" +
+	"\x19GetEffectiveConfigRequest\x129\n" +
+	"\x02id\x18\x01 \x01(\rB)\xbaG&\x18\x01\x92\x02!服务类型ID（小类/细类）R\x02id\"\xc3\x01\n" +
+	"\x16EffectiveServiceConfig\x12\xa8\x01\n" +
+	"\teffective\x18\x01 \x01(\v2\x1f.onestop.service.v1.ServiceTypeBi\xbaGf\x92\x02c解析后的生效配置（细类→小类回退已填齐，trigger_mode/order_kind 为解析值）R\teffective*d\n" +
 	"\x05Level\x12\x15\n" +
 	"\x11LEVEL_UNSPECIFIED\x10\x00\x12\x0f\n" +
 	"\vLEVEL_MAJOR\x10\x01\x12\x10\n" +
@@ -995,13 +1161,20 @@ const file_onestop_service_v1_service_type_proto_rawDesc = "" +
 	"\vTriggerMode\x12\x17\n" +
 	"\x13TRIGGER_UNSPECIFIED\x10\x00\x12\x15\n" +
 	"\x11TRIGGER_ON_DEMAND\x10\x01\x12\x15\n" +
-	"\x11TRIGGER_SCHEDULED\x10\x022\x90\x05\n" +
+	"\x11TRIGGER_SCHEDULED\x10\x02*T\n" +
+	"\tOrderKind\x12\x14\n" +
+	"\x10KIND_UNSPECIFIED\x10\x00\x12\x0e\n" +
+	"\n" +
+	"KIND_EVENT\x10\x01\x12\r\n" +
+	"\tKIND_TASK\x10\x02\x12\x12\n" +
+	"\x0eKIND_TRANSPORT\x10\x032\xc1\x06\n" +
 	"\x19OneStopServiceTypeService\x12w\n" +
 	"\x04List\x12\x19.pagination.PagingRequest\x1a+.onestop.service.v1.ListServiceTypeResponse\"'\x82\xd3\xe4\x93\x02!\x12\x1f/admin/v1/onestop/service-types\x12\x7f\n" +
 	"\x03Get\x12).onestop.service.v1.GetServiceTypeRequest\x1a\x1f.onestop.service.v1.ServiceType\",\x82\xd3\xe4\x93\x02&\x12$/admin/v1/onestop/service-types/{id}\x12z\n" +
 	"\x06Create\x12,.onestop.service.v1.CreateServiceTypeRequest\x1a\x16.google.protobuf.Empty\"*\x82\xd3\xe4\x93\x02$:\x01*\"\x1f/admin/v1/onestop/service-types\x12\x7f\n" +
 	"\x06Update\x12,.onestop.service.v1.UpdateServiceTypeRequest\x1a\x16.google.protobuf.Empty\"/\x82\xd3\xe4\x93\x02):\x01*\x1a$/admin/v1/onestop/service-types/{id}\x12|\n" +
-	"\x06Delete\x12,.onestop.service.v1.DeleteServiceTypeRequest\x1a\x16.google.protobuf.Empty\",\x82\xd3\xe4\x93\x02&*$/admin/v1/onestop/service-types/{id}B\xd3\x01\n" +
+	"\x06Delete\x12,.onestop.service.v1.DeleteServiceTypeRequest\x1a\x16.google.protobuf.Empty\",\x82\xd3\xe4\x93\x02&*$/admin/v1/onestop/service-types/{id}\x12\xae\x01\n" +
+	"\x12GetEffectiveConfig\x12-.onestop.service.v1.GetEffectiveConfigRequest\x1a*.onestop.service.v1.EffectiveServiceConfig\"=\x82\xd3\xe4\x93\x027\x125/admin/v1/onestop/service-types/{id}/effective-configB\xd3\x01\n" +
 	"\x16com.onestop.service.v1B\x10ServiceTypeProtoP\x01Z=go-wind-admin/onestop/api/gen/go/onestop/service/v1;onestopv1\xa2\x02\x03OSX\xaa\x02\x12Onestop.Service.V1\xca\x02\x12Onestop\\Service\\V1\xe2\x02\x1eOnestop\\Service\\V1\\GPBMetadata\xea\x02\x14Onestop::Service::V1b\x06proto3"
 
 var (
@@ -1016,54 +1189,61 @@ func file_onestop_service_v1_service_type_proto_rawDescGZIP() []byte {
 	return file_onestop_service_v1_service_type_proto_rawDescData
 }
 
-var file_onestop_service_v1_service_type_proto_enumTypes = make([]protoimpl.EnumInfo, 4)
-var file_onestop_service_v1_service_type_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
+var file_onestop_service_v1_service_type_proto_enumTypes = make([]protoimpl.EnumInfo, 5)
+var file_onestop_service_v1_service_type_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
 var file_onestop_service_v1_service_type_proto_goTypes = []any{
-	(Level)(0),                       // 0: onestop.service.v1.Level
-	(ServicePriority)(0),             // 1: onestop.service.v1.ServicePriority
-	(TemperatureRequirement)(0),      // 2: onestop.service.v1.TemperatureRequirement
-	(TriggerMode)(0),                 // 3: onestop.service.v1.TriggerMode
-	(*ServiceAcceptanceItem)(nil),    // 4: onestop.service.v1.ServiceAcceptanceItem
-	(*ServiceType)(nil),              // 5: onestop.service.v1.ServiceType
-	(*ListServiceTypeResponse)(nil),  // 6: onestop.service.v1.ListServiceTypeResponse
-	(*GetServiceTypeRequest)(nil),    // 7: onestop.service.v1.GetServiceTypeRequest
-	(*CreateServiceTypeRequest)(nil), // 8: onestop.service.v1.CreateServiceTypeRequest
-	(*UpdateServiceTypeRequest)(nil), // 9: onestop.service.v1.UpdateServiceTypeRequest
-	(*DeleteServiceTypeRequest)(nil), // 10: onestop.service.v1.DeleteServiceTypeRequest
-	(*timestamppb.Timestamp)(nil),    // 11: google.protobuf.Timestamp
-	(*fieldmaskpb.FieldMask)(nil),    // 12: google.protobuf.FieldMask
-	(*v1.PagingRequest)(nil),         // 13: pagination.PagingRequest
-	(*emptypb.Empty)(nil),            // 14: google.protobuf.Empty
+	(Level)(0),                        // 0: onestop.service.v1.Level
+	(ServicePriority)(0),              // 1: onestop.service.v1.ServicePriority
+	(TemperatureRequirement)(0),       // 2: onestop.service.v1.TemperatureRequirement
+	(TriggerMode)(0),                  // 3: onestop.service.v1.TriggerMode
+	(OrderKind)(0),                    // 4: onestop.service.v1.OrderKind
+	(*ServiceAcceptanceItem)(nil),     // 5: onestop.service.v1.ServiceAcceptanceItem
+	(*ServiceType)(nil),               // 6: onestop.service.v1.ServiceType
+	(*ListServiceTypeResponse)(nil),   // 7: onestop.service.v1.ListServiceTypeResponse
+	(*GetServiceTypeRequest)(nil),     // 8: onestop.service.v1.GetServiceTypeRequest
+	(*CreateServiceTypeRequest)(nil),  // 9: onestop.service.v1.CreateServiceTypeRequest
+	(*UpdateServiceTypeRequest)(nil),  // 10: onestop.service.v1.UpdateServiceTypeRequest
+	(*DeleteServiceTypeRequest)(nil),  // 11: onestop.service.v1.DeleteServiceTypeRequest
+	(*GetEffectiveConfigRequest)(nil), // 12: onestop.service.v1.GetEffectiveConfigRequest
+	(*EffectiveServiceConfig)(nil),    // 13: onestop.service.v1.EffectiveServiceConfig
+	(*timestamppb.Timestamp)(nil),     // 14: google.protobuf.Timestamp
+	(*fieldmaskpb.FieldMask)(nil),     // 15: google.protobuf.FieldMask
+	(*v1.PagingRequest)(nil),          // 16: pagination.PagingRequest
+	(*emptypb.Empty)(nil),             // 17: google.protobuf.Empty
 }
 var file_onestop_service_v1_service_type_proto_depIdxs = []int32{
 	0,  // 0: onestop.service.v1.ServiceType.level:type_name -> onestop.service.v1.Level
 	1,  // 1: onestop.service.v1.ServiceType.default_priority:type_name -> onestop.service.v1.ServicePriority
-	4,  // 2: onestop.service.v1.ServiceType.acceptance_items:type_name -> onestop.service.v1.ServiceAcceptanceItem
+	5,  // 2: onestop.service.v1.ServiceType.acceptance_items:type_name -> onestop.service.v1.ServiceAcceptanceItem
 	2,  // 3: onestop.service.v1.ServiceType.temperature_requirement:type_name -> onestop.service.v1.TemperatureRequirement
 	3,  // 4: onestop.service.v1.ServiceType.trigger_mode:type_name -> onestop.service.v1.TriggerMode
-	11, // 5: onestop.service.v1.ServiceType.created_at:type_name -> google.protobuf.Timestamp
-	11, // 6: onestop.service.v1.ServiceType.updated_at:type_name -> google.protobuf.Timestamp
-	11, // 7: onestop.service.v1.ServiceType.deleted_at:type_name -> google.protobuf.Timestamp
-	5,  // 8: onestop.service.v1.ListServiceTypeResponse.items:type_name -> onestop.service.v1.ServiceType
-	12, // 9: onestop.service.v1.GetServiceTypeRequest.view_mask:type_name -> google.protobuf.FieldMask
-	5,  // 10: onestop.service.v1.CreateServiceTypeRequest.data:type_name -> onestop.service.v1.ServiceType
-	5,  // 11: onestop.service.v1.UpdateServiceTypeRequest.data:type_name -> onestop.service.v1.ServiceType
-	12, // 12: onestop.service.v1.UpdateServiceTypeRequest.update_mask:type_name -> google.protobuf.FieldMask
-	13, // 13: onestop.service.v1.OneStopServiceTypeService.List:input_type -> pagination.PagingRequest
-	7,  // 14: onestop.service.v1.OneStopServiceTypeService.Get:input_type -> onestop.service.v1.GetServiceTypeRequest
-	8,  // 15: onestop.service.v1.OneStopServiceTypeService.Create:input_type -> onestop.service.v1.CreateServiceTypeRequest
-	9,  // 16: onestop.service.v1.OneStopServiceTypeService.Update:input_type -> onestop.service.v1.UpdateServiceTypeRequest
-	10, // 17: onestop.service.v1.OneStopServiceTypeService.Delete:input_type -> onestop.service.v1.DeleteServiceTypeRequest
-	6,  // 18: onestop.service.v1.OneStopServiceTypeService.List:output_type -> onestop.service.v1.ListServiceTypeResponse
-	5,  // 19: onestop.service.v1.OneStopServiceTypeService.Get:output_type -> onestop.service.v1.ServiceType
-	14, // 20: onestop.service.v1.OneStopServiceTypeService.Create:output_type -> google.protobuf.Empty
-	14, // 21: onestop.service.v1.OneStopServiceTypeService.Update:output_type -> google.protobuf.Empty
-	14, // 22: onestop.service.v1.OneStopServiceTypeService.Delete:output_type -> google.protobuf.Empty
-	18, // [18:23] is the sub-list for method output_type
-	13, // [13:18] is the sub-list for method input_type
-	13, // [13:13] is the sub-list for extension type_name
-	13, // [13:13] is the sub-list for extension extendee
-	0,  // [0:13] is the sub-list for field type_name
+	4,  // 5: onestop.service.v1.ServiceType.order_kind:type_name -> onestop.service.v1.OrderKind
+	14, // 6: onestop.service.v1.ServiceType.created_at:type_name -> google.protobuf.Timestamp
+	14, // 7: onestop.service.v1.ServiceType.updated_at:type_name -> google.protobuf.Timestamp
+	14, // 8: onestop.service.v1.ServiceType.deleted_at:type_name -> google.protobuf.Timestamp
+	6,  // 9: onestop.service.v1.ListServiceTypeResponse.items:type_name -> onestop.service.v1.ServiceType
+	15, // 10: onestop.service.v1.GetServiceTypeRequest.view_mask:type_name -> google.protobuf.FieldMask
+	6,  // 11: onestop.service.v1.CreateServiceTypeRequest.data:type_name -> onestop.service.v1.ServiceType
+	6,  // 12: onestop.service.v1.UpdateServiceTypeRequest.data:type_name -> onestop.service.v1.ServiceType
+	15, // 13: onestop.service.v1.UpdateServiceTypeRequest.update_mask:type_name -> google.protobuf.FieldMask
+	6,  // 14: onestop.service.v1.EffectiveServiceConfig.effective:type_name -> onestop.service.v1.ServiceType
+	16, // 15: onestop.service.v1.OneStopServiceTypeService.List:input_type -> pagination.PagingRequest
+	8,  // 16: onestop.service.v1.OneStopServiceTypeService.Get:input_type -> onestop.service.v1.GetServiceTypeRequest
+	9,  // 17: onestop.service.v1.OneStopServiceTypeService.Create:input_type -> onestop.service.v1.CreateServiceTypeRequest
+	10, // 18: onestop.service.v1.OneStopServiceTypeService.Update:input_type -> onestop.service.v1.UpdateServiceTypeRequest
+	11, // 19: onestop.service.v1.OneStopServiceTypeService.Delete:input_type -> onestop.service.v1.DeleteServiceTypeRequest
+	12, // 20: onestop.service.v1.OneStopServiceTypeService.GetEffectiveConfig:input_type -> onestop.service.v1.GetEffectiveConfigRequest
+	7,  // 21: onestop.service.v1.OneStopServiceTypeService.List:output_type -> onestop.service.v1.ListServiceTypeResponse
+	6,  // 22: onestop.service.v1.OneStopServiceTypeService.Get:output_type -> onestop.service.v1.ServiceType
+	17, // 23: onestop.service.v1.OneStopServiceTypeService.Create:output_type -> google.protobuf.Empty
+	17, // 24: onestop.service.v1.OneStopServiceTypeService.Update:output_type -> google.protobuf.Empty
+	17, // 25: onestop.service.v1.OneStopServiceTypeService.Delete:output_type -> google.protobuf.Empty
+	13, // 26: onestop.service.v1.OneStopServiceTypeService.GetEffectiveConfig:output_type -> onestop.service.v1.EffectiveServiceConfig
+	21, // [21:27] is the sub-list for method output_type
+	15, // [15:21] is the sub-list for method input_type
+	15, // [15:15] is the sub-list for extension type_name
+	15, // [15:15] is the sub-list for extension extendee
+	0,  // [0:15] is the sub-list for field type_name
 }
 
 func init() { file_onestop_service_v1_service_type_proto_init() }
@@ -1084,8 +1264,8 @@ func file_onestop_service_v1_service_type_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_onestop_service_v1_service_type_proto_rawDesc), len(file_onestop_service_v1_service_type_proto_rawDesc)),
-			NumEnums:      4,
-			NumMessages:   7,
+			NumEnums:      5,
+			NumMessages:   9,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

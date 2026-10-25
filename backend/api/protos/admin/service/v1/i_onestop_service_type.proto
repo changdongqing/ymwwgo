@@ -53,4 +53,11 @@ service OneStopServiceTypeService {
       delete: "/admin/v1/onestop/service-types/{id}"
     };
   }
+
+  // 查询类别的生效履约配置（细类→小类回退解析后的完整视图）
+  rpc GetEffectiveConfig (onestop.service.v1.GetEffectiveConfigRequest) returns (onestop.service.v1.EffectiveServiceConfig) {
+    option (google.api.http) = {
+      get: "/admin/v1/onestop/service-types/{id}/effective-config"
+    };
+  }
 }

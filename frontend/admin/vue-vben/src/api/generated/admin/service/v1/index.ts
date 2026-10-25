@@ -7747,6 +7747,10 @@ export interface OneStopServiceTypeService {
   Delete(
     request: onestopservicev1_DeleteServiceTypeRequest,
   ): Promise<wellKnownEmpty>;
+  // 查询类别的生效履约配置（细类→小类回退解析后的完整视图）
+  GetEffectiveConfig(
+    request: onestopservicev1_GetEffectiveConfigRequest,
+  ): Promise<onestopservicev1_EffectiveServiceConfig>;
 }
 
 export function createOneStopServiceTypeServiceClient(
@@ -7874,6 +7878,17 @@ export function createOneStopServiceTypeServiceClient(
         method: 'Delete',
       }) as Promise<wellKnownEmpty>;
     },
+    GetEffectiveConfig(request) {
+      if (request.id === undefined || request.id === null) {
+        throw new Error('missing required field request.id');
+      }
+      const path = `/admin/v1/onestop/service-types/${request.id}/effective-config`;
+      const body = null;
+      return transport.unary(path, 'GET', body, {
+        service: 'OneStopServiceTypeService',
+        method: 'GetEffectiveConfig',
+      }) as Promise<onestopservicev1_EffectiveServiceConfig>;
+    },
   };
 }
 // 查询服务类型列表 - 回应
@@ -7902,6 +7917,7 @@ export type onestopservicev1_ServiceType = {
   isEnabled?: boolean;
   level?: onestopservicev1_Level;
   name?: string;
+  orderKind?: onestopservicev1_OrderKind;
   parentId?: number;
   requiresApproval?: boolean;
   responseTimeLimit?: number;
@@ -7949,6 +7965,15 @@ export type onestopservicev1_TriggerMode =
   | 'TRIGGER_ON_DEMAND'
   | 'TRIGGER_SCHEDULED'
   | 'TRIGGER_UNSPECIFIED';
+// 履约形态：工单「怎么履约」的开关，与任务触发方式（怎么生单）正交。
+// 细类未设置回退小类；两级都空按推导规则（0106 子树→运送；解析后计划
+// 生成→计划任务；否则→事件处置），显式设置只处理推导覆盖不了的特例
+// （如 010405 被服收发按业务形状归运送）。
+export type onestopservicev1_OrderKind =
+  | 'KIND_EVENT'
+  | 'KIND_TASK'
+  | 'KIND_TRANSPORT'
+  | 'KIND_UNSPECIFIED';
 // 查询服务类型详情 - 请求
 export type onestopservicev1_GetServiceTypeRequest = {
   id?: number;
@@ -7971,6 +7996,21 @@ export type onestopservicev1_UpdateServiceTypeRequest = {
 // 删除服务类型 - 请求
 export type onestopservicev1_DeleteServiceTypeRequest = {
   id?: number;
+};
+
+// 查询生效履约配置 - 请求（id 须为小类/细类，其余层级 422）
+export type onestopservicev1_GetEffectiveConfigRequest = {
+  id: number | undefined;
+};
+
+// 生效履约配置 - 回应
+//
+// effective 是解析后的合并视图：单值列（细类为空回退小类）与数组列（整组
+// 覆盖或整组继承，不做数组内 merge）都已按「细类 → 小类」回退填齐；
+// trigger_mode / order_kind 为解析后的生效值（含推导）。发起端表单预填与
+// 工单创建快照共用本接口口径，前端发起弹窗无须自行实现继承链。
+export type onestopservicev1_EffectiveServiceConfig = {
+  effective: onestopservicev1_ServiceType | undefined;
 };
 
 // 一站式运送路线管理服务（admin 门面）
@@ -8178,6 +8218,781 @@ export type onestopservicev1_UpdateTransportRouteRequest = {
 // 删除运送路线 - 请求
 export type onestopservicev1_DeleteTransportRouteRequest = {
   id?: number;
+};
+
+// 一站式工单管理服务（admin 门面）
+//
+// 源领域 proto 在 onestop/service/v1（独立 Go module go-wind-admin/onestop 拥有
+// 自己的同名生成包 onestopv1）；本门面只挂 HTTP 路由，消息类型直接引用源领域，
+// 生成时 onestop/service/v1 的 go_package 被指到 module 的 gen 包，因此本服务
+// 生成的 HTTP 接口与 module 内 service 的方法签名完全一致，可直接注册。
+export interface OneStopWorkOrderService {
+  // 查询工单列表
+  List(
+    request: pagination_PagingRequest,
+  ): Promise<onestopservicev1_ListWorkOrdersResponse>;
+  // 查询工单详情
+  Get(
+    request: onestopservicev1_GetWorkOrderRequest,
+  ): Promise<onestopservicev1_WorkOrder>;
+  // 创建工单
+  Create(
+    request: onestopservicev1_CreateWorkOrderRequest,
+  ): Promise<wellKnownEmpty>;
+  // 更新工单
+  Update(
+    request: onestopservicev1_UpdateWorkOrderRequest,
+  ): Promise<wellKnownEmpty>;
+  // 删除工单
+  Delete(
+    request: onestopservicev1_DeleteWorkOrderRequest,
+  ): Promise<wellKnownEmpty>;
+  // 查询工单事件时间线
+  ListEvents(
+    request: onestopservicev1_ListWorkOrderEventsRequest,
+  ): Promise<onestopservicev1_ListWorkOrderEventsResponse>;
+  // 查询工单执行项
+  ListItems(
+    request: onestopservicev1_ListWorkOrderItemsRequest,
+  ): Promise<onestopservicev1_ListWorkOrderItemsResponse>;
+  // 派单
+  Dispatch(
+    request: onestopservicev1_DispatchWorkOrderRequest,
+  ): Promise<wellKnownEmpty>;
+  // 审批
+  Approve(
+    request: onestopservicev1_ApproveWorkOrderRequest,
+  ): Promise<wellKnownEmpty>;
+  // 到场
+  Arrive(
+    request: onestopservicev1_ArriveWorkOrderRequest,
+  ): Promise<wellKnownEmpty>;
+  // 取件签收
+  Pickup(
+    request: onestopservicev1_PickupWorkOrderRequest,
+  ): Promise<wellKnownEmpty>;
+  // 送达签收
+  Deliver(
+    request: onestopservicev1_DeliverWorkOrderRequest,
+  ): Promise<wellKnownEmpty>;
+  // 完工提交
+  Complete(
+    request: onestopservicev1_CompleteWorkOrderRequest,
+  ): Promise<wellKnownEmpty>;
+  // 验收
+  Verify(
+    request: onestopservicev1_VerifyWorkOrderRequest,
+  ): Promise<wellKnownEmpty>;
+  // 撤销
+  Cancel(
+    request: onestopservicev1_CancelWorkOrderRequest,
+  ): Promise<wellKnownEmpty>;
+  // 催办
+  Urge(
+    request: onestopservicev1_UrgeWorkOrderRequest,
+  ): Promise<wellKnownEmpty>;
+  // 改派
+  Reassign(
+    request: onestopservicev1_ReassignWorkOrderRequest,
+  ): Promise<wellKnownEmpty>;
+  // 转单
+  Transfer(
+    request: onestopservicev1_TransferWorkOrderRequest,
+  ): Promise<onestopservicev1_WorkOrder>;
+  // 派生
+  Derive(
+    request: onestopservicev1_DeriveWorkOrderRequest,
+  ): Promise<onestopservicev1_WorkOrder>;
+  // 异常上报
+  Abnormal(
+    request: onestopservicev1_AbnormalWorkOrderRequest,
+  ): Promise<wellKnownEmpty>;
+  // 满意度回访补录
+  Satisfaction(
+    request: onestopservicev1_SatisfactionWorkOrderRequest,
+  ): Promise<wellKnownEmpty>;
+}
+
+export function createOneStopWorkOrderServiceClient(
+  transport: ClientTransport,
+): OneStopWorkOrderService {
+  return {
+    List(request) {
+      const path = `/admin/v1/onestop/work-orders`;
+      const body = null;
+      const queryParams: string[] = [];
+      if (request.page) {
+        queryParams.push(
+          `page=${encodeURIComponent(request.page.toString())}`,
+        );
+      }
+      if (request.pageSize) {
+        queryParams.push(
+          `pageSize=${encodeURIComponent(request.pageSize.toString())}`,
+        );
+      }
+      if (request.offset) {
+        queryParams.push(
+          `offset=${encodeURIComponent(request.offset.toString())}`,
+        );
+      }
+      if (request.limit) {
+        queryParams.push(
+          `limit=${encodeURIComponent(request.limit.toString())}`,
+        );
+      }
+      if (request.token) {
+        queryParams.push(
+          `token=${encodeURIComponent(request.token.toString())}`,
+        );
+      }
+      if (request.noPaging) {
+        queryParams.push(
+          `noPaging=${encodeURIComponent(request.noPaging.toString())}`,
+        );
+      }
+      if (request.query) {
+        queryParams.push(
+          `query=${encodeURIComponent(request.query.toString())}`,
+        );
+      }
+      if (request.filter) {
+        queryParams.push(
+          `filter=${encodeURIComponent(request.filter.toString())}`,
+        );
+      }
+      if (request.filterExpr?.type) {
+        queryParams.push(
+          `filterExpr.type=${encodeURIComponent(request.filterExpr.type.toString())}`,
+        );
+      }
+      if (request.orderBy) {
+        queryParams.push(
+          `orderBy=${encodeURIComponent(request.orderBy.toString())}`,
+        );
+      }
+      if (request.fieldMask) {
+        queryParams.push(
+          `fieldMask=${encodeURIComponent(request.fieldMask.toString())}`,
+        );
+      }
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join('&')}`;
+      }
+      return transport.unary(uri, 'GET', body, {
+        service: 'OneStopWorkOrderService',
+        method: 'List',
+      }) as Promise<onestopservicev1_ListWorkOrdersResponse>;
+    },
+    Get(request) {
+      if (request.id === undefined || request.id === null) {
+        throw new Error('missing required field request.id');
+      }
+      const path = `/admin/v1/onestop/work-orders/${request.id}`;
+      const body = null;
+      const queryParams: string[] = [];
+      if (request.viewMask) {
+        queryParams.push(
+          `viewMask=${encodeURIComponent(request.viewMask.toString())}`,
+        );
+      }
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join('&')}`;
+      }
+      return transport.unary(uri, 'GET', body, {
+        service: 'OneStopWorkOrderService',
+        method: 'Get',
+      }) as Promise<onestopservicev1_WorkOrder>;
+    },
+    Create(request) {
+      const path = `/admin/v1/onestop/work-orders`;
+      const body = JSON.stringify(request);
+      return transport.unary(path, 'POST', body, {
+        service: 'OneStopWorkOrderService',
+        method: 'Create',
+      }) as Promise<wellKnownEmpty>;
+    },
+    Update(request) {
+      if (request.id === undefined || request.id === null) {
+        throw new Error('missing required field request.id');
+      }
+      const path = `/admin/v1/onestop/work-orders/${request.id}`;
+      const bodyMap = { ...request } as Record<string, unknown>;
+      delete bodyMap["id"];
+      const body = JSON.stringify(bodyMap);
+      return transport.unary(path, 'PUT', body, {
+        service: 'OneStopWorkOrderService',
+        method: 'Update',
+      }) as Promise<wellKnownEmpty>;
+    },
+    Delete(request) {
+      if (request.id === undefined || request.id === null) {
+        throw new Error('missing required field request.id');
+      }
+      const path = `/admin/v1/onestop/work-orders/${request.id}`;
+      const body = null;
+      return transport.unary(path, 'DELETE', body, {
+        service: 'OneStopWorkOrderService',
+        method: 'Delete',
+      }) as Promise<wellKnownEmpty>;
+    },
+    ListEvents(request) {
+      if (request.id === undefined || request.id === null) {
+        throw new Error('missing required field request.id');
+      }
+      const path = `/admin/v1/onestop/work-orders/${request.id}/events`;
+      const body = null;
+      return transport.unary(path, 'GET', body, {
+        service: 'OneStopWorkOrderService',
+        method: 'ListEvents',
+      }) as Promise<onestopservicev1_ListWorkOrderEventsResponse>;
+    },
+    ListItems(request) {
+      if (request.id === undefined || request.id === null) {
+        throw new Error('missing required field request.id');
+      }
+      const path = `/admin/v1/onestop/work-orders/${request.id}/items`;
+      const body = null;
+      return transport.unary(path, 'GET', body, {
+        service: 'OneStopWorkOrderService',
+        method: 'ListItems',
+      }) as Promise<onestopservicev1_ListWorkOrderItemsResponse>;
+    },
+    Dispatch(request) {
+      if (request.id === undefined || request.id === null) {
+        throw new Error('missing required field request.id');
+      }
+      const path = `/admin/v1/onestop/work-orders/${request.id}/dispatch`;
+      const bodyMap = { ...request } as Record<string, unknown>;
+      delete bodyMap["id"];
+      const body = JSON.stringify(bodyMap);
+      return transport.unary(path, 'POST', body, {
+        service: 'OneStopWorkOrderService',
+        method: 'Dispatch',
+      }) as Promise<wellKnownEmpty>;
+    },
+    Approve(request) {
+      if (request.id === undefined || request.id === null) {
+        throw new Error('missing required field request.id');
+      }
+      const path = `/admin/v1/onestop/work-orders/${request.id}/approve`;
+      const bodyMap = { ...request } as Record<string, unknown>;
+      delete bodyMap["id"];
+      const body = JSON.stringify(bodyMap);
+      return transport.unary(path, 'POST', body, {
+        service: 'OneStopWorkOrderService',
+        method: 'Approve',
+      }) as Promise<wellKnownEmpty>;
+    },
+    Arrive(request) {
+      if (request.id === undefined || request.id === null) {
+        throw new Error('missing required field request.id');
+      }
+      const path = `/admin/v1/onestop/work-orders/${request.id}/arrive`;
+      const bodyMap = { ...request } as Record<string, unknown>;
+      delete bodyMap["id"];
+      const body = JSON.stringify(bodyMap);
+      return transport.unary(path, 'POST', body, {
+        service: 'OneStopWorkOrderService',
+        method: 'Arrive',
+      }) as Promise<wellKnownEmpty>;
+    },
+    Pickup(request) {
+      if (request.id === undefined || request.id === null) {
+        throw new Error('missing required field request.id');
+      }
+      const path = `/admin/v1/onestop/work-orders/${request.id}/pickup`;
+      const bodyMap = { ...request } as Record<string, unknown>;
+      delete bodyMap["id"];
+      const body = JSON.stringify(bodyMap);
+      return transport.unary(path, 'POST', body, {
+        service: 'OneStopWorkOrderService',
+        method: 'Pickup',
+      }) as Promise<wellKnownEmpty>;
+    },
+    Deliver(request) {
+      if (request.id === undefined || request.id === null) {
+        throw new Error('missing required field request.id');
+      }
+      const path = `/admin/v1/onestop/work-orders/${request.id}/deliver`;
+      const bodyMap = { ...request } as Record<string, unknown>;
+      delete bodyMap["id"];
+      const body = JSON.stringify(bodyMap);
+      return transport.unary(path, 'POST', body, {
+        service: 'OneStopWorkOrderService',
+        method: 'Deliver',
+      }) as Promise<wellKnownEmpty>;
+    },
+    Complete(request) {
+      if (request.id === undefined || request.id === null) {
+        throw new Error('missing required field request.id');
+      }
+      const path = `/admin/v1/onestop/work-orders/${request.id}/complete`;
+      const bodyMap = { ...request } as Record<string, unknown>;
+      delete bodyMap["id"];
+      const body = JSON.stringify(bodyMap);
+      return transport.unary(path, 'POST', body, {
+        service: 'OneStopWorkOrderService',
+        method: 'Complete',
+      }) as Promise<wellKnownEmpty>;
+    },
+    Verify(request) {
+      if (request.id === undefined || request.id === null) {
+        throw new Error('missing required field request.id');
+      }
+      const path = `/admin/v1/onestop/work-orders/${request.id}/verify`;
+      const bodyMap = { ...request } as Record<string, unknown>;
+      delete bodyMap["id"];
+      const body = JSON.stringify(bodyMap);
+      return transport.unary(path, 'POST', body, {
+        service: 'OneStopWorkOrderService',
+        method: 'Verify',
+      }) as Promise<wellKnownEmpty>;
+    },
+    Cancel(request) {
+      if (request.id === undefined || request.id === null) {
+        throw new Error('missing required field request.id');
+      }
+      const path = `/admin/v1/onestop/work-orders/${request.id}/cancel`;
+      const bodyMap = { ...request } as Record<string, unknown>;
+      delete bodyMap["id"];
+      const body = JSON.stringify(bodyMap);
+      return transport.unary(path, 'POST', body, {
+        service: 'OneStopWorkOrderService',
+        method: 'Cancel',
+      }) as Promise<wellKnownEmpty>;
+    },
+    Urge(request) {
+      if (request.id === undefined || request.id === null) {
+        throw new Error('missing required field request.id');
+      }
+      const path = `/admin/v1/onestop/work-orders/${request.id}/urge`;
+      const bodyMap = { ...request } as Record<string, unknown>;
+      delete bodyMap["id"];
+      const body = JSON.stringify(bodyMap);
+      return transport.unary(path, 'POST', body, {
+        service: 'OneStopWorkOrderService',
+        method: 'Urge',
+      }) as Promise<wellKnownEmpty>;
+    },
+    Reassign(request) {
+      if (request.id === undefined || request.id === null) {
+        throw new Error('missing required field request.id');
+      }
+      const path = `/admin/v1/onestop/work-orders/${request.id}/reassign`;
+      const bodyMap = { ...request } as Record<string, unknown>;
+      delete bodyMap["id"];
+      const body = JSON.stringify(bodyMap);
+      return transport.unary(path, 'POST', body, {
+        service: 'OneStopWorkOrderService',
+        method: 'Reassign',
+      }) as Promise<wellKnownEmpty>;
+    },
+    Transfer(request) {
+      if (request.id === undefined || request.id === null) {
+        throw new Error('missing required field request.id');
+      }
+      const path = `/admin/v1/onestop/work-orders/${request.id}/transfer`;
+      const bodyMap = { ...request } as Record<string, unknown>;
+      delete bodyMap["id"];
+      const body = JSON.stringify(bodyMap);
+      return transport.unary(path, 'POST', body, {
+        service: 'OneStopWorkOrderService',
+        method: 'Transfer',
+      }) as Promise<onestopservicev1_WorkOrder>;
+    },
+    Derive(request) {
+      if (request.id === undefined || request.id === null) {
+        throw new Error('missing required field request.id');
+      }
+      const path = `/admin/v1/onestop/work-orders/${request.id}/derive`;
+      const bodyMap = { ...request } as Record<string, unknown>;
+      delete bodyMap["id"];
+      const body = JSON.stringify(bodyMap);
+      return transport.unary(path, 'POST', body, {
+        service: 'OneStopWorkOrderService',
+        method: 'Derive',
+      }) as Promise<onestopservicev1_WorkOrder>;
+    },
+    Abnormal(request) {
+      if (request.id === undefined || request.id === null) {
+        throw new Error('missing required field request.id');
+      }
+      const path = `/admin/v1/onestop/work-orders/${request.id}/abnormal`;
+      const bodyMap = { ...request } as Record<string, unknown>;
+      delete bodyMap["id"];
+      const body = JSON.stringify(bodyMap);
+      return transport.unary(path, 'POST', body, {
+        service: 'OneStopWorkOrderService',
+        method: 'Abnormal',
+      }) as Promise<wellKnownEmpty>;
+    },
+    Satisfaction(request) {
+      if (request.id === undefined || request.id === null) {
+        throw new Error('missing required field request.id');
+      }
+      const path = `/admin/v1/onestop/work-orders/${request.id}/satisfaction`;
+      const bodyMap = { ...request } as Record<string, unknown>;
+      delete bodyMap["id"];
+      const body = JSON.stringify(bodyMap);
+      return transport.unary(path, 'POST', body, {
+        service: 'OneStopWorkOrderService',
+        method: 'Satisfaction',
+      }) as Promise<wellKnownEmpty>;
+    },
+  };
+}
+// 查询工单列表 - 回应
+export type onestopservicev1_ListWorkOrdersResponse = {
+  items: onestopservicev1_WorkOrder[] | undefined;
+  total: number | undefined;
+};
+
+// 一站式工单（统一工单底座主实体）
+export type onestopservicev1_WorkOrder = {
+  acceptanceItems: onestopservicev1_ServiceAcceptanceItem[] | undefined;
+  acceptanceModes: string[] | undefined;
+  acceptancePhotos: string[] | undefined;
+  acceptanceResult: onestopservicev1_WorkOrderAcceptanceResult[] | undefined;
+  acceptanceSigner?: string;
+  actualWorkHours?: number;
+  // —— 关键时间戳（SLA 起算/止算与 deadline，创建时计算落库）——
+  assignedAt?: wellKnownTimestamp;
+  assigneeId?: number;
+  assigneeName?: string;
+  cancelReason?: string;
+  cargoDesc?: string;
+  channel?: onestopservicev1_WorkOrderChannel;
+  commonPhrase?: string;
+  completedAt?: wellKnownTimestamp;
+  completionDeadline?: wellKnownTimestamp;
+  completionTimeLimit?: number;
+  createdAt?: wellKnownTimestamp;
+  createdBy?: number;
+  deletedAt?: wellKnownTimestamp;
+  deletedBy?: number;
+  deliveredAt?: wellKnownTimestamp;
+  deliveredPhotos: string[] | undefined;
+  deliveredSigner?: string;
+  description?: string;
+  destination?: string;
+  equipmentDesc?: string;
+  estDurationMinutes?: number;
+  // —— 派单与执行 ——
+  executionPost?: string;
+  hasAbnormality?: boolean;
+  id?: number;
+  images: string[] | undefined;
+  intakeAt?: wellKnownTimestamp;
+  location?: string;
+  orderKind?: onestopservicev1_OrderKind;
+  orderNo?: string;
+  // —— 运送专项（KIND_TRANSPORT）——
+  origin?: string;
+  pickedPhotos: string[] | undefined;
+  pickedSigner?: string;
+  pickedUpAt?: wellKnownTimestamp;
+  planId?: number;
+  plannedExecAt?: wellKnownTimestamp;
+  // —— SLA（快照 + deadline 落库）——
+  priority?: onestopservicev1_ServicePriority;
+  // —— 发起信息 ——
+  requesterName?: string;
+  requesterPhone?: string;
+  requesterUserId?: number;
+  respondedAt?: wellKnownTimestamp;
+  responseDeadline?: wellKnownTimestamp;
+  responseTimeLimit?: number;
+  // —— 完工与验收（事件/任务形态）——
+  resultDesc?: string;
+  resultPhotos: string[] | undefined;
+  revisitedAt?: wellKnownTimestamp;
+  roundTrip?: boolean;
+  routeId?: number;
+  satisfactionComment?: string;
+  // —— 回访 ——
+  satisfactionScore?: number;
+  serviceTypeCode?: string;
+  // —— 标识与归属 ——
+  serviceTypeId?: number;
+  serviceTypeName?: string;
+  source?: onestopservicev1_WorkOrderSource;
+  sourceOrderId?: number;
+  // —— 状态与跟进 ——
+  status?: onestopservicev1_WorkOrderStatus;
+  temperatureRequirement?: onestopservicev1_TemperatureRequirement;
+  updatedAt?: wellKnownTimestamp;
+  updatedBy?: number;
+  urgeCount?: number;
+  usedMaterials: onestopservicev1_WorkOrderMaterial[] | undefined;
+  verifiedAt?: wellKnownTimestamp;
+  viaPoints: string[] | undefined;
+};
+
+// 生单来源：工单怎么来的（与发起渠道正交——渠道描述手动单从哪进来）
+export type onestopservicev1_WorkOrderSource =
+  | 'SOURCE_DERIVED'
+  | 'SOURCE_MANUAL'
+  | 'SOURCE_PLAN'
+  | 'SOURCE_ROUTE'
+  | 'SOURCE_TRANSFER'
+  | 'SOURCE_UNSPECIFIED';
+// 发起渠道（手动单）：小程序/开放 API 为预留枚举位
+export type onestopservicev1_WorkOrderChannel =
+  | 'CHANNEL_DESK'
+  | 'CHANNEL_PHONE'
+  | 'CHANNEL_UNSPECIFIED';
+// 工单状态：三形态共用的统一状态机。
+// 运送形态无独立验收步（送达签收即完结）是唯一按形态收窄的转移。
+export type onestopservicev1_WorkOrderStatus =
+  | 'STATUS_APPROVING'
+  | 'STATUS_CANCELLED'
+  | 'STATUS_CLOSED'
+  | 'STATUS_COMPLETED'
+  | 'STATUS_DISPATCHED'
+  | 'STATUS_PENDING'
+  | 'STATUS_PROCESSING'
+  | 'STATUS_UNSPECIFIED';
+// 备件/耗材领用记录（本期手工填，库存联动未落地）
+export type onestopservicev1_WorkOrderMaterial = {
+  name: string | undefined;
+  qty: number | undefined;
+  remark: string | undefined;
+  unit: string | undefined;
+};
+
+// 验收项结果（verify 动作逐项勾选，name 对应创建时快照的验收项）
+export type onestopservicev1_WorkOrderAcceptanceResult = {
+  name: string | undefined;
+  passed: boolean | undefined;
+  remark: string | undefined;
+};
+
+// 查询工单详情 - 请求
+export type onestopservicev1_GetWorkOrderRequest = {
+  id?: number;
+  viewMask?: wellKnownFieldMask;
+};
+
+// 创建工单 - 请求（CRUD 包 data；order_kind/快照字段由服务端解析落库）
+export type onestopservicev1_CreateWorkOrderRequest = {
+  data: onestopservicev1_WorkOrder | undefined;
+};
+
+// 更新工单 - 请求（仅待派单/审批中可改发起信息组字段）
+export type onestopservicev1_UpdateWorkOrderRequest = {
+  allowMissing?: boolean;
+  data: onestopservicev1_WorkOrder | undefined;
+  id: number | undefined;
+  updateMask: undefined | wellKnownFieldMask;
+};
+
+// 删除工单 - 请求
+export type onestopservicev1_DeleteWorkOrderRequest = {
+  id?: number;
+};
+
+// 查询工单事件 - 请求/回应
+export type onestopservicev1_ListWorkOrderEventsRequest = {
+  id: number | undefined;
+};
+
+export type onestopservicev1_ListWorkOrderEventsResponse = {
+  items: onestopservicev1_WorkOrderEvent[] | undefined;
+  total: number | undefined;
+};
+
+// 工单事件（时间线：动作 + 状态迁移 + 附言/照片，按时间倒序即跟进记录）
+export type onestopservicev1_WorkOrderEvent = {
+  action?: onestopservicev1_WorkOrderEventAction;
+  createdAt?: wellKnownTimestamp;
+  createdBy?: number;
+  id?: number;
+  note?: string;
+  photos: string[] | undefined;
+  statusFrom?: onestopservicev1_WorkOrderStatus;
+  statusTo?: onestopservicev1_WorkOrderStatus;
+  workOrderId?: number;
+};
+
+// 工单事件动作（时间线）；ACTION_CLAIM 为移动端接单预留枚举位
+export type onestopservicev1_WorkOrderEventAction =
+  | 'ACTION_ABNORMAL'
+  | 'ACTION_APPROVE_PASS'
+  | 'ACTION_APPROVE_REJECT'
+  | 'ACTION_ARRIVE'
+  | 'ACTION_CANCEL'
+  | 'ACTION_CLAIM'
+  | 'ACTION_COMPLETE'
+  | 'ACTION_CREATE'
+  | 'ACTION_DELIVER'
+  | 'ACTION_DERIVE'
+  | 'ACTION_DISPATCH'
+  | 'ACTION_PICKUP'
+  | 'ACTION_REASSIGN'
+  | 'ACTION_SATISFACTION'
+  | 'ACTION_TRANSFER'
+  | 'ACTION_UNSPECIFIED'
+  | 'ACTION_URGE'
+  | 'ACTION_VERIFY_PASS'
+  | 'ACTION_VERIFY_REJECT';
+// 查询工单执行项 - 请求/回应
+export type onestopservicev1_ListWorkOrderItemsRequest = {
+  id: number | undefined;
+};
+
+export type onestopservicev1_ListWorkOrderItemsResponse = {
+  items: onestopservicev1_WorkOrderItem[] | undefined;
+  total: number | undefined;
+};
+
+// 工单执行项（计划任务形态的逐项作业记录：点表快照 + 结果回填）
+export type onestopservicev1_WorkOrderItem = {
+  equipmentRef?: string;
+  id?: number;
+  name?: string;
+  photos: string[] | undefined;
+  remark?: string;
+  result?: onestopservicev1_WorkOrderItemResult;
+  scope?: onestopservicev1_WorkOrderItemScope;
+  sort?: number;
+  // —— 预留：空间/设备对象模块落地后启用 ——
+  spaceRef?: string;
+  value?: string;
+  workOrderId?: number;
+};
+
+// 执行项分组（计划单两组点表各自展开；手动创建的计划任务单 scope 为空）
+export type onestopservicev1_WorkOrderItemScope =
+  | 'SCOPE_EQUIPMENT'
+  | 'SCOPE_SPACE'
+  | 'SCOPE_UNSPECIFIED';
+// 执行项结果（存在未执行项时不可完工提交——要么给结果要么显式跳过）
+export type onestopservicev1_WorkOrderItemResult =
+  | 'ITEM_ABNORMAL'
+  | 'ITEM_NORMAL'
+  | 'ITEM_PENDING'
+  | 'ITEM_RESULT_UNSPECIFIED'
+  | 'ITEM_SKIPPED';
+// 派单 - 请求（扁平 body；assignee 可空 = 岗位派单）
+export type onestopservicev1_DispatchWorkOrderRequest = {
+  assigneeId?: number;
+  assigneeName?: string;
+  id: number | undefined;
+  note?: string;
+  post?: string;
+};
+
+// 审批 - 请求
+export type onestopservicev1_ApproveWorkOrderRequest = {
+  id: number | undefined;
+  note?: string;
+  passed: boolean | undefined;
+};
+
+// 到场 - 请求（事件/任务形态）
+export type onestopservicev1_ArriveWorkOrderRequest = {
+  id: number | undefined;
+  note?: string;
+  photos: string[] | undefined;
+};
+
+// 取件签收 - 请求（运送形态）
+export type onestopservicev1_PickupWorkOrderRequest = {
+  id: number | undefined;
+  note?: string;
+  photos: string[] | undefined;
+  signer: string | undefined;
+};
+
+// 送达签收 - 请求（运送形态，送达即完结）
+export type onestopservicev1_DeliverWorkOrderRequest = {
+  id: number | undefined;
+  note?: string;
+  photos: string[] | undefined;
+  signer: string | undefined;
+};
+
+// 完工提交 - 请求（事件/任务形态；执行项结果一次性提交，存在未执行项时 422）
+export type onestopservicev1_CompleteWorkOrderRequest = {
+  actualWorkHours?: number;
+  id: number | undefined;
+  items: onestopservicev1_WorkOrderItemSubmission[] | undefined;
+  resultDesc?: string;
+  resultPhotos: string[] | undefined;
+  usedMaterials: onestopservicev1_WorkOrderMaterial[] | undefined;
+};
+
+// 工单执行项结果提交（complete 请求内一次性回填）
+export type onestopservicev1_WorkOrderItemSubmission = {
+  id: number | undefined;
+  photos: string[] | undefined;
+  remark: string | undefined;
+  result: onestopservicev1_WorkOrderItemResult | undefined;
+  value: string | undefined;
+};
+
+// 验收 - 请求（事件/任务形态；passed=false 返工，deadline 不重算）
+export type onestopservicev1_VerifyWorkOrderRequest = {
+  id: number | undefined;
+  itemsResult: onestopservicev1_WorkOrderAcceptanceResult[] | undefined;
+  note?: string;
+  passed: boolean | undefined;
+  photos: string[] | undefined;
+  signer?: string;
+};
+
+// 撤销 - 请求
+export type onestopservicev1_CancelWorkOrderRequest = {
+  id: number | undefined;
+  reason: string | undefined;
+};
+
+// 催办 - 请求
+export type onestopservicev1_UrgeWorkOrderRequest = {
+  id: number | undefined;
+  note?: string;
+};
+
+// 改派 - 请求（同单换岗位/执行人，不换类型）
+export type onestopservicev1_ReassignWorkOrderRequest = {
+  assigneeId?: number;
+  assigneeName?: string;
+  id: number | undefined;
+  note?: string;
+  post?: string;
+};
+
+// 转单 - 请求（旧单关闭，按新类型开新单；返回新单）
+export type onestopservicev1_TransferWorkOrderRequest = {
+  id: number | undefined;
+  note?: string;
+  toTypeId: number | undefined;
+};
+
+// 派生 - 请求（旧单不动，按新类型关联生成新单；返回新单）
+export type onestopservicev1_DeriveWorkOrderRequest = {
+  description: string | undefined;
+  id: number | undefined;
+  note?: string;
+  toTypeId: number | undefined;
+};
+
+// 异常上报 - 请求
+export type onestopservicev1_AbnormalWorkOrderRequest = {
+  desc: string | undefined;
+  id: number | undefined;
+  note?: string;
+  photos: string[] | undefined;
+};
+
+// 满意度回访补录 - 请求（仅已完结单）
+export type onestopservicev1_SatisfactionWorkOrderRequest = {
+  comment?: string;
+  id: number | undefined;
+  score: number | undefined;
 };
 
 // 在线会话管理服务（在线用户列表 + 强制下线）
@@ -15115,6 +15930,7 @@ export class ApiClient {
   private _oneStopPeriodicPlanService?: OneStopPeriodicPlanService;
   private _oneStopServiceTypeService?: OneStopServiceTypeService;
   private _oneStopTransportRouteService?: OneStopTransportRouteService;
+  private _oneStopWorkOrderService?: OneStopWorkOrderService;
   private _onlineSessionService?: OnlineSessionService;
   private _ontologyAnnotationPropertyService?: OntologyAnnotationPropertyService;
   private _ontologyClassService?: OntologyClassService;
@@ -15305,6 +16121,10 @@ export class ApiClient {
 
   get oneStopTransportRouteService(): OneStopTransportRouteService {
     return this._oneStopTransportRouteService ??= createOneStopTransportRouteServiceClient(this._transport);
+  }
+
+  get oneStopWorkOrderService(): OneStopWorkOrderService {
+    return this._oneStopWorkOrderService ??= createOneStopWorkOrderServiceClient(this._transport);
   }
 
   get onlineSessionService(): OnlineSessionService {

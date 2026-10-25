@@ -29,6 +29,8 @@ import {
   getLevelMap,
   isConfigurable,
   levelOfCode,
+  orderKindName,
+  resolveOrderKind,
   resolveTriggerMode,
   triggerName,
 } from '../constants';
@@ -70,6 +72,7 @@ export default function ServiceTypeForm({ mode, data, onSaved, onCancel }: Servi
   const watchedCode = Form.useWatch('code', form) as string | undefined;
   // 监听触发方式：新建态驱动「保存后可配置周期计划」提示
   const watchedTriggerMode = Form.useWatch('triggerMode', form) as string | undefined;
+  const watchedOrderKind = Form.useWatch('orderKind', form) as string | undefined;
 
   // 全量平铺列表：用于构建"上级服务类型"候选与触发方式继承解析
   const [allItems, setAllItems] = useState<onestopservicev1_ServiceType[]>([]);
@@ -101,6 +104,7 @@ export default function ServiceTypeForm({ mode, data, onSaved, onCancel }: Servi
         spareParts: data.spareParts ?? [],
         standardItems: data.standardItems ?? [],
         triggerMode: data.triggerMode === 'TRIGGER_UNSPECIFIED' ? undefined : data.triggerMode,
+        orderKind: data.orderKind === 'KIND_UNSPECIFIED' ? undefined : data.orderKind,
         defaultPriority: data.defaultPriority === 'PRIORITY_UNSPECIFIED' ? undefined : data.defaultPriority,
         acceptanceModes: data.acceptanceModes ?? [],
         acceptanceItems: data.acceptanceItems ?? [],
@@ -136,6 +140,22 @@ export default function ServiceTypeForm({ mode, data, onSaved, onCancel }: Servi
     return watchedTriggerMode === 'TRIGGER_SCHEDULED' ? 'TRIGGER_SCHEDULED' : 'TRIGGER_ON_DEMAND';
   }, [mode, data, allItems, watchedTriggerMode]);
   const isScheduled = resolvedTrigger === 'TRIGGER_SCHEDULED';
+
+  // 生效履约形态：编辑态走继承解析（细类→小类→推导），新建态跟随选择/推导
+  const resolvedOrderKind = useMemo(() => {
+    if (mode === 'edit' && data) {
+      return resolveOrderKind(allItems, data);
+    }
+    if (watchedOrderKind && watchedOrderKind !== 'KIND_UNSPECIFIED') {
+      return watchedOrderKind;
+    }
+    const asTarget = {
+      code: effectiveCode,
+      level: currentLevel,
+      triggerMode: watchedTriggerMode,
+    };
+    return resolveOrderKind(allItems, asTarget);
+  }, [mode, data, allItems, watchedOrderKind, watchedTriggerMode, effectiveCode, currentLevel]);
 
   // 运送子树（任意层级的小类/细类）：编辑态管理常用路线（与触发方式无关，
   // 按需押运同样需要路线模板；仅定时班次路线参与后续任务生成）
@@ -204,6 +224,7 @@ export default function ServiceTypeForm({ mode, data, onSaved, onCancel }: Servi
       payload.acceptanceItems = values.acceptanceItems ?? [];
       // 触发方式：清空 = 继承上级（mask 内 nil → NULL）；已挂计划时后端拒绝切回按需
       payload.triggerMode = values.triggerMode || undefined;
+      if (values.orderKind) payload.orderKind = values.orderKind;
       // 标准作业项目库：仅计划生成时随表单提交（显式选择优先，未选择按渲染态
       // 解析结果——细类继承小类的计划生成同样要带项目库字段）
       const submittedScheduled =
@@ -333,6 +354,24 @@ export default function ServiceTypeForm({ mode, data, onSaved, onCancel }: Servi
                 mode === 'edit' && !data?.triggerMode
                   ? t('triggerModeInheritExtra', { mode: triggerName(resolvedTrigger) })
                   : t('triggerModeExtra')
+              }
+            />
+
+            <ProFormSelect
+              name="orderKind"
+              label={t('orderKind')}
+              allowClear
+              options={[
+                { label: t('orderKindMap.event'), value: 'KIND_EVENT' },
+                { label: t('orderKindMap.task'), value: 'KIND_TASK' },
+                { label: t('orderKindMap.transport'), value: 'KIND_TRANSPORT' },
+              ]}
+              colProps={{ span: 12 }}
+              placeholder={t('orderKindPlaceholder')}
+              extra={
+                mode === 'edit' && !data?.orderKind
+                  ? t('orderKindInheritExtra', { kind: orderKindName(resolvedOrderKind) })
+                  : t('orderKindExtra')
               }
             />
 

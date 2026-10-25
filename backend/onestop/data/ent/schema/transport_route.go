@@ -82,12 +82,14 @@ func (TransportRoute) Fields() []ent.Field {
 }
 
 // Mixin of the TransportRoute.
-// 本期跟随 onestop 现状挂平台级（不挂 TenantID）；工单对象落地时一并评估租户态。
+// 租户运营配置：与周期计划同款租户化（路线是「某租户的运送安排」）。
+// 0 = 平台（内置模板）；班次展开调度器按路线的租户生成运送单。
 func (TransportRoute) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		mixin.AutoIncrementId{},
 		mixin.TimeAt{},
 		mixin.OperatorID{},
+		mixin.TenantID[uint32]{},
 		mixin.IsEnabled{},
 	}
 }
@@ -96,5 +98,6 @@ func (TransportRoute) Mixin() []ent.Mixin {
 func (TransportRoute) Indexes() []ent.Index {
 	return []ent.Index{
 		index.Fields("service_type_id"),
+		index.Fields("tenant_id"),
 	}
 }

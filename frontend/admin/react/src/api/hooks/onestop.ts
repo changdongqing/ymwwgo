@@ -217,3 +217,137 @@ export function useDeleteTransportRoute(
 export function invalidateTransportRoutes(queryClientInstance: typeof queryClient) {
   queryClientInstance.invalidateQueries({ queryKey: [ROUTES_QUERY_KEY] });
 }
+
+// —— 工单（统一工单底座：三形态 + 动作 RPC）——
+
+import {
+  type onestopservicev1_ApproveWorkOrderRequest,
+  type onestopservicev1_ArriveWorkOrderRequest,
+  type onestopservicev1_AbnormalWorkOrderRequest,
+  type onestopservicev1_CancelWorkOrderRequest,
+  type onestopservicev1_CompleteWorkOrderRequest,
+  type onestopservicev1_DeliverWorkOrderRequest,
+  type onestopservicev1_DeriveWorkOrderRequest,
+  type onestopservicev1_DispatchWorkOrderRequest,
+  type onestopservicev1_ListWorkOrdersResponse,
+  type onestopservicev1_PickupWorkOrderRequest,
+  type onestopservicev1_ReassignWorkOrderRequest,
+  type onestopservicev1_SatisfactionWorkOrderRequest,
+  type onestopservicev1_TransferWorkOrderRequest,
+  type onestopservicev1_UrgeWorkOrderRequest,
+  type onestopservicev1_VerifyWorkOrderRequest,
+  type onestopservicev1_WorkOrder,
+  type onestopservicev1_WorkOrderEvent,
+  type onestopservicev1_WorkOrderItem,
+} from '@/api/generated/admin/service/v1';
+
+export const WORK_ORDERS_QUERY_KEY = 'listWorkOrders';
+
+/** 工单列表（过滤条件由调用方以 go-crud query JSON 组织） */
+export function useListWorkOrders(
+  query: PaginationQuery,
+  options?: UseQueryOptions<onestopservicev1_ListWorkOrdersResponse, Error>,
+) {
+  return useQuery({
+    queryKey: [WORK_ORDERS_QUERY_KEY, query],
+    queryFn: () => apiClient.oneStopWorkOrderService.List(query.toRawParams()),
+    ...options,
+  });
+}
+
+/** 列表：fetch 版（ListTable request 用，retry 必须 0） */
+export async function fetchListWorkOrders(params: PaginationQuery) {
+  return queryClient.fetchQuery({
+    queryKey: [WORK_ORDERS_QUERY_KEY, params],
+    queryFn: () => apiClient.oneStopWorkOrderService.List(params.toRawParams()),
+    retry: 0,
+  });
+}
+
+/** 工单详情 */
+export function useGetWorkOrder(
+  id: number | undefined,
+  options?: Omit<UseQueryOptions<onestopservicev1_WorkOrder, Error>, 'queryKey' | 'queryFn'>,
+) {
+  return useQuery({
+    queryKey: ['getWorkOrder', id],
+    enabled: id != null,
+    queryFn: () => apiClient.oneStopWorkOrderService.Get({ id: id! }),
+    ...options,
+  });
+}
+
+/** 工单时间线（倒序） */
+export function useListWorkOrderEvents(
+  id: number | undefined,
+  options?: Omit<UseQueryOptions<{ items: onestopservicev1_WorkOrderEvent[] }, Error>, 'queryKey' | 'queryFn'>,
+) {
+  return useQuery({
+    queryKey: ['listWorkOrderEvents', id],
+    enabled: id != null,
+    queryFn: () => apiClient.oneStopWorkOrderService.ListEvents({ id: id! }),
+    ...options,
+  });
+}
+
+/** 工单执行项 */
+export function useListWorkOrderItems(
+  id: number | undefined,
+  options?: Omit<UseQueryOptions<{ items: onestopservicev1_WorkOrderItem[] }, Error>, 'queryKey' | 'queryFn'>,
+) {
+  return useQuery({
+    queryKey: ['listWorkOrderItems', id],
+    enabled: id != null,
+    queryFn: () => apiClient.oneStopWorkOrderService.ListItems({ id: id! }),
+    ...options,
+  });
+}
+
+/** 创建工单（坐席代发起；快照由后端解析） */
+export function useCreateWorkOrder(
+  options?: UseMutationOptions<unknown, Error, { values: Partial<onestopservicev1_WorkOrder> }>,
+) {
+  return useMutation({
+    mutationFn: ({ values }) =>
+      apiClient.oneStopWorkOrderService.Create({ data: { ...values } as onestopservicev1_WorkOrder }),
+    ...options,
+  });
+}
+
+/** 工单写操作后失效列表与详情缓存 */
+export function invalidateWorkOrders(qc: typeof queryClient, id?: number) {
+  qc.invalidateQueries({ queryKey: [WORK_ORDERS_QUERY_KEY] });
+  qc.invalidateQueries({ queryKey: ['getWorkOrder'] });
+  qc.invalidateQueries({ queryKey: ['listWorkOrderEvents'] });
+  qc.invalidateQueries({ queryKey: ['listWorkOrderItems'] });
+  if (id != null) qc.invalidateQueries({ queryKey: ['getWorkOrder', id] });
+}
+
+type ActionRequestMap = {
+  dispatch: onestopservicev1_DispatchWorkOrderRequest;
+  approve: onestopservicev1_ApproveWorkOrderRequest;
+  arrive: onestopservicev1_ArriveWorkOrderRequest;
+  pickup: onestopservicev1_PickupWorkOrderRequest;
+  deliver: onestopservicev1_DeliverWorkOrderRequest;
+  complete: onestopservicev1_CompleteWorkOrderRequest;
+  verify: onestopservicev1_VerifyWorkOrderRequest;
+  cancel: onestopservicev1_CancelWorkOrderRequest;
+  urge: onestopservicev1_UrgeWorkOrderRequest;
+  reassign: onestopservicev1_ReassignWorkOrderRequest;
+  transfer: onestopservicev1_TransferWorkOrderRequest;
+  derive: onestopservicev1_DeriveWorkOrderRequest;
+  abnormal: onestopservicev1_AbnormalWorkOrderRequest;
+  satisfaction: onestopservicev1_SatisfactionWorkOrderRequest;
+};
+
+/** 工单动作（扁平 body）：dispatch/approve/arrive/.../satisfaction 全量动作统一入口 */
+export function useWorkOrderAction<K extends keyof ActionRequestMap>(
+  action: K,
+  options?: UseMutationOptions<unknown, Error, ActionRequestMap[K]>,
+) {
+  return useMutation({
+    // @ts-expect-error 各动作方法签名一致（扁平请求体 → Empty/WorkOrder），联合类型收窄交给调用点
+    mutationFn: (data: ActionRequestMap[K]) => apiClient.oneStopWorkOrderService[action](data),
+    ...options,
+  });
+}

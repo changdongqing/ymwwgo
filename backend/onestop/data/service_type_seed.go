@@ -38,6 +38,14 @@ func triggerOfSeed(v *string) *servicetype.TriggerMode {
 	return &t
 }
 
+func orderKindOfSeed(v *string) *servicetype.OrderKind {
+	if v == nil || *v == "" {
+		return nil
+	}
+	k := servicetype.OrderKind(*v)
+	return &k
+}
+
 // 服务类型内置字典：docs/leixing/biaodan/README.md 的 211 行细类平铺清单，
 // 按编码前缀拆成 1 大类 + 12 中类 + 75 小类 + 211 细类 = 299 个节点。
 //
@@ -72,6 +80,9 @@ type serviceTypeSeed struct {
 	StandardItems []string `json:"standardItems,omitempty"`
 	// 任务触发方式：仅 SCHEDULED 节点显式标记，其余留空（NULL = 回退上级，默认按需）
 	TriggerMode *string `json:"triggerMode,omitempty"`
+	// 履约形态：仅推导覆盖不了的特例显式标记（当前只有 010405 被服收发按
+	// 业务形状归运送），其余留空走推导（0106 子树/计划生成/事件顺序）
+	OrderKind *string `json:"orderKind,omitempty"`
 }
 
 type serviceTypeAcceptanceSeed struct {
@@ -137,6 +148,7 @@ func (r *ServiceTypeRepo) SeedDefaults(ctx context.Context) error {
 			SetNillableRequiresApproval(seed.RequiresApproval).
 			SetNillableDefaultPriority(priorityOfSeed(seed.DefaultPriority)).
 			SetNillableTriggerMode(triggerOfSeed(seed.TriggerMode)).
+			SetNillableOrderKind(orderKindOfSeed(seed.OrderKind)).
 			SetCreatedAt(now).
 			SetUpdatedAt(now)
 

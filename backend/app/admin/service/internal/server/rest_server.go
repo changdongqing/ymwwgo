@@ -214,6 +214,7 @@ func NewRestServer(
 	oneStopServiceTypeService *onestopService.ServiceTypeService,
 	oneStopPeriodicPlanService *onestopService.PeriodicPlanService,
 	oneStopTransportRouteService *onestopService.TransportRouteService,
+	oneStopWorkOrderService *onestopService.WorkOrderService,
 ) (*http.Server, error) {
 	cfg := ctx.GetConfig()
 
@@ -345,6 +346,7 @@ func NewRestServer(
 	adminV1.RegisterOneStopServiceTypeServiceHTTPServer(srv, oneStopServiceTypeService)
 	adminV1.RegisterOneStopPeriodicPlanServiceHTTPServer(srv, oneStopPeriodicPlanService)
 	adminV1.RegisterOneStopTransportRouteServiceHTTPServer(srv, oneStopTransportRouteService)
+	adminV1.RegisterOneStopWorkOrderServiceHTTPServer(srv, oneStopWorkOrderService)
 
 	if cfg.GetServer().GetRest().GetEnableSwagger() {
 		swaggerUI.RegisterSwaggerUIServerWithOption(

@@ -107,6 +107,20 @@ func (_c *PeriodicPlanCreate) SetNillableDeletedBy(v *uint32) *PeriodicPlanCreat
 	return _c
 }
 
+// SetTenantID sets the "tenant_id" field.
+func (_c *PeriodicPlanCreate) SetTenantID(v uint32) *PeriodicPlanCreate {
+	_c.mutation.SetTenantID(v)
+	return _c
+}
+
+// SetNillableTenantID sets the "tenant_id" field if the given value is not nil.
+func (_c *PeriodicPlanCreate) SetNillableTenantID(v *uint32) *PeriodicPlanCreate {
+	if v != nil {
+		_c.SetTenantID(*v)
+	}
+	return _c
+}
+
 // SetIsEnabled sets the "is_enabled" field.
 func (_c *PeriodicPlanCreate) SetIsEnabled(v bool) *PeriodicPlanCreate {
 	_c.mutation.SetIsEnabled(v)
@@ -286,7 +300,9 @@ func (_c *PeriodicPlanCreate) Mutation() *PeriodicPlanMutation {
 
 // Save creates the PeriodicPlan in the database.
 func (_c *PeriodicPlanCreate) Save(ctx context.Context) (*PeriodicPlan, error) {
-	_c.defaults()
+	if err := _c.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
@@ -313,7 +329,11 @@ func (_c *PeriodicPlanCreate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (_c *PeriodicPlanCreate) defaults() {
+func (_c *PeriodicPlanCreate) defaults() error {
+	if _, ok := _c.mutation.TenantID(); !ok {
+		v := periodicplan.DefaultTenantID
+		_c.mutation.SetTenantID(v)
+	}
 	if _, ok := _c.mutation.IsEnabled(); !ok {
 		v := periodicplan.DefaultIsEnabled
 		_c.mutation.SetIsEnabled(v)
@@ -322,6 +342,7 @@ func (_c *PeriodicPlanCreate) defaults() {
 		v := periodicplan.DefaultClampToMonthEnd
 		_c.mutation.SetClampToMonthEnd(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -402,6 +423,10 @@ func (_c *PeriodicPlanCreate) createSpec() (*PeriodicPlan, *sqlgraph.CreateSpec)
 	if value, ok := _c.mutation.DeletedBy(); ok {
 		_spec.SetField(periodicplan.FieldDeletedBy, field.TypeUint32, value)
 		_node.DeletedBy = &value
+	}
+	if value, ok := _c.mutation.TenantID(); ok {
+		_spec.SetField(periodicplan.FieldTenantID, field.TypeUint32, value)
+		_node.TenantID = &value
 	}
 	if value, ok := _c.mutation.IsEnabled(); ok {
 		_spec.SetField(periodicplan.FieldIsEnabled, field.TypeBool, value)
@@ -962,6 +987,9 @@ func (u *PeriodicPlanUpsertOne) UpdateNewValues() *PeriodicPlanUpsertOne {
 		}
 		if _, exists := u.create.mutation.CreatedAt(); exists {
 			s.SetIgnore(periodicplan.FieldCreatedAt)
+		}
+		if _, exists := u.create.mutation.TenantID(); exists {
+			s.SetIgnore(periodicplan.FieldTenantID)
 		}
 	}))
 	return u
@@ -1668,6 +1696,9 @@ func (u *PeriodicPlanUpsertBulk) UpdateNewValues() *PeriodicPlanUpsertBulk {
 			}
 			if _, exists := b.mutation.CreatedAt(); exists {
 				s.SetIgnore(periodicplan.FieldCreatedAt)
+			}
+			if _, exists := b.mutation.TenantID(); exists {
+				s.SetIgnore(periodicplan.FieldTenantID)
 			}
 		}
 	}))

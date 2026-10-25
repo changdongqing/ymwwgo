@@ -84,6 +84,11 @@ func DeletedBy(v uint32) predicate.PeriodicPlan {
 	return predicate.PeriodicPlan(sql.FieldEQ(FieldDeletedBy, v))
 }
 
+// TenantID applies equality check predicate on the "tenant_id" field. It's identical to TenantIDEQ.
+func TenantID(v uint32) predicate.PeriodicPlan {
+	return predicate.PeriodicPlan(sql.FieldEQ(FieldTenantID, v))
+}
+
 // IsEnabled applies equality check predicate on the "is_enabled" field. It's identical to IsEnabledEQ.
 func IsEnabled(v bool) predicate.PeriodicPlan {
 	return predicate.PeriodicPlan(sql.FieldEQ(FieldIsEnabled, v))
@@ -417,6 +422,56 @@ func DeletedByIsNil() predicate.PeriodicPlan {
 // DeletedByNotNil applies the NotNil predicate on the "deleted_by" field.
 func DeletedByNotNil() predicate.PeriodicPlan {
 	return predicate.PeriodicPlan(sql.FieldNotNull(FieldDeletedBy))
+}
+
+// TenantIDEQ applies the EQ predicate on the "tenant_id" field.
+func TenantIDEQ(v uint32) predicate.PeriodicPlan {
+	return predicate.PeriodicPlan(sql.FieldEQ(FieldTenantID, v))
+}
+
+// TenantIDNEQ applies the NEQ predicate on the "tenant_id" field.
+func TenantIDNEQ(v uint32) predicate.PeriodicPlan {
+	return predicate.PeriodicPlan(sql.FieldNEQ(FieldTenantID, v))
+}
+
+// TenantIDIn applies the In predicate on the "tenant_id" field.
+func TenantIDIn(vs ...uint32) predicate.PeriodicPlan {
+	return predicate.PeriodicPlan(sql.FieldIn(FieldTenantID, vs...))
+}
+
+// TenantIDNotIn applies the NotIn predicate on the "tenant_id" field.
+func TenantIDNotIn(vs ...uint32) predicate.PeriodicPlan {
+	return predicate.PeriodicPlan(sql.FieldNotIn(FieldTenantID, vs...))
+}
+
+// TenantIDGT applies the GT predicate on the "tenant_id" field.
+func TenantIDGT(v uint32) predicate.PeriodicPlan {
+	return predicate.PeriodicPlan(sql.FieldGT(FieldTenantID, v))
+}
+
+// TenantIDGTE applies the GTE predicate on the "tenant_id" field.
+func TenantIDGTE(v uint32) predicate.PeriodicPlan {
+	return predicate.PeriodicPlan(sql.FieldGTE(FieldTenantID, v))
+}
+
+// TenantIDLT applies the LT predicate on the "tenant_id" field.
+func TenantIDLT(v uint32) predicate.PeriodicPlan {
+	return predicate.PeriodicPlan(sql.FieldLT(FieldTenantID, v))
+}
+
+// TenantIDLTE applies the LTE predicate on the "tenant_id" field.
+func TenantIDLTE(v uint32) predicate.PeriodicPlan {
+	return predicate.PeriodicPlan(sql.FieldLTE(FieldTenantID, v))
+}
+
+// TenantIDIsNil applies the IsNil predicate on the "tenant_id" field.
+func TenantIDIsNil() predicate.PeriodicPlan {
+	return predicate.PeriodicPlan(sql.FieldIsNull(FieldTenantID))
+}
+
+// TenantIDNotNil applies the NotNil predicate on the "tenant_id" field.
+func TenantIDNotNil() predicate.PeriodicPlan {
+	return predicate.PeriodicPlan(sql.FieldNotNull(FieldTenantID))
 }
 
 // IsEnabledEQ applies the EQ predicate on the "is_enabled" field.

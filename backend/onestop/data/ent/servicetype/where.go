@@ -1045,6 +1045,36 @@ func GuidanceContainsFold(v string) predicate.ServiceType {
 	return predicate.ServiceType(sql.FieldContainsFold(FieldGuidance, v))
 }
 
+// OrderKindEQ applies the EQ predicate on the "order_kind" field.
+func OrderKindEQ(v OrderKind) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldEQ(FieldOrderKind, v))
+}
+
+// OrderKindNEQ applies the NEQ predicate on the "order_kind" field.
+func OrderKindNEQ(v OrderKind) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldNEQ(FieldOrderKind, v))
+}
+
+// OrderKindIn applies the In predicate on the "order_kind" field.
+func OrderKindIn(vs ...OrderKind) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldIn(FieldOrderKind, vs...))
+}
+
+// OrderKindNotIn applies the NotIn predicate on the "order_kind" field.
+func OrderKindNotIn(vs ...OrderKind) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldNotIn(FieldOrderKind, vs...))
+}
+
+// OrderKindIsNil applies the IsNil predicate on the "order_kind" field.
+func OrderKindIsNil() predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldIsNull(FieldOrderKind))
+}
+
+// OrderKindNotNil applies the NotNil predicate on the "order_kind" field.
+func OrderKindNotNil() predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldNotNull(FieldOrderKind))
+}
+
 // CommonPhrasesIsNil applies the IsNil predicate on the "common_phrases" field.
 func CommonPhrasesIsNil() predicate.ServiceType {
 	return predicate.ServiceType(sql.FieldIsNull(FieldCommonPhrases))

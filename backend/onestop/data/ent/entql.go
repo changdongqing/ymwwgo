@@ -7,6 +7,9 @@ import (
 	"go-wind-admin/onestop/data/ent/predicate"
 	"go-wind-admin/onestop/data/ent/servicetype"
 	"go-wind-admin/onestop/data/ent/transportroute"
+	"go-wind-admin/onestop/data/ent/workorder"
+	"go-wind-admin/onestop/data/ent/workorderevent"
+	"go-wind-admin/onestop/data/ent/workorderitem"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -16,7 +19,7 @@ import (
 
 // schemaGraph holds a representation of ent/schema at runtime.
 var schemaGraph = func() *sqlgraph.Schema {
-	graph := &sqlgraph.Schema{Nodes: make([]*sqlgraph.Node, 3)}
+	graph := &sqlgraph.Schema{Nodes: make([]*sqlgraph.Node, 6)}
 	graph.Nodes[0] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   periodicplan.Table,
@@ -34,6 +37,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			periodicplan.FieldCreatedBy:       {Type: field.TypeUint32, Column: periodicplan.FieldCreatedBy},
 			periodicplan.FieldUpdatedBy:       {Type: field.TypeUint32, Column: periodicplan.FieldUpdatedBy},
 			periodicplan.FieldDeletedBy:       {Type: field.TypeUint32, Column: periodicplan.FieldDeletedBy},
+			periodicplan.FieldTenantID:        {Type: field.TypeUint32, Column: periodicplan.FieldTenantID},
 			periodicplan.FieldIsEnabled:       {Type: field.TypeBool, Column: periodicplan.FieldIsEnabled},
 			periodicplan.FieldName:            {Type: field.TypeString, Column: periodicplan.FieldName},
 			periodicplan.FieldServiceTypeID:   {Type: field.TypeUint32, Column: periodicplan.FieldServiceTypeID},
@@ -81,6 +85,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			servicetype.FieldResponseTimeLimit:      {Type: field.TypeUint32, Column: servicetype.FieldResponseTimeLimit},
 			servicetype.FieldCompletionTimeLimit:    {Type: field.TypeUint32, Column: servicetype.FieldCompletionTimeLimit},
 			servicetype.FieldGuidance:               {Type: field.TypeString, Column: servicetype.FieldGuidance},
+			servicetype.FieldOrderKind:              {Type: field.TypeEnum, Column: servicetype.FieldOrderKind},
 			servicetype.FieldCommonPhrases:          {Type: field.TypeJSON, Column: servicetype.FieldCommonPhrases},
 			servicetype.FieldStandardTools:          {Type: field.TypeJSON, Column: servicetype.FieldStandardTools},
 			servicetype.FieldSpareParts:             {Type: field.TypeJSON, Column: servicetype.FieldSpareParts},
@@ -111,6 +116,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			transportroute.FieldCreatedBy:          {Type: field.TypeUint32, Column: transportroute.FieldCreatedBy},
 			transportroute.FieldUpdatedBy:          {Type: field.TypeUint32, Column: transportroute.FieldUpdatedBy},
 			transportroute.FieldDeletedBy:          {Type: field.TypeUint32, Column: transportroute.FieldDeletedBy},
+			transportroute.FieldTenantID:           {Type: field.TypeUint32, Column: transportroute.FieldTenantID},
 			transportroute.FieldIsEnabled:          {Type: field.TypeBool, Column: transportroute.FieldIsEnabled},
 			transportroute.FieldName:               {Type: field.TypeString, Column: transportroute.FieldName},
 			transportroute.FieldServiceTypeID:      {Type: field.TypeUint32, Column: transportroute.FieldServiceTypeID},
@@ -120,6 +126,143 @@ var schemaGraph = func() *sqlgraph.Schema {
 			transportroute.FieldEstDurationMinutes: {Type: field.TypeUint32, Column: transportroute.FieldEstDurationMinutes},
 			transportroute.FieldRoundTrip:          {Type: field.TypeBool, Column: transportroute.FieldRoundTrip},
 			transportroute.FieldDepartureTimes:     {Type: field.TypeJSON, Column: transportroute.FieldDepartureTimes},
+		},
+	}
+	graph.Nodes[3] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
+			Table:   workorder.Table,
+			Columns: workorder.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeUint32,
+				Column: workorder.FieldID,
+			},
+		},
+		Type: "WorkOrder",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			workorder.FieldCreatedAt:              {Type: field.TypeTime, Column: workorder.FieldCreatedAt},
+			workorder.FieldUpdatedAt:              {Type: field.TypeTime, Column: workorder.FieldUpdatedAt},
+			workorder.FieldDeletedAt:              {Type: field.TypeTime, Column: workorder.FieldDeletedAt},
+			workorder.FieldCreatedBy:              {Type: field.TypeUint32, Column: workorder.FieldCreatedBy},
+			workorder.FieldUpdatedBy:              {Type: field.TypeUint32, Column: workorder.FieldUpdatedBy},
+			workorder.FieldDeletedBy:              {Type: field.TypeUint32, Column: workorder.FieldDeletedBy},
+			workorder.FieldTenantID:               {Type: field.TypeUint32, Column: workorder.FieldTenantID},
+			workorder.FieldOrderNo:                {Type: field.TypeString, Column: workorder.FieldOrderNo},
+			workorder.FieldServiceTypeID:          {Type: field.TypeUint32, Column: workorder.FieldServiceTypeID},
+			workorder.FieldServiceTypeCode:        {Type: field.TypeString, Column: workorder.FieldServiceTypeCode},
+			workorder.FieldServiceTypeName:        {Type: field.TypeString, Column: workorder.FieldServiceTypeName},
+			workorder.FieldOrderKind:              {Type: field.TypeEnum, Column: workorder.FieldOrderKind},
+			workorder.FieldSource:                 {Type: field.TypeEnum, Column: workorder.FieldSource},
+			workorder.FieldChannel:                {Type: field.TypeEnum, Column: workorder.FieldChannel},
+			workorder.FieldSourceOrderID:          {Type: field.TypeUint32, Column: workorder.FieldSourceOrderID},
+			workorder.FieldRequesterName:          {Type: field.TypeString, Column: workorder.FieldRequesterName},
+			workorder.FieldRequesterPhone:         {Type: field.TypeString, Column: workorder.FieldRequesterPhone},
+			workorder.FieldRequesterUserID:        {Type: field.TypeUint32, Column: workorder.FieldRequesterUserID},
+			workorder.FieldLocation:               {Type: field.TypeString, Column: workorder.FieldLocation},
+			workorder.FieldEquipmentDesc:          {Type: field.TypeString, Column: workorder.FieldEquipmentDesc},
+			workorder.FieldDescription:            {Type: field.TypeString, Column: workorder.FieldDescription},
+			workorder.FieldImages:                 {Type: field.TypeJSON, Column: workorder.FieldImages},
+			workorder.FieldCommonPhrase:           {Type: field.TypeString, Column: workorder.FieldCommonPhrase},
+			workorder.FieldExecutionPost:          {Type: field.TypeString, Column: workorder.FieldExecutionPost},
+			workorder.FieldAssigneeID:             {Type: field.TypeUint32, Column: workorder.FieldAssigneeID},
+			workorder.FieldAssigneeName:           {Type: field.TypeString, Column: workorder.FieldAssigneeName},
+			workorder.FieldAssignedAt:             {Type: field.TypeTime, Column: workorder.FieldAssignedAt},
+			workorder.FieldPlannedExecAt:          {Type: field.TypeTime, Column: workorder.FieldPlannedExecAt},
+			workorder.FieldPlanID:                 {Type: field.TypeUint32, Column: workorder.FieldPlanID},
+			workorder.FieldRouteID:                {Type: field.TypeUint32, Column: workorder.FieldRouteID},
+			workorder.FieldPriority:               {Type: field.TypeEnum, Column: workorder.FieldPriority},
+			workorder.FieldResponseTimeLimit:      {Type: field.TypeUint32, Column: workorder.FieldResponseTimeLimit},
+			workorder.FieldCompletionTimeLimit:    {Type: field.TypeUint32, Column: workorder.FieldCompletionTimeLimit},
+			workorder.FieldResponseDeadline:       {Type: field.TypeTime, Column: workorder.FieldResponseDeadline},
+			workorder.FieldCompletionDeadline:     {Type: field.TypeTime, Column: workorder.FieldCompletionDeadline},
+			workorder.FieldIntakeAt:               {Type: field.TypeTime, Column: workorder.FieldIntakeAt},
+			workorder.FieldRespondedAt:            {Type: field.TypeTime, Column: workorder.FieldRespondedAt},
+			workorder.FieldCompletedAt:            {Type: field.TypeTime, Column: workorder.FieldCompletedAt},
+			workorder.FieldVerifiedAt:             {Type: field.TypeTime, Column: workorder.FieldVerifiedAt},
+			workorder.FieldStatus:                 {Type: field.TypeEnum, Column: workorder.FieldStatus},
+			workorder.FieldCancelReason:           {Type: field.TypeString, Column: workorder.FieldCancelReason},
+			workorder.FieldHasAbnormality:         {Type: field.TypeBool, Column: workorder.FieldHasAbnormality},
+			workorder.FieldUrgeCount:              {Type: field.TypeUint32, Column: workorder.FieldUrgeCount},
+			workorder.FieldOrigin:                 {Type: field.TypeString, Column: workorder.FieldOrigin},
+			workorder.FieldDestination:            {Type: field.TypeString, Column: workorder.FieldDestination},
+			workorder.FieldViaPoints:              {Type: field.TypeJSON, Column: workorder.FieldViaPoints},
+			workorder.FieldRoundTrip:              {Type: field.TypeBool, Column: workorder.FieldRoundTrip},
+			workorder.FieldEstDurationMinutes:     {Type: field.TypeUint32, Column: workorder.FieldEstDurationMinutes},
+			workorder.FieldTemperatureRequirement: {Type: field.TypeEnum, Column: workorder.FieldTemperatureRequirement},
+			workorder.FieldCargoDesc:              {Type: field.TypeString, Column: workorder.FieldCargoDesc},
+			workorder.FieldPickedUpAt:             {Type: field.TypeTime, Column: workorder.FieldPickedUpAt},
+			workorder.FieldPickedSigner:           {Type: field.TypeString, Column: workorder.FieldPickedSigner},
+			workorder.FieldPickedPhotos:           {Type: field.TypeJSON, Column: workorder.FieldPickedPhotos},
+			workorder.FieldDeliveredAt:            {Type: field.TypeTime, Column: workorder.FieldDeliveredAt},
+			workorder.FieldDeliveredSigner:        {Type: field.TypeString, Column: workorder.FieldDeliveredSigner},
+			workorder.FieldDeliveredPhotos:        {Type: field.TypeJSON, Column: workorder.FieldDeliveredPhotos},
+			workorder.FieldResultDesc:             {Type: field.TypeString, Column: workorder.FieldResultDesc},
+			workorder.FieldResultPhotos:           {Type: field.TypeJSON, Column: workorder.FieldResultPhotos},
+			workorder.FieldUsedMaterials:          {Type: field.TypeJSON, Column: workorder.FieldUsedMaterials},
+			workorder.FieldActualWorkHours:        {Type: field.TypeFloat64, Column: workorder.FieldActualWorkHours},
+			workorder.FieldAcceptanceModes:        {Type: field.TypeJSON, Column: workorder.FieldAcceptanceModes},
+			workorder.FieldAcceptanceItems:        {Type: field.TypeJSON, Column: workorder.FieldAcceptanceItems},
+			workorder.FieldAcceptanceResult:       {Type: field.TypeJSON, Column: workorder.FieldAcceptanceResult},
+			workorder.FieldAcceptancePhotos:       {Type: field.TypeJSON, Column: workorder.FieldAcceptancePhotos},
+			workorder.FieldAcceptanceSigner:       {Type: field.TypeString, Column: workorder.FieldAcceptanceSigner},
+			workorder.FieldSatisfactionScore:      {Type: field.TypeUint32, Column: workorder.FieldSatisfactionScore},
+			workorder.FieldSatisfactionComment:    {Type: field.TypeString, Column: workorder.FieldSatisfactionComment},
+			workorder.FieldRevisitedAt:            {Type: field.TypeTime, Column: workorder.FieldRevisitedAt},
+		},
+	}
+	graph.Nodes[4] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
+			Table:   workorderevent.Table,
+			Columns: workorderevent.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeUint32,
+				Column: workorderevent.FieldID,
+			},
+		},
+		Type: "WorkOrderEvent",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			workorderevent.FieldCreatedAt:   {Type: field.TypeTime, Column: workorderevent.FieldCreatedAt},
+			workorderevent.FieldUpdatedAt:   {Type: field.TypeTime, Column: workorderevent.FieldUpdatedAt},
+			workorderevent.FieldDeletedAt:   {Type: field.TypeTime, Column: workorderevent.FieldDeletedAt},
+			workorderevent.FieldCreatedBy:   {Type: field.TypeUint32, Column: workorderevent.FieldCreatedBy},
+			workorderevent.FieldUpdatedBy:   {Type: field.TypeUint32, Column: workorderevent.FieldUpdatedBy},
+			workorderevent.FieldDeletedBy:   {Type: field.TypeUint32, Column: workorderevent.FieldDeletedBy},
+			workorderevent.FieldTenantID:    {Type: field.TypeUint32, Column: workorderevent.FieldTenantID},
+			workorderevent.FieldWorkOrderID: {Type: field.TypeUint32, Column: workorderevent.FieldWorkOrderID},
+			workorderevent.FieldAction:      {Type: field.TypeEnum, Column: workorderevent.FieldAction},
+			workorderevent.FieldStatusFrom:  {Type: field.TypeEnum, Column: workorderevent.FieldStatusFrom},
+			workorderevent.FieldStatusTo:    {Type: field.TypeEnum, Column: workorderevent.FieldStatusTo},
+			workorderevent.FieldNote:        {Type: field.TypeString, Column: workorderevent.FieldNote},
+			workorderevent.FieldPhotos:      {Type: field.TypeJSON, Column: workorderevent.FieldPhotos},
+		},
+	}
+	graph.Nodes[5] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
+			Table:   workorderitem.Table,
+			Columns: workorderitem.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeUint32,
+				Column: workorderitem.FieldID,
+			},
+		},
+		Type: "WorkOrderItem",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			workorderitem.FieldCreatedAt:    {Type: field.TypeTime, Column: workorderitem.FieldCreatedAt},
+			workorderitem.FieldUpdatedAt:    {Type: field.TypeTime, Column: workorderitem.FieldUpdatedAt},
+			workorderitem.FieldDeletedAt:    {Type: field.TypeTime, Column: workorderitem.FieldDeletedAt},
+			workorderitem.FieldCreatedBy:    {Type: field.TypeUint32, Column: workorderitem.FieldCreatedBy},
+			workorderitem.FieldUpdatedBy:    {Type: field.TypeUint32, Column: workorderitem.FieldUpdatedBy},
+			workorderitem.FieldDeletedBy:    {Type: field.TypeUint32, Column: workorderitem.FieldDeletedBy},
+			workorderitem.FieldTenantID:     {Type: field.TypeUint32, Column: workorderitem.FieldTenantID},
+			workorderitem.FieldWorkOrderID:  {Type: field.TypeUint32, Column: workorderitem.FieldWorkOrderID},
+			workorderitem.FieldScope:        {Type: field.TypeEnum, Column: workorderitem.FieldScope},
+			workorderitem.FieldName:         {Type: field.TypeString, Column: workorderitem.FieldName},
+			workorderitem.FieldSort:         {Type: field.TypeUint32, Column: workorderitem.FieldSort},
+			workorderitem.FieldResult:       {Type: field.TypeEnum, Column: workorderitem.FieldResult},
+			workorderitem.FieldValue:        {Type: field.TypeString, Column: workorderitem.FieldValue},
+			workorderitem.FieldPhotos:       {Type: field.TypeJSON, Column: workorderitem.FieldPhotos},
+			workorderitem.FieldRemark:       {Type: field.TypeString, Column: workorderitem.FieldRemark},
+			workorderitem.FieldSpaceRef:     {Type: field.TypeString, Column: workorderitem.FieldSpaceRef},
+			workorderitem.FieldEquipmentRef: {Type: field.TypeString, Column: workorderitem.FieldEquipmentRef},
 		},
 	}
 	graph.MustAddE(
@@ -223,6 +366,11 @@ func (f *PeriodicPlanFilter) WhereUpdatedBy(p entql.Uint32P) {
 // WhereDeletedBy applies the entql uint32 predicate on the deleted_by field.
 func (f *PeriodicPlanFilter) WhereDeletedBy(p entql.Uint32P) {
 	f.Where(p.Field(periodicplan.FieldDeletedBy))
+}
+
+// WhereTenantID applies the entql uint32 predicate on the tenant_id field.
+func (f *PeriodicPlanFilter) WhereTenantID(p entql.Uint32P) {
+	f.Where(p.Field(periodicplan.FieldTenantID))
 }
 
 // WhereIsEnabled applies the entql bool predicate on the is_enabled field.
@@ -435,6 +583,11 @@ func (f *ServiceTypeFilter) WhereGuidance(p entql.StringP) {
 	f.Where(p.Field(servicetype.FieldGuidance))
 }
 
+// WhereOrderKind applies the entql string predicate on the order_kind field.
+func (f *ServiceTypeFilter) WhereOrderKind(p entql.StringP) {
+	f.Where(p.Field(servicetype.FieldOrderKind))
+}
+
 // WhereCommonPhrases applies the entql json.RawMessage predicate on the common_phrases field.
 func (f *ServiceTypeFilter) WhereCommonPhrases(p entql.BytesP) {
 	f.Where(p.Field(servicetype.FieldCommonPhrases))
@@ -588,6 +741,11 @@ func (f *TransportRouteFilter) WhereDeletedBy(p entql.Uint32P) {
 	f.Where(p.Field(transportroute.FieldDeletedBy))
 }
 
+// WhereTenantID applies the entql uint32 predicate on the tenant_id field.
+func (f *TransportRouteFilter) WhereTenantID(p entql.Uint32P) {
+	f.Where(p.Field(transportroute.FieldTenantID))
+}
+
 // WhereIsEnabled applies the entql bool predicate on the is_enabled field.
 func (f *TransportRouteFilter) WhereIsEnabled(p entql.BoolP) {
 	f.Where(p.Field(transportroute.FieldIsEnabled))
@@ -631,4 +789,614 @@ func (f *TransportRouteFilter) WhereRoundTrip(p entql.BoolP) {
 // WhereDepartureTimes applies the entql json.RawMessage predicate on the departure_times field.
 func (f *TransportRouteFilter) WhereDepartureTimes(p entql.BytesP) {
 	f.Where(p.Field(transportroute.FieldDepartureTimes))
+}
+
+// addPredicate implements the predicateAdder interface.
+func (_q *WorkOrderQuery) addPredicate(pred func(s *sql.Selector)) {
+	_q.predicates = append(_q.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the WorkOrderQuery builder.
+func (_q *WorkOrderQuery) Filter() *WorkOrderFilter {
+	return &WorkOrderFilter{config: _q.config, predicateAdder: _q}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *WorkOrderMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the WorkOrderMutation builder.
+func (m *WorkOrderMutation) Filter() *WorkOrderFilter {
+	return &WorkOrderFilter{config: m.config, predicateAdder: m}
+}
+
+// WorkOrderFilter provides a generic filtering capability at runtime for WorkOrderQuery.
+type WorkOrderFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *WorkOrderFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[3].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql uint32 predicate on the id field.
+func (f *WorkOrderFilter) WhereID(p entql.Uint32P) {
+	f.Where(p.Field(workorder.FieldID))
+}
+
+// WhereCreatedAt applies the entql time.Time predicate on the created_at field.
+func (f *WorkOrderFilter) WhereCreatedAt(p entql.TimeP) {
+	f.Where(p.Field(workorder.FieldCreatedAt))
+}
+
+// WhereUpdatedAt applies the entql time.Time predicate on the updated_at field.
+func (f *WorkOrderFilter) WhereUpdatedAt(p entql.TimeP) {
+	f.Where(p.Field(workorder.FieldUpdatedAt))
+}
+
+// WhereDeletedAt applies the entql time.Time predicate on the deleted_at field.
+func (f *WorkOrderFilter) WhereDeletedAt(p entql.TimeP) {
+	f.Where(p.Field(workorder.FieldDeletedAt))
+}
+
+// WhereCreatedBy applies the entql uint32 predicate on the created_by field.
+func (f *WorkOrderFilter) WhereCreatedBy(p entql.Uint32P) {
+	f.Where(p.Field(workorder.FieldCreatedBy))
+}
+
+// WhereUpdatedBy applies the entql uint32 predicate on the updated_by field.
+func (f *WorkOrderFilter) WhereUpdatedBy(p entql.Uint32P) {
+	f.Where(p.Field(workorder.FieldUpdatedBy))
+}
+
+// WhereDeletedBy applies the entql uint32 predicate on the deleted_by field.
+func (f *WorkOrderFilter) WhereDeletedBy(p entql.Uint32P) {
+	f.Where(p.Field(workorder.FieldDeletedBy))
+}
+
+// WhereTenantID applies the entql uint32 predicate on the tenant_id field.
+func (f *WorkOrderFilter) WhereTenantID(p entql.Uint32P) {
+	f.Where(p.Field(workorder.FieldTenantID))
+}
+
+// WhereOrderNo applies the entql string predicate on the order_no field.
+func (f *WorkOrderFilter) WhereOrderNo(p entql.StringP) {
+	f.Where(p.Field(workorder.FieldOrderNo))
+}
+
+// WhereServiceTypeID applies the entql uint32 predicate on the service_type_id field.
+func (f *WorkOrderFilter) WhereServiceTypeID(p entql.Uint32P) {
+	f.Where(p.Field(workorder.FieldServiceTypeID))
+}
+
+// WhereServiceTypeCode applies the entql string predicate on the service_type_code field.
+func (f *WorkOrderFilter) WhereServiceTypeCode(p entql.StringP) {
+	f.Where(p.Field(workorder.FieldServiceTypeCode))
+}
+
+// WhereServiceTypeName applies the entql string predicate on the service_type_name field.
+func (f *WorkOrderFilter) WhereServiceTypeName(p entql.StringP) {
+	f.Where(p.Field(workorder.FieldServiceTypeName))
+}
+
+// WhereOrderKind applies the entql string predicate on the order_kind field.
+func (f *WorkOrderFilter) WhereOrderKind(p entql.StringP) {
+	f.Where(p.Field(workorder.FieldOrderKind))
+}
+
+// WhereSource applies the entql string predicate on the source field.
+func (f *WorkOrderFilter) WhereSource(p entql.StringP) {
+	f.Where(p.Field(workorder.FieldSource))
+}
+
+// WhereChannel applies the entql string predicate on the channel field.
+func (f *WorkOrderFilter) WhereChannel(p entql.StringP) {
+	f.Where(p.Field(workorder.FieldChannel))
+}
+
+// WhereSourceOrderID applies the entql uint32 predicate on the source_order_id field.
+func (f *WorkOrderFilter) WhereSourceOrderID(p entql.Uint32P) {
+	f.Where(p.Field(workorder.FieldSourceOrderID))
+}
+
+// WhereRequesterName applies the entql string predicate on the requester_name field.
+func (f *WorkOrderFilter) WhereRequesterName(p entql.StringP) {
+	f.Where(p.Field(workorder.FieldRequesterName))
+}
+
+// WhereRequesterPhone applies the entql string predicate on the requester_phone field.
+func (f *WorkOrderFilter) WhereRequesterPhone(p entql.StringP) {
+	f.Where(p.Field(workorder.FieldRequesterPhone))
+}
+
+// WhereRequesterUserID applies the entql uint32 predicate on the requester_user_id field.
+func (f *WorkOrderFilter) WhereRequesterUserID(p entql.Uint32P) {
+	f.Where(p.Field(workorder.FieldRequesterUserID))
+}
+
+// WhereLocation applies the entql string predicate on the location field.
+func (f *WorkOrderFilter) WhereLocation(p entql.StringP) {
+	f.Where(p.Field(workorder.FieldLocation))
+}
+
+// WhereEquipmentDesc applies the entql string predicate on the equipment_desc field.
+func (f *WorkOrderFilter) WhereEquipmentDesc(p entql.StringP) {
+	f.Where(p.Field(workorder.FieldEquipmentDesc))
+}
+
+// WhereDescription applies the entql string predicate on the description field.
+func (f *WorkOrderFilter) WhereDescription(p entql.StringP) {
+	f.Where(p.Field(workorder.FieldDescription))
+}
+
+// WhereImages applies the entql json.RawMessage predicate on the images field.
+func (f *WorkOrderFilter) WhereImages(p entql.BytesP) {
+	f.Where(p.Field(workorder.FieldImages))
+}
+
+// WhereCommonPhrase applies the entql string predicate on the common_phrase field.
+func (f *WorkOrderFilter) WhereCommonPhrase(p entql.StringP) {
+	f.Where(p.Field(workorder.FieldCommonPhrase))
+}
+
+// WhereExecutionPost applies the entql string predicate on the execution_post field.
+func (f *WorkOrderFilter) WhereExecutionPost(p entql.StringP) {
+	f.Where(p.Field(workorder.FieldExecutionPost))
+}
+
+// WhereAssigneeID applies the entql uint32 predicate on the assignee_id field.
+func (f *WorkOrderFilter) WhereAssigneeID(p entql.Uint32P) {
+	f.Where(p.Field(workorder.FieldAssigneeID))
+}
+
+// WhereAssigneeName applies the entql string predicate on the assignee_name field.
+func (f *WorkOrderFilter) WhereAssigneeName(p entql.StringP) {
+	f.Where(p.Field(workorder.FieldAssigneeName))
+}
+
+// WhereAssignedAt applies the entql time.Time predicate on the assigned_at field.
+func (f *WorkOrderFilter) WhereAssignedAt(p entql.TimeP) {
+	f.Where(p.Field(workorder.FieldAssignedAt))
+}
+
+// WherePlannedExecAt applies the entql time.Time predicate on the planned_exec_at field.
+func (f *WorkOrderFilter) WherePlannedExecAt(p entql.TimeP) {
+	f.Where(p.Field(workorder.FieldPlannedExecAt))
+}
+
+// WherePlanID applies the entql uint32 predicate on the plan_id field.
+func (f *WorkOrderFilter) WherePlanID(p entql.Uint32P) {
+	f.Where(p.Field(workorder.FieldPlanID))
+}
+
+// WhereRouteID applies the entql uint32 predicate on the route_id field.
+func (f *WorkOrderFilter) WhereRouteID(p entql.Uint32P) {
+	f.Where(p.Field(workorder.FieldRouteID))
+}
+
+// WherePriority applies the entql string predicate on the priority field.
+func (f *WorkOrderFilter) WherePriority(p entql.StringP) {
+	f.Where(p.Field(workorder.FieldPriority))
+}
+
+// WhereResponseTimeLimit applies the entql uint32 predicate on the response_time_limit field.
+func (f *WorkOrderFilter) WhereResponseTimeLimit(p entql.Uint32P) {
+	f.Where(p.Field(workorder.FieldResponseTimeLimit))
+}
+
+// WhereCompletionTimeLimit applies the entql uint32 predicate on the completion_time_limit field.
+func (f *WorkOrderFilter) WhereCompletionTimeLimit(p entql.Uint32P) {
+	f.Where(p.Field(workorder.FieldCompletionTimeLimit))
+}
+
+// WhereResponseDeadline applies the entql time.Time predicate on the response_deadline field.
+func (f *WorkOrderFilter) WhereResponseDeadline(p entql.TimeP) {
+	f.Where(p.Field(workorder.FieldResponseDeadline))
+}
+
+// WhereCompletionDeadline applies the entql time.Time predicate on the completion_deadline field.
+func (f *WorkOrderFilter) WhereCompletionDeadline(p entql.TimeP) {
+	f.Where(p.Field(workorder.FieldCompletionDeadline))
+}
+
+// WhereIntakeAt applies the entql time.Time predicate on the intake_at field.
+func (f *WorkOrderFilter) WhereIntakeAt(p entql.TimeP) {
+	f.Where(p.Field(workorder.FieldIntakeAt))
+}
+
+// WhereRespondedAt applies the entql time.Time predicate on the responded_at field.
+func (f *WorkOrderFilter) WhereRespondedAt(p entql.TimeP) {
+	f.Where(p.Field(workorder.FieldRespondedAt))
+}
+
+// WhereCompletedAt applies the entql time.Time predicate on the completed_at field.
+func (f *WorkOrderFilter) WhereCompletedAt(p entql.TimeP) {
+	f.Where(p.Field(workorder.FieldCompletedAt))
+}
+
+// WhereVerifiedAt applies the entql time.Time predicate on the verified_at field.
+func (f *WorkOrderFilter) WhereVerifiedAt(p entql.TimeP) {
+	f.Where(p.Field(workorder.FieldVerifiedAt))
+}
+
+// WhereStatus applies the entql string predicate on the status field.
+func (f *WorkOrderFilter) WhereStatus(p entql.StringP) {
+	f.Where(p.Field(workorder.FieldStatus))
+}
+
+// WhereCancelReason applies the entql string predicate on the cancel_reason field.
+func (f *WorkOrderFilter) WhereCancelReason(p entql.StringP) {
+	f.Where(p.Field(workorder.FieldCancelReason))
+}
+
+// WhereHasAbnormality applies the entql bool predicate on the has_abnormality field.
+func (f *WorkOrderFilter) WhereHasAbnormality(p entql.BoolP) {
+	f.Where(p.Field(workorder.FieldHasAbnormality))
+}
+
+// WhereUrgeCount applies the entql uint32 predicate on the urge_count field.
+func (f *WorkOrderFilter) WhereUrgeCount(p entql.Uint32P) {
+	f.Where(p.Field(workorder.FieldUrgeCount))
+}
+
+// WhereOrigin applies the entql string predicate on the origin field.
+func (f *WorkOrderFilter) WhereOrigin(p entql.StringP) {
+	f.Where(p.Field(workorder.FieldOrigin))
+}
+
+// WhereDestination applies the entql string predicate on the destination field.
+func (f *WorkOrderFilter) WhereDestination(p entql.StringP) {
+	f.Where(p.Field(workorder.FieldDestination))
+}
+
+// WhereViaPoints applies the entql json.RawMessage predicate on the via_points field.
+func (f *WorkOrderFilter) WhereViaPoints(p entql.BytesP) {
+	f.Where(p.Field(workorder.FieldViaPoints))
+}
+
+// WhereRoundTrip applies the entql bool predicate on the round_trip field.
+func (f *WorkOrderFilter) WhereRoundTrip(p entql.BoolP) {
+	f.Where(p.Field(workorder.FieldRoundTrip))
+}
+
+// WhereEstDurationMinutes applies the entql uint32 predicate on the est_duration_minutes field.
+func (f *WorkOrderFilter) WhereEstDurationMinutes(p entql.Uint32P) {
+	f.Where(p.Field(workorder.FieldEstDurationMinutes))
+}
+
+// WhereTemperatureRequirement applies the entql string predicate on the temperature_requirement field.
+func (f *WorkOrderFilter) WhereTemperatureRequirement(p entql.StringP) {
+	f.Where(p.Field(workorder.FieldTemperatureRequirement))
+}
+
+// WhereCargoDesc applies the entql string predicate on the cargo_desc field.
+func (f *WorkOrderFilter) WhereCargoDesc(p entql.StringP) {
+	f.Where(p.Field(workorder.FieldCargoDesc))
+}
+
+// WherePickedUpAt applies the entql time.Time predicate on the picked_up_at field.
+func (f *WorkOrderFilter) WherePickedUpAt(p entql.TimeP) {
+	f.Where(p.Field(workorder.FieldPickedUpAt))
+}
+
+// WherePickedSigner applies the entql string predicate on the picked_signer field.
+func (f *WorkOrderFilter) WherePickedSigner(p entql.StringP) {
+	f.Where(p.Field(workorder.FieldPickedSigner))
+}
+
+// WherePickedPhotos applies the entql json.RawMessage predicate on the picked_photos field.
+func (f *WorkOrderFilter) WherePickedPhotos(p entql.BytesP) {
+	f.Where(p.Field(workorder.FieldPickedPhotos))
+}
+
+// WhereDeliveredAt applies the entql time.Time predicate on the delivered_at field.
+func (f *WorkOrderFilter) WhereDeliveredAt(p entql.TimeP) {
+	f.Where(p.Field(workorder.FieldDeliveredAt))
+}
+
+// WhereDeliveredSigner applies the entql string predicate on the delivered_signer field.
+func (f *WorkOrderFilter) WhereDeliveredSigner(p entql.StringP) {
+	f.Where(p.Field(workorder.FieldDeliveredSigner))
+}
+
+// WhereDeliveredPhotos applies the entql json.RawMessage predicate on the delivered_photos field.
+func (f *WorkOrderFilter) WhereDeliveredPhotos(p entql.BytesP) {
+	f.Where(p.Field(workorder.FieldDeliveredPhotos))
+}
+
+// WhereResultDesc applies the entql string predicate on the result_desc field.
+func (f *WorkOrderFilter) WhereResultDesc(p entql.StringP) {
+	f.Where(p.Field(workorder.FieldResultDesc))
+}
+
+// WhereResultPhotos applies the entql json.RawMessage predicate on the result_photos field.
+func (f *WorkOrderFilter) WhereResultPhotos(p entql.BytesP) {
+	f.Where(p.Field(workorder.FieldResultPhotos))
+}
+
+// WhereUsedMaterials applies the entql json.RawMessage predicate on the used_materials field.
+func (f *WorkOrderFilter) WhereUsedMaterials(p entql.BytesP) {
+	f.Where(p.Field(workorder.FieldUsedMaterials))
+}
+
+// WhereActualWorkHours applies the entql float64 predicate on the actual_work_hours field.
+func (f *WorkOrderFilter) WhereActualWorkHours(p entql.Float64P) {
+	f.Where(p.Field(workorder.FieldActualWorkHours))
+}
+
+// WhereAcceptanceModes applies the entql json.RawMessage predicate on the acceptance_modes field.
+func (f *WorkOrderFilter) WhereAcceptanceModes(p entql.BytesP) {
+	f.Where(p.Field(workorder.FieldAcceptanceModes))
+}
+
+// WhereAcceptanceItems applies the entql json.RawMessage predicate on the acceptance_items field.
+func (f *WorkOrderFilter) WhereAcceptanceItems(p entql.BytesP) {
+	f.Where(p.Field(workorder.FieldAcceptanceItems))
+}
+
+// WhereAcceptanceResult applies the entql json.RawMessage predicate on the acceptance_result field.
+func (f *WorkOrderFilter) WhereAcceptanceResult(p entql.BytesP) {
+	f.Where(p.Field(workorder.FieldAcceptanceResult))
+}
+
+// WhereAcceptancePhotos applies the entql json.RawMessage predicate on the acceptance_photos field.
+func (f *WorkOrderFilter) WhereAcceptancePhotos(p entql.BytesP) {
+	f.Where(p.Field(workorder.FieldAcceptancePhotos))
+}
+
+// WhereAcceptanceSigner applies the entql string predicate on the acceptance_signer field.
+func (f *WorkOrderFilter) WhereAcceptanceSigner(p entql.StringP) {
+	f.Where(p.Field(workorder.FieldAcceptanceSigner))
+}
+
+// WhereSatisfactionScore applies the entql uint32 predicate on the satisfaction_score field.
+func (f *WorkOrderFilter) WhereSatisfactionScore(p entql.Uint32P) {
+	f.Where(p.Field(workorder.FieldSatisfactionScore))
+}
+
+// WhereSatisfactionComment applies the entql string predicate on the satisfaction_comment field.
+func (f *WorkOrderFilter) WhereSatisfactionComment(p entql.StringP) {
+	f.Where(p.Field(workorder.FieldSatisfactionComment))
+}
+
+// WhereRevisitedAt applies the entql time.Time predicate on the revisited_at field.
+func (f *WorkOrderFilter) WhereRevisitedAt(p entql.TimeP) {
+	f.Where(p.Field(workorder.FieldRevisitedAt))
+}
+
+// addPredicate implements the predicateAdder interface.
+func (_q *WorkOrderEventQuery) addPredicate(pred func(s *sql.Selector)) {
+	_q.predicates = append(_q.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the WorkOrderEventQuery builder.
+func (_q *WorkOrderEventQuery) Filter() *WorkOrderEventFilter {
+	return &WorkOrderEventFilter{config: _q.config, predicateAdder: _q}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *WorkOrderEventMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the WorkOrderEventMutation builder.
+func (m *WorkOrderEventMutation) Filter() *WorkOrderEventFilter {
+	return &WorkOrderEventFilter{config: m.config, predicateAdder: m}
+}
+
+// WorkOrderEventFilter provides a generic filtering capability at runtime for WorkOrderEventQuery.
+type WorkOrderEventFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *WorkOrderEventFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[4].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql uint32 predicate on the id field.
+func (f *WorkOrderEventFilter) WhereID(p entql.Uint32P) {
+	f.Where(p.Field(workorderevent.FieldID))
+}
+
+// WhereCreatedAt applies the entql time.Time predicate on the created_at field.
+func (f *WorkOrderEventFilter) WhereCreatedAt(p entql.TimeP) {
+	f.Where(p.Field(workorderevent.FieldCreatedAt))
+}
+
+// WhereUpdatedAt applies the entql time.Time predicate on the updated_at field.
+func (f *WorkOrderEventFilter) WhereUpdatedAt(p entql.TimeP) {
+	f.Where(p.Field(workorderevent.FieldUpdatedAt))
+}
+
+// WhereDeletedAt applies the entql time.Time predicate on the deleted_at field.
+func (f *WorkOrderEventFilter) WhereDeletedAt(p entql.TimeP) {
+	f.Where(p.Field(workorderevent.FieldDeletedAt))
+}
+
+// WhereCreatedBy applies the entql uint32 predicate on the created_by field.
+func (f *WorkOrderEventFilter) WhereCreatedBy(p entql.Uint32P) {
+	f.Where(p.Field(workorderevent.FieldCreatedBy))
+}
+
+// WhereUpdatedBy applies the entql uint32 predicate on the updated_by field.
+func (f *WorkOrderEventFilter) WhereUpdatedBy(p entql.Uint32P) {
+	f.Where(p.Field(workorderevent.FieldUpdatedBy))
+}
+
+// WhereDeletedBy applies the entql uint32 predicate on the deleted_by field.
+func (f *WorkOrderEventFilter) WhereDeletedBy(p entql.Uint32P) {
+	f.Where(p.Field(workorderevent.FieldDeletedBy))
+}
+
+// WhereTenantID applies the entql uint32 predicate on the tenant_id field.
+func (f *WorkOrderEventFilter) WhereTenantID(p entql.Uint32P) {
+	f.Where(p.Field(workorderevent.FieldTenantID))
+}
+
+// WhereWorkOrderID applies the entql uint32 predicate on the work_order_id field.
+func (f *WorkOrderEventFilter) WhereWorkOrderID(p entql.Uint32P) {
+	f.Where(p.Field(workorderevent.FieldWorkOrderID))
+}
+
+// WhereAction applies the entql string predicate on the action field.
+func (f *WorkOrderEventFilter) WhereAction(p entql.StringP) {
+	f.Where(p.Field(workorderevent.FieldAction))
+}
+
+// WhereStatusFrom applies the entql string predicate on the status_from field.
+func (f *WorkOrderEventFilter) WhereStatusFrom(p entql.StringP) {
+	f.Where(p.Field(workorderevent.FieldStatusFrom))
+}
+
+// WhereStatusTo applies the entql string predicate on the status_to field.
+func (f *WorkOrderEventFilter) WhereStatusTo(p entql.StringP) {
+	f.Where(p.Field(workorderevent.FieldStatusTo))
+}
+
+// WhereNote applies the entql string predicate on the note field.
+func (f *WorkOrderEventFilter) WhereNote(p entql.StringP) {
+	f.Where(p.Field(workorderevent.FieldNote))
+}
+
+// WherePhotos applies the entql json.RawMessage predicate on the photos field.
+func (f *WorkOrderEventFilter) WherePhotos(p entql.BytesP) {
+	f.Where(p.Field(workorderevent.FieldPhotos))
+}
+
+// addPredicate implements the predicateAdder interface.
+func (_q *WorkOrderItemQuery) addPredicate(pred func(s *sql.Selector)) {
+	_q.predicates = append(_q.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the WorkOrderItemQuery builder.
+func (_q *WorkOrderItemQuery) Filter() *WorkOrderItemFilter {
+	return &WorkOrderItemFilter{config: _q.config, predicateAdder: _q}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *WorkOrderItemMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the WorkOrderItemMutation builder.
+func (m *WorkOrderItemMutation) Filter() *WorkOrderItemFilter {
+	return &WorkOrderItemFilter{config: m.config, predicateAdder: m}
+}
+
+// WorkOrderItemFilter provides a generic filtering capability at runtime for WorkOrderItemQuery.
+type WorkOrderItemFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *WorkOrderItemFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[5].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql uint32 predicate on the id field.
+func (f *WorkOrderItemFilter) WhereID(p entql.Uint32P) {
+	f.Where(p.Field(workorderitem.FieldID))
+}
+
+// WhereCreatedAt applies the entql time.Time predicate on the created_at field.
+func (f *WorkOrderItemFilter) WhereCreatedAt(p entql.TimeP) {
+	f.Where(p.Field(workorderitem.FieldCreatedAt))
+}
+
+// WhereUpdatedAt applies the entql time.Time predicate on the updated_at field.
+func (f *WorkOrderItemFilter) WhereUpdatedAt(p entql.TimeP) {
+	f.Where(p.Field(workorderitem.FieldUpdatedAt))
+}
+
+// WhereDeletedAt applies the entql time.Time predicate on the deleted_at field.
+func (f *WorkOrderItemFilter) WhereDeletedAt(p entql.TimeP) {
+	f.Where(p.Field(workorderitem.FieldDeletedAt))
+}
+
+// WhereCreatedBy applies the entql uint32 predicate on the created_by field.
+func (f *WorkOrderItemFilter) WhereCreatedBy(p entql.Uint32P) {
+	f.Where(p.Field(workorderitem.FieldCreatedBy))
+}
+
+// WhereUpdatedBy applies the entql uint32 predicate on the updated_by field.
+func (f *WorkOrderItemFilter) WhereUpdatedBy(p entql.Uint32P) {
+	f.Where(p.Field(workorderitem.FieldUpdatedBy))
+}
+
+// WhereDeletedBy applies the entql uint32 predicate on the deleted_by field.
+func (f *WorkOrderItemFilter) WhereDeletedBy(p entql.Uint32P) {
+	f.Where(p.Field(workorderitem.FieldDeletedBy))
+}
+
+// WhereTenantID applies the entql uint32 predicate on the tenant_id field.
+func (f *WorkOrderItemFilter) WhereTenantID(p entql.Uint32P) {
+	f.Where(p.Field(workorderitem.FieldTenantID))
+}
+
+// WhereWorkOrderID applies the entql uint32 predicate on the work_order_id field.
+func (f *WorkOrderItemFilter) WhereWorkOrderID(p entql.Uint32P) {
+	f.Where(p.Field(workorderitem.FieldWorkOrderID))
+}
+
+// WhereScope applies the entql string predicate on the scope field.
+func (f *WorkOrderItemFilter) WhereScope(p entql.StringP) {
+	f.Where(p.Field(workorderitem.FieldScope))
+}
+
+// WhereName applies the entql string predicate on the name field.
+func (f *WorkOrderItemFilter) WhereName(p entql.StringP) {
+	f.Where(p.Field(workorderitem.FieldName))
+}
+
+// WhereSort applies the entql uint32 predicate on the sort field.
+func (f *WorkOrderItemFilter) WhereSort(p entql.Uint32P) {
+	f.Where(p.Field(workorderitem.FieldSort))
+}
+
+// WhereResult applies the entql string predicate on the result field.
+func (f *WorkOrderItemFilter) WhereResult(p entql.StringP) {
+	f.Where(p.Field(workorderitem.FieldResult))
+}
+
+// WhereValue applies the entql string predicate on the value field.
+func (f *WorkOrderItemFilter) WhereValue(p entql.StringP) {
+	f.Where(p.Field(workorderitem.FieldValue))
+}
+
+// WherePhotos applies the entql json.RawMessage predicate on the photos field.
+func (f *WorkOrderItemFilter) WherePhotos(p entql.BytesP) {
+	f.Where(p.Field(workorderitem.FieldPhotos))
+}
+
+// WhereRemark applies the entql string predicate on the remark field.
+func (f *WorkOrderItemFilter) WhereRemark(p entql.StringP) {
+	f.Where(p.Field(workorderitem.FieldRemark))
+}
+
+// WhereSpaceRef applies the entql string predicate on the space_ref field.
+func (f *WorkOrderItemFilter) WhereSpaceRef(p entql.StringP) {
+	f.Where(p.Field(workorderitem.FieldSpaceRef))
+}
+
+// WhereEquipmentRef applies the entql string predicate on the equipment_ref field.
+func (f *WorkOrderItemFilter) WhereEquipmentRef(p entql.StringP) {
+	f.Where(p.Field(workorderitem.FieldEquipmentRef))
 }

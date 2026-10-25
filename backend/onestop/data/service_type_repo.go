@@ -30,6 +30,7 @@ type ServiceTypeRepo struct {
 	priorityConverter    *mapper.EnumTypeConverter[onestopV1.ServicePriority, servicetype.DefaultPriority]
 	temperatureConverter *mapper.EnumTypeConverter[onestopV1.TemperatureRequirement, servicetype.TemperatureRequirement]
 	triggerConverter     *mapper.EnumTypeConverter[onestopV1.TriggerMode, servicetype.TriggerMode]
+	orderKindConverter   *mapper.EnumTypeConverter[onestopV1.OrderKind, servicetype.OrderKind]
 
 	mapper *mapper.CopierMapper[onestopV1.ServiceType, ent.ServiceType]
 
@@ -52,6 +53,7 @@ func NewServiceTypeRepo(ctx *bootstrap.Context, entClient *entCrud.EntClient[*en
 		priorityConverter:    mapper.NewEnumTypeConverter[onestopV1.ServicePriority, servicetype.DefaultPriority](onestopV1.ServicePriority_name, onestopV1.ServicePriority_value),
 		temperatureConverter: mapper.NewEnumTypeConverter[onestopV1.TemperatureRequirement, servicetype.TemperatureRequirement](onestopV1.TemperatureRequirement_name, onestopV1.TemperatureRequirement_value),
 		triggerConverter:     mapper.NewEnumTypeConverter[onestopV1.TriggerMode, servicetype.TriggerMode](onestopV1.TriggerMode_name, onestopV1.TriggerMode_value),
+		orderKindConverter:   mapper.NewEnumTypeConverter[onestopV1.OrderKind, servicetype.OrderKind](onestopV1.OrderKind_name, onestopV1.OrderKind_value),
 	}
 
 	repo.init()
@@ -75,6 +77,7 @@ func (r *ServiceTypeRepo) init() {
 	r.mapper.AppendConverters(r.priorityConverter.NewConverterPair())
 	r.mapper.AppendConverters(r.temperatureConverter.NewConverterPair())
 	r.mapper.AppendConverters(r.triggerConverter.NewConverterPair())
+	r.mapper.AppendConverters(r.orderKindConverter.NewConverterPair())
 	// 验收项：proto repeated message ↔ jsonb 结构数组（periodicplan 点表同款）
 	r.mapper.AppendConverters(copierutil.NewGenericTypeConverterPair(
 		[]*onestopV1.ServiceAcceptanceItem{},
@@ -271,6 +274,7 @@ func (r *ServiceTypeRepo) Create(ctx context.Context, req *onestopV1.CreateServi
 		SetNillableRequiresApproval(req.Data.RequiresApproval).
 		SetNillableDefaultPriority(r.priorityConverter.ToEntity(req.Data.DefaultPriority)).
 		SetNillableTriggerMode(r.triggerConverter.ToEntity(req.Data.TriggerMode)).
+		SetNillableOrderKind(r.orderKindConverter.ToEntity(req.Data.OrderKind)).
 		SetNillableCreatedBy(req.Data.CreatedBy).
 		SetCreatedAt(time.Now())
 
@@ -350,6 +354,7 @@ func (r *ServiceTypeRepo) Update(ctx context.Context, req *onestopV1.UpdateServi
 				SetNillableRequiresApproval(req.Data.RequiresApproval).
 				SetNillableDefaultPriority(r.priorityConverter.ToEntity(req.Data.DefaultPriority)).
 				SetNillableTriggerMode(r.triggerConverter.ToEntity(req.Data.TriggerMode)).
+				SetNillableOrderKind(r.orderKindConverter.ToEntity(req.Data.OrderKind)).
 				SetNillableUpdatedBy(req.Data.UpdatedBy).
 				SetUpdatedAt(time.Now())
 

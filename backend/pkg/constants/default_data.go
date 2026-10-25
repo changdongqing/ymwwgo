@@ -107,6 +107,9 @@ var DefaultPermissions = []*permissionV1.Permission{
 			60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71,
 			72, 73, 74,
 			80, 81, 82, 83, 84,
+			// 一站式服务：目录 90 + 服务类型 91 + 工单管理 92（工单期补挂；
+			// 此前 90/91 漏绑导致平台管理员导航里整个一站式分组不可见——存量库须在权限管理里补勾）
+			90, 91, 92,
 			101, 102,
 			110, 111, 112, 113, 114, 115, 116, 117,
 		},
@@ -1232,6 +1235,23 @@ var DefaultMenus = []*permissionV1.Menu{
 			Icon:      trans.Ptr("lucide:layout-list"),
 			Order:     trans.Ptr(int32(1)),
 			Authority: []string{"sys:platform_admin"},
+		},
+	},
+	{
+		// 工单管理：统一工单底座（事件/计划任务/运送三形态），坐席工作台；
+		// 工单是租户业务数据，租户管理员可用（已部署库走「菜单同步」补挂）
+		Id:        trans.Ptr(uint32(92)),
+		ParentId:  trans.Ptr(uint32(90)),
+		Type:      permissionV1.Menu_MENU.Enum(),
+		Name:      trans.Ptr("OneStopWorkOrders"),
+		Path:      trans.Ptr("work-orders"),
+		Component: trans.Ptr("app/onestop/work_order/index.vue"),
+		CreatedAt: timeutil.TimeToTimestamppb(trans.Ptr(time.Now())),
+		Meta: &permissionV1.MenuMeta{
+			Title:     trans.Ptr("menu.onestop.workOrders"),
+			Icon:      trans.Ptr("lucide:clipboard-list"),
+			Order:     trans.Ptr(int32(2)),
+			Authority: []string{"sys:platform_admin", "sys:tenant_manager"},
 		},
 	},
 	{

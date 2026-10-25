@@ -18,6 +18,8 @@ import (
 	bLogger "github.com/tx7do/kratos-bootstrap/logger"
 	"google.golang.org/protobuf/types/known/emptypb"
 
+	onestopService "go-wind-admin/onestop/service"
+
 	"go-wind-admin/app/admin/service/internal/data"
 
 	adminV1 "go-wind-admin/api/gen/go/admin/service/v1"
@@ -350,6 +352,21 @@ func (s *TaskService) startAllTask(ctx context.Context) (int32, error) {
 	}
 
 	s.log.Infof(ctx, "总共成功开启定时任务[%d]个", count)
+
+	// 一站式计划展开（系统级常驻 cron，每分钟）：滚动生成当日+次日的计划/班次
+	// 工单。handler 已在 NewAsynqServer 中注册；幂等由工单表部分唯一索引保证，
+	// 重跑不重（go-wind-admin/onestop 的 work_order_scheduler.go）。
+	if s.hasScheduler() {
+		if _, err := s.taskScheduler.NewPeriodicTask(
+			onestopService.OnestopPlanExpandCronSpec,
+			onestopService.OnestopPlanExpandTaskType,
+			&onestopService.OnestopPlanExpandTaskData{},
+		); err != nil {
+			s.log.Errorf(ctx, "注册一站式计划展开定时任务失败: %s", err.Error())
+		} else {
+			s.log.Infof(ctx, "一站式计划展开定时任务已注册（cron=%s）", onestopService.OnestopPlanExpandCronSpec)
+		}
+	}
 
 	// 注册系统级常驻任务：租户到期扫描（不依赖 sys_tasks 表，规避 typeName 去重问题）。
 	// 放在 startAllTask 末尾，确保初始启动与 RestartAllTask（先 RemoveAllPeriodicTask 再
