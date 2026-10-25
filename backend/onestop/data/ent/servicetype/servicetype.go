@@ -38,6 +38,22 @@ const (
 	FieldLevel = "level"
 	// FieldDescription holds the string denoting the description field in the database.
 	FieldDescription = "description"
+	// FieldRepairPost holds the string denoting the repair_post field in the database.
+	FieldRepairPost = "repair_post"
+	// FieldStandardWorkHours holds the string denoting the standard_work_hours field in the database.
+	FieldStandardWorkHours = "standard_work_hours"
+	// FieldResponseTimeLimit holds the string denoting the response_time_limit field in the database.
+	FieldResponseTimeLimit = "response_time_limit"
+	// FieldCompletionTimeLimit holds the string denoting the completion_time_limit field in the database.
+	FieldCompletionTimeLimit = "completion_time_limit"
+	// FieldGuidance holds the string denoting the guidance field in the database.
+	FieldGuidance = "guidance"
+	// FieldCommonPhrases holds the string denoting the common_phrases field in the database.
+	FieldCommonPhrases = "common_phrases"
+	// FieldStandardTools holds the string denoting the standard_tools field in the database.
+	FieldStandardTools = "standard_tools"
+	// FieldSpareParts holds the string denoting the spare_parts field in the database.
+	FieldSpareParts = "spare_parts"
 	// EdgeParent holds the string denoting the parent edge name in mutations.
 	EdgeParent = "parent"
 	// EdgeChildren holds the string denoting the children edge name in mutations.
@@ -69,6 +85,14 @@ var Columns = []string{
 	FieldName,
 	FieldLevel,
 	FieldDescription,
+	FieldRepairPost,
+	FieldStandardWorkHours,
+	FieldResponseTimeLimit,
+	FieldCompletionTimeLimit,
+	FieldGuidance,
+	FieldCommonPhrases,
+	FieldStandardTools,
+	FieldSpareParts,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -92,6 +116,10 @@ var (
 	DefaultDescription string
 	// DescriptionValidator is a validator for the "description" field. It is called by the builders before save.
 	DescriptionValidator func(string) error
+	// RepairPostValidator is a validator for the "repair_post" field. It is called by the builders before save.
+	RepairPostValidator func(string) error
+	// GuidanceValidator is a validator for the "guidance" field. It is called by the builders before save.
+	GuidanceValidator func(string) error
 	// IDValidator is a validator for the "id" field. It is called by the builders before save.
 	IDValidator func(uint32) error
 )
@@ -187,6 +215,31 @@ func ByLevel(opts ...sql.OrderTermOption) OrderOption {
 // ByDescription orders the results by the description field.
 func ByDescription(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldDescription, opts...).ToFunc()
+}
+
+// ByRepairPost orders the results by the repair_post field.
+func ByRepairPost(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldRepairPost, opts...).ToFunc()
+}
+
+// ByStandardWorkHours orders the results by the standard_work_hours field.
+func ByStandardWorkHours(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldStandardWorkHours, opts...).ToFunc()
+}
+
+// ByResponseTimeLimit orders the results by the response_time_limit field.
+func ByResponseTimeLimit(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldResponseTimeLimit, opts...).ToFunc()
+}
+
+// ByCompletionTimeLimit orders the results by the completion_time_limit field.
+func ByCompletionTimeLimit(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCompletionTimeLimit, opts...).ToFunc()
+}
+
+// ByGuidance orders the results by the guidance field.
+func ByGuidance(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldGuidance, opts...).ToFunc()
 }
 
 // ByParentField orders the results by parent field.

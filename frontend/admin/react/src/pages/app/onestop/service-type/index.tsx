@@ -117,6 +117,16 @@ const ServiceTypeManagement = () => {
       },
       render: (_, record) => <Tag color={getLevelColor(record.level)}>{levelMap[record.level ?? 'LEVEL_UNSPECIFIED']}</Tag>,
     },
+    // 报修维修配置概览列（非报修类型留空）；明细配置在编辑页签的「报修维修配置」小节
+    { title: t('repairPost'), dataIndex: 'repairPost', width: 110, ellipsis: true, hideInSearch: true },
+    {
+      title: t('standardWorkHours'),
+      dataIndex: 'standardWorkHours',
+      width: 130,
+      hideInSearch: true,
+      render: (_, record) =>
+        record.standardWorkHours != null ? `${record.standardWorkHours} ${t('hoursUnit')}` : '-',
+    },
     { title: t('description'), dataIndex: 'description', ellipsis: true, hideInSearch: true },
     {
       title: t('isEnabled'),
@@ -180,7 +190,7 @@ const ServiceTypeManagement = () => {
               showSizeChanger: true,
               showQuickJumper: true,
             }}
-            scroll={{ y: tableScrollY, x: 1150 }}
+            scroll={{ y: tableScrollY, x: 1370 }}
             actions={
               <Space>
                 <TableExportButton

@@ -190,6 +190,94 @@ func (_c *ServiceTypeCreate) SetNillableDescription(v *string) *ServiceTypeCreat
 	return _c
 }
 
+// SetRepairPost sets the "repair_post" field.
+func (_c *ServiceTypeCreate) SetRepairPost(v string) *ServiceTypeCreate {
+	_c.mutation.SetRepairPost(v)
+	return _c
+}
+
+// SetNillableRepairPost sets the "repair_post" field if the given value is not nil.
+func (_c *ServiceTypeCreate) SetNillableRepairPost(v *string) *ServiceTypeCreate {
+	if v != nil {
+		_c.SetRepairPost(*v)
+	}
+	return _c
+}
+
+// SetStandardWorkHours sets the "standard_work_hours" field.
+func (_c *ServiceTypeCreate) SetStandardWorkHours(v float64) *ServiceTypeCreate {
+	_c.mutation.SetStandardWorkHours(v)
+	return _c
+}
+
+// SetNillableStandardWorkHours sets the "standard_work_hours" field if the given value is not nil.
+func (_c *ServiceTypeCreate) SetNillableStandardWorkHours(v *float64) *ServiceTypeCreate {
+	if v != nil {
+		_c.SetStandardWorkHours(*v)
+	}
+	return _c
+}
+
+// SetResponseTimeLimit sets the "response_time_limit" field.
+func (_c *ServiceTypeCreate) SetResponseTimeLimit(v uint32) *ServiceTypeCreate {
+	_c.mutation.SetResponseTimeLimit(v)
+	return _c
+}
+
+// SetNillableResponseTimeLimit sets the "response_time_limit" field if the given value is not nil.
+func (_c *ServiceTypeCreate) SetNillableResponseTimeLimit(v *uint32) *ServiceTypeCreate {
+	if v != nil {
+		_c.SetResponseTimeLimit(*v)
+	}
+	return _c
+}
+
+// SetCompletionTimeLimit sets the "completion_time_limit" field.
+func (_c *ServiceTypeCreate) SetCompletionTimeLimit(v uint32) *ServiceTypeCreate {
+	_c.mutation.SetCompletionTimeLimit(v)
+	return _c
+}
+
+// SetNillableCompletionTimeLimit sets the "completion_time_limit" field if the given value is not nil.
+func (_c *ServiceTypeCreate) SetNillableCompletionTimeLimit(v *uint32) *ServiceTypeCreate {
+	if v != nil {
+		_c.SetCompletionTimeLimit(*v)
+	}
+	return _c
+}
+
+// SetGuidance sets the "guidance" field.
+func (_c *ServiceTypeCreate) SetGuidance(v string) *ServiceTypeCreate {
+	_c.mutation.SetGuidance(v)
+	return _c
+}
+
+// SetNillableGuidance sets the "guidance" field if the given value is not nil.
+func (_c *ServiceTypeCreate) SetNillableGuidance(v *string) *ServiceTypeCreate {
+	if v != nil {
+		_c.SetGuidance(*v)
+	}
+	return _c
+}
+
+// SetCommonPhrases sets the "common_phrases" field.
+func (_c *ServiceTypeCreate) SetCommonPhrases(v []string) *ServiceTypeCreate {
+	_c.mutation.SetCommonPhrases(v)
+	return _c
+}
+
+// SetStandardTools sets the "standard_tools" field.
+func (_c *ServiceTypeCreate) SetStandardTools(v []string) *ServiceTypeCreate {
+	_c.mutation.SetStandardTools(v)
+	return _c
+}
+
+// SetSpareParts sets the "spare_parts" field.
+func (_c *ServiceTypeCreate) SetSpareParts(v []string) *ServiceTypeCreate {
+	_c.mutation.SetSpareParts(v)
+	return _c
+}
+
 // SetID sets the "id" field.
 func (_c *ServiceTypeCreate) SetID(v uint32) *ServiceTypeCreate {
 	_c.mutation.SetID(v)
@@ -283,6 +371,16 @@ func (_c *ServiceTypeCreate) check() error {
 			return &ValidationError{Name: "description", err: fmt.Errorf(`ent: validator failed for field "ServiceType.description": %w`, err)}
 		}
 	}
+	if v, ok := _c.mutation.RepairPost(); ok {
+		if err := servicetype.RepairPostValidator(v); err != nil {
+			return &ValidationError{Name: "repair_post", err: fmt.Errorf(`ent: validator failed for field "ServiceType.repair_post": %w`, err)}
+		}
+	}
+	if v, ok := _c.mutation.Guidance(); ok {
+		if err := servicetype.GuidanceValidator(v); err != nil {
+			return &ValidationError{Name: "guidance", err: fmt.Errorf(`ent: validator failed for field "ServiceType.guidance": %w`, err)}
+		}
+	}
 	if v, ok := _c.mutation.ID(); ok {
 		if err := servicetype.IDValidator(v); err != nil {
 			return &ValidationError{Name: "id", err: fmt.Errorf(`ent: validator failed for field "ServiceType.id": %w`, err)}
@@ -364,6 +462,38 @@ func (_c *ServiceTypeCreate) createSpec() (*ServiceType, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.Description(); ok {
 		_spec.SetField(servicetype.FieldDescription, field.TypeString, value)
 		_node.Description = &value
+	}
+	if value, ok := _c.mutation.RepairPost(); ok {
+		_spec.SetField(servicetype.FieldRepairPost, field.TypeString, value)
+		_node.RepairPost = &value
+	}
+	if value, ok := _c.mutation.StandardWorkHours(); ok {
+		_spec.SetField(servicetype.FieldStandardWorkHours, field.TypeFloat64, value)
+		_node.StandardWorkHours = &value
+	}
+	if value, ok := _c.mutation.ResponseTimeLimit(); ok {
+		_spec.SetField(servicetype.FieldResponseTimeLimit, field.TypeUint32, value)
+		_node.ResponseTimeLimit = &value
+	}
+	if value, ok := _c.mutation.CompletionTimeLimit(); ok {
+		_spec.SetField(servicetype.FieldCompletionTimeLimit, field.TypeUint32, value)
+		_node.CompletionTimeLimit = &value
+	}
+	if value, ok := _c.mutation.Guidance(); ok {
+		_spec.SetField(servicetype.FieldGuidance, field.TypeString, value)
+		_node.Guidance = &value
+	}
+	if value, ok := _c.mutation.CommonPhrases(); ok {
+		_spec.SetField(servicetype.FieldCommonPhrases, field.TypeJSON, value)
+		_node.CommonPhrases = value
+	}
+	if value, ok := _c.mutation.StandardTools(); ok {
+		_spec.SetField(servicetype.FieldStandardTools, field.TypeJSON, value)
+		_node.StandardTools = value
+	}
+	if value, ok := _c.mutation.SpareParts(); ok {
+		_spec.SetField(servicetype.FieldSpareParts, field.TypeJSON, value)
+		_node.SpareParts = value
 	}
 	if nodes := _c.mutation.ParentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -663,6 +793,168 @@ func (u *ServiceTypeUpsert) UpdateDescription() *ServiceTypeUpsert {
 // ClearDescription clears the value of the "description" field.
 func (u *ServiceTypeUpsert) ClearDescription() *ServiceTypeUpsert {
 	u.SetNull(servicetype.FieldDescription)
+	return u
+}
+
+// SetRepairPost sets the "repair_post" field.
+func (u *ServiceTypeUpsert) SetRepairPost(v string) *ServiceTypeUpsert {
+	u.Set(servicetype.FieldRepairPost, v)
+	return u
+}
+
+// UpdateRepairPost sets the "repair_post" field to the value that was provided on create.
+func (u *ServiceTypeUpsert) UpdateRepairPost() *ServiceTypeUpsert {
+	u.SetExcluded(servicetype.FieldRepairPost)
+	return u
+}
+
+// ClearRepairPost clears the value of the "repair_post" field.
+func (u *ServiceTypeUpsert) ClearRepairPost() *ServiceTypeUpsert {
+	u.SetNull(servicetype.FieldRepairPost)
+	return u
+}
+
+// SetStandardWorkHours sets the "standard_work_hours" field.
+func (u *ServiceTypeUpsert) SetStandardWorkHours(v float64) *ServiceTypeUpsert {
+	u.Set(servicetype.FieldStandardWorkHours, v)
+	return u
+}
+
+// UpdateStandardWorkHours sets the "standard_work_hours" field to the value that was provided on create.
+func (u *ServiceTypeUpsert) UpdateStandardWorkHours() *ServiceTypeUpsert {
+	u.SetExcluded(servicetype.FieldStandardWorkHours)
+	return u
+}
+
+// AddStandardWorkHours adds v to the "standard_work_hours" field.
+func (u *ServiceTypeUpsert) AddStandardWorkHours(v float64) *ServiceTypeUpsert {
+	u.Add(servicetype.FieldStandardWorkHours, v)
+	return u
+}
+
+// ClearStandardWorkHours clears the value of the "standard_work_hours" field.
+func (u *ServiceTypeUpsert) ClearStandardWorkHours() *ServiceTypeUpsert {
+	u.SetNull(servicetype.FieldStandardWorkHours)
+	return u
+}
+
+// SetResponseTimeLimit sets the "response_time_limit" field.
+func (u *ServiceTypeUpsert) SetResponseTimeLimit(v uint32) *ServiceTypeUpsert {
+	u.Set(servicetype.FieldResponseTimeLimit, v)
+	return u
+}
+
+// UpdateResponseTimeLimit sets the "response_time_limit" field to the value that was provided on create.
+func (u *ServiceTypeUpsert) UpdateResponseTimeLimit() *ServiceTypeUpsert {
+	u.SetExcluded(servicetype.FieldResponseTimeLimit)
+	return u
+}
+
+// AddResponseTimeLimit adds v to the "response_time_limit" field.
+func (u *ServiceTypeUpsert) AddResponseTimeLimit(v uint32) *ServiceTypeUpsert {
+	u.Add(servicetype.FieldResponseTimeLimit, v)
+	return u
+}
+
+// ClearResponseTimeLimit clears the value of the "response_time_limit" field.
+func (u *ServiceTypeUpsert) ClearResponseTimeLimit() *ServiceTypeUpsert {
+	u.SetNull(servicetype.FieldResponseTimeLimit)
+	return u
+}
+
+// SetCompletionTimeLimit sets the "completion_time_limit" field.
+func (u *ServiceTypeUpsert) SetCompletionTimeLimit(v uint32) *ServiceTypeUpsert {
+	u.Set(servicetype.FieldCompletionTimeLimit, v)
+	return u
+}
+
+// UpdateCompletionTimeLimit sets the "completion_time_limit" field to the value that was provided on create.
+func (u *ServiceTypeUpsert) UpdateCompletionTimeLimit() *ServiceTypeUpsert {
+	u.SetExcluded(servicetype.FieldCompletionTimeLimit)
+	return u
+}
+
+// AddCompletionTimeLimit adds v to the "completion_time_limit" field.
+func (u *ServiceTypeUpsert) AddCompletionTimeLimit(v uint32) *ServiceTypeUpsert {
+	u.Add(servicetype.FieldCompletionTimeLimit, v)
+	return u
+}
+
+// ClearCompletionTimeLimit clears the value of the "completion_time_limit" field.
+func (u *ServiceTypeUpsert) ClearCompletionTimeLimit() *ServiceTypeUpsert {
+	u.SetNull(servicetype.FieldCompletionTimeLimit)
+	return u
+}
+
+// SetGuidance sets the "guidance" field.
+func (u *ServiceTypeUpsert) SetGuidance(v string) *ServiceTypeUpsert {
+	u.Set(servicetype.FieldGuidance, v)
+	return u
+}
+
+// UpdateGuidance sets the "guidance" field to the value that was provided on create.
+func (u *ServiceTypeUpsert) UpdateGuidance() *ServiceTypeUpsert {
+	u.SetExcluded(servicetype.FieldGuidance)
+	return u
+}
+
+// ClearGuidance clears the value of the "guidance" field.
+func (u *ServiceTypeUpsert) ClearGuidance() *ServiceTypeUpsert {
+	u.SetNull(servicetype.FieldGuidance)
+	return u
+}
+
+// SetCommonPhrases sets the "common_phrases" field.
+func (u *ServiceTypeUpsert) SetCommonPhrases(v []string) *ServiceTypeUpsert {
+	u.Set(servicetype.FieldCommonPhrases, v)
+	return u
+}
+
+// UpdateCommonPhrases sets the "common_phrases" field to the value that was provided on create.
+func (u *ServiceTypeUpsert) UpdateCommonPhrases() *ServiceTypeUpsert {
+	u.SetExcluded(servicetype.FieldCommonPhrases)
+	return u
+}
+
+// ClearCommonPhrases clears the value of the "common_phrases" field.
+func (u *ServiceTypeUpsert) ClearCommonPhrases() *ServiceTypeUpsert {
+	u.SetNull(servicetype.FieldCommonPhrases)
+	return u
+}
+
+// SetStandardTools sets the "standard_tools" field.
+func (u *ServiceTypeUpsert) SetStandardTools(v []string) *ServiceTypeUpsert {
+	u.Set(servicetype.FieldStandardTools, v)
+	return u
+}
+
+// UpdateStandardTools sets the "standard_tools" field to the value that was provided on create.
+func (u *ServiceTypeUpsert) UpdateStandardTools() *ServiceTypeUpsert {
+	u.SetExcluded(servicetype.FieldStandardTools)
+	return u
+}
+
+// ClearStandardTools clears the value of the "standard_tools" field.
+func (u *ServiceTypeUpsert) ClearStandardTools() *ServiceTypeUpsert {
+	u.SetNull(servicetype.FieldStandardTools)
+	return u
+}
+
+// SetSpareParts sets the "spare_parts" field.
+func (u *ServiceTypeUpsert) SetSpareParts(v []string) *ServiceTypeUpsert {
+	u.Set(servicetype.FieldSpareParts, v)
+	return u
+}
+
+// UpdateSpareParts sets the "spare_parts" field to the value that was provided on create.
+func (u *ServiceTypeUpsert) UpdateSpareParts() *ServiceTypeUpsert {
+	u.SetExcluded(servicetype.FieldSpareParts)
+	return u
+}
+
+// ClearSpareParts clears the value of the "spare_parts" field.
+func (u *ServiceTypeUpsert) ClearSpareParts() *ServiceTypeUpsert {
+	u.SetNull(servicetype.FieldSpareParts)
 	return u
 }
 
@@ -966,6 +1258,195 @@ func (u *ServiceTypeUpsertOne) UpdateDescription() *ServiceTypeUpsertOne {
 func (u *ServiceTypeUpsertOne) ClearDescription() *ServiceTypeUpsertOne {
 	return u.Update(func(s *ServiceTypeUpsert) {
 		s.ClearDescription()
+	})
+}
+
+// SetRepairPost sets the "repair_post" field.
+func (u *ServiceTypeUpsertOne) SetRepairPost(v string) *ServiceTypeUpsertOne {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.SetRepairPost(v)
+	})
+}
+
+// UpdateRepairPost sets the "repair_post" field to the value that was provided on create.
+func (u *ServiceTypeUpsertOne) UpdateRepairPost() *ServiceTypeUpsertOne {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.UpdateRepairPost()
+	})
+}
+
+// ClearRepairPost clears the value of the "repair_post" field.
+func (u *ServiceTypeUpsertOne) ClearRepairPost() *ServiceTypeUpsertOne {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.ClearRepairPost()
+	})
+}
+
+// SetStandardWorkHours sets the "standard_work_hours" field.
+func (u *ServiceTypeUpsertOne) SetStandardWorkHours(v float64) *ServiceTypeUpsertOne {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.SetStandardWorkHours(v)
+	})
+}
+
+// AddStandardWorkHours adds v to the "standard_work_hours" field.
+func (u *ServiceTypeUpsertOne) AddStandardWorkHours(v float64) *ServiceTypeUpsertOne {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.AddStandardWorkHours(v)
+	})
+}
+
+// UpdateStandardWorkHours sets the "standard_work_hours" field to the value that was provided on create.
+func (u *ServiceTypeUpsertOne) UpdateStandardWorkHours() *ServiceTypeUpsertOne {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.UpdateStandardWorkHours()
+	})
+}
+
+// ClearStandardWorkHours clears the value of the "standard_work_hours" field.
+func (u *ServiceTypeUpsertOne) ClearStandardWorkHours() *ServiceTypeUpsertOne {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.ClearStandardWorkHours()
+	})
+}
+
+// SetResponseTimeLimit sets the "response_time_limit" field.
+func (u *ServiceTypeUpsertOne) SetResponseTimeLimit(v uint32) *ServiceTypeUpsertOne {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.SetResponseTimeLimit(v)
+	})
+}
+
+// AddResponseTimeLimit adds v to the "response_time_limit" field.
+func (u *ServiceTypeUpsertOne) AddResponseTimeLimit(v uint32) *ServiceTypeUpsertOne {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.AddResponseTimeLimit(v)
+	})
+}
+
+// UpdateResponseTimeLimit sets the "response_time_limit" field to the value that was provided on create.
+func (u *ServiceTypeUpsertOne) UpdateResponseTimeLimit() *ServiceTypeUpsertOne {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.UpdateResponseTimeLimit()
+	})
+}
+
+// ClearResponseTimeLimit clears the value of the "response_time_limit" field.
+func (u *ServiceTypeUpsertOne) ClearResponseTimeLimit() *ServiceTypeUpsertOne {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.ClearResponseTimeLimit()
+	})
+}
+
+// SetCompletionTimeLimit sets the "completion_time_limit" field.
+func (u *ServiceTypeUpsertOne) SetCompletionTimeLimit(v uint32) *ServiceTypeUpsertOne {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.SetCompletionTimeLimit(v)
+	})
+}
+
+// AddCompletionTimeLimit adds v to the "completion_time_limit" field.
+func (u *ServiceTypeUpsertOne) AddCompletionTimeLimit(v uint32) *ServiceTypeUpsertOne {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.AddCompletionTimeLimit(v)
+	})
+}
+
+// UpdateCompletionTimeLimit sets the "completion_time_limit" field to the value that was provided on create.
+func (u *ServiceTypeUpsertOne) UpdateCompletionTimeLimit() *ServiceTypeUpsertOne {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.UpdateCompletionTimeLimit()
+	})
+}
+
+// ClearCompletionTimeLimit clears the value of the "completion_time_limit" field.
+func (u *ServiceTypeUpsertOne) ClearCompletionTimeLimit() *ServiceTypeUpsertOne {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.ClearCompletionTimeLimit()
+	})
+}
+
+// SetGuidance sets the "guidance" field.
+func (u *ServiceTypeUpsertOne) SetGuidance(v string) *ServiceTypeUpsertOne {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.SetGuidance(v)
+	})
+}
+
+// UpdateGuidance sets the "guidance" field to the value that was provided on create.
+func (u *ServiceTypeUpsertOne) UpdateGuidance() *ServiceTypeUpsertOne {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.UpdateGuidance()
+	})
+}
+
+// ClearGuidance clears the value of the "guidance" field.
+func (u *ServiceTypeUpsertOne) ClearGuidance() *ServiceTypeUpsertOne {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.ClearGuidance()
+	})
+}
+
+// SetCommonPhrases sets the "common_phrases" field.
+func (u *ServiceTypeUpsertOne) SetCommonPhrases(v []string) *ServiceTypeUpsertOne {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.SetCommonPhrases(v)
+	})
+}
+
+// UpdateCommonPhrases sets the "common_phrases" field to the value that was provided on create.
+func (u *ServiceTypeUpsertOne) UpdateCommonPhrases() *ServiceTypeUpsertOne {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.UpdateCommonPhrases()
+	})
+}
+
+// ClearCommonPhrases clears the value of the "common_phrases" field.
+func (u *ServiceTypeUpsertOne) ClearCommonPhrases() *ServiceTypeUpsertOne {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.ClearCommonPhrases()
+	})
+}
+
+// SetStandardTools sets the "standard_tools" field.
+func (u *ServiceTypeUpsertOne) SetStandardTools(v []string) *ServiceTypeUpsertOne {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.SetStandardTools(v)
+	})
+}
+
+// UpdateStandardTools sets the "standard_tools" field to the value that was provided on create.
+func (u *ServiceTypeUpsertOne) UpdateStandardTools() *ServiceTypeUpsertOne {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.UpdateStandardTools()
+	})
+}
+
+// ClearStandardTools clears the value of the "standard_tools" field.
+func (u *ServiceTypeUpsertOne) ClearStandardTools() *ServiceTypeUpsertOne {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.ClearStandardTools()
+	})
+}
+
+// SetSpareParts sets the "spare_parts" field.
+func (u *ServiceTypeUpsertOne) SetSpareParts(v []string) *ServiceTypeUpsertOne {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.SetSpareParts(v)
+	})
+}
+
+// UpdateSpareParts sets the "spare_parts" field to the value that was provided on create.
+func (u *ServiceTypeUpsertOne) UpdateSpareParts() *ServiceTypeUpsertOne {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.UpdateSpareParts()
+	})
+}
+
+// ClearSpareParts clears the value of the "spare_parts" field.
+func (u *ServiceTypeUpsertOne) ClearSpareParts() *ServiceTypeUpsertOne {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.ClearSpareParts()
 	})
 }
 
@@ -1435,6 +1916,195 @@ func (u *ServiceTypeUpsertBulk) UpdateDescription() *ServiceTypeUpsertBulk {
 func (u *ServiceTypeUpsertBulk) ClearDescription() *ServiceTypeUpsertBulk {
 	return u.Update(func(s *ServiceTypeUpsert) {
 		s.ClearDescription()
+	})
+}
+
+// SetRepairPost sets the "repair_post" field.
+func (u *ServiceTypeUpsertBulk) SetRepairPost(v string) *ServiceTypeUpsertBulk {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.SetRepairPost(v)
+	})
+}
+
+// UpdateRepairPost sets the "repair_post" field to the value that was provided on create.
+func (u *ServiceTypeUpsertBulk) UpdateRepairPost() *ServiceTypeUpsertBulk {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.UpdateRepairPost()
+	})
+}
+
+// ClearRepairPost clears the value of the "repair_post" field.
+func (u *ServiceTypeUpsertBulk) ClearRepairPost() *ServiceTypeUpsertBulk {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.ClearRepairPost()
+	})
+}
+
+// SetStandardWorkHours sets the "standard_work_hours" field.
+func (u *ServiceTypeUpsertBulk) SetStandardWorkHours(v float64) *ServiceTypeUpsertBulk {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.SetStandardWorkHours(v)
+	})
+}
+
+// AddStandardWorkHours adds v to the "standard_work_hours" field.
+func (u *ServiceTypeUpsertBulk) AddStandardWorkHours(v float64) *ServiceTypeUpsertBulk {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.AddStandardWorkHours(v)
+	})
+}
+
+// UpdateStandardWorkHours sets the "standard_work_hours" field to the value that was provided on create.
+func (u *ServiceTypeUpsertBulk) UpdateStandardWorkHours() *ServiceTypeUpsertBulk {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.UpdateStandardWorkHours()
+	})
+}
+
+// ClearStandardWorkHours clears the value of the "standard_work_hours" field.
+func (u *ServiceTypeUpsertBulk) ClearStandardWorkHours() *ServiceTypeUpsertBulk {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.ClearStandardWorkHours()
+	})
+}
+
+// SetResponseTimeLimit sets the "response_time_limit" field.
+func (u *ServiceTypeUpsertBulk) SetResponseTimeLimit(v uint32) *ServiceTypeUpsertBulk {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.SetResponseTimeLimit(v)
+	})
+}
+
+// AddResponseTimeLimit adds v to the "response_time_limit" field.
+func (u *ServiceTypeUpsertBulk) AddResponseTimeLimit(v uint32) *ServiceTypeUpsertBulk {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.AddResponseTimeLimit(v)
+	})
+}
+
+// UpdateResponseTimeLimit sets the "response_time_limit" field to the value that was provided on create.
+func (u *ServiceTypeUpsertBulk) UpdateResponseTimeLimit() *ServiceTypeUpsertBulk {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.UpdateResponseTimeLimit()
+	})
+}
+
+// ClearResponseTimeLimit clears the value of the "response_time_limit" field.
+func (u *ServiceTypeUpsertBulk) ClearResponseTimeLimit() *ServiceTypeUpsertBulk {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.ClearResponseTimeLimit()
+	})
+}
+
+// SetCompletionTimeLimit sets the "completion_time_limit" field.
+func (u *ServiceTypeUpsertBulk) SetCompletionTimeLimit(v uint32) *ServiceTypeUpsertBulk {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.SetCompletionTimeLimit(v)
+	})
+}
+
+// AddCompletionTimeLimit adds v to the "completion_time_limit" field.
+func (u *ServiceTypeUpsertBulk) AddCompletionTimeLimit(v uint32) *ServiceTypeUpsertBulk {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.AddCompletionTimeLimit(v)
+	})
+}
+
+// UpdateCompletionTimeLimit sets the "completion_time_limit" field to the value that was provided on create.
+func (u *ServiceTypeUpsertBulk) UpdateCompletionTimeLimit() *ServiceTypeUpsertBulk {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.UpdateCompletionTimeLimit()
+	})
+}
+
+// ClearCompletionTimeLimit clears the value of the "completion_time_limit" field.
+func (u *ServiceTypeUpsertBulk) ClearCompletionTimeLimit() *ServiceTypeUpsertBulk {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.ClearCompletionTimeLimit()
+	})
+}
+
+// SetGuidance sets the "guidance" field.
+func (u *ServiceTypeUpsertBulk) SetGuidance(v string) *ServiceTypeUpsertBulk {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.SetGuidance(v)
+	})
+}
+
+// UpdateGuidance sets the "guidance" field to the value that was provided on create.
+func (u *ServiceTypeUpsertBulk) UpdateGuidance() *ServiceTypeUpsertBulk {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.UpdateGuidance()
+	})
+}
+
+// ClearGuidance clears the value of the "guidance" field.
+func (u *ServiceTypeUpsertBulk) ClearGuidance() *ServiceTypeUpsertBulk {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.ClearGuidance()
+	})
+}
+
+// SetCommonPhrases sets the "common_phrases" field.
+func (u *ServiceTypeUpsertBulk) SetCommonPhrases(v []string) *ServiceTypeUpsertBulk {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.SetCommonPhrases(v)
+	})
+}
+
+// UpdateCommonPhrases sets the "common_phrases" field to the value that was provided on create.
+func (u *ServiceTypeUpsertBulk) UpdateCommonPhrases() *ServiceTypeUpsertBulk {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.UpdateCommonPhrases()
+	})
+}
+
+// ClearCommonPhrases clears the value of the "common_phrases" field.
+func (u *ServiceTypeUpsertBulk) ClearCommonPhrases() *ServiceTypeUpsertBulk {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.ClearCommonPhrases()
+	})
+}
+
+// SetStandardTools sets the "standard_tools" field.
+func (u *ServiceTypeUpsertBulk) SetStandardTools(v []string) *ServiceTypeUpsertBulk {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.SetStandardTools(v)
+	})
+}
+
+// UpdateStandardTools sets the "standard_tools" field to the value that was provided on create.
+func (u *ServiceTypeUpsertBulk) UpdateStandardTools() *ServiceTypeUpsertBulk {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.UpdateStandardTools()
+	})
+}
+
+// ClearStandardTools clears the value of the "standard_tools" field.
+func (u *ServiceTypeUpsertBulk) ClearStandardTools() *ServiceTypeUpsertBulk {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.ClearStandardTools()
+	})
+}
+
+// SetSpareParts sets the "spare_parts" field.
+func (u *ServiceTypeUpsertBulk) SetSpareParts(v []string) *ServiceTypeUpsertBulk {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.SetSpareParts(v)
+	})
+}
+
+// UpdateSpareParts sets the "spare_parts" field to the value that was provided on create.
+func (u *ServiceTypeUpsertBulk) UpdateSpareParts() *ServiceTypeUpsertBulk {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.UpdateSpareParts()
+	})
+}
+
+// ClearSpareParts clears the value of the "spare_parts" field.
+func (u *ServiceTypeUpsertBulk) ClearSpareParts() *ServiceTypeUpsertBulk {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.ClearSpareParts()
 	})
 }
 

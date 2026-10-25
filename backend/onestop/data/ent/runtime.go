@@ -64,6 +64,14 @@ func init() {
 	servicetype.DefaultDescription = servicetypeDescDescription.Default.(string)
 	// servicetype.DescriptionValidator is a validator for the "description" field. It is called by the builders before save.
 	servicetype.DescriptionValidator = servicetypeDescDescription.Validators[0].(func(string) error)
+	// servicetypeDescRepairPost is the schema descriptor for repair_post field.
+	servicetypeDescRepairPost := servicetypeFields[4].Descriptor()
+	// servicetype.RepairPostValidator is a validator for the "repair_post" field. It is called by the builders before save.
+	servicetype.RepairPostValidator = servicetypeDescRepairPost.Validators[0].(func(string) error)
+	// servicetypeDescGuidance is the schema descriptor for guidance field.
+	servicetypeDescGuidance := servicetypeFields[8].Descriptor()
+	// servicetype.GuidanceValidator is a validator for the "guidance" field. It is called by the builders before save.
+	servicetype.GuidanceValidator = servicetypeDescGuidance.Validators[0].(func(string) error)
 	// servicetypeDescID is the schema descriptor for id field.
 	servicetypeDescID := servicetypeMixinFields0[0].Descriptor()
 	// servicetype.IDValidator is a validator for the "id" field. It is called by the builders before save.

@@ -25,6 +25,15 @@ type serviceTypeSeed struct {
 	Name       string `json:"name"`
 	Level      string `json:"level"`
 	ParentCode string `json:"parentCode"`
+	// 报修维修类型配置（仅 0101 子树的小类/细类携带，其余条目留空）
+	RepairPost          *string  `json:"repairPost,omitempty"`
+	StandardWorkHours   *float64 `json:"standardWorkHours,omitempty"`
+	ResponseTimeLimit   *uint32  `json:"responseTimeLimit,omitempty"`
+	CompletionTimeLimit *uint32  `json:"completionTimeLimit,omitempty"`
+	Guidance            *string  `json:"guidance,omitempty"`
+	CommonPhrases       []string `json:"commonPhrases,omitempty"`
+	StandardTools       []string `json:"standardTools,omitempty"`
+	SpareParts          []string `json:"spareParts,omitempty"`
 }
 
 // SeedDefaults 在服务类型表为空时播种内置四级字典；非空表不做任何写入，
@@ -76,8 +85,24 @@ func (r *ServiceTypeRepo) SeedDefaults(ctx context.Context) error {
 			SetName(seed.Name).
 			SetLevel(level).
 			SetIsEnabled(true).
+			SetNillableRepairPost(seed.RepairPost).
+			SetNillableStandardWorkHours(seed.StandardWorkHours).
+			SetNillableResponseTimeLimit(seed.ResponseTimeLimit).
+			SetNillableCompletionTimeLimit(seed.CompletionTimeLimit).
+			SetNillableGuidance(seed.Guidance).
 			SetCreatedAt(now).
 			SetUpdatedAt(now)
+
+		// jsonb 数组：非空才写
+		if len(seed.CommonPhrases) > 0 {
+			builder.SetCommonPhrases(seed.CommonPhrases)
+		}
+		if len(seed.StandardTools) > 0 {
+			builder.SetStandardTools(seed.StandardTools)
+		}
+		if len(seed.SpareParts) > 0 {
+			builder.SetSpareParts(seed.SpareParts)
+		}
 
 		if seed.ParentCode != "" {
 			parentID, ok := idByCode[seed.ParentCode]

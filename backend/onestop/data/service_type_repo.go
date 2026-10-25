@@ -199,8 +199,24 @@ func (r *ServiceTypeRepo) Create(ctx context.Context, req *onestopV1.CreateServi
 		SetNillableParentID(req.Data.ParentId).
 		SetNillableDescription(req.Data.Description).
 		SetNillableIsEnabled(req.Data.IsEnabled).
+		SetNillableRepairPost(req.Data.RepairPost).
+		SetNillableStandardWorkHours(req.Data.StandardWorkHours).
+		SetNillableResponseTimeLimit(req.Data.ResponseTimeLimit).
+		SetNillableCompletionTimeLimit(req.Data.CompletionTimeLimit).
+		SetNillableGuidance(req.Data.Guidance).
 		SetNillableCreatedBy(req.Data.CreatedBy).
 		SetCreatedAt(time.Now())
+
+	// jsonb 数组列：非空才写，空 = 未配置（NULL）
+	if len(req.Data.GetCommonPhrases()) > 0 {
+		builder.SetCommonPhrases(req.Data.GetCommonPhrases())
+	}
+	if len(req.Data.GetStandardTools()) > 0 {
+		builder.SetStandardTools(req.Data.GetStandardTools())
+	}
+	if len(req.Data.GetSpareParts()) > 0 {
+		builder.SetSpareParts(req.Data.GetSpareParts())
+	}
 
 	if req.Data.Id != nil {
 		builder.SetID(req.GetData().GetId())
@@ -246,8 +262,26 @@ func (r *ServiceTypeRepo) Update(ctx context.Context, req *onestopV1.UpdateServi
 				SetNillableParentID(req.Data.ParentId).
 				SetNillableDescription(req.Data.Description).
 				SetNillableIsEnabled(req.Data.IsEnabled).
+				SetNillableRepairPost(req.Data.RepairPost).
+				SetNillableStandardWorkHours(req.Data.StandardWorkHours).
+				SetNillableResponseTimeLimit(req.Data.ResponseTimeLimit).
+				SetNillableCompletionTimeLimit(req.Data.CompletionTimeLimit).
+				SetNillableGuidance(req.Data.Guidance).
 				SetNillableUpdatedBy(req.Data.UpdatedBy).
 				SetUpdatedAt(time.Now())
+
+			// jsonb 数组列：UpdateX 已先按 mask 过滤 req.Data（未列入 mask 的数组被清空），
+			// 非空才 Set；mask 内且为空切片时由 go-crud 的 applyUpdateNilFieldMask 统一置
+			// NULL——这里不能再 Clear，同一列双赋值会触发 PG 42601（参照 org_unit.subtype_path）。
+			if len(req.Data.GetCommonPhrases()) > 0 {
+				builder.SetCommonPhrases(req.Data.GetCommonPhrases())
+			}
+			if len(req.Data.GetStandardTools()) > 0 {
+				builder.SetStandardTools(req.Data.GetStandardTools())
+			}
+			if len(req.Data.GetSpareParts()) > 0 {
+				builder.SetSpareParts(req.Data.GetSpareParts())
+			}
 		},
 		func(s *sql.Selector) {
 			s.Where(sql.EQ(servicetype.FieldID, req.GetId()))

@@ -23,6 +23,9 @@ type OperatorReader func(ctx context.Context) (uint32, error)
 // levelCodePattern 服务编码：2/4/6/8 位数字，位数即层级。
 var levelCodePattern = regexp.MustCompile(`^([0-9]{2}|[0-9]{4}|[0-9]{6}|[0-9]{8})$`)
 
+// maxTimeLimitMinutes 时限上限：30 天，防分钟/小时单位误填。
+const maxTimeLimitMinutes = 30 * 24 * 60
+
 // levelOfCode 由编码位数推导层级。
 func levelOfCode(code string) onestopV1.Level {
 	switch len(code) {
@@ -75,6 +78,19 @@ func (s *ServiceTypeService) validate(ctx context.Context, data *onestopV1.Servi
 	}
 	if !levelCodePattern.MatchString(data.GetCode()) {
 		return onestopV1.ErrorUnprocessableEntity("service code must be 2/4/6/8 digits")
+	}
+
+	// 报修维修配置数值校验：字段可空，但给了就必须落在合理区间
+	if data.StandardWorkHours != nil && data.GetStandardWorkHours() <= 0 {
+		return onestopV1.ErrorUnprocessableEntity("standard work hours must be positive")
+	}
+	if data.ResponseTimeLimit != nil &&
+		(data.GetResponseTimeLimit() == 0 || data.GetResponseTimeLimit() > maxTimeLimitMinutes) {
+		return onestopV1.ErrorUnprocessableEntity("response time limit must be 1-43200 minutes")
+	}
+	if data.CompletionTimeLimit != nil &&
+		(data.GetCompletionTimeLimit() == 0 || data.GetCompletionTimeLimit() > maxTimeLimitMinutes) {
+		return onestopV1.ErrorUnprocessableEntity("completion time limit must be 1-43200 minutes")
 	}
 
 	level := levelOfCode(data.GetCode())

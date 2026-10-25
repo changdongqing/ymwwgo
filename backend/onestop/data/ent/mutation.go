@@ -30,32 +30,46 @@ const (
 // ServiceTypeMutation represents an operation that mutates the ServiceType nodes in the graph.
 type ServiceTypeMutation struct {
 	config
-	op              Op
-	typ             string
-	id              *uint32
-	created_at      *time.Time
-	updated_at      *time.Time
-	deleted_at      *time.Time
-	created_by      *uint32
-	addcreated_by   *int32
-	updated_by      *uint32
-	addupdated_by   *int32
-	deleted_by      *uint32
-	adddeleted_by   *int32
-	is_enabled      *bool
-	code            *string
-	name            *string
-	level           *servicetype.Level
-	description     *string
-	clearedFields   map[string]struct{}
-	parent          *uint32
-	clearedparent   bool
-	children        map[uint32]struct{}
-	removedchildren map[uint32]struct{}
-	clearedchildren bool
-	done            bool
-	oldValue        func(context.Context) (*ServiceType, error)
-	predicates      []predicate.ServiceType
+	op                       Op
+	typ                      string
+	id                       *uint32
+	created_at               *time.Time
+	updated_at               *time.Time
+	deleted_at               *time.Time
+	created_by               *uint32
+	addcreated_by            *int32
+	updated_by               *uint32
+	addupdated_by            *int32
+	deleted_by               *uint32
+	adddeleted_by            *int32
+	is_enabled               *bool
+	code                     *string
+	name                     *string
+	level                    *servicetype.Level
+	description              *string
+	repair_post              *string
+	standard_work_hours      *float64
+	addstandard_work_hours   *float64
+	response_time_limit      *uint32
+	addresponse_time_limit   *int32
+	completion_time_limit    *uint32
+	addcompletion_time_limit *int32
+	guidance                 *string
+	common_phrases           *[]string
+	appendcommon_phrases     []string
+	standard_tools           *[]string
+	appendstandard_tools     []string
+	spare_parts              *[]string
+	appendspare_parts        []string
+	clearedFields            map[string]struct{}
+	parent                   *uint32
+	clearedparent            bool
+	children                 map[uint32]struct{}
+	removedchildren          map[uint32]struct{}
+	clearedchildren          bool
+	done                     bool
+	oldValue                 func(context.Context) (*ServiceType, error)
+	predicates               []predicate.ServiceType
 }
 
 var _ ent.Mutation = (*ServiceTypeMutation)(nil)
@@ -813,6 +827,509 @@ func (m *ServiceTypeMutation) ResetDescription() {
 	delete(m.clearedFields, servicetype.FieldDescription)
 }
 
+// SetRepairPost sets the "repair_post" field.
+func (m *ServiceTypeMutation) SetRepairPost(s string) {
+	m.repair_post = &s
+}
+
+// RepairPost returns the value of the "repair_post" field in the mutation.
+func (m *ServiceTypeMutation) RepairPost() (r string, exists bool) {
+	v := m.repair_post
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRepairPost returns the old "repair_post" field's value of the ServiceType entity.
+// If the ServiceType object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ServiceTypeMutation) OldRepairPost(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRepairPost is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRepairPost requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRepairPost: %w", err)
+	}
+	return oldValue.RepairPost, nil
+}
+
+// ClearRepairPost clears the value of the "repair_post" field.
+func (m *ServiceTypeMutation) ClearRepairPost() {
+	m.repair_post = nil
+	m.clearedFields[servicetype.FieldRepairPost] = struct{}{}
+}
+
+// RepairPostCleared returns if the "repair_post" field was cleared in this mutation.
+func (m *ServiceTypeMutation) RepairPostCleared() bool {
+	_, ok := m.clearedFields[servicetype.FieldRepairPost]
+	return ok
+}
+
+// ResetRepairPost resets all changes to the "repair_post" field.
+func (m *ServiceTypeMutation) ResetRepairPost() {
+	m.repair_post = nil
+	delete(m.clearedFields, servicetype.FieldRepairPost)
+}
+
+// SetStandardWorkHours sets the "standard_work_hours" field.
+func (m *ServiceTypeMutation) SetStandardWorkHours(f float64) {
+	m.standard_work_hours = &f
+	m.addstandard_work_hours = nil
+}
+
+// StandardWorkHours returns the value of the "standard_work_hours" field in the mutation.
+func (m *ServiceTypeMutation) StandardWorkHours() (r float64, exists bool) {
+	v := m.standard_work_hours
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStandardWorkHours returns the old "standard_work_hours" field's value of the ServiceType entity.
+// If the ServiceType object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ServiceTypeMutation) OldStandardWorkHours(ctx context.Context) (v *float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStandardWorkHours is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStandardWorkHours requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStandardWorkHours: %w", err)
+	}
+	return oldValue.StandardWorkHours, nil
+}
+
+// AddStandardWorkHours adds f to the "standard_work_hours" field.
+func (m *ServiceTypeMutation) AddStandardWorkHours(f float64) {
+	if m.addstandard_work_hours != nil {
+		*m.addstandard_work_hours += f
+	} else {
+		m.addstandard_work_hours = &f
+	}
+}
+
+// AddedStandardWorkHours returns the value that was added to the "standard_work_hours" field in this mutation.
+func (m *ServiceTypeMutation) AddedStandardWorkHours() (r float64, exists bool) {
+	v := m.addstandard_work_hours
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearStandardWorkHours clears the value of the "standard_work_hours" field.
+func (m *ServiceTypeMutation) ClearStandardWorkHours() {
+	m.standard_work_hours = nil
+	m.addstandard_work_hours = nil
+	m.clearedFields[servicetype.FieldStandardWorkHours] = struct{}{}
+}
+
+// StandardWorkHoursCleared returns if the "standard_work_hours" field was cleared in this mutation.
+func (m *ServiceTypeMutation) StandardWorkHoursCleared() bool {
+	_, ok := m.clearedFields[servicetype.FieldStandardWorkHours]
+	return ok
+}
+
+// ResetStandardWorkHours resets all changes to the "standard_work_hours" field.
+func (m *ServiceTypeMutation) ResetStandardWorkHours() {
+	m.standard_work_hours = nil
+	m.addstandard_work_hours = nil
+	delete(m.clearedFields, servicetype.FieldStandardWorkHours)
+}
+
+// SetResponseTimeLimit sets the "response_time_limit" field.
+func (m *ServiceTypeMutation) SetResponseTimeLimit(u uint32) {
+	m.response_time_limit = &u
+	m.addresponse_time_limit = nil
+}
+
+// ResponseTimeLimit returns the value of the "response_time_limit" field in the mutation.
+func (m *ServiceTypeMutation) ResponseTimeLimit() (r uint32, exists bool) {
+	v := m.response_time_limit
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldResponseTimeLimit returns the old "response_time_limit" field's value of the ServiceType entity.
+// If the ServiceType object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ServiceTypeMutation) OldResponseTimeLimit(ctx context.Context) (v *uint32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldResponseTimeLimit is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldResponseTimeLimit requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldResponseTimeLimit: %w", err)
+	}
+	return oldValue.ResponseTimeLimit, nil
+}
+
+// AddResponseTimeLimit adds u to the "response_time_limit" field.
+func (m *ServiceTypeMutation) AddResponseTimeLimit(u int32) {
+	if m.addresponse_time_limit != nil {
+		*m.addresponse_time_limit += u
+	} else {
+		m.addresponse_time_limit = &u
+	}
+}
+
+// AddedResponseTimeLimit returns the value that was added to the "response_time_limit" field in this mutation.
+func (m *ServiceTypeMutation) AddedResponseTimeLimit() (r int32, exists bool) {
+	v := m.addresponse_time_limit
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearResponseTimeLimit clears the value of the "response_time_limit" field.
+func (m *ServiceTypeMutation) ClearResponseTimeLimit() {
+	m.response_time_limit = nil
+	m.addresponse_time_limit = nil
+	m.clearedFields[servicetype.FieldResponseTimeLimit] = struct{}{}
+}
+
+// ResponseTimeLimitCleared returns if the "response_time_limit" field was cleared in this mutation.
+func (m *ServiceTypeMutation) ResponseTimeLimitCleared() bool {
+	_, ok := m.clearedFields[servicetype.FieldResponseTimeLimit]
+	return ok
+}
+
+// ResetResponseTimeLimit resets all changes to the "response_time_limit" field.
+func (m *ServiceTypeMutation) ResetResponseTimeLimit() {
+	m.response_time_limit = nil
+	m.addresponse_time_limit = nil
+	delete(m.clearedFields, servicetype.FieldResponseTimeLimit)
+}
+
+// SetCompletionTimeLimit sets the "completion_time_limit" field.
+func (m *ServiceTypeMutation) SetCompletionTimeLimit(u uint32) {
+	m.completion_time_limit = &u
+	m.addcompletion_time_limit = nil
+}
+
+// CompletionTimeLimit returns the value of the "completion_time_limit" field in the mutation.
+func (m *ServiceTypeMutation) CompletionTimeLimit() (r uint32, exists bool) {
+	v := m.completion_time_limit
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCompletionTimeLimit returns the old "completion_time_limit" field's value of the ServiceType entity.
+// If the ServiceType object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ServiceTypeMutation) OldCompletionTimeLimit(ctx context.Context) (v *uint32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCompletionTimeLimit is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCompletionTimeLimit requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCompletionTimeLimit: %w", err)
+	}
+	return oldValue.CompletionTimeLimit, nil
+}
+
+// AddCompletionTimeLimit adds u to the "completion_time_limit" field.
+func (m *ServiceTypeMutation) AddCompletionTimeLimit(u int32) {
+	if m.addcompletion_time_limit != nil {
+		*m.addcompletion_time_limit += u
+	} else {
+		m.addcompletion_time_limit = &u
+	}
+}
+
+// AddedCompletionTimeLimit returns the value that was added to the "completion_time_limit" field in this mutation.
+func (m *ServiceTypeMutation) AddedCompletionTimeLimit() (r int32, exists bool) {
+	v := m.addcompletion_time_limit
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearCompletionTimeLimit clears the value of the "completion_time_limit" field.
+func (m *ServiceTypeMutation) ClearCompletionTimeLimit() {
+	m.completion_time_limit = nil
+	m.addcompletion_time_limit = nil
+	m.clearedFields[servicetype.FieldCompletionTimeLimit] = struct{}{}
+}
+
+// CompletionTimeLimitCleared returns if the "completion_time_limit" field was cleared in this mutation.
+func (m *ServiceTypeMutation) CompletionTimeLimitCleared() bool {
+	_, ok := m.clearedFields[servicetype.FieldCompletionTimeLimit]
+	return ok
+}
+
+// ResetCompletionTimeLimit resets all changes to the "completion_time_limit" field.
+func (m *ServiceTypeMutation) ResetCompletionTimeLimit() {
+	m.completion_time_limit = nil
+	m.addcompletion_time_limit = nil
+	delete(m.clearedFields, servicetype.FieldCompletionTimeLimit)
+}
+
+// SetGuidance sets the "guidance" field.
+func (m *ServiceTypeMutation) SetGuidance(s string) {
+	m.guidance = &s
+}
+
+// Guidance returns the value of the "guidance" field in the mutation.
+func (m *ServiceTypeMutation) Guidance() (r string, exists bool) {
+	v := m.guidance
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldGuidance returns the old "guidance" field's value of the ServiceType entity.
+// If the ServiceType object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ServiceTypeMutation) OldGuidance(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldGuidance is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldGuidance requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldGuidance: %w", err)
+	}
+	return oldValue.Guidance, nil
+}
+
+// ClearGuidance clears the value of the "guidance" field.
+func (m *ServiceTypeMutation) ClearGuidance() {
+	m.guidance = nil
+	m.clearedFields[servicetype.FieldGuidance] = struct{}{}
+}
+
+// GuidanceCleared returns if the "guidance" field was cleared in this mutation.
+func (m *ServiceTypeMutation) GuidanceCleared() bool {
+	_, ok := m.clearedFields[servicetype.FieldGuidance]
+	return ok
+}
+
+// ResetGuidance resets all changes to the "guidance" field.
+func (m *ServiceTypeMutation) ResetGuidance() {
+	m.guidance = nil
+	delete(m.clearedFields, servicetype.FieldGuidance)
+}
+
+// SetCommonPhrases sets the "common_phrases" field.
+func (m *ServiceTypeMutation) SetCommonPhrases(s []string) {
+	m.common_phrases = &s
+	m.appendcommon_phrases = nil
+}
+
+// CommonPhrases returns the value of the "common_phrases" field in the mutation.
+func (m *ServiceTypeMutation) CommonPhrases() (r []string, exists bool) {
+	v := m.common_phrases
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCommonPhrases returns the old "common_phrases" field's value of the ServiceType entity.
+// If the ServiceType object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ServiceTypeMutation) OldCommonPhrases(ctx context.Context) (v []string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCommonPhrases is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCommonPhrases requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCommonPhrases: %w", err)
+	}
+	return oldValue.CommonPhrases, nil
+}
+
+// AppendCommonPhrases adds s to the "common_phrases" field.
+func (m *ServiceTypeMutation) AppendCommonPhrases(s []string) {
+	m.appendcommon_phrases = append(m.appendcommon_phrases, s...)
+}
+
+// AppendedCommonPhrases returns the list of values that were appended to the "common_phrases" field in this mutation.
+func (m *ServiceTypeMutation) AppendedCommonPhrases() ([]string, bool) {
+	if len(m.appendcommon_phrases) == 0 {
+		return nil, false
+	}
+	return m.appendcommon_phrases, true
+}
+
+// ClearCommonPhrases clears the value of the "common_phrases" field.
+func (m *ServiceTypeMutation) ClearCommonPhrases() {
+	m.common_phrases = nil
+	m.appendcommon_phrases = nil
+	m.clearedFields[servicetype.FieldCommonPhrases] = struct{}{}
+}
+
+// CommonPhrasesCleared returns if the "common_phrases" field was cleared in this mutation.
+func (m *ServiceTypeMutation) CommonPhrasesCleared() bool {
+	_, ok := m.clearedFields[servicetype.FieldCommonPhrases]
+	return ok
+}
+
+// ResetCommonPhrases resets all changes to the "common_phrases" field.
+func (m *ServiceTypeMutation) ResetCommonPhrases() {
+	m.common_phrases = nil
+	m.appendcommon_phrases = nil
+	delete(m.clearedFields, servicetype.FieldCommonPhrases)
+}
+
+// SetStandardTools sets the "standard_tools" field.
+func (m *ServiceTypeMutation) SetStandardTools(s []string) {
+	m.standard_tools = &s
+	m.appendstandard_tools = nil
+}
+
+// StandardTools returns the value of the "standard_tools" field in the mutation.
+func (m *ServiceTypeMutation) StandardTools() (r []string, exists bool) {
+	v := m.standard_tools
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStandardTools returns the old "standard_tools" field's value of the ServiceType entity.
+// If the ServiceType object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ServiceTypeMutation) OldStandardTools(ctx context.Context) (v []string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStandardTools is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStandardTools requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStandardTools: %w", err)
+	}
+	return oldValue.StandardTools, nil
+}
+
+// AppendStandardTools adds s to the "standard_tools" field.
+func (m *ServiceTypeMutation) AppendStandardTools(s []string) {
+	m.appendstandard_tools = append(m.appendstandard_tools, s...)
+}
+
+// AppendedStandardTools returns the list of values that were appended to the "standard_tools" field in this mutation.
+func (m *ServiceTypeMutation) AppendedStandardTools() ([]string, bool) {
+	if len(m.appendstandard_tools) == 0 {
+		return nil, false
+	}
+	return m.appendstandard_tools, true
+}
+
+// ClearStandardTools clears the value of the "standard_tools" field.
+func (m *ServiceTypeMutation) ClearStandardTools() {
+	m.standard_tools = nil
+	m.appendstandard_tools = nil
+	m.clearedFields[servicetype.FieldStandardTools] = struct{}{}
+}
+
+// StandardToolsCleared returns if the "standard_tools" field was cleared in this mutation.
+func (m *ServiceTypeMutation) StandardToolsCleared() bool {
+	_, ok := m.clearedFields[servicetype.FieldStandardTools]
+	return ok
+}
+
+// ResetStandardTools resets all changes to the "standard_tools" field.
+func (m *ServiceTypeMutation) ResetStandardTools() {
+	m.standard_tools = nil
+	m.appendstandard_tools = nil
+	delete(m.clearedFields, servicetype.FieldStandardTools)
+}
+
+// SetSpareParts sets the "spare_parts" field.
+func (m *ServiceTypeMutation) SetSpareParts(s []string) {
+	m.spare_parts = &s
+	m.appendspare_parts = nil
+}
+
+// SpareParts returns the value of the "spare_parts" field in the mutation.
+func (m *ServiceTypeMutation) SpareParts() (r []string, exists bool) {
+	v := m.spare_parts
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSpareParts returns the old "spare_parts" field's value of the ServiceType entity.
+// If the ServiceType object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ServiceTypeMutation) OldSpareParts(ctx context.Context) (v []string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSpareParts is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSpareParts requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSpareParts: %w", err)
+	}
+	return oldValue.SpareParts, nil
+}
+
+// AppendSpareParts adds s to the "spare_parts" field.
+func (m *ServiceTypeMutation) AppendSpareParts(s []string) {
+	m.appendspare_parts = append(m.appendspare_parts, s...)
+}
+
+// AppendedSpareParts returns the list of values that were appended to the "spare_parts" field in this mutation.
+func (m *ServiceTypeMutation) AppendedSpareParts() ([]string, bool) {
+	if len(m.appendspare_parts) == 0 {
+		return nil, false
+	}
+	return m.appendspare_parts, true
+}
+
+// ClearSpareParts clears the value of the "spare_parts" field.
+func (m *ServiceTypeMutation) ClearSpareParts() {
+	m.spare_parts = nil
+	m.appendspare_parts = nil
+	m.clearedFields[servicetype.FieldSpareParts] = struct{}{}
+}
+
+// SparePartsCleared returns if the "spare_parts" field was cleared in this mutation.
+func (m *ServiceTypeMutation) SparePartsCleared() bool {
+	_, ok := m.clearedFields[servicetype.FieldSpareParts]
+	return ok
+}
+
+// ResetSpareParts resets all changes to the "spare_parts" field.
+func (m *ServiceTypeMutation) ResetSpareParts() {
+	m.spare_parts = nil
+	m.appendspare_parts = nil
+	delete(m.clearedFields, servicetype.FieldSpareParts)
+}
+
 // ClearParent clears the "parent" edge to the ServiceType entity.
 func (m *ServiceTypeMutation) ClearParent() {
 	m.clearedparent = true
@@ -928,7 +1445,7 @@ func (m *ServiceTypeMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ServiceTypeMutation) Fields() []string {
-	fields := make([]string, 0, 12)
+	fields := make([]string, 0, 20)
 	if m.created_at != nil {
 		fields = append(fields, servicetype.FieldCreatedAt)
 	}
@@ -965,6 +1482,30 @@ func (m *ServiceTypeMutation) Fields() []string {
 	if m.description != nil {
 		fields = append(fields, servicetype.FieldDescription)
 	}
+	if m.repair_post != nil {
+		fields = append(fields, servicetype.FieldRepairPost)
+	}
+	if m.standard_work_hours != nil {
+		fields = append(fields, servicetype.FieldStandardWorkHours)
+	}
+	if m.response_time_limit != nil {
+		fields = append(fields, servicetype.FieldResponseTimeLimit)
+	}
+	if m.completion_time_limit != nil {
+		fields = append(fields, servicetype.FieldCompletionTimeLimit)
+	}
+	if m.guidance != nil {
+		fields = append(fields, servicetype.FieldGuidance)
+	}
+	if m.common_phrases != nil {
+		fields = append(fields, servicetype.FieldCommonPhrases)
+	}
+	if m.standard_tools != nil {
+		fields = append(fields, servicetype.FieldStandardTools)
+	}
+	if m.spare_parts != nil {
+		fields = append(fields, servicetype.FieldSpareParts)
+	}
 	return fields
 }
 
@@ -997,6 +1538,22 @@ func (m *ServiceTypeMutation) Field(name string) (ent.Value, bool) {
 		return m.Level()
 	case servicetype.FieldDescription:
 		return m.Description()
+	case servicetype.FieldRepairPost:
+		return m.RepairPost()
+	case servicetype.FieldStandardWorkHours:
+		return m.StandardWorkHours()
+	case servicetype.FieldResponseTimeLimit:
+		return m.ResponseTimeLimit()
+	case servicetype.FieldCompletionTimeLimit:
+		return m.CompletionTimeLimit()
+	case servicetype.FieldGuidance:
+		return m.Guidance()
+	case servicetype.FieldCommonPhrases:
+		return m.CommonPhrases()
+	case servicetype.FieldStandardTools:
+		return m.StandardTools()
+	case servicetype.FieldSpareParts:
+		return m.SpareParts()
 	}
 	return nil, false
 }
@@ -1030,6 +1587,22 @@ func (m *ServiceTypeMutation) OldField(ctx context.Context, name string) (ent.Va
 		return m.OldLevel(ctx)
 	case servicetype.FieldDescription:
 		return m.OldDescription(ctx)
+	case servicetype.FieldRepairPost:
+		return m.OldRepairPost(ctx)
+	case servicetype.FieldStandardWorkHours:
+		return m.OldStandardWorkHours(ctx)
+	case servicetype.FieldResponseTimeLimit:
+		return m.OldResponseTimeLimit(ctx)
+	case servicetype.FieldCompletionTimeLimit:
+		return m.OldCompletionTimeLimit(ctx)
+	case servicetype.FieldGuidance:
+		return m.OldGuidance(ctx)
+	case servicetype.FieldCommonPhrases:
+		return m.OldCommonPhrases(ctx)
+	case servicetype.FieldStandardTools:
+		return m.OldStandardTools(ctx)
+	case servicetype.FieldSpareParts:
+		return m.OldSpareParts(ctx)
 	}
 	return nil, fmt.Errorf("unknown ServiceType field %s", name)
 }
@@ -1123,6 +1696,62 @@ func (m *ServiceTypeMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetDescription(v)
 		return nil
+	case servicetype.FieldRepairPost:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRepairPost(v)
+		return nil
+	case servicetype.FieldStandardWorkHours:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStandardWorkHours(v)
+		return nil
+	case servicetype.FieldResponseTimeLimit:
+		v, ok := value.(uint32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetResponseTimeLimit(v)
+		return nil
+	case servicetype.FieldCompletionTimeLimit:
+		v, ok := value.(uint32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCompletionTimeLimit(v)
+		return nil
+	case servicetype.FieldGuidance:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetGuidance(v)
+		return nil
+	case servicetype.FieldCommonPhrases:
+		v, ok := value.([]string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCommonPhrases(v)
+		return nil
+	case servicetype.FieldStandardTools:
+		v, ok := value.([]string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStandardTools(v)
+		return nil
+	case servicetype.FieldSpareParts:
+		v, ok := value.([]string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSpareParts(v)
+		return nil
 	}
 	return fmt.Errorf("unknown ServiceType field %s", name)
 }
@@ -1140,6 +1769,15 @@ func (m *ServiceTypeMutation) AddedFields() []string {
 	if m.adddeleted_by != nil {
 		fields = append(fields, servicetype.FieldDeletedBy)
 	}
+	if m.addstandard_work_hours != nil {
+		fields = append(fields, servicetype.FieldStandardWorkHours)
+	}
+	if m.addresponse_time_limit != nil {
+		fields = append(fields, servicetype.FieldResponseTimeLimit)
+	}
+	if m.addcompletion_time_limit != nil {
+		fields = append(fields, servicetype.FieldCompletionTimeLimit)
+	}
 	return fields
 }
 
@@ -1154,6 +1792,12 @@ func (m *ServiceTypeMutation) AddedField(name string) (ent.Value, bool) {
 		return m.AddedUpdatedBy()
 	case servicetype.FieldDeletedBy:
 		return m.AddedDeletedBy()
+	case servicetype.FieldStandardWorkHours:
+		return m.AddedStandardWorkHours()
+	case servicetype.FieldResponseTimeLimit:
+		return m.AddedResponseTimeLimit()
+	case servicetype.FieldCompletionTimeLimit:
+		return m.AddedCompletionTimeLimit()
 	}
 	return nil, false
 }
@@ -1183,6 +1827,27 @@ func (m *ServiceTypeMutation) AddField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.AddDeletedBy(v)
+		return nil
+	case servicetype.FieldStandardWorkHours:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddStandardWorkHours(v)
+		return nil
+	case servicetype.FieldResponseTimeLimit:
+		v, ok := value.(int32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddResponseTimeLimit(v)
+		return nil
+	case servicetype.FieldCompletionTimeLimit:
+		v, ok := value.(int32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddCompletionTimeLimit(v)
 		return nil
 	}
 	return fmt.Errorf("unknown ServiceType numeric field %s", name)
@@ -1227,6 +1892,30 @@ func (m *ServiceTypeMutation) ClearedFields() []string {
 	}
 	if m.FieldCleared(servicetype.FieldDescription) {
 		fields = append(fields, servicetype.FieldDescription)
+	}
+	if m.FieldCleared(servicetype.FieldRepairPost) {
+		fields = append(fields, servicetype.FieldRepairPost)
+	}
+	if m.FieldCleared(servicetype.FieldStandardWorkHours) {
+		fields = append(fields, servicetype.FieldStandardWorkHours)
+	}
+	if m.FieldCleared(servicetype.FieldResponseTimeLimit) {
+		fields = append(fields, servicetype.FieldResponseTimeLimit)
+	}
+	if m.FieldCleared(servicetype.FieldCompletionTimeLimit) {
+		fields = append(fields, servicetype.FieldCompletionTimeLimit)
+	}
+	if m.FieldCleared(servicetype.FieldGuidance) {
+		fields = append(fields, servicetype.FieldGuidance)
+	}
+	if m.FieldCleared(servicetype.FieldCommonPhrases) {
+		fields = append(fields, servicetype.FieldCommonPhrases)
+	}
+	if m.FieldCleared(servicetype.FieldStandardTools) {
+		fields = append(fields, servicetype.FieldStandardTools)
+	}
+	if m.FieldCleared(servicetype.FieldSpareParts) {
+		fields = append(fields, servicetype.FieldSpareParts)
 	}
 	return fields
 }
@@ -1278,6 +1967,30 @@ func (m *ServiceTypeMutation) ClearField(name string) error {
 	case servicetype.FieldDescription:
 		m.ClearDescription()
 		return nil
+	case servicetype.FieldRepairPost:
+		m.ClearRepairPost()
+		return nil
+	case servicetype.FieldStandardWorkHours:
+		m.ClearStandardWorkHours()
+		return nil
+	case servicetype.FieldResponseTimeLimit:
+		m.ClearResponseTimeLimit()
+		return nil
+	case servicetype.FieldCompletionTimeLimit:
+		m.ClearCompletionTimeLimit()
+		return nil
+	case servicetype.FieldGuidance:
+		m.ClearGuidance()
+		return nil
+	case servicetype.FieldCommonPhrases:
+		m.ClearCommonPhrases()
+		return nil
+	case servicetype.FieldStandardTools:
+		m.ClearStandardTools()
+		return nil
+	case servicetype.FieldSpareParts:
+		m.ClearSpareParts()
+		return nil
 	}
 	return fmt.Errorf("unknown ServiceType nullable field %s", name)
 }
@@ -1321,6 +2034,30 @@ func (m *ServiceTypeMutation) ResetField(name string) error {
 		return nil
 	case servicetype.FieldDescription:
 		m.ResetDescription()
+		return nil
+	case servicetype.FieldRepairPost:
+		m.ResetRepairPost()
+		return nil
+	case servicetype.FieldStandardWorkHours:
+		m.ResetStandardWorkHours()
+		return nil
+	case servicetype.FieldResponseTimeLimit:
+		m.ResetResponseTimeLimit()
+		return nil
+	case servicetype.FieldCompletionTimeLimit:
+		m.ResetCompletionTimeLimit()
+		return nil
+	case servicetype.FieldGuidance:
+		m.ResetGuidance()
+		return nil
+	case servicetype.FieldCommonPhrases:
+		m.ResetCommonPhrases()
+		return nil
+	case servicetype.FieldStandardTools:
+		m.ResetStandardTools()
+		return nil
+	case servicetype.FieldSpareParts:
+		m.ResetSpareParts()
 		return nil
 	}
 	return fmt.Errorf("unknown ServiceType field %s", name)

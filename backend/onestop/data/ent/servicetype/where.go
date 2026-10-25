@@ -110,6 +110,31 @@ func Description(v string) predicate.ServiceType {
 	return predicate.ServiceType(sql.FieldEQ(FieldDescription, v))
 }
 
+// RepairPost applies equality check predicate on the "repair_post" field. It's identical to RepairPostEQ.
+func RepairPost(v string) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldEQ(FieldRepairPost, v))
+}
+
+// StandardWorkHours applies equality check predicate on the "standard_work_hours" field. It's identical to StandardWorkHoursEQ.
+func StandardWorkHours(v float64) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldEQ(FieldStandardWorkHours, v))
+}
+
+// ResponseTimeLimit applies equality check predicate on the "response_time_limit" field. It's identical to ResponseTimeLimitEQ.
+func ResponseTimeLimit(v uint32) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldEQ(FieldResponseTimeLimit, v))
+}
+
+// CompletionTimeLimit applies equality check predicate on the "completion_time_limit" field. It's identical to CompletionTimeLimitEQ.
+func CompletionTimeLimit(v uint32) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldEQ(FieldCompletionTimeLimit, v))
+}
+
+// Guidance applies equality check predicate on the "guidance" field. It's identical to GuidanceEQ.
+func Guidance(v string) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldEQ(FieldGuidance, v))
+}
+
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
 func CreatedAtEQ(v time.Time) predicate.ServiceType {
 	return predicate.ServiceType(sql.FieldEQ(FieldCreatedAt, v))
@@ -713,6 +738,336 @@ func DescriptionEqualFold(v string) predicate.ServiceType {
 // DescriptionContainsFold applies the ContainsFold predicate on the "description" field.
 func DescriptionContainsFold(v string) predicate.ServiceType {
 	return predicate.ServiceType(sql.FieldContainsFold(FieldDescription, v))
+}
+
+// RepairPostEQ applies the EQ predicate on the "repair_post" field.
+func RepairPostEQ(v string) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldEQ(FieldRepairPost, v))
+}
+
+// RepairPostNEQ applies the NEQ predicate on the "repair_post" field.
+func RepairPostNEQ(v string) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldNEQ(FieldRepairPost, v))
+}
+
+// RepairPostIn applies the In predicate on the "repair_post" field.
+func RepairPostIn(vs ...string) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldIn(FieldRepairPost, vs...))
+}
+
+// RepairPostNotIn applies the NotIn predicate on the "repair_post" field.
+func RepairPostNotIn(vs ...string) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldNotIn(FieldRepairPost, vs...))
+}
+
+// RepairPostGT applies the GT predicate on the "repair_post" field.
+func RepairPostGT(v string) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldGT(FieldRepairPost, v))
+}
+
+// RepairPostGTE applies the GTE predicate on the "repair_post" field.
+func RepairPostGTE(v string) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldGTE(FieldRepairPost, v))
+}
+
+// RepairPostLT applies the LT predicate on the "repair_post" field.
+func RepairPostLT(v string) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldLT(FieldRepairPost, v))
+}
+
+// RepairPostLTE applies the LTE predicate on the "repair_post" field.
+func RepairPostLTE(v string) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldLTE(FieldRepairPost, v))
+}
+
+// RepairPostContains applies the Contains predicate on the "repair_post" field.
+func RepairPostContains(v string) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldContains(FieldRepairPost, v))
+}
+
+// RepairPostHasPrefix applies the HasPrefix predicate on the "repair_post" field.
+func RepairPostHasPrefix(v string) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldHasPrefix(FieldRepairPost, v))
+}
+
+// RepairPostHasSuffix applies the HasSuffix predicate on the "repair_post" field.
+func RepairPostHasSuffix(v string) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldHasSuffix(FieldRepairPost, v))
+}
+
+// RepairPostIsNil applies the IsNil predicate on the "repair_post" field.
+func RepairPostIsNil() predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldIsNull(FieldRepairPost))
+}
+
+// RepairPostNotNil applies the NotNil predicate on the "repair_post" field.
+func RepairPostNotNil() predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldNotNull(FieldRepairPost))
+}
+
+// RepairPostEqualFold applies the EqualFold predicate on the "repair_post" field.
+func RepairPostEqualFold(v string) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldEqualFold(FieldRepairPost, v))
+}
+
+// RepairPostContainsFold applies the ContainsFold predicate on the "repair_post" field.
+func RepairPostContainsFold(v string) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldContainsFold(FieldRepairPost, v))
+}
+
+// StandardWorkHoursEQ applies the EQ predicate on the "standard_work_hours" field.
+func StandardWorkHoursEQ(v float64) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldEQ(FieldStandardWorkHours, v))
+}
+
+// StandardWorkHoursNEQ applies the NEQ predicate on the "standard_work_hours" field.
+func StandardWorkHoursNEQ(v float64) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldNEQ(FieldStandardWorkHours, v))
+}
+
+// StandardWorkHoursIn applies the In predicate on the "standard_work_hours" field.
+func StandardWorkHoursIn(vs ...float64) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldIn(FieldStandardWorkHours, vs...))
+}
+
+// StandardWorkHoursNotIn applies the NotIn predicate on the "standard_work_hours" field.
+func StandardWorkHoursNotIn(vs ...float64) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldNotIn(FieldStandardWorkHours, vs...))
+}
+
+// StandardWorkHoursGT applies the GT predicate on the "standard_work_hours" field.
+func StandardWorkHoursGT(v float64) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldGT(FieldStandardWorkHours, v))
+}
+
+// StandardWorkHoursGTE applies the GTE predicate on the "standard_work_hours" field.
+func StandardWorkHoursGTE(v float64) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldGTE(FieldStandardWorkHours, v))
+}
+
+// StandardWorkHoursLT applies the LT predicate on the "standard_work_hours" field.
+func StandardWorkHoursLT(v float64) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldLT(FieldStandardWorkHours, v))
+}
+
+// StandardWorkHoursLTE applies the LTE predicate on the "standard_work_hours" field.
+func StandardWorkHoursLTE(v float64) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldLTE(FieldStandardWorkHours, v))
+}
+
+// StandardWorkHoursIsNil applies the IsNil predicate on the "standard_work_hours" field.
+func StandardWorkHoursIsNil() predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldIsNull(FieldStandardWorkHours))
+}
+
+// StandardWorkHoursNotNil applies the NotNil predicate on the "standard_work_hours" field.
+func StandardWorkHoursNotNil() predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldNotNull(FieldStandardWorkHours))
+}
+
+// ResponseTimeLimitEQ applies the EQ predicate on the "response_time_limit" field.
+func ResponseTimeLimitEQ(v uint32) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldEQ(FieldResponseTimeLimit, v))
+}
+
+// ResponseTimeLimitNEQ applies the NEQ predicate on the "response_time_limit" field.
+func ResponseTimeLimitNEQ(v uint32) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldNEQ(FieldResponseTimeLimit, v))
+}
+
+// ResponseTimeLimitIn applies the In predicate on the "response_time_limit" field.
+func ResponseTimeLimitIn(vs ...uint32) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldIn(FieldResponseTimeLimit, vs...))
+}
+
+// ResponseTimeLimitNotIn applies the NotIn predicate on the "response_time_limit" field.
+func ResponseTimeLimitNotIn(vs ...uint32) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldNotIn(FieldResponseTimeLimit, vs...))
+}
+
+// ResponseTimeLimitGT applies the GT predicate on the "response_time_limit" field.
+func ResponseTimeLimitGT(v uint32) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldGT(FieldResponseTimeLimit, v))
+}
+
+// ResponseTimeLimitGTE applies the GTE predicate on the "response_time_limit" field.
+func ResponseTimeLimitGTE(v uint32) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldGTE(FieldResponseTimeLimit, v))
+}
+
+// ResponseTimeLimitLT applies the LT predicate on the "response_time_limit" field.
+func ResponseTimeLimitLT(v uint32) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldLT(FieldResponseTimeLimit, v))
+}
+
+// ResponseTimeLimitLTE applies the LTE predicate on the "response_time_limit" field.
+func ResponseTimeLimitLTE(v uint32) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldLTE(FieldResponseTimeLimit, v))
+}
+
+// ResponseTimeLimitIsNil applies the IsNil predicate on the "response_time_limit" field.
+func ResponseTimeLimitIsNil() predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldIsNull(FieldResponseTimeLimit))
+}
+
+// ResponseTimeLimitNotNil applies the NotNil predicate on the "response_time_limit" field.
+func ResponseTimeLimitNotNil() predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldNotNull(FieldResponseTimeLimit))
+}
+
+// CompletionTimeLimitEQ applies the EQ predicate on the "completion_time_limit" field.
+func CompletionTimeLimitEQ(v uint32) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldEQ(FieldCompletionTimeLimit, v))
+}
+
+// CompletionTimeLimitNEQ applies the NEQ predicate on the "completion_time_limit" field.
+func CompletionTimeLimitNEQ(v uint32) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldNEQ(FieldCompletionTimeLimit, v))
+}
+
+// CompletionTimeLimitIn applies the In predicate on the "completion_time_limit" field.
+func CompletionTimeLimitIn(vs ...uint32) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldIn(FieldCompletionTimeLimit, vs...))
+}
+
+// CompletionTimeLimitNotIn applies the NotIn predicate on the "completion_time_limit" field.
+func CompletionTimeLimitNotIn(vs ...uint32) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldNotIn(FieldCompletionTimeLimit, vs...))
+}
+
+// CompletionTimeLimitGT applies the GT predicate on the "completion_time_limit" field.
+func CompletionTimeLimitGT(v uint32) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldGT(FieldCompletionTimeLimit, v))
+}
+
+// CompletionTimeLimitGTE applies the GTE predicate on the "completion_time_limit" field.
+func CompletionTimeLimitGTE(v uint32) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldGTE(FieldCompletionTimeLimit, v))
+}
+
+// CompletionTimeLimitLT applies the LT predicate on the "completion_time_limit" field.
+func CompletionTimeLimitLT(v uint32) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldLT(FieldCompletionTimeLimit, v))
+}
+
+// CompletionTimeLimitLTE applies the LTE predicate on the "completion_time_limit" field.
+func CompletionTimeLimitLTE(v uint32) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldLTE(FieldCompletionTimeLimit, v))
+}
+
+// CompletionTimeLimitIsNil applies the IsNil predicate on the "completion_time_limit" field.
+func CompletionTimeLimitIsNil() predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldIsNull(FieldCompletionTimeLimit))
+}
+
+// CompletionTimeLimitNotNil applies the NotNil predicate on the "completion_time_limit" field.
+func CompletionTimeLimitNotNil() predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldNotNull(FieldCompletionTimeLimit))
+}
+
+// GuidanceEQ applies the EQ predicate on the "guidance" field.
+func GuidanceEQ(v string) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldEQ(FieldGuidance, v))
+}
+
+// GuidanceNEQ applies the NEQ predicate on the "guidance" field.
+func GuidanceNEQ(v string) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldNEQ(FieldGuidance, v))
+}
+
+// GuidanceIn applies the In predicate on the "guidance" field.
+func GuidanceIn(vs ...string) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldIn(FieldGuidance, vs...))
+}
+
+// GuidanceNotIn applies the NotIn predicate on the "guidance" field.
+func GuidanceNotIn(vs ...string) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldNotIn(FieldGuidance, vs...))
+}
+
+// GuidanceGT applies the GT predicate on the "guidance" field.
+func GuidanceGT(v string) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldGT(FieldGuidance, v))
+}
+
+// GuidanceGTE applies the GTE predicate on the "guidance" field.
+func GuidanceGTE(v string) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldGTE(FieldGuidance, v))
+}
+
+// GuidanceLT applies the LT predicate on the "guidance" field.
+func GuidanceLT(v string) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldLT(FieldGuidance, v))
+}
+
+// GuidanceLTE applies the LTE predicate on the "guidance" field.
+func GuidanceLTE(v string) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldLTE(FieldGuidance, v))
+}
+
+// GuidanceContains applies the Contains predicate on the "guidance" field.
+func GuidanceContains(v string) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldContains(FieldGuidance, v))
+}
+
+// GuidanceHasPrefix applies the HasPrefix predicate on the "guidance" field.
+func GuidanceHasPrefix(v string) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldHasPrefix(FieldGuidance, v))
+}
+
+// GuidanceHasSuffix applies the HasSuffix predicate on the "guidance" field.
+func GuidanceHasSuffix(v string) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldHasSuffix(FieldGuidance, v))
+}
+
+// GuidanceIsNil applies the IsNil predicate on the "guidance" field.
+func GuidanceIsNil() predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldIsNull(FieldGuidance))
+}
+
+// GuidanceNotNil applies the NotNil predicate on the "guidance" field.
+func GuidanceNotNil() predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldNotNull(FieldGuidance))
+}
+
+// GuidanceEqualFold applies the EqualFold predicate on the "guidance" field.
+func GuidanceEqualFold(v string) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldEqualFold(FieldGuidance, v))
+}
+
+// GuidanceContainsFold applies the ContainsFold predicate on the "guidance" field.
+func GuidanceContainsFold(v string) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldContainsFold(FieldGuidance, v))
+}
+
+// CommonPhrasesIsNil applies the IsNil predicate on the "common_phrases" field.
+func CommonPhrasesIsNil() predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldIsNull(FieldCommonPhrases))
+}
+
+// CommonPhrasesNotNil applies the NotNil predicate on the "common_phrases" field.
+func CommonPhrasesNotNil() predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldNotNull(FieldCommonPhrases))
+}
+
+// StandardToolsIsNil applies the IsNil predicate on the "standard_tools" field.
+func StandardToolsIsNil() predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldIsNull(FieldStandardTools))
+}
+
+// StandardToolsNotNil applies the NotNil predicate on the "standard_tools" field.
+func StandardToolsNotNil() predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldNotNull(FieldStandardTools))
+}
+
+// SparePartsIsNil applies the IsNil predicate on the "spare_parts" field.
+func SparePartsIsNil() predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldIsNull(FieldSpareParts))
+}
+
+// SparePartsNotNil applies the NotNil predicate on the "spare_parts" field.
+func SparePartsNotNil() predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldNotNull(FieldSpareParts))
 }
 
 // HasParent applies the HasEdge predicate on the "parent" edge.

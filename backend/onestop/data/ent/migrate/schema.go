@@ -23,6 +23,14 @@ var (
 		{Name: "name", Type: field.TypeString, Nullable: true, Size: 128, Comment: "服务名称"},
 		{Name: "level", Type: field.TypeEnum, Nullable: true, Comment: "服务层级 LEVEL_MAJOR:大类 LEVEL_MIDDLE:中类 LEVEL_MINOR:小类 LEVEL_DETAIL:细类", Enums: []string{"LEVEL_MAJOR", "LEVEL_MIDDLE", "LEVEL_MINOR", "LEVEL_DETAIL"}},
 		{Name: "description", Type: field.TypeString, Nullable: true, Size: 512, Comment: "描述", Default: ""},
+		{Name: "repair_post", Type: field.TypeString, Nullable: true, Size: 64, Comment: "维修岗位（派单目标岗位，如：电工/管工/空调工）"},
+		{Name: "standard_work_hours", Type: field.TypeFloat64, Nullable: true, Comment: "标准工时（小时）：单次作业标准人时，绩效与负载核算用"},
+		{Name: "response_time_limit", Type: field.TypeUint32, Nullable: true, Comment: "响应时限（分钟）：受理到到场的 SLA"},
+		{Name: "completion_time_limit", Type: field.TypeUint32, Nullable: true, Comment: "完成时限（分钟）：受理到完工的 SLA"},
+		{Name: "guidance", Type: field.TypeString, Nullable: true, Size: 2048, Comment: "标准指导说明：作业 SOP 与安全注意事项"},
+		{Name: "common_phrases", Type: field.TypeJSON, Nullable: true, Comment: "常见报修语句清单：报修端快捷语句，兼作语义归型语料"},
+		{Name: "standard_tools", Type: field.TypeJSON, Nullable: true, Comment: "服务标准工具清单：出工标配工具"},
+		{Name: "spare_parts", Type: field.TypeJSON, Nullable: true, Comment: "常用备件/耗材清单：出工常备，配合库存领用"},
 		{Name: "parent_id", Type: field.TypeUint32, Nullable: true, Comment: "父节点ID"},
 	}
 	// OnestopServiceTypesTable holds the schema information for the "onestop_service_types" table.
@@ -34,7 +42,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "onestop_service_types_onestop_service_types_children",
-				Columns:    []*schema.Column{OnestopServiceTypesColumns[12]},
+				Columns:    []*schema.Column{OnestopServiceTypesColumns[20]},
 				RefColumns: []*schema.Column{OnestopServiceTypesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -43,7 +51,7 @@ var (
 			{
 				Name:    "servicetype_parent_id",
 				Unique:  false,
-				Columns: []*schema.Column{OnestopServiceTypesColumns[12]},
+				Columns: []*schema.Column{OnestopServiceTypesColumns[20]},
 			},
 			{
 				Name:    "servicetype_level",

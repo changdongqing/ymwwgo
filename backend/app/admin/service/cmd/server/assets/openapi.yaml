@@ -16554,6 +16554,39 @@ components:
                 isEnabled:
                     type: boolean
                     description: 是否启用
+                repairPost:
+                    type: string
+                    description: 维修岗位（派单目标岗位，如：电工/管工/空调工）
+                standardWorkHours:
+                    type: number
+                    description: 标准工时（小时）：单次作业标准人时，绩效与负载核算用
+                    format: double
+                responseTimeLimit:
+                    type: integer
+                    description: 响应时限（分钟）：受理到到场的 SLA
+                    format: uint32
+                completionTimeLimit:
+                    type: integer
+                    description: 完成时限（分钟）：受理到完工的 SLA
+                    format: uint32
+                guidance:
+                    type: string
+                    description: 标准指导说明：作业 SOP 与安全注意事项
+                commonPhrases:
+                    type: array
+                    items:
+                        type: string
+                    description: 常见报修语句清单：报修端快捷语句，兼作语义归型语料
+                standardTools:
+                    type: array
+                    items:
+                        type: string
+                    description: 服务标准工具清单：出工标配工具
+                spareParts:
+                    type: array
+                    items:
+                        type: string
+                    description: 常用备件/耗材清单：出工常备，配合库存领用
                 createdBy:
                     type: integer
                     description: 创建者ID

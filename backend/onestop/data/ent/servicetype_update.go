@@ -12,6 +12,7 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/dialect/sql/sqljson"
 	"entgo.io/ent/schema/field"
 )
 
@@ -270,6 +271,181 @@ func (_u *ServiceTypeUpdate) ClearDescription() *ServiceTypeUpdate {
 	return _u
 }
 
+// SetRepairPost sets the "repair_post" field.
+func (_u *ServiceTypeUpdate) SetRepairPost(v string) *ServiceTypeUpdate {
+	_u.mutation.SetRepairPost(v)
+	return _u
+}
+
+// SetNillableRepairPost sets the "repair_post" field if the given value is not nil.
+func (_u *ServiceTypeUpdate) SetNillableRepairPost(v *string) *ServiceTypeUpdate {
+	if v != nil {
+		_u.SetRepairPost(*v)
+	}
+	return _u
+}
+
+// ClearRepairPost clears the value of the "repair_post" field.
+func (_u *ServiceTypeUpdate) ClearRepairPost() *ServiceTypeUpdate {
+	_u.mutation.ClearRepairPost()
+	return _u
+}
+
+// SetStandardWorkHours sets the "standard_work_hours" field.
+func (_u *ServiceTypeUpdate) SetStandardWorkHours(v float64) *ServiceTypeUpdate {
+	_u.mutation.ResetStandardWorkHours()
+	_u.mutation.SetStandardWorkHours(v)
+	return _u
+}
+
+// SetNillableStandardWorkHours sets the "standard_work_hours" field if the given value is not nil.
+func (_u *ServiceTypeUpdate) SetNillableStandardWorkHours(v *float64) *ServiceTypeUpdate {
+	if v != nil {
+		_u.SetStandardWorkHours(*v)
+	}
+	return _u
+}
+
+// AddStandardWorkHours adds value to the "standard_work_hours" field.
+func (_u *ServiceTypeUpdate) AddStandardWorkHours(v float64) *ServiceTypeUpdate {
+	_u.mutation.AddStandardWorkHours(v)
+	return _u
+}
+
+// ClearStandardWorkHours clears the value of the "standard_work_hours" field.
+func (_u *ServiceTypeUpdate) ClearStandardWorkHours() *ServiceTypeUpdate {
+	_u.mutation.ClearStandardWorkHours()
+	return _u
+}
+
+// SetResponseTimeLimit sets the "response_time_limit" field.
+func (_u *ServiceTypeUpdate) SetResponseTimeLimit(v uint32) *ServiceTypeUpdate {
+	_u.mutation.ResetResponseTimeLimit()
+	_u.mutation.SetResponseTimeLimit(v)
+	return _u
+}
+
+// SetNillableResponseTimeLimit sets the "response_time_limit" field if the given value is not nil.
+func (_u *ServiceTypeUpdate) SetNillableResponseTimeLimit(v *uint32) *ServiceTypeUpdate {
+	if v != nil {
+		_u.SetResponseTimeLimit(*v)
+	}
+	return _u
+}
+
+// AddResponseTimeLimit adds value to the "response_time_limit" field.
+func (_u *ServiceTypeUpdate) AddResponseTimeLimit(v int32) *ServiceTypeUpdate {
+	_u.mutation.AddResponseTimeLimit(v)
+	return _u
+}
+
+// ClearResponseTimeLimit clears the value of the "response_time_limit" field.
+func (_u *ServiceTypeUpdate) ClearResponseTimeLimit() *ServiceTypeUpdate {
+	_u.mutation.ClearResponseTimeLimit()
+	return _u
+}
+
+// SetCompletionTimeLimit sets the "completion_time_limit" field.
+func (_u *ServiceTypeUpdate) SetCompletionTimeLimit(v uint32) *ServiceTypeUpdate {
+	_u.mutation.ResetCompletionTimeLimit()
+	_u.mutation.SetCompletionTimeLimit(v)
+	return _u
+}
+
+// SetNillableCompletionTimeLimit sets the "completion_time_limit" field if the given value is not nil.
+func (_u *ServiceTypeUpdate) SetNillableCompletionTimeLimit(v *uint32) *ServiceTypeUpdate {
+	if v != nil {
+		_u.SetCompletionTimeLimit(*v)
+	}
+	return _u
+}
+
+// AddCompletionTimeLimit adds value to the "completion_time_limit" field.
+func (_u *ServiceTypeUpdate) AddCompletionTimeLimit(v int32) *ServiceTypeUpdate {
+	_u.mutation.AddCompletionTimeLimit(v)
+	return _u
+}
+
+// ClearCompletionTimeLimit clears the value of the "completion_time_limit" field.
+func (_u *ServiceTypeUpdate) ClearCompletionTimeLimit() *ServiceTypeUpdate {
+	_u.mutation.ClearCompletionTimeLimit()
+	return _u
+}
+
+// SetGuidance sets the "guidance" field.
+func (_u *ServiceTypeUpdate) SetGuidance(v string) *ServiceTypeUpdate {
+	_u.mutation.SetGuidance(v)
+	return _u
+}
+
+// SetNillableGuidance sets the "guidance" field if the given value is not nil.
+func (_u *ServiceTypeUpdate) SetNillableGuidance(v *string) *ServiceTypeUpdate {
+	if v != nil {
+		_u.SetGuidance(*v)
+	}
+	return _u
+}
+
+// ClearGuidance clears the value of the "guidance" field.
+func (_u *ServiceTypeUpdate) ClearGuidance() *ServiceTypeUpdate {
+	_u.mutation.ClearGuidance()
+	return _u
+}
+
+// SetCommonPhrases sets the "common_phrases" field.
+func (_u *ServiceTypeUpdate) SetCommonPhrases(v []string) *ServiceTypeUpdate {
+	_u.mutation.SetCommonPhrases(v)
+	return _u
+}
+
+// AppendCommonPhrases appends value to the "common_phrases" field.
+func (_u *ServiceTypeUpdate) AppendCommonPhrases(v []string) *ServiceTypeUpdate {
+	_u.mutation.AppendCommonPhrases(v)
+	return _u
+}
+
+// ClearCommonPhrases clears the value of the "common_phrases" field.
+func (_u *ServiceTypeUpdate) ClearCommonPhrases() *ServiceTypeUpdate {
+	_u.mutation.ClearCommonPhrases()
+	return _u
+}
+
+// SetStandardTools sets the "standard_tools" field.
+func (_u *ServiceTypeUpdate) SetStandardTools(v []string) *ServiceTypeUpdate {
+	_u.mutation.SetStandardTools(v)
+	return _u
+}
+
+// AppendStandardTools appends value to the "standard_tools" field.
+func (_u *ServiceTypeUpdate) AppendStandardTools(v []string) *ServiceTypeUpdate {
+	_u.mutation.AppendStandardTools(v)
+	return _u
+}
+
+// ClearStandardTools clears the value of the "standard_tools" field.
+func (_u *ServiceTypeUpdate) ClearStandardTools() *ServiceTypeUpdate {
+	_u.mutation.ClearStandardTools()
+	return _u
+}
+
+// SetSpareParts sets the "spare_parts" field.
+func (_u *ServiceTypeUpdate) SetSpareParts(v []string) *ServiceTypeUpdate {
+	_u.mutation.SetSpareParts(v)
+	return _u
+}
+
+// AppendSpareParts appends value to the "spare_parts" field.
+func (_u *ServiceTypeUpdate) AppendSpareParts(v []string) *ServiceTypeUpdate {
+	_u.mutation.AppendSpareParts(v)
+	return _u
+}
+
+// ClearSpareParts clears the value of the "spare_parts" field.
+func (_u *ServiceTypeUpdate) ClearSpareParts() *ServiceTypeUpdate {
+	_u.mutation.ClearSpareParts()
+	return _u
+}
+
 // SetParent sets the "parent" edge to the ServiceType entity.
 func (_u *ServiceTypeUpdate) SetParent(v *ServiceType) *ServiceTypeUpdate {
 	return _u.SetParentID(v.ID)
@@ -371,6 +547,16 @@ func (_u *ServiceTypeUpdate) check() error {
 			return &ValidationError{Name: "description", err: fmt.Errorf(`ent: validator failed for field "ServiceType.description": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.RepairPost(); ok {
+		if err := servicetype.RepairPostValidator(v); err != nil {
+			return &ValidationError{Name: "repair_post", err: fmt.Errorf(`ent: validator failed for field "ServiceType.repair_post": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.Guidance(); ok {
+		if err := servicetype.GuidanceValidator(v); err != nil {
+			return &ValidationError{Name: "guidance", err: fmt.Errorf(`ent: validator failed for field "ServiceType.guidance": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -463,6 +649,78 @@ func (_u *ServiceTypeUpdate) sqlSave(ctx context.Context) (_node int, err error)
 	}
 	if _u.mutation.DescriptionCleared() {
 		_spec.ClearField(servicetype.FieldDescription, field.TypeString)
+	}
+	if value, ok := _u.mutation.RepairPost(); ok {
+		_spec.SetField(servicetype.FieldRepairPost, field.TypeString, value)
+	}
+	if _u.mutation.RepairPostCleared() {
+		_spec.ClearField(servicetype.FieldRepairPost, field.TypeString)
+	}
+	if value, ok := _u.mutation.StandardWorkHours(); ok {
+		_spec.SetField(servicetype.FieldStandardWorkHours, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.AddedStandardWorkHours(); ok {
+		_spec.AddField(servicetype.FieldStandardWorkHours, field.TypeFloat64, value)
+	}
+	if _u.mutation.StandardWorkHoursCleared() {
+		_spec.ClearField(servicetype.FieldStandardWorkHours, field.TypeFloat64)
+	}
+	if value, ok := _u.mutation.ResponseTimeLimit(); ok {
+		_spec.SetField(servicetype.FieldResponseTimeLimit, field.TypeUint32, value)
+	}
+	if value, ok := _u.mutation.AddedResponseTimeLimit(); ok {
+		_spec.AddField(servicetype.FieldResponseTimeLimit, field.TypeUint32, value)
+	}
+	if _u.mutation.ResponseTimeLimitCleared() {
+		_spec.ClearField(servicetype.FieldResponseTimeLimit, field.TypeUint32)
+	}
+	if value, ok := _u.mutation.CompletionTimeLimit(); ok {
+		_spec.SetField(servicetype.FieldCompletionTimeLimit, field.TypeUint32, value)
+	}
+	if value, ok := _u.mutation.AddedCompletionTimeLimit(); ok {
+		_spec.AddField(servicetype.FieldCompletionTimeLimit, field.TypeUint32, value)
+	}
+	if _u.mutation.CompletionTimeLimitCleared() {
+		_spec.ClearField(servicetype.FieldCompletionTimeLimit, field.TypeUint32)
+	}
+	if value, ok := _u.mutation.Guidance(); ok {
+		_spec.SetField(servicetype.FieldGuidance, field.TypeString, value)
+	}
+	if _u.mutation.GuidanceCleared() {
+		_spec.ClearField(servicetype.FieldGuidance, field.TypeString)
+	}
+	if value, ok := _u.mutation.CommonPhrases(); ok {
+		_spec.SetField(servicetype.FieldCommonPhrases, field.TypeJSON, value)
+	}
+	if value, ok := _u.mutation.AppendedCommonPhrases(); ok {
+		_spec.AddModifier(func(u *sql.UpdateBuilder) {
+			sqljson.Append(u, servicetype.FieldCommonPhrases, value)
+		})
+	}
+	if _u.mutation.CommonPhrasesCleared() {
+		_spec.ClearField(servicetype.FieldCommonPhrases, field.TypeJSON)
+	}
+	if value, ok := _u.mutation.StandardTools(); ok {
+		_spec.SetField(servicetype.FieldStandardTools, field.TypeJSON, value)
+	}
+	if value, ok := _u.mutation.AppendedStandardTools(); ok {
+		_spec.AddModifier(func(u *sql.UpdateBuilder) {
+			sqljson.Append(u, servicetype.FieldStandardTools, value)
+		})
+	}
+	if _u.mutation.StandardToolsCleared() {
+		_spec.ClearField(servicetype.FieldStandardTools, field.TypeJSON)
+	}
+	if value, ok := _u.mutation.SpareParts(); ok {
+		_spec.SetField(servicetype.FieldSpareParts, field.TypeJSON, value)
+	}
+	if value, ok := _u.mutation.AppendedSpareParts(); ok {
+		_spec.AddModifier(func(u *sql.UpdateBuilder) {
+			sqljson.Append(u, servicetype.FieldSpareParts, value)
+		})
+	}
+	if _u.mutation.SparePartsCleared() {
+		_spec.ClearField(servicetype.FieldSpareParts, field.TypeJSON)
 	}
 	if _u.mutation.ParentCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -801,6 +1059,181 @@ func (_u *ServiceTypeUpdateOne) ClearDescription() *ServiceTypeUpdateOne {
 	return _u
 }
 
+// SetRepairPost sets the "repair_post" field.
+func (_u *ServiceTypeUpdateOne) SetRepairPost(v string) *ServiceTypeUpdateOne {
+	_u.mutation.SetRepairPost(v)
+	return _u
+}
+
+// SetNillableRepairPost sets the "repair_post" field if the given value is not nil.
+func (_u *ServiceTypeUpdateOne) SetNillableRepairPost(v *string) *ServiceTypeUpdateOne {
+	if v != nil {
+		_u.SetRepairPost(*v)
+	}
+	return _u
+}
+
+// ClearRepairPost clears the value of the "repair_post" field.
+func (_u *ServiceTypeUpdateOne) ClearRepairPost() *ServiceTypeUpdateOne {
+	_u.mutation.ClearRepairPost()
+	return _u
+}
+
+// SetStandardWorkHours sets the "standard_work_hours" field.
+func (_u *ServiceTypeUpdateOne) SetStandardWorkHours(v float64) *ServiceTypeUpdateOne {
+	_u.mutation.ResetStandardWorkHours()
+	_u.mutation.SetStandardWorkHours(v)
+	return _u
+}
+
+// SetNillableStandardWorkHours sets the "standard_work_hours" field if the given value is not nil.
+func (_u *ServiceTypeUpdateOne) SetNillableStandardWorkHours(v *float64) *ServiceTypeUpdateOne {
+	if v != nil {
+		_u.SetStandardWorkHours(*v)
+	}
+	return _u
+}
+
+// AddStandardWorkHours adds value to the "standard_work_hours" field.
+func (_u *ServiceTypeUpdateOne) AddStandardWorkHours(v float64) *ServiceTypeUpdateOne {
+	_u.mutation.AddStandardWorkHours(v)
+	return _u
+}
+
+// ClearStandardWorkHours clears the value of the "standard_work_hours" field.
+func (_u *ServiceTypeUpdateOne) ClearStandardWorkHours() *ServiceTypeUpdateOne {
+	_u.mutation.ClearStandardWorkHours()
+	return _u
+}
+
+// SetResponseTimeLimit sets the "response_time_limit" field.
+func (_u *ServiceTypeUpdateOne) SetResponseTimeLimit(v uint32) *ServiceTypeUpdateOne {
+	_u.mutation.ResetResponseTimeLimit()
+	_u.mutation.SetResponseTimeLimit(v)
+	return _u
+}
+
+// SetNillableResponseTimeLimit sets the "response_time_limit" field if the given value is not nil.
+func (_u *ServiceTypeUpdateOne) SetNillableResponseTimeLimit(v *uint32) *ServiceTypeUpdateOne {
+	if v != nil {
+		_u.SetResponseTimeLimit(*v)
+	}
+	return _u
+}
+
+// AddResponseTimeLimit adds value to the "response_time_limit" field.
+func (_u *ServiceTypeUpdateOne) AddResponseTimeLimit(v int32) *ServiceTypeUpdateOne {
+	_u.mutation.AddResponseTimeLimit(v)
+	return _u
+}
+
+// ClearResponseTimeLimit clears the value of the "response_time_limit" field.
+func (_u *ServiceTypeUpdateOne) ClearResponseTimeLimit() *ServiceTypeUpdateOne {
+	_u.mutation.ClearResponseTimeLimit()
+	return _u
+}
+
+// SetCompletionTimeLimit sets the "completion_time_limit" field.
+func (_u *ServiceTypeUpdateOne) SetCompletionTimeLimit(v uint32) *ServiceTypeUpdateOne {
+	_u.mutation.ResetCompletionTimeLimit()
+	_u.mutation.SetCompletionTimeLimit(v)
+	return _u
+}
+
+// SetNillableCompletionTimeLimit sets the "completion_time_limit" field if the given value is not nil.
+func (_u *ServiceTypeUpdateOne) SetNillableCompletionTimeLimit(v *uint32) *ServiceTypeUpdateOne {
+	if v != nil {
+		_u.SetCompletionTimeLimit(*v)
+	}
+	return _u
+}
+
+// AddCompletionTimeLimit adds value to the "completion_time_limit" field.
+func (_u *ServiceTypeUpdateOne) AddCompletionTimeLimit(v int32) *ServiceTypeUpdateOne {
+	_u.mutation.AddCompletionTimeLimit(v)
+	return _u
+}
+
+// ClearCompletionTimeLimit clears the value of the "completion_time_limit" field.
+func (_u *ServiceTypeUpdateOne) ClearCompletionTimeLimit() *ServiceTypeUpdateOne {
+	_u.mutation.ClearCompletionTimeLimit()
+	return _u
+}
+
+// SetGuidance sets the "guidance" field.
+func (_u *ServiceTypeUpdateOne) SetGuidance(v string) *ServiceTypeUpdateOne {
+	_u.mutation.SetGuidance(v)
+	return _u
+}
+
+// SetNillableGuidance sets the "guidance" field if the given value is not nil.
+func (_u *ServiceTypeUpdateOne) SetNillableGuidance(v *string) *ServiceTypeUpdateOne {
+	if v != nil {
+		_u.SetGuidance(*v)
+	}
+	return _u
+}
+
+// ClearGuidance clears the value of the "guidance" field.
+func (_u *ServiceTypeUpdateOne) ClearGuidance() *ServiceTypeUpdateOne {
+	_u.mutation.ClearGuidance()
+	return _u
+}
+
+// SetCommonPhrases sets the "common_phrases" field.
+func (_u *ServiceTypeUpdateOne) SetCommonPhrases(v []string) *ServiceTypeUpdateOne {
+	_u.mutation.SetCommonPhrases(v)
+	return _u
+}
+
+// AppendCommonPhrases appends value to the "common_phrases" field.
+func (_u *ServiceTypeUpdateOne) AppendCommonPhrases(v []string) *ServiceTypeUpdateOne {
+	_u.mutation.AppendCommonPhrases(v)
+	return _u
+}
+
+// ClearCommonPhrases clears the value of the "common_phrases" field.
+func (_u *ServiceTypeUpdateOne) ClearCommonPhrases() *ServiceTypeUpdateOne {
+	_u.mutation.ClearCommonPhrases()
+	return _u
+}
+
+// SetStandardTools sets the "standard_tools" field.
+func (_u *ServiceTypeUpdateOne) SetStandardTools(v []string) *ServiceTypeUpdateOne {
+	_u.mutation.SetStandardTools(v)
+	return _u
+}
+
+// AppendStandardTools appends value to the "standard_tools" field.
+func (_u *ServiceTypeUpdateOne) AppendStandardTools(v []string) *ServiceTypeUpdateOne {
+	_u.mutation.AppendStandardTools(v)
+	return _u
+}
+
+// ClearStandardTools clears the value of the "standard_tools" field.
+func (_u *ServiceTypeUpdateOne) ClearStandardTools() *ServiceTypeUpdateOne {
+	_u.mutation.ClearStandardTools()
+	return _u
+}
+
+// SetSpareParts sets the "spare_parts" field.
+func (_u *ServiceTypeUpdateOne) SetSpareParts(v []string) *ServiceTypeUpdateOne {
+	_u.mutation.SetSpareParts(v)
+	return _u
+}
+
+// AppendSpareParts appends value to the "spare_parts" field.
+func (_u *ServiceTypeUpdateOne) AppendSpareParts(v []string) *ServiceTypeUpdateOne {
+	_u.mutation.AppendSpareParts(v)
+	return _u
+}
+
+// ClearSpareParts clears the value of the "spare_parts" field.
+func (_u *ServiceTypeUpdateOne) ClearSpareParts() *ServiceTypeUpdateOne {
+	_u.mutation.ClearSpareParts()
+	return _u
+}
+
 // SetParent sets the "parent" edge to the ServiceType entity.
 func (_u *ServiceTypeUpdateOne) SetParent(v *ServiceType) *ServiceTypeUpdateOne {
 	return _u.SetParentID(v.ID)
@@ -915,6 +1348,16 @@ func (_u *ServiceTypeUpdateOne) check() error {
 			return &ValidationError{Name: "description", err: fmt.Errorf(`ent: validator failed for field "ServiceType.description": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.RepairPost(); ok {
+		if err := servicetype.RepairPostValidator(v); err != nil {
+			return &ValidationError{Name: "repair_post", err: fmt.Errorf(`ent: validator failed for field "ServiceType.repair_post": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.Guidance(); ok {
+		if err := servicetype.GuidanceValidator(v); err != nil {
+			return &ValidationError{Name: "guidance", err: fmt.Errorf(`ent: validator failed for field "ServiceType.guidance": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -1024,6 +1467,78 @@ func (_u *ServiceTypeUpdateOne) sqlSave(ctx context.Context) (_node *ServiceType
 	}
 	if _u.mutation.DescriptionCleared() {
 		_spec.ClearField(servicetype.FieldDescription, field.TypeString)
+	}
+	if value, ok := _u.mutation.RepairPost(); ok {
+		_spec.SetField(servicetype.FieldRepairPost, field.TypeString, value)
+	}
+	if _u.mutation.RepairPostCleared() {
+		_spec.ClearField(servicetype.FieldRepairPost, field.TypeString)
+	}
+	if value, ok := _u.mutation.StandardWorkHours(); ok {
+		_spec.SetField(servicetype.FieldStandardWorkHours, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.AddedStandardWorkHours(); ok {
+		_spec.AddField(servicetype.FieldStandardWorkHours, field.TypeFloat64, value)
+	}
+	if _u.mutation.StandardWorkHoursCleared() {
+		_spec.ClearField(servicetype.FieldStandardWorkHours, field.TypeFloat64)
+	}
+	if value, ok := _u.mutation.ResponseTimeLimit(); ok {
+		_spec.SetField(servicetype.FieldResponseTimeLimit, field.TypeUint32, value)
+	}
+	if value, ok := _u.mutation.AddedResponseTimeLimit(); ok {
+		_spec.AddField(servicetype.FieldResponseTimeLimit, field.TypeUint32, value)
+	}
+	if _u.mutation.ResponseTimeLimitCleared() {
+		_spec.ClearField(servicetype.FieldResponseTimeLimit, field.TypeUint32)
+	}
+	if value, ok := _u.mutation.CompletionTimeLimit(); ok {
+		_spec.SetField(servicetype.FieldCompletionTimeLimit, field.TypeUint32, value)
+	}
+	if value, ok := _u.mutation.AddedCompletionTimeLimit(); ok {
+		_spec.AddField(servicetype.FieldCompletionTimeLimit, field.TypeUint32, value)
+	}
+	if _u.mutation.CompletionTimeLimitCleared() {
+		_spec.ClearField(servicetype.FieldCompletionTimeLimit, field.TypeUint32)
+	}
+	if value, ok := _u.mutation.Guidance(); ok {
+		_spec.SetField(servicetype.FieldGuidance, field.TypeString, value)
+	}
+	if _u.mutation.GuidanceCleared() {
+		_spec.ClearField(servicetype.FieldGuidance, field.TypeString)
+	}
+	if value, ok := _u.mutation.CommonPhrases(); ok {
+		_spec.SetField(servicetype.FieldCommonPhrases, field.TypeJSON, value)
+	}
+	if value, ok := _u.mutation.AppendedCommonPhrases(); ok {
+		_spec.AddModifier(func(u *sql.UpdateBuilder) {
+			sqljson.Append(u, servicetype.FieldCommonPhrases, value)
+		})
+	}
+	if _u.mutation.CommonPhrasesCleared() {
+		_spec.ClearField(servicetype.FieldCommonPhrases, field.TypeJSON)
+	}
+	if value, ok := _u.mutation.StandardTools(); ok {
+		_spec.SetField(servicetype.FieldStandardTools, field.TypeJSON, value)
+	}
+	if value, ok := _u.mutation.AppendedStandardTools(); ok {
+		_spec.AddModifier(func(u *sql.UpdateBuilder) {
+			sqljson.Append(u, servicetype.FieldStandardTools, value)
+		})
+	}
+	if _u.mutation.StandardToolsCleared() {
+		_spec.ClearField(servicetype.FieldStandardTools, field.TypeJSON)
+	}
+	if value, ok := _u.mutation.SpareParts(); ok {
+		_spec.SetField(servicetype.FieldSpareParts, field.TypeJSON, value)
+	}
+	if value, ok := _u.mutation.AppendedSpareParts(); ok {
+		_spec.AddModifier(func(u *sql.UpdateBuilder) {
+			sqljson.Append(u, servicetype.FieldSpareParts, value)
+		})
+	}
+	if _u.mutation.SparePartsCleared() {
+		_spec.ClearField(servicetype.FieldSpareParts, field.TypeJSON)
 	}
 	if _u.mutation.ParentCleared() {
 		edge := &sqlgraph.EdgeSpec{

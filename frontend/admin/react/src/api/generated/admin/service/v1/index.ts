@@ -7656,16 +7656,24 @@ export type onestopservicev1_ListServiceTypeResponse = {
 // 一站式服务类型
 export type onestopservicev1_ServiceType = {
   code?: string;
+  commonPhrases: string[] | undefined;
+  completionTimeLimit?: number;
   createdAt?: wellKnownTimestamp;
   createdBy?: number;
   deletedAt?: wellKnownTimestamp;
   deletedBy?: number;
   description?: string;
+  guidance?: string;
   id?: number;
   isEnabled?: boolean;
   level?: onestopservicev1_Level;
   name?: string;
   parentId?: number;
+  repairPost?: string;
+  responseTimeLimit?: number;
+  spareParts: string[] | undefined;
+  standardTools: string[] | undefined;
+  standardWorkHours?: number;
   updatedAt?: wellKnownTimestamp;
   updatedBy?: number;
 };

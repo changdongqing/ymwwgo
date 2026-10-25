@@ -52,3 +52,32 @@ export function getLevelColor(level?: onestopservicev1_Level): string {
 
 /** 服务编码：2/4/6/8 位数字 */
 export const CODE_PATTERN = /^\d{2}$|^\d{4}$|^\d{6}$|^\d{8}$/;
+
+/** 报修维修中类编码（服务类型字典 0101）：本期「报修维修配置」仅对该子树开放 */
+export const REPAIR_CATEGORY_CODE = '0101';
+
+/**
+ * 该编码是否可配置报修维修参数：0101 报修维修子树的小类（6 位）/细类（8 位）。
+ * 小类配岗位与 SLA，细类配工时/语句/工具/备件；其余类型（含中类本身）不启用。
+ */
+export function isRepairConfigurable(code?: string): boolean {
+  return (
+    !!code &&
+    code.startsWith(REPAIR_CATEGORY_CODE) &&
+    (code.length === 6 || code.length === 8)
+  );
+}
+
+/** 常用维修岗位建议值（输入时可选用，允许自由输入） */
+export const REPAIR_POST_SUGGESTIONS = [
+  '电工',
+  '弱电工',
+  '管工',
+  '空调工',
+  '电梯维保工',
+  '锅炉工',
+  '综合维修工',
+  '机电维修工',
+  '医学工程技师',
+  '焊工',
+].map((value) => ({ value }));

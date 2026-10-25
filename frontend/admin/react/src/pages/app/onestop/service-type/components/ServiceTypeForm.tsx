@@ -1,15 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Form, Input } from 'antd';
+import { App, AutoComplete, Divider, Form, Input } from 'antd';
 import {
   ProForm,
+  ProFormDigit,
+  ProFormItem,
   ProFormRadio,
   ProFormSelect,
   ProFormText,
   ProFormTextArea,
 } from '@ant-design/pro-components';
 import type { ProFormInstance } from '@ant-design/pro-components';
-import { App } from 'antd';
 import { useQueryClient } from '@tanstack/react-query';
 import {
   type onestopservicev1_Level,
@@ -17,7 +18,7 @@ import {
 } from '@/api/generated/admin/service/v1';
 import { PaginationQuery } from '@/core';
 import { fetchListServiceTypes, useCreateServiceType, useUpdateServiceType } from '@/api/hooks/onestop';
-import { CODE_PATTERN, getLevelMap, levelOfCode } from '../constants';
+import { CODE_PATTERN, getLevelMap, isRepairConfigurable, levelOfCode, REPAIR_POST_SUGGESTIONS } from '../constants';
 
 interface ServiceTypeFormProps {
   mode: 'create' | 'edit';
@@ -69,6 +70,14 @@ export default function ServiceTypeForm({ mode, data, onSaved, onCancel }: Servi
         parentId: data.parentId,
         description: data.description,
         isEnabled: data.isEnabled,
+        repairPost: data.repairPost,
+        standardWorkHours: data.standardWorkHours,
+        responseTimeLimit: data.responseTimeLimit,
+        completionTimeLimit: data.completionTimeLimit,
+        guidance: data.guidance,
+        commonPhrases: data.commonPhrases ?? [],
+        standardTools: data.standardTools ?? [],
+        spareParts: data.spareParts ?? [],
       });
     } else {
       form.resetFields();
@@ -83,6 +92,10 @@ export default function ServiceTypeForm({ mode, data, onSaved, onCancel }: Servi
     () => levelOfCode(mode === 'edit' ? data?.code : watchedCode),
     [mode, data?.code, watchedCode],
   );
+
+  // 报修维修配置仅对 0101 报修维修子树的小类/细类开放（新建时随编码输入出现）
+  const effectiveCode = mode === 'edit' ? data?.code : watchedCode;
+  const showRepairConfig = isRepairConfigurable(effectiveCode);
 
   // 上级候选：只允许挂在恰好上一级之下；编辑时排除自身。
   // 同一层级的候选天然是平铺列表，无需树形结构。
@@ -130,6 +143,17 @@ export default function ServiceTypeForm({ mode, data, onSaved, onCancel }: Servi
       description: values.description,
       isEnabled: values.isEnabled,
     };
+    if (showRepairConfig) {
+      // 空串归一为 undefined：清空的字段走 mask 内 nil → 置 NULL，而不是落空串
+      payload.repairPost = values.repairPost || undefined;
+      payload.guidance = values.guidance || undefined;
+      payload.standardWorkHours = values.standardWorkHours;
+      payload.responseTimeLimit = values.responseTimeLimit;
+      payload.completionTimeLimit = values.completionTimeLimit;
+      payload.commonPhrases = values.commonPhrases ?? [];
+      payload.standardTools = values.standardTools ?? [];
+      payload.spareParts = values.spareParts ?? [];
+    }
     if (mode === 'create') {
       await createMutation.mutateAsync({ values: payload });
     } else if (data?.id) {
@@ -212,6 +236,108 @@ export default function ServiceTypeForm({ mode, data, onSaved, onCancel }: Servi
             { label: t('disabled'), value: false },
           ]}
         />
+
+        {/* 报修维修配置（配置详情）：仅 0101 报修维修子树的小类/细类出现。
+            小类配岗位/时限/指导，细类配工时/语句/工具/备件，均可留空 = 未配置 */}
+        {showRepairConfig && (
+          <>
+            <Divider titlePlacement="left">
+              {t('repairConfigSection')}
+            </Divider>
+
+            <ProFormItem
+              name="repairPost"
+              label={t('repairPost')}
+              extra={t('repairPostExtra')}
+            >
+              <AutoComplete
+                options={REPAIR_POST_SUGGESTIONS}
+                filterOption
+                allowClear
+                placeholder={t('repairPostPlaceholder')}
+              />
+            </ProFormItem>
+
+            <ProFormDigit
+              name="standardWorkHours"
+              label={t('standardWorkHours')}
+              min={0.1}
+              max={720}
+              fieldProps={{ step: 0.5, precision: 1 }}
+              colProps={{ span: 12 }}
+              placeholder={t('standardWorkHoursPlaceholder')}
+              extra={t('standardWorkHoursExtra')}
+            />
+
+            <ProFormDigit
+              name="responseTimeLimit"
+              label={t('responseTimeLimit')}
+              min={1}
+              max={43200}
+              fieldProps={{ precision: 0 }}
+              colProps={{ span: 12 }}
+              placeholder={t('minutesPlaceholder')}
+            />
+
+            <ProFormDigit
+              name="completionTimeLimit"
+              label={t('completionTimeLimit')}
+              min={1}
+              max={43200}
+              fieldProps={{ precision: 0 }}
+              colProps={{ span: 12 }}
+              placeholder={t('minutesPlaceholder')}
+            />
+
+            <ProFormTextArea
+              name="guidance"
+              label={t('guidance')}
+              fieldProps={{ rows: 4, maxLength: 2048, showCount: true }}
+              colProps={{ span: 24 }}
+              placeholder={t('guidancePlaceholder')}
+            />
+
+            <ProFormSelect
+              name="commonPhrases"
+              label={t('commonPhrases')}
+              fieldProps={{
+                mode: 'tags',
+                tokenSeparators: [',', '，'],
+                open: false,
+                suffixIcon: null,
+              }}
+              colProps={{ span: 24 }}
+              placeholder={t('commonPhrasesPlaceholder')}
+              extra={t('commonPhrasesExtra')}
+            />
+
+            <ProFormSelect
+              name="standardTools"
+              label={t('standardTools')}
+              fieldProps={{
+                mode: 'tags',
+                tokenSeparators: [',', '，'],
+                open: false,
+                suffixIcon: null,
+              }}
+              colProps={{ span: 24 }}
+              placeholder={t('standardToolsPlaceholder')}
+            />
+
+            <ProFormSelect
+              name="spareParts"
+              label={t('spareParts')}
+              fieldProps={{
+                mode: 'tags',
+                tokenSeparators: [',', '，'],
+                open: false,
+                suffixIcon: null,
+              }}
+              colProps={{ span: 24 }}
+              placeholder={t('sparePartsPlaceholder')}
+            />
+          </>
+        )}
       </ProForm>
     </div>
   );

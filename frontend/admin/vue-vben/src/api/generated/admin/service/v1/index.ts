@@ -7656,17 +7656,24 @@ export type onestopservicev1_ListServiceTypeResponse = {
 // 一站式服务类型
 export type onestopservicev1_ServiceType = {
   code?: string;
+  commonPhrases: string[] | undefined;
+  completionTimeLimit?: number;
   createdAt?: wellKnownTimestamp;
   createdBy?: number;
   deletedAt?: wellKnownTimestamp;
   deletedBy?: number;
   description?: string;
+  guidance?: string;
   id?: number;
   isEnabled?: boolean;
   level?: onestopservicev1_Level;
   name?: string;
   parentId?: number;
-  sortOrder?: number;
+  repairPost?: string;
+  responseTimeLimit?: number;
+  spareParts: string[] | undefined;
+  standardTools: string[] | undefined;
+  standardWorkHours?: number;
   updatedAt?: wellKnownTimestamp;
   updatedBy?: number;
 };
@@ -9379,6 +9386,400 @@ export type ontologyservicev1_DeleteDatatypeRequest = {
   id: number | undefined;
 };
 
+// 个体管理服务（admin 门面）
+//
+// 个体 create/update/delete 是自定义 RPC（取号 + 公理事务管线：取号器同事务 + diff + 乐观锁 + 校验 + 变更日志），
+// body: "*" 收扁平请求体——不是通用 CRUD，勿按惯例包 { data: {...} }
+// （protojson 会把 data 当未知字段丢弃，接口 200 但字段全空，仓库已知坑）。
+// GET/DELETE 的标量参数由 Kratos 从 query string 按 proto 字段 json 名（camelCase）绑定。
+export interface OntologyIndividualService {
+  // 分页查询个体列表（两段式查询；keyword/code/class_id 过滤）
+  List(
+    request: ontologyservicev1_ListIndividualsRequest,
+  ): Promise<ontologyservicev1_ListIndividualsResponse>;
+  // 查询个体 frame 详情
+  Frame(
+    request: ontologyservicev1_GetIndividualFrameRequest,
+  ): Promise<ontologyservicev1_IndividualFrame>;
+  // 预计编码（预览不加锁，并发下实际号可能 +N）
+  CodePreview(
+    request: ontologyservicev1_GetIndividualCodePreviewRequest,
+  ): Promise<ontologyservicev1_IndividualCodePreview>;
+  // 类实例计数（类树节点直接实例数徽标）
+  CountByClass(
+    request: ontologyservicev1_GetIndividualCountByClassRequest,
+  ): Promise<ontologyservicev1_IndividualCountByClassResponse>;
+  // 查询个体引用明细（61 断言宾语侧反查）
+  Usage(
+    request: ontologyservicev1_GetIndividualUsageRequest,
+  ): Promise<ontologyservicev1_EntityUsage>;
+  // 创建个体（取号 + 公理事务管线；返回新实体 id + 变更后版本 + 落定编码）
+  Create(
+    request: ontologyservicev1_CreateIndividualRequest,
+  ): Promise<ontologyservicev1_CreateIndividualResponse>;
+  // 更新个体（frame 全量提交，公理事务管线；类型区专用全量替换 diff，主类目变更不触发改码）
+  Update(
+    request: ontologyservicev1_UpdateIndividualRequest,
+  ): Promise<wellKnownEmpty>;
+  // 删除个体（usage 保护：61 宾语命中；force=true 级联删引用行；号不回收）
+  Delete(
+    request: ontologyservicev1_DeleteIndividualRequest,
+  ): Promise<wellKnownEmpty>;
+}
+
+export function createOntologyIndividualServiceClient(
+  transport: ClientTransport,
+): OntologyIndividualService {
+  return {
+    List(request) {
+      const path = `/admin/v1/ontology/individuals`;
+      const body = null;
+      const queryParams: string[] = [];
+      if (request.page) {
+        queryParams.push(
+          `page=${encodeURIComponent(request.page.toString())}`,
+        );
+      }
+      if (request.pageSize) {
+        queryParams.push(
+          `pageSize=${encodeURIComponent(request.pageSize.toString())}`,
+        );
+      }
+      if (request.ontologyId) {
+        queryParams.push(
+          `ontologyId=${encodeURIComponent(request.ontologyId.toString())}`,
+        );
+      }
+      if (request.keyword) {
+        queryParams.push(
+          `keyword=${encodeURIComponent(request.keyword.toString())}`,
+        );
+      }
+      if (request.code) {
+        queryParams.push(
+          `code=${encodeURIComponent(request.code.toString())}`,
+        );
+      }
+      if (request.codeQueryType) {
+        queryParams.push(
+          `codeQueryType=${encodeURIComponent(request.codeQueryType.toString())}`,
+        );
+      }
+      if (request.classId) {
+        queryParams.push(
+          `classId=${encodeURIComponent(request.classId.toString())}`,
+        );
+      }
+      if (request.includeDescendants) {
+        queryParams.push(
+          `includeDescendants=${encodeURIComponent(request.includeDescendants.toString())}`,
+        );
+      }
+      if (request.deprecated) {
+        queryParams.push(
+          `deprecated=${encodeURIComponent(request.deprecated.toString())}`,
+        );
+      }
+      if (request.orderBy) {
+        queryParams.push(
+          `orderBy=${encodeURIComponent(request.orderBy.toString())}`,
+        );
+      }
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join('&')}`;
+      }
+      return transport.unary(uri, 'GET', body, {
+        service: 'OntologyIndividualService',
+        method: 'List',
+      }) as Promise<ontologyservicev1_ListIndividualsResponse>;
+    },
+    Frame(request) {
+      if (request.id === undefined || request.id === null) {
+        throw new Error('missing required field request.id');
+      }
+      const path = `/admin/v1/ontology/individuals/${request.id}/frame`;
+      const body = null;
+      return transport.unary(path, 'GET', body, {
+        service: 'OntologyIndividualService',
+        method: 'Frame',
+      }) as Promise<ontologyservicev1_IndividualFrame>;
+    },
+    CodePreview(request) {
+      const path = `/admin/v1/ontology/individuals/code-preview`;
+      const body = null;
+      const queryParams: string[] = [];
+      if (request.ontologyId) {
+        queryParams.push(
+          `ontologyId=${encodeURIComponent(request.ontologyId.toString())}`,
+        );
+      }
+      if (request.mainClassId) {
+        queryParams.push(
+          `mainClassId=${encodeURIComponent(request.mainClassId.toString())}`,
+        );
+      }
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join('&')}`;
+      }
+      return transport.unary(uri, 'GET', body, {
+        service: 'OntologyIndividualService',
+        method: 'CodePreview',
+      }) as Promise<ontologyservicev1_IndividualCodePreview>;
+    },
+    CountByClass(request) {
+      const path = `/admin/v1/ontology/individuals/count-by-class`;
+      const body = null;
+      const queryParams: string[] = [];
+      if (request.ontologyId) {
+        queryParams.push(
+          `ontologyId=${encodeURIComponent(request.ontologyId.toString())}`,
+        );
+      }
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join('&')}`;
+      }
+      return transport.unary(uri, 'GET', body, {
+        service: 'OntologyIndividualService',
+        method: 'CountByClass',
+      }) as Promise<ontologyservicev1_IndividualCountByClassResponse>;
+    },
+    Usage(request) {
+      if (request.id === undefined || request.id === null) {
+        throw new Error('missing required field request.id');
+      }
+      const path = `/admin/v1/ontology/individuals/${request.id}/usage`;
+      const body = null;
+      return transport.unary(path, 'GET', body, {
+        service: 'OntologyIndividualService',
+        method: 'Usage',
+      }) as Promise<ontologyservicev1_EntityUsage>;
+    },
+    Create(request) {
+      const path = `/admin/v1/ontology/individuals`;
+      const body = JSON.stringify(request);
+      return transport.unary(path, 'POST', body, {
+        service: 'OntologyIndividualService',
+        method: 'Create',
+      }) as Promise<ontologyservicev1_CreateIndividualResponse>;
+    },
+    Update(request) {
+      if (request.id === undefined || request.id === null) {
+        throw new Error('missing required field request.id');
+      }
+      const path = `/admin/v1/ontology/individuals/${request.id}`;
+      const bodyMap = { ...request } as Record<string, unknown>;
+      delete bodyMap["id"];
+      const body = JSON.stringify(bodyMap);
+      return transport.unary(path, 'PUT', body, {
+        service: 'OntologyIndividualService',
+        method: 'Update',
+      }) as Promise<wellKnownEmpty>;
+    },
+    Delete(request) {
+      if (request.id === undefined || request.id === null) {
+        throw new Error('missing required field request.id');
+      }
+      const path = `/admin/v1/ontology/individuals/${request.id}`;
+      const body = null;
+      const queryParams: string[] = [];
+      if (request.baseVersion) {
+        queryParams.push(
+          `baseVersion=${encodeURIComponent(request.baseVersion.toString())}`,
+        );
+      }
+      if (request.force) {
+        queryParams.push(
+          `force=${encodeURIComponent(request.force.toString())}`,
+        );
+      }
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join('&')}`;
+      }
+      return transport.unary(uri, 'DELETE', body, {
+        service: 'OntologyIndividualService',
+        method: 'Delete',
+      }) as Promise<wellKnownEmpty>;
+    },
+  };
+}
+// 查询个体列表 - 请求（GET query 绑定；两段式查询：先行按索引解析过滤 id 集 → 实体分页 IN → 聚合列批量填充）
+export type ontologyservicev1_ListIndividualsRequest = {
+  classId: number | undefined;
+  code: string | undefined;
+  codeQueryType: string | undefined;
+  deprecated?: boolean;
+  includeDescendants: boolean | undefined;
+  keyword: string | undefined;
+  ontologyId: number | undefined;
+  orderBy: string | undefined;
+  page: number | undefined;
+  pageSize: number | undefined;
+};
+
+// 查询个体列表 - 回应
+export type ontologyservicev1_ListIndividualsResponse = {
+  items: ontologyservicev1_Individual[] | undefined;
+  total: number | undefined;
+};
+
+// 个体（列表项，含聚合列）
+export type ontologyservicev1_Individual = {
+  code?: string;
+  comment?: string;
+  createdAt?: wellKnownTimestamp;
+  createdBy?: number;
+  deletedAt?: wellKnownTimestamp;
+  deletedBy?: number;
+  deprecated?: boolean;
+  displayLabel?: string;
+  id?: number;
+  iri?: string;
+  localName?: string;
+  mainClass?: ontologyservicev1_EntityBrief;
+  ontologyId?: number;
+  typeCount?: number;
+  updatedAt?: wellKnownTimestamp;
+  updatedBy?: number;
+};
+
+// 查询个体 frame 详情 - 请求
+export type ontologyservicev1_GetIndividualFrameRequest = {
+  id: number | undefined;
+};
+
+// 个体 frame 详情（Protégé Individuals 标签页选中个体四信息区对应物；base_version 供乐观锁回传）
+export type ontologyservicev1_IndividualFrame = {
+  annotations: ontologyservicev1_AnnotationAssertion[] | undefined;
+  baseVersion?: number;
+  code?: ontologyservicev1_IndividualCode;
+  comment?: string;
+  dataAssertions: ontologyservicev1_DataAssertion[] | undefined;
+  deprecated?: boolean;
+  displayLabel?: string;
+  id?: number;
+  iri?: string;
+  localName?: string;
+  objectAssertions: ontologyservicev1_ObjectAssertion[] | undefined;
+  ontologyId?: number;
+  types: ontologyservicev1_EntityBrief[] | undefined;
+  updatedAt?: wellKnownTimestamp;
+};
+
+// 个体编码（frame 回显；载体 = 编码数据属性断言 62 行）
+export type ontologyservicev1_IndividualCode = {
+  propertyId?: number;
+  value?: string;
+};
+
+// 对象属性断言（61 行 frame 回显）
+export type ontologyservicev1_ObjectAssertion = {
+  predicate?: ontologyservicev1_EntityBrief;
+  predicateIri?: string;
+  target?: ontologyservicev1_EntityBrief;
+};
+
+// 数据属性断言（62 行 frame 回显；编码行在 code 字段单独回显）
+export type ontologyservicev1_DataAssertion = {
+  lang?: string;
+  property?: ontologyservicev1_EntityBrief;
+  propertyId?: number;
+  value?: string;
+};
+
+// 预计编码 - 请求（预览不加锁，并发下实际号可能 +N；文案必须写"预计"）
+export type ontologyservicev1_GetIndividualCodePreviewRequest = {
+  mainClassId: number | undefined;
+  ontologyId: number | undefined;
+};
+
+// 预计编码 - 回应
+export type ontologyservicev1_IndividualCodePreview = {
+  prefix?: string;
+  previewCode?: string;
+};
+
+// 类实例计数 - 请求（类树实例数徽标）
+export type ontologyservicev1_GetIndividualCountByClassRequest = {
+  ontologyId: number | undefined;
+};
+
+// 类实例计数 - 回应（60 行 group by object_id → 直接实例计数）
+export type ontologyservicev1_IndividualCountByClassResponse = {
+  items: ontologyservicev1_IndividualCountByClassResponse_ClassInstanceCount[] | undefined;
+};
+
+export type ontologyservicev1_IndividualCountByClassResponse_ClassInstanceCount = {
+  classId?: number;
+  directCount?: number;
+};
+
+// 查询个体引用 - 请求（61 断言宾语侧反查）
+export type ontologyservicev1_GetIndividualUsageRequest = {
+  id: number | undefined;
+};
+
+// 创建个体 - 请求（自定义 RPC：扁平请求体，勿包 { data }——protojson 会把 data 当未知字段丢弃）
+export type ontologyservicev1_CreateIndividualRequest = {
+  annotations: ontologyservicev1_AnnotationAssertionInput[] | undefined;
+  code?: string;
+  codePropertyId?: number;
+  codeSource: string | undefined;
+  comment?: string;
+  deprecated?: boolean;
+  displayLabel?: string;
+  localName?: string;
+  mainClassId: number | undefined;
+  ontologyId: number | undefined;
+  typeIds: number[] | undefined;
+};
+
+// 创建个体 - 回应（新实体 id + 变更后本体版本 + 落定的编码）
+export type ontologyservicev1_CreateIndividualResponse = {
+  baseVersion?: number;
+  code?: string;
+  id?: number;
+};
+
+// 更新个体 - 请求（frame 全量提交语义；local_name 忽略——不可变；主类目变更不触发改码）
+export type ontologyservicev1_UpdateIndividualRequest = {
+  annotations: ontologyservicev1_AnnotationAssertionInput[] | undefined;
+  baseVersion?: number;
+  code?: string;
+  codePropertyId?: number;
+  comment?: string;
+  dataAssertions: ontologyservicev1_DataAssertionInput[] | undefined;
+  deprecated?: boolean;
+  displayLabel?: string;
+  id: number | undefined;
+  mainClassId: number | undefined;
+  objectAssertions: ontologyservicev1_ObjectAssertionInput[] | undefined;
+  typeIds: number[] | undefined;
+};
+
+// 对象属性断言提交载荷（61 提交；全量替换语义：nil/空 = 清空断言区）
+export type ontologyservicev1_ObjectAssertionInput = {
+  predicateIri: string | undefined;
+  targetId: number | undefined;
+};
+
+// 数据属性断言提交载荷（62 提交；全量替换语义：nil/空 = 清空断言区；编码行由 code_source/code 字段承载，不参与本区提交）
+export type ontologyservicev1_DataAssertionInput = {
+  lang?: string;
+  propertyId: number | undefined;
+  value: string | undefined;
+};
+
+// 删除个体 - 请求（usage 保护：61 宾语命中；force=true 级联删"以我为宾语"的 61 行；号不回收）
+export type ontologyservicev1_DeleteIndividualRequest = {
+  baseVersion?: number;
+  force?: boolean;
+  id: number | undefined;
+};
+
 // 对象属性管理服务（admin 门面）
 //
 // 对象属性 create/update/delete 是自定义 RPC（公理事务管线：diff + 环检测 + 乐观锁 + 校验 + 变更日志），
@@ -9704,6 +10105,279 @@ export type ontologyservicev1_DeleteObjectPropertyRequest = {
   baseVersion?: number;
   force?: boolean;
   id: number | undefined;
+};
+
+// OWL 导入导出服务（admin 门面）
+//
+// 三个自定义 RPC 全部 body: "*" 收扁平请求体——不是通用 CRUD，勿按惯例包 { data: {...} }
+// （protojson 会把 data 当未知字段丢弃，接口 200 但字段全空，仓库已知坑）。
+// 导出经 google.api.HttpBody 二进制响应（进 openapi 生成与 Api 表同步管线，租户闸门按
+// (path, method) 匹配）；导入两步式 preview → execute（reportId 一次性消费）。
+export interface OntologyOwlIOService {
+  // 导出本体为 OWL 文件（RDF/XML 默认 / Turtle 可选；只读操作；bytes 响应——HttpBody
+  // 在 Kratos v2 下会被 protojson JSON 化，§7 #19 预案回退）
+  Export(
+    request: ontologyservicev1_OwlExportRequest,
+  ): Promise<ontologyservicev1_OwlExportResponse>;
+  // 导入预检（解析 + 反向映射 + 逐行预校验；不落库）
+  ImportPreview(
+    request: ontologyservicev1_OwlImportPreviewRequest,
+  ): Promise<ontologyservicev1_OwlImportReport>;
+  // 导入执行（新建本体 + 批量落库 + 号池回填；reportId 一次性消费）
+  ImportExecute(
+    request: ontologyservicev1_OwlImportExecuteRequest,
+  ): Promise<ontologyservicev1_OwlImportExecuteResponse>;
+}
+
+export function createOntologyOwlIOServiceClient(
+  transport: ClientTransport,
+): OntologyOwlIOService {
+  return {
+    Export(request) {
+      const path = `/admin/v1/ontology/owl:export`;
+      const body = JSON.stringify(request);
+      return transport.unary(path, 'POST', body, {
+        service: 'OntologyOwlIOService',
+        method: 'Export',
+      }) as Promise<ontologyservicev1_OwlExportResponse>;
+    },
+    ImportPreview(request) {
+      const path = `/admin/v1/ontology/owl:import-preview`;
+      const body = JSON.stringify(request);
+      return transport.unary(path, 'POST', body, {
+        service: 'OntologyOwlIOService',
+        method: 'ImportPreview',
+      }) as Promise<ontologyservicev1_OwlImportReport>;
+    },
+    ImportExecute(request) {
+      const path = `/admin/v1/ontology/owl:import-execute`;
+      const body = JSON.stringify(request);
+      return transport.unary(path, 'POST', body, {
+        service: 'OntologyOwlIOService',
+        method: 'ImportExecute',
+      }) as Promise<ontologyservicev1_OwlImportExecuteResponse>;
+    },
+  };
+}
+// 导出 - 请求
+export type ontologyservicev1_OwlExportRequest = {
+  format: string | undefined;
+  ontologyId: number | undefined;
+};
+
+// 导出 - 回应（bytes 经 protojson 即 base64 字符串；文件名随响应体下发，
+// Content-Disposition 头不可用故不承担文件名传递）
+export type ontologyservicev1_OwlExportResponse = {
+  content: string | undefined;
+  contentType: string | undefined;
+  fileName: string | undefined;
+};
+
+// 导入预检 - 请求（文件字节经 protojson 即 base64 字符串传输——对齐 ai-knowledge 上传先例）
+export type ontologyservicev1_OwlImportPreviewRequest = {
+  fileContent: string | undefined;
+  fileName: string | undefined;
+};
+
+// 预检报告
+export type ontologyservicev1_OwlImportReport = {
+  autoDeclared: ontologyservicev1_OwlAutoDeclaredRef[] | undefined;
+  axiomStats: { [key: string]: number } | undefined;
+  entityStats: { [key: string]: number } | undefined;
+  ignored: ontologyservicev1_OwlIgnoredSummary | undefined;
+  importsCount: number | undefined;
+  renamedLocalNames: ontologyservicev1_OwlRenamedLocalName[] | undefined;
+  reportId: string | undefined;
+  sourceFormat: string | undefined;
+  suggested: ontologyservicev1_OwlImportSuggested | undefined;
+  warnings: string[] | undefined;
+};
+
+// 推断默认值（均可在执行前编辑；本体 IRI 缺省取文件 header，已占用时可改）
+export type ontologyservicev1_OwlImportSuggested = {
+  baseIri: string | undefined;
+  description?: string;
+  ontologyIri?: string;
+  ontologyName: string | undefined;
+};
+
+// 自动补声明明细（上限 200 条）
+export type ontologyservicev1_OwlAutoDeclaredRef = {
+  entityType: string | undefined;
+  iri: string | undefined;
+  reason: string | undefined;
+};
+
+// 局部名替补明细
+export type ontologyservicev1_OwlRenamedLocalName = {
+  iri: string | undefined;
+  localName: string | undefined;
+  original: string | undefined;
+};
+
+// 忽略清单汇总（count > 0 时 execute 必须携带 confirmed_ignore=true——两段式确认）
+export type ontologyservicev1_OwlIgnoredSummary = {
+  byReason: { [key: string]: number } | undefined;
+  count: number | undefined;
+  samples: ontologyservicev1_OwlIgnoredSample[] | undefined;
+};
+
+// 忽略清单样例
+export type ontologyservicev1_OwlIgnoredSample = {
+  detail: string | undefined;
+  reason: string | undefined;
+};
+
+// 导入执行 - 请求
+export type ontologyservicev1_OwlImportExecuteRequest = {
+  baseIri: string | undefined;
+  confirmedIgnore: boolean | undefined;
+  description?: string;
+  ontologyIri?: string;
+  ontologyName: string | undefined;
+  reportId: string | undefined;
+};
+
+// 导入执行 - 回应
+export type ontologyservicev1_OwlImportExecuteResponse = {
+  ontologyId: number | undefined;
+};
+
+// 通用反查（admin 门面；08 号文档）
+//
+// 只读端点，GET query 绑定（扁平字段，本 RPC 非 CRUD——铁律 3 的正确适用：不包 {data:{}}）。
+// 重复字段在 query 中以重复参数表达：axiomTypes=61&axiomTypes=62、
+// positions=REFERENCE_POSITION_OBJECT&positions=REFERENCE_POSITION_PREDICATE。
+export interface OntologyReferenceService {
+  // 反查引用目标实体的边（分页；目标作为宾语/谓词/属性链成员）
+  ListReferences(
+    request: ontologyservicev1_ListReferencesRequest,
+  ): Promise<ontologyservicev1_ListReferencesResponse>;
+}
+
+export function createOntologyReferenceServiceClient(
+  transport: ClientTransport,
+): OntologyReferenceService {
+  return {
+    ListReferences(request) {
+      const path = `/admin/v1/ontology/references`;
+      const body = null;
+      const queryParams: string[] = [];
+      if (request.ontologyId) {
+        queryParams.push(
+          `ontologyId=${encodeURIComponent(request.ontologyId.toString())}`,
+        );
+      }
+      if (request.targetId) {
+        queryParams.push(
+          `targetId=${encodeURIComponent(request.targetId.toString())}`,
+        );
+      }
+      if (request.axiomTypes) {
+        request.axiomTypes.forEach((x) => {
+          queryParams.push(
+            `axiomTypes=${encodeURIComponent(x.toString())}`,
+          );
+        });
+      }
+      if (request.predicateIri) {
+        queryParams.push(
+          `predicateIri=${encodeURIComponent(request.predicateIri.toString())}`,
+        );
+      }
+      if (request.includeDescendants) {
+        queryParams.push(
+          `includeDescendants=${encodeURIComponent(request.includeDescendants.toString())}`,
+        );
+      }
+      if (request.excludeDeprecated) {
+        queryParams.push(
+          `excludeDeprecated=${encodeURIComponent(request.excludeDeprecated.toString())}`,
+        );
+      }
+      if (request.page) {
+        queryParams.push(
+          `page=${encodeURIComponent(request.page.toString())}`,
+        );
+      }
+      if (request.pageSize) {
+        queryParams.push(
+          `pageSize=${encodeURIComponent(request.pageSize.toString())}`,
+        );
+      }
+      if (request.orderBy) {
+        queryParams.push(
+          `orderBy=${encodeURIComponent(request.orderBy.toString())}`,
+        );
+      }
+      if (request.positions) {
+        request.positions.forEach((x) => {
+          queryParams.push(
+            `positions=${encodeURIComponent(x.toString())}`,
+          );
+        });
+      }
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join('&')}`;
+      }
+      return transport.unary(uri, 'GET', body, {
+        service: 'OntologyReferenceService',
+        method: 'ListReferences',
+      }) as Promise<ontologyservicev1_ListReferencesResponse>;
+    },
+  };
+}
+// 通用反查 - 请求（扁平请求体；GET query 绑定支持重复参数 axiomTypes=61&axiomTypes=62）
+export type ontologyservicev1_ListReferencesRequest = {
+  axiomTypes: number[] | undefined;
+  excludeDeprecated?: boolean;
+  includeDescendants?: boolean;
+  ontologyId?: number;
+  orderBy?: string;
+  page?: number;
+  pageSize?: number;
+  positions: ontologyservicev1_ReferencePosition[] | undefined;
+  predicateIri?: string;
+  targetId?: number;
+};
+
+// 目标实体在公理行内的命中位置（反查方向）
+export type ontologyservicev1_ReferencePosition =
+  | 'REFERENCE_POSITION_CHAIN_MEMBER'
+  | 'REFERENCE_POSITION_OBJECT'
+  | 'REFERENCE_POSITION_PREDICATE'
+  | 'REFERENCE_POSITION_UNSPECIFIED';
+// 通用反查 - 回应
+export type ontologyservicev1_ListReferencesResponse = {
+  edges: ontologyservicev1_ReferenceEdge[] | undefined;
+  total?: number;
+};
+
+// 一条引用边 = 一条未删公理行（成对公理已按无序对去重并标记 paired）
+export type ontologyservicev1_ReferenceEdge = {
+  axiomId?: number;
+  axiomType?: number;
+  lang?: string;
+  literalValue?: string;
+  object?: ontologyservicev1_ReferenceNode;
+  paired?: boolean;
+  position?: ontologyservicev1_ReferencePosition;
+  predicate?: ontologyservicev1_ReferenceNode;
+  sortOrder?: number;
+  subject?: ontologyservicev1_ReferenceNode;
+  updatedAt?: wellKnownTimestamp;
+};
+
+// 引用节点：边的一端（已软删实体不回显；deprecated 仅标记）
+export type ontologyservicev1_ReferenceNode = {
+  deprecated?: boolean;
+  displayLabel?: string;
+  entityType?: number;
+  id?: number;
+  iri?: string;
+  localName?: string;
+  unresolved?: boolean;
 };
 
 // 操作审计日志管理服务
@@ -10053,6 +10727,7 @@ export type identityservicev1_OrgUnit = {
   sortOrder?: number;
   startAt?: wellKnownTimestamp;
   status?: identityservicev1_OrgUnit_Status;
+  subtypePath: string[] | undefined;
   taxId?: string;
   tenantId?: number;
   tenantName?: string;
@@ -10069,9 +10744,11 @@ export type identityservicev1_OrgUnit_Type =
   | 'COMPANY'
   | 'DEPARTMENT'
   | 'DIVISION'
+  | 'GROUP'
   | 'OTHER'
   | 'PROJECT'
   | 'REGION'
+  | 'STORE'
   | 'SUBSIDIARY'
   | 'TEAM';
 // 组织单元状态
@@ -13970,7 +14647,10 @@ export class ApiClient {
   private _ontologyClassService?: OntologyClassService;
   private _ontologyDataPropertyService?: OntologyDataPropertyService;
   private _ontologyDatatypeService?: OntologyDatatypeService;
+  private _ontologyIndividualService?: OntologyIndividualService;
   private _ontologyObjectPropertyService?: OntologyObjectPropertyService;
+  private _ontologyOwlIOService?: OntologyOwlIOService;
+  private _ontologyReferenceService?: OntologyReferenceService;
   private _ontologyService?: OntologyService;
   private _operationAuditLogService?: OperationAuditLogService;
   private _orgUnitService?: OrgUnitService;
@@ -14166,8 +14846,20 @@ export class ApiClient {
     return this._ontologyDatatypeService ??= createOntologyDatatypeServiceClient(this._transport);
   }
 
+  get ontologyIndividualService(): OntologyIndividualService {
+    return this._ontologyIndividualService ??= createOntologyIndividualServiceClient(this._transport);
+  }
+
   get ontologyObjectPropertyService(): OntologyObjectPropertyService {
     return this._ontologyObjectPropertyService ??= createOntologyObjectPropertyServiceClient(this._transport);
+  }
+
+  get ontologyOwlIOService(): OntologyOwlIOService {
+    return this._ontologyOwlIOService ??= createOntologyOwlIOServiceClient(this._transport);
+  }
+
+  get ontologyReferenceService(): OntologyReferenceService {
+    return this._ontologyReferenceService ??= createOntologyReferenceServiceClient(this._transport);
   }
 
   get ontologyService(): OntologyService {

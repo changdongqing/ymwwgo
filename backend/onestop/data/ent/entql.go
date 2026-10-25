@@ -26,18 +26,26 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "ServiceType",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			servicetype.FieldCreatedAt:   {Type: field.TypeTime, Column: servicetype.FieldCreatedAt},
-			servicetype.FieldUpdatedAt:   {Type: field.TypeTime, Column: servicetype.FieldUpdatedAt},
-			servicetype.FieldDeletedAt:   {Type: field.TypeTime, Column: servicetype.FieldDeletedAt},
-			servicetype.FieldCreatedBy:   {Type: field.TypeUint32, Column: servicetype.FieldCreatedBy},
-			servicetype.FieldUpdatedBy:   {Type: field.TypeUint32, Column: servicetype.FieldUpdatedBy},
-			servicetype.FieldDeletedBy:   {Type: field.TypeUint32, Column: servicetype.FieldDeletedBy},
-			servicetype.FieldParentID:    {Type: field.TypeUint32, Column: servicetype.FieldParentID},
-			servicetype.FieldIsEnabled:   {Type: field.TypeBool, Column: servicetype.FieldIsEnabled},
-			servicetype.FieldCode:        {Type: field.TypeString, Column: servicetype.FieldCode},
-			servicetype.FieldName:        {Type: field.TypeString, Column: servicetype.FieldName},
-			servicetype.FieldLevel:       {Type: field.TypeEnum, Column: servicetype.FieldLevel},
-			servicetype.FieldDescription: {Type: field.TypeString, Column: servicetype.FieldDescription},
+			servicetype.FieldCreatedAt:           {Type: field.TypeTime, Column: servicetype.FieldCreatedAt},
+			servicetype.FieldUpdatedAt:           {Type: field.TypeTime, Column: servicetype.FieldUpdatedAt},
+			servicetype.FieldDeletedAt:           {Type: field.TypeTime, Column: servicetype.FieldDeletedAt},
+			servicetype.FieldCreatedBy:           {Type: field.TypeUint32, Column: servicetype.FieldCreatedBy},
+			servicetype.FieldUpdatedBy:           {Type: field.TypeUint32, Column: servicetype.FieldUpdatedBy},
+			servicetype.FieldDeletedBy:           {Type: field.TypeUint32, Column: servicetype.FieldDeletedBy},
+			servicetype.FieldParentID:            {Type: field.TypeUint32, Column: servicetype.FieldParentID},
+			servicetype.FieldIsEnabled:           {Type: field.TypeBool, Column: servicetype.FieldIsEnabled},
+			servicetype.FieldCode:                {Type: field.TypeString, Column: servicetype.FieldCode},
+			servicetype.FieldName:                {Type: field.TypeString, Column: servicetype.FieldName},
+			servicetype.FieldLevel:               {Type: field.TypeEnum, Column: servicetype.FieldLevel},
+			servicetype.FieldDescription:         {Type: field.TypeString, Column: servicetype.FieldDescription},
+			servicetype.FieldRepairPost:          {Type: field.TypeString, Column: servicetype.FieldRepairPost},
+			servicetype.FieldStandardWorkHours:   {Type: field.TypeFloat64, Column: servicetype.FieldStandardWorkHours},
+			servicetype.FieldResponseTimeLimit:   {Type: field.TypeUint32, Column: servicetype.FieldResponseTimeLimit},
+			servicetype.FieldCompletionTimeLimit: {Type: field.TypeUint32, Column: servicetype.FieldCompletionTimeLimit},
+			servicetype.FieldGuidance:            {Type: field.TypeString, Column: servicetype.FieldGuidance},
+			servicetype.FieldCommonPhrases:       {Type: field.TypeJSON, Column: servicetype.FieldCommonPhrases},
+			servicetype.FieldStandardTools:       {Type: field.TypeJSON, Column: servicetype.FieldStandardTools},
+			servicetype.FieldSpareParts:          {Type: field.TypeJSON, Column: servicetype.FieldSpareParts},
 		},
 	}
 	graph.MustAddE(
@@ -171,6 +179,46 @@ func (f *ServiceTypeFilter) WhereLevel(p entql.StringP) {
 // WhereDescription applies the entql string predicate on the description field.
 func (f *ServiceTypeFilter) WhereDescription(p entql.StringP) {
 	f.Where(p.Field(servicetype.FieldDescription))
+}
+
+// WhereRepairPost applies the entql string predicate on the repair_post field.
+func (f *ServiceTypeFilter) WhereRepairPost(p entql.StringP) {
+	f.Where(p.Field(servicetype.FieldRepairPost))
+}
+
+// WhereStandardWorkHours applies the entql float64 predicate on the standard_work_hours field.
+func (f *ServiceTypeFilter) WhereStandardWorkHours(p entql.Float64P) {
+	f.Where(p.Field(servicetype.FieldStandardWorkHours))
+}
+
+// WhereResponseTimeLimit applies the entql uint32 predicate on the response_time_limit field.
+func (f *ServiceTypeFilter) WhereResponseTimeLimit(p entql.Uint32P) {
+	f.Where(p.Field(servicetype.FieldResponseTimeLimit))
+}
+
+// WhereCompletionTimeLimit applies the entql uint32 predicate on the completion_time_limit field.
+func (f *ServiceTypeFilter) WhereCompletionTimeLimit(p entql.Uint32P) {
+	f.Where(p.Field(servicetype.FieldCompletionTimeLimit))
+}
+
+// WhereGuidance applies the entql string predicate on the guidance field.
+func (f *ServiceTypeFilter) WhereGuidance(p entql.StringP) {
+	f.Where(p.Field(servicetype.FieldGuidance))
+}
+
+// WhereCommonPhrases applies the entql json.RawMessage predicate on the common_phrases field.
+func (f *ServiceTypeFilter) WhereCommonPhrases(p entql.BytesP) {
+	f.Where(p.Field(servicetype.FieldCommonPhrases))
+}
+
+// WhereStandardTools applies the entql json.RawMessage predicate on the standard_tools field.
+func (f *ServiceTypeFilter) WhereStandardTools(p entql.BytesP) {
+	f.Where(p.Field(servicetype.FieldStandardTools))
+}
+
+// WhereSpareParts applies the entql json.RawMessage predicate on the spare_parts field.
+func (f *ServiceTypeFilter) WhereSpareParts(p entql.BytesP) {
+	f.Where(p.Field(servicetype.FieldSpareParts))
 }
 
 // WhereHasParent applies a predicate to check if query has an edge parent.

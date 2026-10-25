@@ -64,6 +64,49 @@ func (ServiceType) Fields() []ent.Field {
 			Default("").
 			Optional().
 			Nillable(),
+
+		// —— 报修维修类型配置（本期仅 0101 报修维修子树的小类/细类填写，其余类型留空）——
+		// 列 COMMENT 是迁移 SQL 的逐字契约（漂移守卫比对注释文本），改文案须同步 00009 迁移。
+		field.String("repair_post").
+			Comment("维修岗位（派单目标岗位，如：电工/管工/空调工）").
+			MaxLen(64).
+			Optional().
+			Nillable(),
+
+		field.Float("standard_work_hours").
+			Comment("标准工时（小时）：单次作业标准人时，绩效与负载核算用").
+			Optional().
+			Nillable(),
+
+		field.Uint32("response_time_limit").
+			Comment("响应时限（分钟）：受理到到场的 SLA").
+			Optional().
+			Nillable(),
+
+		field.Uint32("completion_time_limit").
+			Comment("完成时限（分钟）：受理到完工的 SLA").
+			Optional().
+			Nillable(),
+
+		field.String("guidance").
+			Comment("标准指导说明：作业 SOP 与安全注意事项").
+			MaxLen(2048).
+			Optional().
+			Nillable(),
+
+		// jsonb 数组列，语义与 sys_org_units.subtype_path 一致；
+		// 不加 Nillable：空/NULL = 未配置
+		field.Strings("common_phrases").
+			Comment("常见报修语句清单：报修端快捷语句，兼作语义归型语料").
+			Optional(),
+
+		field.Strings("standard_tools").
+			Comment("服务标准工具清单：出工标配工具").
+			Optional(),
+
+		field.Strings("spare_parts").
+			Comment("常用备件/耗材清单：出工常备，配合库存领用").
+			Optional(),
 	}
 }
 

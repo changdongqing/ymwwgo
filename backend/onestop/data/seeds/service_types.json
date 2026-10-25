@@ -81,67 +81,111 @@
     "code": "010101",
     "name": "强电维修",
     "level": "LEVEL_MINOR",
-    "parentCode": "0101"
+    "parentCode": "0101",
+    "repairPost": "电工",
+    "responseTimeLimit": 30,
+    "completionTimeLimit": 480,
+    "guidance": "持低压电工证上岗；配电柜（箱）作业两人到场、停电挂牌验电后作业；2米以上登高系安全带。"
   },
   {
     "code": "010102",
     "name": "弱电智能化维修",
     "level": "LEVEL_MINOR",
-    "parentCode": "0101"
+    "parentCode": "0101",
+    "repairPost": "弱电工",
+    "responseTimeLimit": 30,
+    "completionTimeLimit": 480,
+    "guidance": "涉及门禁/监控/网络中断的先通知使用科室或商户；弱电井内作业注意光纤防护，熔接须用专用设备。"
   },
   {
     "code": "010103",
     "name": "给排水维修",
     "level": "LEVEL_MINOR",
-    "parentCode": "0101"
+    "parentCode": "0101",
+    "repairPost": "管工",
+    "responseTimeLimit": 20,
+    "completionTimeLimit": 240,
+    "guidance": "先关阀止水再拆解；医患区域与商户区域作业设警示牌围挡，完工后清干地面积水。"
   },
   {
     "code": "010104",
     "name": "暖通空调维修",
     "level": "LEVEL_MINOR",
-    "parentCode": "0101"
+    "parentCode": "0101",
+    "repairPost": "空调工",
+    "responseTimeLimit": 30,
+    "completionTimeLimit": 480,
+    "guidance": "高处作业遵守登高规程；制冷剂须回收不得直排；机房作业双人到岗。"
   },
   {
     "code": "010105",
     "name": "电梯维修",
     "level": "LEVEL_MINOR",
-    "parentCode": "0101"
+    "parentCode": "0101",
+    "repairPost": "电梯维保工",
+    "responseTimeLimit": 30,
+    "completionTimeLimit": 240,
+    "guidance": "电梯为特种设备：困人救援10分钟内到场（细类另有覆盖）；本体维修由持证维保单位实施，物业复核签字。"
   },
   {
     "code": "010106",
     "name": "锅炉/压力容器维修",
     "level": "LEVEL_MINOR",
-    "parentCode": "0101"
+    "parentCode": "0101",
+    "repairPost": "锅炉工",
+    "responseTimeLimit": 30,
+    "completionTimeLimit": 480,
+    "guidance": "锅炉/压力容器为特种设备：安全附件失效立即停机；承压部件维修须持证人员实施，焊接作业须持焊工证。"
   },
   {
     "code": "010107",
     "name": "建筑本体维修",
     "level": "LEVEL_MINOR",
-    "parentCode": "0101"
+    "parentCode": "0101",
+    "repairPost": "综合维修工",
+    "responseTimeLimit": 60,
+    "completionTimeLimit": 1440,
+    "guidance": "高空外墙作业须吊篮/登高车并双人监护；动火作业先办动火证并配灭火器；噪音粉尘作业避开诊疗与营业高峰。"
   },
   {
     "code": "010108",
     "name": "家具设施维修",
     "level": "LEVEL_MINOR",
-    "parentCode": "0101"
+    "parentCode": "0101",
+    "repairPost": "综合维修工",
+    "responseTimeLimit": 60,
+    "completionTimeLimit": 480,
+    "guidance": "病床等带轮设施维修后须复锁脚轮刹车；病房内作业尽量床旁完成，搬离维修的须置换备用。"
   },
   {
     "code": "010109",
     "name": "医用专项设施维修（医）",
     "level": "LEVEL_MINOR",
-    "parentCode": "0101"
+    "parentCode": "0101",
+    "repairPost": "医学工程技师",
+    "responseTimeLimit": 15,
+    "completionTimeLimit": 240,
+    "guidance": "医用气体/净化区域作业先报备使用科室；停气、停层流须走审批并约定时限；终端维修后须检漏。"
   },
   {
     "code": "010110",
     "name": "餐厨/洗衣设备维修",
     "level": "LEVEL_MINOR",
-    "parentCode": "0101"
+    "parentCode": "0101",
+    "repairPost": "机电维修工",
+    "responseTimeLimit": 60,
+    "completionTimeLimit": 720,
+    "guidance": "燃气设备维修后必须检漏；蒸箱/高温设备开门防烫伤；冷库维修先转移存储物品。"
   },
   {
     "code": "010111",
     "name": "车场设备维修（商）",
     "level": "LEVEL_MINOR",
-    "parentCode": "0101"
+    "parentCode": "0101",
+    "repairPost": "机电维修工",
+    "responseTimeLimit": 30,
+    "completionTimeLimit": 480,
+    "guidance": "车道作业先布锥桶引导车流，夜间加闪灯；道闸作业防止误砸车辆。"
   },
   {
     "code": "010201",
@@ -531,241 +575,913 @@
     "code": "01010101",
     "name": "照明/应急照明故障",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010101"
+    "parentCode": "010101",
+    "standardWorkHours": 0.5,
+    "commonPhrases": [
+      "灯不亮了",
+      "走廊灯一直闪",
+      "应急灯报警响"
+    ],
+    "standardTools": [
+      "试电笔",
+      "螺丝刀",
+      "绝缘手套",
+      "人字梯"
+    ],
+    "spareParts": [
+      "LED灯管/灯泡",
+      "镇流器/驱动电源",
+      "应急灯电池"
+    ]
   },
   {
     "code": "01010102",
     "name": "开关插座故障",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010101"
+    "parentCode": "010101",
+    "standardWorkHours": 0.5,
+    "commonPhrases": [
+      "插座松了没电",
+      "开关按不动",
+      "面板破裂"
+    ],
+    "standardTools": [
+      "试电笔",
+      "螺丝刀",
+      "绝缘手套"
+    ],
+    "spareParts": [
+      "五孔插座",
+      "开关面板",
+      "暗盒"
+    ]
   },
   {
     "code": "01010103",
     "name": "配电箱(柜)/跳闸故障",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010101"
+    "parentCode": "010101",
+    "standardWorkHours": 1.5,
+    "commonPhrases": [
+      "配电箱跳闸了",
+      "空开合不上",
+      "配电箱有异响"
+    ],
+    "standardTools": [
+      "绝缘手套",
+      "验电笔",
+      "万用表",
+      "螺丝刀"
+    ],
+    "spareParts": [
+      "断路器/空开",
+      "熔断器",
+      "接触器"
+    ]
   },
   {
     "code": "01010104",
     "name": "线路故障(短路/老化)",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010101"
+    "parentCode": "010101",
+    "standardWorkHours": 3,
+    "commonPhrases": [
+      "插座冒火花",
+      "线路跳闸合不上",
+      "墙里线路有焦味"
+    ],
+    "standardTools": [
+      "万用表",
+      "摇表（兆欧表）",
+      "穿线器",
+      "电工工具套装"
+    ],
+    "spareParts": [
+      "电线",
+      "绝缘胶带",
+      "线管"
+    ]
   },
   {
     "code": "01010201",
     "name": "门禁系统故障",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010102"
+    "parentCode": "010102",
+    "standardWorkHours": 1.5,
+    "commonPhrases": [
+      "刷卡门禁没反应",
+      "门禁门打不开",
+      "门禁一直报警"
+    ],
+    "standardTools": [
+      "万用表",
+      "螺丝刀",
+      "笔记本电脑（调试）"
+    ],
+    "spareParts": [
+      "门禁电源",
+      "读卡器",
+      "电插锁/磁力锁"
+    ]
   },
   {
     "code": "01010202",
     "name": "监控/摄像故障",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010102"
+    "parentCode": "010102",
+    "standardWorkHours": 1.5,
+    "commonPhrases": [
+      "监控黑屏了",
+      "摄像头画面丢失",
+      "回放看不了"
+    ],
+    "standardTools": [
+      "万用表",
+      "网线测试仪",
+      "登高梯"
+    ],
+    "spareParts": [
+      "摄像头",
+      "电源适配器",
+      "网线/水晶头"
+    ]
   },
   {
     "code": "01010203",
     "name": "网络/WiFi 故障",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010102"
+    "parentCode": "010102",
+    "standardWorkHours": 1,
+    "commonPhrases": [
+      "WiFi连不上",
+      "房间网口没网",
+      "网络时断时续"
+    ],
+    "standardTools": [
+      "笔记本电脑",
+      "网线测试仪",
+      "万用表"
+    ],
+    "spareParts": [
+      "网线",
+      "水晶头",
+      "AP电源适配器"
+    ]
   },
   {
     "code": "01010204",
     "name": "广播/信息发布屏故障",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010102"
+    "parentCode": "010102",
+    "standardWorkHours": 1.5,
+    "commonPhrases": [
+      "广播没声音了",
+      "信息屏黑屏",
+      "屏幕花屏"
+    ],
+    "standardTools": [
+      "万用表",
+      "螺丝刀",
+      "笔记本电脑"
+    ],
+    "spareParts": [
+      "功放模块",
+      "播放盒/主机",
+      "HDMI线/电源适配器"
+    ]
   },
   {
     "code": "01010205",
     "name": "对讲系统故障",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010102"
+    "parentCode": "010102",
+    "standardWorkHours": 1,
+    "commonPhrases": [
+      "对讲没有声音",
+      "可视对讲黑屏",
+      "对讲开不了门"
+    ],
+    "standardTools": [
+      "万用表",
+      "螺丝刀"
+    ],
+    "spareParts": [
+      "对讲分机",
+      "电源适配器",
+      "手柄/话筒"
+    ]
   },
   {
     "code": "01010301",
     "name": "管道/阀门漏水",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010103"
+    "parentCode": "010103",
+    "standardWorkHours": 2,
+    "commonPhrases": [
+      "水管漏水了",
+      "阀门关不严",
+      "吊顶在滴水"
+    ],
+    "standardTools": [
+      "管钳",
+      "活动扳手",
+      "手电筒",
+      "接水桶"
+    ],
+    "spareParts": [
+      "阀门",
+      "PPR管件/管卡",
+      "密封垫片",
+      "生料带"
+    ]
   },
   {
     "code": "01010302",
     "name": "下水堵塞(地漏/洁具)",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010103"
+    "parentCode": "010103",
+    "standardWorkHours": 1.5,
+    "commonPhrases": [
+      "下水道堵了",
+      "马桶堵了",
+      "地漏反水"
+    ],
+    "standardTools": [
+      "管道疏通机/皮搋子",
+      "防护手套",
+      "水桶",
+      "工作灯"
+    ],
+    "spareParts": [
+      "疏通弹簧",
+      "管道疏通剂"
+    ]
   },
   {
     "code": "01010303",
     "name": "水压/水质异常",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010103"
+    "parentCode": "010103",
+    "standardWorkHours": 2,
+    "commonPhrases": [
+      "水很小没压力",
+      "水发黄有杂质",
+      "热水器不出水"
+    ],
+    "standardTools": [
+      "压力表",
+      "管钳",
+      "水样瓶"
+    ],
+    "spareParts": [
+      "过滤器滤芯",
+      "减压阀",
+      "止回阀"
+    ]
   },
   {
     "code": "01010304",
     "name": "龙头/五金更换",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010103"
+    "parentCode": "010103",
+    "standardWorkHours": 1,
+    "commonPhrases": [
+      "水龙头漏水",
+      "换个水龙头",
+      "角阀锈死了"
+    ],
+    "standardTools": [
+      "管钳",
+      "活动扳手",
+      "手电筒"
+    ],
+    "spareParts": [
+      "水龙头",
+      "角阀",
+      "不锈钢软管",
+      "生料带"
+    ]
   },
   {
     "code": "01010401",
     "name": "空调末端(风机盘管/内机)",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010104"
+    "parentCode": "010104",
+    "standardWorkHours": 2,
+    "commonPhrases": [
+      "空调不制冷",
+      "风口滴水",
+      "空调有异味"
+    ],
+    "standardTools": [
+      "万用表",
+      "压力表",
+      "登高梯",
+      "水桶"
+    ],
+    "spareParts": [
+      "过滤网",
+      "风机盘管电机",
+      "温控器",
+      "冷凝水管"
+    ]
   },
   {
     "code": "01010402",
     "name": "新风/排风系统故障",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010104"
+    "parentCode": "010104",
+    "standardWorkHours": 2.5,
+    "commonPhrases": [
+      "新风没风了",
+      "排风扇不转",
+      "排烟风机不启动"
+    ],
+    "standardTools": [
+      "万用表",
+      "转速仪",
+      "登高梯"
+    ],
+    "spareParts": [
+      "皮带",
+      "风机电机",
+      "过滤网",
+      "风阀执行器"
+    ]
   },
   {
     "code": "01010403",
     "name": "冷热源/冷却塔故障",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010104"
+    "parentCode": "010104",
+    "standardWorkHours": 4,
+    "commonPhrases": [
+      "中央空调停了",
+      "冷却塔噪音很大",
+      "冷水机组报警"
+    ],
+    "standardTools": [
+      "万用表",
+      "钳形电流表",
+      "压力表",
+      "测温枪"
+    ],
+    "spareParts": [
+      "皮带",
+      "冷却塔填料",
+      "过滤器滤芯",
+      "水泵机械密封"
+    ]
   },
   {
     "code": "01010404",
     "name": "水系统(水泵/阀门/保温)",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010104"
+    "parentCode": "010104",
+    "standardWorkHours": 3,
+    "commonPhrases": [
+      "水泵漏水",
+      "管道不热",
+      "水泵异响振动大"
+    ],
+    "standardTools": [
+      "管钳",
+      "活动扳手",
+      "钳形电流表"
+    ],
+    "spareParts": [
+      "机械密封",
+      "水泵轴承",
+      "阀门",
+      "保温棉"
+    ]
   },
   {
     "code": "01010501",
     "name": "电梯困人",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010105"
+    "parentCode": "010105",
+    "standardWorkHours": 1,
+    "responseTimeLimit": 10,
+    "completionTimeLimit": 30,
+    "commonPhrases": [
+      "电梯困人了",
+      "有人被困电梯",
+      "电梯停在中间不动"
+    ],
+    "standardTools": [
+      "电梯层门钥匙",
+      "三角钥匙",
+      "盘车轮",
+      "对讲机"
+    ]
   },
   {
     "code": "01010502",
     "name": "垂直电梯故障",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010105"
+    "parentCode": "010105",
+    "standardWorkHours": 3,
+    "commonPhrases": [
+      "电梯不开门",
+      "电梯停在一半",
+      "电梯报警响了"
+    ],
+    "standardTools": [
+      "层门钥匙",
+      "万用表",
+      "笔记本电脑（调试）",
+      "对讲机"
+    ],
+    "spareParts": [
+      "门机皮带",
+      "门锁触点",
+      "光幕",
+      "按钮面板"
+    ]
   },
   {
     "code": "01010503",
     "name": "自动扶梯故障",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010105"
+    "parentCode": "010105",
+    "standardWorkHours": 3,
+    "commonPhrases": [
+      "扶梯停了",
+      "扶梯有异响",
+      "梳齿板卡住东西了"
+    ],
+    "standardTools": [
+      "万用表",
+      "专用工具套装",
+      "警示围挡"
+    ],
+    "spareParts": [
+      "梳齿板",
+      "梯级链销",
+      "驱动链条",
+      "扶手带"
+    ]
   },
   {
     "code": "01010601",
     "name": "锅炉本体故障",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010106"
+    "parentCode": "010106",
+    "standardWorkHours": 4,
+    "commonPhrases": [
+      "锅炉点不着火",
+      "锅炉压力异常",
+      "锅炉水位报警"
+    ],
+    "standardTools": [
+      "万用表",
+      "压力表",
+      "扳手套装",
+      "测温枪"
+    ],
+    "spareParts": [
+      "点火电极",
+      "燃烧器喷嘴",
+      "液位/压力探头",
+      "垫片"
+    ]
   },
   {
     "code": "01010602",
     "name": "安全附件(安全阀/压力表)故障",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010106"
+    "parentCode": "010106",
+    "standardWorkHours": 2,
+    "commonPhrases": [
+      "安全阀漏气",
+      "压力表指针不动",
+      "安全阀起跳后不回座"
+    ],
+    "standardTools": [
+      "扳手套装",
+      "检漏液",
+      "校验压力表"
+    ],
+    "spareParts": [
+      "安全阀",
+      "压力表",
+      "温度表",
+      "密封垫片"
+    ]
   },
   {
     "code": "01010603",
     "name": "水处理系统故障",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010106"
+    "parentCode": "010106",
+    "standardWorkHours": 3,
+    "commonPhrases": [
+      "软水机报警",
+      "水处理树脂不行了",
+      "给水硬度超标"
+    ],
+    "standardTools": [
+      "水质检测仪",
+      "扳手套装",
+      "水桶"
+    ],
+    "spareParts": [
+      "软化树脂",
+      "过滤滤芯",
+      "再生盐"
+    ]
   },
   {
     "code": "01010701",
     "name": "门窗/五金维修",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010107"
+    "parentCode": "010107",
+    "standardWorkHours": 1,
+    "commonPhrases": [
+      "门关不上了",
+      "窗户把手坏了",
+      "合页松了门下垂"
+    ],
+    "standardTools": [
+      "螺丝刀套装",
+      "电钻",
+      "木工锤"
+    ],
+    "spareParts": [
+      "合页",
+      "门锁/执手",
+      "密封条",
+      "滑轮"
+    ]
   },
   {
     "code": "01010702",
     "name": "玻璃破损更换",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010107"
+    "parentCode": "010107",
+    "standardWorkHours": 3,
+    "commonPhrases": [
+      "玻璃碎了",
+      "玻璃有裂缝",
+      "玻璃门自爆了"
+    ],
+    "standardTools": [
+      "玻璃吸盘",
+      "玻璃刀",
+      "防护手套",
+      "美工刀"
+    ],
+    "spareParts": [
+      "玻璃（按尺寸下单）",
+      "玻璃胶",
+      "压条"
+    ]
   },
   {
     "code": "01010703",
     "name": "渗漏维修(屋面/外墙/卫浴)",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010107"
+    "parentCode": "010107",
+    "standardWorkHours": 6,
+    "commonPhrases": [
+      "天花板渗水",
+      "卫生间墙面渗水",
+      "屋面漏水了"
+    ],
+    "standardTools": [
+      "铲刀",
+      "刷子",
+      "喷灯/热风枪",
+      "水桶"
+    ],
+    "spareParts": [
+      "防水涂料",
+      "防水卷材",
+      "密封胶",
+      "堵漏王"
+    ]
   },
   {
     "code": "01010704",
     "name": "墙面/地面/吊顶维修",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010107"
+    "parentCode": "010107",
+    "standardWorkHours": 4,
+    "commonPhrases": [
+      "墙面脱皮了",
+      "地砖松动了",
+      "吊顶板掉下来了"
+    ],
+    "standardTools": [
+      "电钻",
+      "铲刀",
+      "抹刀",
+      "水平尺"
+    ],
+    "spareParts": [
+      "腻子",
+      "乳胶漆",
+      "瓷砖胶",
+      "石膏板/矿棉板"
+    ]
   },
   {
     "code": "01010705",
     "name": "道路/井盖/伸缩缝维修",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010107"
+    "parentCode": "010107",
+    "standardWorkHours": 6,
+    "commonPhrases": [
+      "井盖破了",
+      "路面有坑洼",
+      "伸缩缝漏水"
+    ],
+    "standardTools": [
+      "铁锹",
+      "镐",
+      "切割机",
+      "警戒围挡"
+    ],
+    "spareParts": [
+      "井盖/井座",
+      "沥青冷补料",
+      "混凝土",
+      "密封胶条"
+    ]
   },
   {
     "code": "01010801",
     "name": "病床/护栏维修（医）",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010108"
+    "parentCode": "010108",
+    "standardWorkHours": 1,
+    "commonPhrases": [
+      "病床摇不动了",
+      "床护栏坏了",
+      "病床脚轮坏了"
+    ],
+    "standardTools": [
+      "内六角扳手",
+      "螺丝刀套装",
+      "活动扳手"
+    ],
+    "spareParts": [
+      "摇柄/丝杆",
+      "护栏配件",
+      "脚轮",
+      "刹车片"
+    ]
   },
   {
     "code": "01010802",
     "name": "桌椅/柜类维修",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010108"
+    "parentCode": "010108",
+    "standardWorkHours": 1,
+    "commonPhrases": [
+      "椅子松了",
+      "柜门掉了",
+      "抽屉滑轨坏了"
+    ],
+    "standardTools": [
+      "螺丝刀套装",
+      "内六角扳手"
+    ],
+    "spareParts": [
+      "螺丝/五金件",
+      "合页",
+      "滑轨",
+      "柜脚"
+    ]
   },
   {
     "code": "01010803",
     "name": "隔断/门锁五金维修",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010108"
+    "parentCode": "010108",
+    "standardWorkHours": 1.5,
+    "commonPhrases": [
+      "隔断门锁坏了",
+      "卫生间隔断松了",
+      "隔断门关不上"
+    ],
+    "standardTools": [
+      "螺丝刀套装",
+      "电钻",
+      "开孔器"
+    ],
+    "spareParts": [
+      "隔断锁/指示器",
+      "合页",
+      "支撑脚"
+    ]
   },
   {
     "code": "01010901",
     "name": "医用气体终端故障(氧/负压/压缩空气)",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010109"
+    "parentCode": "010109",
+    "standardWorkHours": 1.5,
+    "commonPhrases": [
+      "床头氧气接口没气",
+      "负压吸引没吸力",
+      "压缩空气终端漏气"
+    ],
+    "standardTools": [
+      "终端专用拆装工具",
+      "压力表",
+      "检漏液"
+    ],
+    "spareParts": [
+      "气体终端阀芯/插座组件",
+      "密封圈"
+    ]
   },
   {
     "code": "01010902",
     "name": "医用纯水系统故障",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010109"
+    "parentCode": "010109",
+    "standardWorkHours": 3,
+    "commonPhrases": [
+      "纯水机报警",
+      "血透水不够用",
+      "纯水电导率超标"
+    ],
+    "standardTools": [
+      "水质检测仪",
+      "压力表",
+      "扳手套装"
+    ],
+    "spareParts": [
+      "RO膜",
+      "滤芯",
+      "紫外灯管",
+      "电磁阀"
+    ]
   },
   {
     "code": "01010903",
     "name": "净化层流系统故障",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010109"
+    "parentCode": "010109",
+    "standardWorkHours": 4,
+    "commonPhrases": [
+      "手术室净化报警",
+      "层流风速不够",
+      "房间压差异常"
+    ],
+    "standardTools": [
+      "风速仪",
+      "粒子计数器",
+      "压差表",
+      "登高梯"
+    ],
+    "spareParts": [
+      "高效过滤器（HEPA）",
+      "初效/中效滤网",
+      "皮带"
+    ]
   },
   {
     "code": "01010904",
     "name": "物流小车/气动物流故障",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010109"
+    "parentCode": "010109",
+    "standardWorkHours": 2.5,
+    "commonPhrases": [
+      "物流小车停在半路",
+      "气动物流发送失败",
+      "传输站点报警"
+    ],
+    "standardTools": [
+      "笔记本电脑（调试）",
+      "万用表",
+      "专用工具"
+    ],
+    "spareParts": [
+      "传输瓶",
+      "站台密封圈",
+      "小车电池",
+      "光电传感器"
+    ]
   },
   {
     "code": "01011001",
     "name": "厨房设备故障(蒸箱/灶具/冷库)",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010110"
+    "parentCode": "010110",
+    "standardWorkHours": 3,
+    "commonPhrases": [
+      "蒸箱不加热",
+      "冷库温度降不下来",
+      "灶具点不着火"
+    ],
+    "standardTools": [
+      "万用表",
+      "钳形电流表",
+      "测温枪",
+      "检漏液"
+    ],
+    "spareParts": [
+      "点火器",
+      "温控器/传感器",
+      "电磁阀",
+      "门封条"
+    ]
   },
   {
     "code": "01011002",
     "name": "洗衣设备故障(洗衣线/烘干)",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010110"
+    "parentCode": "010110",
+    "standardWorkHours": 3,
+    "commonPhrases": [
+      "洗衣机不脱水",
+      "烘干机不加热",
+      "洗衣线报警停机"
+    ],
+    "standardTools": [
+      "万用表",
+      "钳形电流表",
+      "扳手套装"
+    ],
+    "spareParts": [
+      "皮带",
+      "加热管",
+      "轴承/密封",
+      "过滤器滤芯"
+    ]
   },
   {
     "code": "01011101",
     "name": "道闸/车牌识别故障",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010111"
+    "parentCode": "010111",
+    "standardWorkHours": 2,
+    "commonPhrases": [
+      "道闸杆不抬",
+      "车牌识别不了",
+      "道闸落杆异常"
+    ],
+    "standardTools": [
+      "万用表",
+      "笔记本电脑（调试）",
+      "遥控器"
+    ],
+    "spareParts": [
+      "道闸机芯/弹簧",
+      "车辆检测器",
+      "识别摄像机",
+      "遥控电池"
+    ]
   },
   {
     "code": "01011102",
     "name": "充电桩故障",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010111"
+    "parentCode": "010111",
+    "standardWorkHours": 2.5,
+    "commonPhrases": [
+      "充电桩不能充电",
+      "充电桩报警",
+      "充电枪插不上电"
+    ],
+    "standardTools": [
+      "万用表",
+      "钳形电流表",
+      "绝缘手套"
+    ],
+    "spareParts": [
+      "充电模块",
+      "断路器",
+      "通信模块"
+    ]
   },
   {
     "code": "01011103",
     "name": "机械车位故障",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010111"
+    "parentCode": "010111",
+    "standardWorkHours": 3,
+    "commonPhrases": [
+      "机械车位不动了",
+      "载车板异响",
+      "车位取不出车"
+    ],
+    "standardTools": [
+      "万用表",
+      "扳手套装",
+      "对讲机",
+      "警戒围挡"
+    ],
+    "spareParts": [
+      "链条",
+      "钢丝绳",
+      "限位开关",
+      "光电传感器"
+    ]
   },
   {
     "code": "01020101",

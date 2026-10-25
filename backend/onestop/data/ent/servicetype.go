@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"encoding/json"
 	"fmt"
 	"go-wind-admin/onestop/data/ent/servicetype"
 	"strings"
@@ -42,6 +43,22 @@ type ServiceType struct {
 	Level *servicetype.Level `json:"level,omitempty"`
 	// 描述
 	Description *string `json:"description,omitempty"`
+	// 维修岗位（派单目标岗位，如：电工/管工/空调工）
+	RepairPost *string `json:"repair_post,omitempty"`
+	// 标准工时（小时）：单次作业标准人时，绩效与负载核算用
+	StandardWorkHours *float64 `json:"standard_work_hours,omitempty"`
+	// 响应时限（分钟）：受理到到场的 SLA
+	ResponseTimeLimit *uint32 `json:"response_time_limit,omitempty"`
+	// 完成时限（分钟）：受理到完工的 SLA
+	CompletionTimeLimit *uint32 `json:"completion_time_limit,omitempty"`
+	// 标准指导说明：作业 SOP 与安全注意事项
+	Guidance *string `json:"guidance,omitempty"`
+	// 常见报修语句清单：报修端快捷语句，兼作语义归型语料
+	CommonPhrases []string `json:"common_phrases,omitempty"`
+	// 服务标准工具清单：出工标配工具
+	StandardTools []string `json:"standard_tools,omitempty"`
+	// 常用备件/耗材清单：出工常备，配合库存领用
+	SpareParts []string `json:"spare_parts,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ServiceTypeQuery when eager-loading is set.
 	Edges        ServiceTypeEdges `json:"edges"`
@@ -84,11 +101,15 @@ func (*ServiceType) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case servicetype.FieldCommonPhrases, servicetype.FieldStandardTools, servicetype.FieldSpareParts:
+			values[i] = new([]byte)
 		case servicetype.FieldIsEnabled:
 			values[i] = new(sql.NullBool)
-		case servicetype.FieldID, servicetype.FieldCreatedBy, servicetype.FieldUpdatedBy, servicetype.FieldDeletedBy, servicetype.FieldParentID:
+		case servicetype.FieldStandardWorkHours:
+			values[i] = new(sql.NullFloat64)
+		case servicetype.FieldID, servicetype.FieldCreatedBy, servicetype.FieldUpdatedBy, servicetype.FieldDeletedBy, servicetype.FieldParentID, servicetype.FieldResponseTimeLimit, servicetype.FieldCompletionTimeLimit:
 			values[i] = new(sql.NullInt64)
-		case servicetype.FieldCode, servicetype.FieldName, servicetype.FieldLevel, servicetype.FieldDescription:
+		case servicetype.FieldCode, servicetype.FieldName, servicetype.FieldLevel, servicetype.FieldDescription, servicetype.FieldRepairPost, servicetype.FieldGuidance:
 			values[i] = new(sql.NullString)
 		case servicetype.FieldCreatedAt, servicetype.FieldUpdatedAt, servicetype.FieldDeletedAt:
 			values[i] = new(sql.NullTime)
@@ -197,6 +218,65 @@ func (_m *ServiceType) assignValues(columns []string, values []any) error {
 				_m.Description = new(string)
 				*_m.Description = value.String
 			}
+		case servicetype.FieldRepairPost:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field repair_post", values[i])
+			} else if value.Valid {
+				_m.RepairPost = new(string)
+				*_m.RepairPost = value.String
+			}
+		case servicetype.FieldStandardWorkHours:
+			if value, ok := values[i].(*sql.NullFloat64); !ok {
+				return fmt.Errorf("unexpected type %T for field standard_work_hours", values[i])
+			} else if value.Valid {
+				_m.StandardWorkHours = new(float64)
+				*_m.StandardWorkHours = value.Float64
+			}
+		case servicetype.FieldResponseTimeLimit:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field response_time_limit", values[i])
+			} else if value.Valid {
+				_m.ResponseTimeLimit = new(uint32)
+				*_m.ResponseTimeLimit = uint32(value.Int64)
+			}
+		case servicetype.FieldCompletionTimeLimit:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field completion_time_limit", values[i])
+			} else if value.Valid {
+				_m.CompletionTimeLimit = new(uint32)
+				*_m.CompletionTimeLimit = uint32(value.Int64)
+			}
+		case servicetype.FieldGuidance:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field guidance", values[i])
+			} else if value.Valid {
+				_m.Guidance = new(string)
+				*_m.Guidance = value.String
+			}
+		case servicetype.FieldCommonPhrases:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field common_phrases", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &_m.CommonPhrases); err != nil {
+					return fmt.Errorf("unmarshal field common_phrases: %w", err)
+				}
+			}
+		case servicetype.FieldStandardTools:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field standard_tools", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &_m.StandardTools); err != nil {
+					return fmt.Errorf("unmarshal field standard_tools: %w", err)
+				}
+			}
+		case servicetype.FieldSpareParts:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field spare_parts", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &_m.SpareParts); err != nil {
+					return fmt.Errorf("unmarshal field spare_parts: %w", err)
+				}
+			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
 		}
@@ -302,6 +382,40 @@ func (_m *ServiceType) String() string {
 		builder.WriteString("description=")
 		builder.WriteString(*v)
 	}
+	builder.WriteString(", ")
+	if v := _m.RepairPost; v != nil {
+		builder.WriteString("repair_post=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.StandardWorkHours; v != nil {
+		builder.WriteString("standard_work_hours=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	if v := _m.ResponseTimeLimit; v != nil {
+		builder.WriteString("response_time_limit=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	if v := _m.CompletionTimeLimit; v != nil {
+		builder.WriteString("completion_time_limit=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	if v := _m.Guidance; v != nil {
+		builder.WriteString("guidance=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	builder.WriteString("common_phrases=")
+	builder.WriteString(fmt.Sprintf("%v", _m.CommonPhrases))
+	builder.WriteString(", ")
+	builder.WriteString("standard_tools=")
+	builder.WriteString(fmt.Sprintf("%v", _m.StandardTools))
+	builder.WriteString(", ")
+	builder.WriteString("spare_parts=")
+	builder.WriteString(fmt.Sprintf("%v", _m.SpareParts))
 	builder.WriteByte(')')
 	return builder.String()
 }
