@@ -117,6 +117,64 @@ DELETE /admin/v1/onestop/service-types/{id}
 - 配置继承回退（细类空 → 取小类）：工单消费侧实现；
 - 其他中类（计划维保/巡检等）的配置分节：字段机制通用，后续按业态各启各的清单。
 
+## 巡检计划（0103 巡检巡查）
+
+**定位**：与报修配置（类型上的单值参数）不同，巡检计划是**类别节点下的列表型
+子资源**——一个类别可挂多套周期不同的计划。计划描述「谁（岗位）按什么频率在
+什么范围内查哪些点（点表）」，生效区间约束执行窗口；运行期任务生成由后续工单
+对象实现，本期只做配置管理。新实体落 `onestop_inspection_plans`（迁移 00010）。
+
+### 频率模型
+
+`freq_type` 选周期 + 各周期填各自的执行日字段 + `times` 执行日内时间点列表
+（每日多次 = 多个时间点）+ `excluded_dates` 排除日期（节假日不生成任务）：
+
+| 周期 | 必填执行日字段 | 月底兼容 |
+|---|---|---|
+| FREQ_DAILY | —（仅 times） | — |
+| FREQ_WEEKLY | `weekdays`（1=周一…7=周日，可多选） | — |
+| FREQ_MONTHLY | `month_days`（1-31，`-1`=当月最后一天） | `clamp_to_month_end` |
+| FREQ_YEARLY | `months`（1-12）+ `month_days` | 同上 |
+
+月底兼容（`clamp_to_month_end`，默认开）：31 号在小月顺延至当月最后一天执行
+（2 月的 31 号 → 28/29 号）；关闭则当月跳过。运维口径建议直接用 `-1`（月末）。
+
+### 点表与范围
+
+- 类别节点（`0103` 前缀的小类/细类）挂**标准巡检项目库**
+  （`service_type.inspection_items` jsonb），是计划点表的模板来源；
+- 计划带**空间点表**（`space_items`）与**设备点表**（`equipment_items`）两组
+  jsonb（`[{name,enabled}]`），计划内可增（含自定义）/删/逐项停用启用，
+  停用项保留在点表中但不执行；
+- `space_refs` / `equipment_refs` 为**预留字段**：空间/设备对象模块落地后启用
+  （当前无业务表，仅保留接口契约）。
+
+### 其他约定
+
+- 计划只允许挂在 `0103` 巡检巡查子树的小类/细类上（服务层校验）；
+- `effective_from` / `effective_to` 生效区间（含端点，留空 = 长期有效）；
+- Update 走「合并视图校验」：未携带字段以库内值补齐后校验，repo 收原始提交值，
+  jsonb 数组保留「mask 内空数组 = 显式清空」语义；当前周期必填执行日字段不允许
+  被 mask 显式清空；
+- 种子：空表守卫播种 9 套行业模板计划（每日多次防火巡查、月末防火检查（月底顺延
+  样例）、每周一三五抄表、年度季节性专项等，四种周期全覆盖），类别编码解析类别 id，
+  查不到类别跳过留痕；守卫测试 `data/inspection_plan_seed_test.go`；
+- 管理入口在服务类型页 0103 类别的编辑页签（标准项目库分节 + 「巡检计划」面板 +
+  抽屉表单），独立「巡检计划管理」菜单页留给工单模块一起做。
+
+接口路由（挂 admin 服务，`OneStopInspectionPlanService`，SYSTEM 模块）：
+
+```
+GET    /admin/v1/onestop/inspection-plans
+GET    /admin/v1/onestop/inspection-plans/{id}
+POST   /admin/v1/onestop/inspection-plans
+PUT    /admin/v1/onestop/inspection-plans/{id}
+DELETE /admin/v1/onestop/inspection-plans/{id}
+```
+
+> 已部署实例需 `make openapi` 后重启进程，并在管理页触发「接口同步」登记新端点
+> （租户闸门 fail-closed，未同步前新端点 403）。
+
 ## 新增实体的步骤（本 module 内扩展时）
 
 1. `backend/api/protos/onestop/service/v1/<entity>.proto`（消息 + HTTP 注解直挂 service；

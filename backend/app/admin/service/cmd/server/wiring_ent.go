@@ -207,6 +207,16 @@ func initApp(ctx *bootstrap.Context) (*kratos.App, func(), error) {
 		}
 		return operator.UserId, nil
 	})
+	// 巡检计划：依赖 ServiceTypeService 先行构造（其构造函数按空表守卫播种类别字典，
+	// 计划种子按编码解析类别才能命中）
+	oneStopInspectionPlanRepo := onestopData.NewInspectionPlanRepo(ctx, oneStopEntClient)
+	oneStopInspectionPlanService := onestopService.NewInspectionPlanService(ctx, oneStopInspectionPlanRepo, oneStopServiceTypeRepo, func(ctx context.Context) (uint32, error) {
+		operator, err := auth.FromContext(ctx)
+		if err != nil {
+			return 0, err
+		}
+		return operator.UserId, nil
+	})
 
 	// 通知投递：渠道注册表（EMAIL / WEBHOOK / SMS / INTERNAL）→ NotificationService → 各业务 service 只拿 Notifier。
 	// 注册顺序即装配位置：新增一种渠道 = 在这里多 Register 一个 Sender，业务调用方不动。
@@ -405,6 +415,7 @@ func initApp(ctx *bootstrap.Context) (*kratos.App, func(), error) {
 		aiContentService,
 		aaAiAgentService,
 		oneStopServiceTypeService,
+		oneStopInspectionPlanService,
 	)
 	if err != nil {
 		rollback()

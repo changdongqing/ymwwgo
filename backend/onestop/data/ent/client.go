@@ -11,6 +11,7 @@ import (
 
 	"go-wind-admin/onestop/data/ent/migrate"
 
+	"go-wind-admin/onestop/data/ent/inspectionplan"
 	"go-wind-admin/onestop/data/ent/servicetype"
 
 	"entgo.io/ent"
@@ -24,6 +25,8 @@ type Client struct {
 	config
 	// Schema is the client for creating, migrating and dropping schema.
 	Schema *migrate.Schema
+	// InspectionPlan is the client for interacting with the InspectionPlan builders.
+	InspectionPlan *InspectionPlanClient
 	// ServiceType is the client for interacting with the ServiceType builders.
 	ServiceType *ServiceTypeClient
 }
@@ -37,6 +40,7 @@ func NewClient(opts ...Option) *Client {
 
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
+	c.InspectionPlan = NewInspectionPlanClient(c.config)
 	c.ServiceType = NewServiceTypeClient(c.config)
 }
 
@@ -128,9 +132,10 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	cfg := c.config
 	cfg.driver = tx
 	return &Tx{
-		ctx:         ctx,
-		config:      cfg,
-		ServiceType: NewServiceTypeClient(cfg),
+		ctx:            ctx,
+		config:         cfg,
+		InspectionPlan: NewInspectionPlanClient(cfg),
+		ServiceType:    NewServiceTypeClient(cfg),
 	}, nil
 }
 
@@ -148,16 +153,17 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		ctx:         ctx,
-		config:      cfg,
-		ServiceType: NewServiceTypeClient(cfg),
+		ctx:            ctx,
+		config:         cfg,
+		InspectionPlan: NewInspectionPlanClient(cfg),
+		ServiceType:    NewServiceTypeClient(cfg),
 	}, nil
 }
 
 // Debug returns a new debug-client. It's used to get verbose logging on specific operations.
 //
 //	client.Debug().
-//		ServiceType.
+//		InspectionPlan.
 //		Query().
 //		Count(ctx)
 func (c *Client) Debug() *Client {
@@ -179,22 +185,159 @@ func (c *Client) Close() error {
 // Use adds the mutation hooks to all the entity clients.
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
+	c.InspectionPlan.Use(hooks...)
 	c.ServiceType.Use(hooks...)
 }
 
 // Intercept adds the query interceptors to all the entity clients.
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
+	c.InspectionPlan.Intercept(interceptors...)
 	c.ServiceType.Intercept(interceptors...)
 }
 
 // Mutate implements the ent.Mutator interface.
 func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
+	case *InspectionPlanMutation:
+		return c.InspectionPlan.mutate(ctx, m)
 	case *ServiceTypeMutation:
 		return c.ServiceType.mutate(ctx, m)
 	default:
 		return nil, fmt.Errorf("ent: unknown mutation type %T", m)
+	}
+}
+
+// InspectionPlanClient is a client for the InspectionPlan schema.
+type InspectionPlanClient struct {
+	config
+}
+
+// NewInspectionPlanClient returns a client for the InspectionPlan from the given config.
+func NewInspectionPlanClient(c config) *InspectionPlanClient {
+	return &InspectionPlanClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `inspectionplan.Hooks(f(g(h())))`.
+func (c *InspectionPlanClient) Use(hooks ...Hook) {
+	c.hooks.InspectionPlan = append(c.hooks.InspectionPlan, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `inspectionplan.Intercept(f(g(h())))`.
+func (c *InspectionPlanClient) Intercept(interceptors ...Interceptor) {
+	c.inters.InspectionPlan = append(c.inters.InspectionPlan, interceptors...)
+}
+
+// Create returns a builder for creating a InspectionPlan entity.
+func (c *InspectionPlanClient) Create() *InspectionPlanCreate {
+	mutation := newInspectionPlanMutation(c.config, OpCreate)
+	return &InspectionPlanCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of InspectionPlan entities.
+func (c *InspectionPlanClient) CreateBulk(builders ...*InspectionPlanCreate) *InspectionPlanCreateBulk {
+	return &InspectionPlanCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *InspectionPlanClient) MapCreateBulk(slice any, setFunc func(*InspectionPlanCreate, int)) *InspectionPlanCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &InspectionPlanCreateBulk{err: fmt.Errorf("calling to InspectionPlanClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*InspectionPlanCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &InspectionPlanCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for InspectionPlan.
+func (c *InspectionPlanClient) Update() *InspectionPlanUpdate {
+	mutation := newInspectionPlanMutation(c.config, OpUpdate)
+	return &InspectionPlanUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *InspectionPlanClient) UpdateOne(_m *InspectionPlan) *InspectionPlanUpdateOne {
+	mutation := newInspectionPlanMutation(c.config, OpUpdateOne, withInspectionPlan(_m))
+	return &InspectionPlanUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *InspectionPlanClient) UpdateOneID(id uint32) *InspectionPlanUpdateOne {
+	mutation := newInspectionPlanMutation(c.config, OpUpdateOne, withInspectionPlanID(id))
+	return &InspectionPlanUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for InspectionPlan.
+func (c *InspectionPlanClient) Delete() *InspectionPlanDelete {
+	mutation := newInspectionPlanMutation(c.config, OpDelete)
+	return &InspectionPlanDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *InspectionPlanClient) DeleteOne(_m *InspectionPlan) *InspectionPlanDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *InspectionPlanClient) DeleteOneID(id uint32) *InspectionPlanDeleteOne {
+	builder := c.Delete().Where(inspectionplan.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &InspectionPlanDeleteOne{builder}
+}
+
+// Query returns a query builder for InspectionPlan.
+func (c *InspectionPlanClient) Query() *InspectionPlanQuery {
+	return &InspectionPlanQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeInspectionPlan},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a InspectionPlan entity by its id.
+func (c *InspectionPlanClient) Get(ctx context.Context, id uint32) (*InspectionPlan, error) {
+	return c.Query().Where(inspectionplan.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *InspectionPlanClient) GetX(ctx context.Context, id uint32) *InspectionPlan {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *InspectionPlanClient) Hooks() []Hook {
+	return c.hooks.InspectionPlan
+}
+
+// Interceptors returns the client interceptors.
+func (c *InspectionPlanClient) Interceptors() []Interceptor {
+	return c.inters.InspectionPlan
+}
+
+func (c *InspectionPlanClient) mutate(ctx context.Context, m *InspectionPlanMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&InspectionPlanCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&InspectionPlanUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&InspectionPlanUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&InspectionPlanDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown InspectionPlan mutation op: %q", m.Op())
 	}
 }
 
@@ -366,9 +509,9 @@ func (c *ServiceTypeClient) mutate(ctx context.Context, m *ServiceTypeMutation) 
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		ServiceType []ent.Hook
+		InspectionPlan, ServiceType []ent.Hook
 	}
 	inters struct {
-		ServiceType []ent.Interceptor
+		InspectionPlan, ServiceType []ent.Interceptor
 	}
 )

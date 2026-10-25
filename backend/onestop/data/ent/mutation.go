@@ -6,7 +6,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"go-wind-admin/onestop/data/ent/inspectionplan"
 	"go-wind-admin/onestop/data/ent/predicate"
+	"go-wind-admin/onestop/data/ent/schema"
 	"go-wind-admin/onestop/data/ent/servicetype"
 	"sync"
 	"time"
@@ -24,8 +26,2261 @@ const (
 	OpUpdateOne = ent.OpUpdateOne
 
 	// Node types.
-	TypeServiceType = "ServiceType"
+	TypeInspectionPlan = "InspectionPlan"
+	TypeServiceType    = "ServiceType"
 )
+
+// InspectionPlanMutation represents an operation that mutates the InspectionPlan nodes in the graph.
+type InspectionPlanMutation struct {
+	config
+	op                    Op
+	typ                   string
+	id                    *uint32
+	created_at            *time.Time
+	updated_at            *time.Time
+	deleted_at            *time.Time
+	created_by            *uint32
+	addcreated_by         *int32
+	updated_by            *uint32
+	addupdated_by         *int32
+	deleted_by            *uint32
+	adddeleted_by         *int32
+	is_enabled            *bool
+	name                  *string
+	service_type_id       *uint32
+	addservice_type_id    *int32
+	freq_type             *inspectionplan.FreqType
+	times                 *[]string
+	appendtimes           []string
+	weekdays              *[]int32
+	appendweekdays        []int32
+	month_days            *[]int32
+	appendmonth_days      []int32
+	clamp_to_month_end    *bool
+	months                *[]int32
+	appendmonths          []int32
+	excluded_dates        *[]string
+	appendexcluded_dates  []string
+	post                  *string
+	space_items           *[]schema.InspectionPlanItem
+	appendspace_items     []schema.InspectionPlanItem
+	equipment_items       *[]schema.InspectionPlanItem
+	appendequipment_items []schema.InspectionPlanItem
+	space_refs            *[]string
+	appendspace_refs      []string
+	equipment_refs        *[]string
+	appendequipment_refs  []string
+	effective_from        *time.Time
+	effective_to          *time.Time
+	clearedFields         map[string]struct{}
+	done                  bool
+	oldValue              func(context.Context) (*InspectionPlan, error)
+	predicates            []predicate.InspectionPlan
+}
+
+var _ ent.Mutation = (*InspectionPlanMutation)(nil)
+
+// inspectionplanOption allows management of the mutation configuration using functional options.
+type inspectionplanOption func(*InspectionPlanMutation)
+
+// newInspectionPlanMutation creates new mutation for the InspectionPlan entity.
+func newInspectionPlanMutation(c config, op Op, opts ...inspectionplanOption) *InspectionPlanMutation {
+	m := &InspectionPlanMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeInspectionPlan,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withInspectionPlanID sets the ID field of the mutation.
+func withInspectionPlanID(id uint32) inspectionplanOption {
+	return func(m *InspectionPlanMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *InspectionPlan
+		)
+		m.oldValue = func(ctx context.Context) (*InspectionPlan, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().InspectionPlan.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withInspectionPlan sets the old InspectionPlan of the mutation.
+func withInspectionPlan(node *InspectionPlan) inspectionplanOption {
+	return func(m *InspectionPlanMutation) {
+		m.oldValue = func(context.Context) (*InspectionPlan, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m InspectionPlanMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m InspectionPlanMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of InspectionPlan entities.
+func (m *InspectionPlanMutation) SetID(id uint32) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *InspectionPlanMutation) ID() (id uint32, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *InspectionPlanMutation) IDs(ctx context.Context) ([]uint32, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uint32{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().InspectionPlan.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *InspectionPlanMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *InspectionPlanMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the InspectionPlan entity.
+// If the InspectionPlan object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InspectionPlanMutation) OldCreatedAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ClearCreatedAt clears the value of the "created_at" field.
+func (m *InspectionPlanMutation) ClearCreatedAt() {
+	m.created_at = nil
+	m.clearedFields[inspectionplan.FieldCreatedAt] = struct{}{}
+}
+
+// CreatedAtCleared returns if the "created_at" field was cleared in this mutation.
+func (m *InspectionPlanMutation) CreatedAtCleared() bool {
+	_, ok := m.clearedFields[inspectionplan.FieldCreatedAt]
+	return ok
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *InspectionPlanMutation) ResetCreatedAt() {
+	m.created_at = nil
+	delete(m.clearedFields, inspectionplan.FieldCreatedAt)
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *InspectionPlanMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *InspectionPlanMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the InspectionPlan entity.
+// If the InspectionPlan object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InspectionPlanMutation) OldUpdatedAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ClearUpdatedAt clears the value of the "updated_at" field.
+func (m *InspectionPlanMutation) ClearUpdatedAt() {
+	m.updated_at = nil
+	m.clearedFields[inspectionplan.FieldUpdatedAt] = struct{}{}
+}
+
+// UpdatedAtCleared returns if the "updated_at" field was cleared in this mutation.
+func (m *InspectionPlanMutation) UpdatedAtCleared() bool {
+	_, ok := m.clearedFields[inspectionplan.FieldUpdatedAt]
+	return ok
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *InspectionPlanMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+	delete(m.clearedFields, inspectionplan.FieldUpdatedAt)
+}
+
+// SetDeletedAt sets the "deleted_at" field.
+func (m *InspectionPlanMutation) SetDeletedAt(t time.Time) {
+	m.deleted_at = &t
+}
+
+// DeletedAt returns the value of the "deleted_at" field in the mutation.
+func (m *InspectionPlanMutation) DeletedAt() (r time.Time, exists bool) {
+	v := m.deleted_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeletedAt returns the old "deleted_at" field's value of the InspectionPlan entity.
+// If the InspectionPlan object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InspectionPlanMutation) OldDeletedAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeletedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeletedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeletedAt: %w", err)
+	}
+	return oldValue.DeletedAt, nil
+}
+
+// ClearDeletedAt clears the value of the "deleted_at" field.
+func (m *InspectionPlanMutation) ClearDeletedAt() {
+	m.deleted_at = nil
+	m.clearedFields[inspectionplan.FieldDeletedAt] = struct{}{}
+}
+
+// DeletedAtCleared returns if the "deleted_at" field was cleared in this mutation.
+func (m *InspectionPlanMutation) DeletedAtCleared() bool {
+	_, ok := m.clearedFields[inspectionplan.FieldDeletedAt]
+	return ok
+}
+
+// ResetDeletedAt resets all changes to the "deleted_at" field.
+func (m *InspectionPlanMutation) ResetDeletedAt() {
+	m.deleted_at = nil
+	delete(m.clearedFields, inspectionplan.FieldDeletedAt)
+}
+
+// SetCreatedBy sets the "created_by" field.
+func (m *InspectionPlanMutation) SetCreatedBy(u uint32) {
+	m.created_by = &u
+	m.addcreated_by = nil
+}
+
+// CreatedBy returns the value of the "created_by" field in the mutation.
+func (m *InspectionPlanMutation) CreatedBy() (r uint32, exists bool) {
+	v := m.created_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedBy returns the old "created_by" field's value of the InspectionPlan entity.
+// If the InspectionPlan object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InspectionPlanMutation) OldCreatedBy(ctx context.Context) (v *uint32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedBy: %w", err)
+	}
+	return oldValue.CreatedBy, nil
+}
+
+// AddCreatedBy adds u to the "created_by" field.
+func (m *InspectionPlanMutation) AddCreatedBy(u int32) {
+	if m.addcreated_by != nil {
+		*m.addcreated_by += u
+	} else {
+		m.addcreated_by = &u
+	}
+}
+
+// AddedCreatedBy returns the value that was added to the "created_by" field in this mutation.
+func (m *InspectionPlanMutation) AddedCreatedBy() (r int32, exists bool) {
+	v := m.addcreated_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearCreatedBy clears the value of the "created_by" field.
+func (m *InspectionPlanMutation) ClearCreatedBy() {
+	m.created_by = nil
+	m.addcreated_by = nil
+	m.clearedFields[inspectionplan.FieldCreatedBy] = struct{}{}
+}
+
+// CreatedByCleared returns if the "created_by" field was cleared in this mutation.
+func (m *InspectionPlanMutation) CreatedByCleared() bool {
+	_, ok := m.clearedFields[inspectionplan.FieldCreatedBy]
+	return ok
+}
+
+// ResetCreatedBy resets all changes to the "created_by" field.
+func (m *InspectionPlanMutation) ResetCreatedBy() {
+	m.created_by = nil
+	m.addcreated_by = nil
+	delete(m.clearedFields, inspectionplan.FieldCreatedBy)
+}
+
+// SetUpdatedBy sets the "updated_by" field.
+func (m *InspectionPlanMutation) SetUpdatedBy(u uint32) {
+	m.updated_by = &u
+	m.addupdated_by = nil
+}
+
+// UpdatedBy returns the value of the "updated_by" field in the mutation.
+func (m *InspectionPlanMutation) UpdatedBy() (r uint32, exists bool) {
+	v := m.updated_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedBy returns the old "updated_by" field's value of the InspectionPlan entity.
+// If the InspectionPlan object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InspectionPlanMutation) OldUpdatedBy(ctx context.Context) (v *uint32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedBy: %w", err)
+	}
+	return oldValue.UpdatedBy, nil
+}
+
+// AddUpdatedBy adds u to the "updated_by" field.
+func (m *InspectionPlanMutation) AddUpdatedBy(u int32) {
+	if m.addupdated_by != nil {
+		*m.addupdated_by += u
+	} else {
+		m.addupdated_by = &u
+	}
+}
+
+// AddedUpdatedBy returns the value that was added to the "updated_by" field in this mutation.
+func (m *InspectionPlanMutation) AddedUpdatedBy() (r int32, exists bool) {
+	v := m.addupdated_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearUpdatedBy clears the value of the "updated_by" field.
+func (m *InspectionPlanMutation) ClearUpdatedBy() {
+	m.updated_by = nil
+	m.addupdated_by = nil
+	m.clearedFields[inspectionplan.FieldUpdatedBy] = struct{}{}
+}
+
+// UpdatedByCleared returns if the "updated_by" field was cleared in this mutation.
+func (m *InspectionPlanMutation) UpdatedByCleared() bool {
+	_, ok := m.clearedFields[inspectionplan.FieldUpdatedBy]
+	return ok
+}
+
+// ResetUpdatedBy resets all changes to the "updated_by" field.
+func (m *InspectionPlanMutation) ResetUpdatedBy() {
+	m.updated_by = nil
+	m.addupdated_by = nil
+	delete(m.clearedFields, inspectionplan.FieldUpdatedBy)
+}
+
+// SetDeletedBy sets the "deleted_by" field.
+func (m *InspectionPlanMutation) SetDeletedBy(u uint32) {
+	m.deleted_by = &u
+	m.adddeleted_by = nil
+}
+
+// DeletedBy returns the value of the "deleted_by" field in the mutation.
+func (m *InspectionPlanMutation) DeletedBy() (r uint32, exists bool) {
+	v := m.deleted_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeletedBy returns the old "deleted_by" field's value of the InspectionPlan entity.
+// If the InspectionPlan object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InspectionPlanMutation) OldDeletedBy(ctx context.Context) (v *uint32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeletedBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeletedBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeletedBy: %w", err)
+	}
+	return oldValue.DeletedBy, nil
+}
+
+// AddDeletedBy adds u to the "deleted_by" field.
+func (m *InspectionPlanMutation) AddDeletedBy(u int32) {
+	if m.adddeleted_by != nil {
+		*m.adddeleted_by += u
+	} else {
+		m.adddeleted_by = &u
+	}
+}
+
+// AddedDeletedBy returns the value that was added to the "deleted_by" field in this mutation.
+func (m *InspectionPlanMutation) AddedDeletedBy() (r int32, exists bool) {
+	v := m.adddeleted_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearDeletedBy clears the value of the "deleted_by" field.
+func (m *InspectionPlanMutation) ClearDeletedBy() {
+	m.deleted_by = nil
+	m.adddeleted_by = nil
+	m.clearedFields[inspectionplan.FieldDeletedBy] = struct{}{}
+}
+
+// DeletedByCleared returns if the "deleted_by" field was cleared in this mutation.
+func (m *InspectionPlanMutation) DeletedByCleared() bool {
+	_, ok := m.clearedFields[inspectionplan.FieldDeletedBy]
+	return ok
+}
+
+// ResetDeletedBy resets all changes to the "deleted_by" field.
+func (m *InspectionPlanMutation) ResetDeletedBy() {
+	m.deleted_by = nil
+	m.adddeleted_by = nil
+	delete(m.clearedFields, inspectionplan.FieldDeletedBy)
+}
+
+// SetIsEnabled sets the "is_enabled" field.
+func (m *InspectionPlanMutation) SetIsEnabled(b bool) {
+	m.is_enabled = &b
+}
+
+// IsEnabled returns the value of the "is_enabled" field in the mutation.
+func (m *InspectionPlanMutation) IsEnabled() (r bool, exists bool) {
+	v := m.is_enabled
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIsEnabled returns the old "is_enabled" field's value of the InspectionPlan entity.
+// If the InspectionPlan object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InspectionPlanMutation) OldIsEnabled(ctx context.Context) (v *bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIsEnabled is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIsEnabled requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIsEnabled: %w", err)
+	}
+	return oldValue.IsEnabled, nil
+}
+
+// ClearIsEnabled clears the value of the "is_enabled" field.
+func (m *InspectionPlanMutation) ClearIsEnabled() {
+	m.is_enabled = nil
+	m.clearedFields[inspectionplan.FieldIsEnabled] = struct{}{}
+}
+
+// IsEnabledCleared returns if the "is_enabled" field was cleared in this mutation.
+func (m *InspectionPlanMutation) IsEnabledCleared() bool {
+	_, ok := m.clearedFields[inspectionplan.FieldIsEnabled]
+	return ok
+}
+
+// ResetIsEnabled resets all changes to the "is_enabled" field.
+func (m *InspectionPlanMutation) ResetIsEnabled() {
+	m.is_enabled = nil
+	delete(m.clearedFields, inspectionplan.FieldIsEnabled)
+}
+
+// SetName sets the "name" field.
+func (m *InspectionPlanMutation) SetName(s string) {
+	m.name = &s
+}
+
+// Name returns the value of the "name" field in the mutation.
+func (m *InspectionPlanMutation) Name() (r string, exists bool) {
+	v := m.name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldName returns the old "name" field's value of the InspectionPlan entity.
+// If the InspectionPlan object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InspectionPlanMutation) OldName(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldName: %w", err)
+	}
+	return oldValue.Name, nil
+}
+
+// ClearName clears the value of the "name" field.
+func (m *InspectionPlanMutation) ClearName() {
+	m.name = nil
+	m.clearedFields[inspectionplan.FieldName] = struct{}{}
+}
+
+// NameCleared returns if the "name" field was cleared in this mutation.
+func (m *InspectionPlanMutation) NameCleared() bool {
+	_, ok := m.clearedFields[inspectionplan.FieldName]
+	return ok
+}
+
+// ResetName resets all changes to the "name" field.
+func (m *InspectionPlanMutation) ResetName() {
+	m.name = nil
+	delete(m.clearedFields, inspectionplan.FieldName)
+}
+
+// SetServiceTypeID sets the "service_type_id" field.
+func (m *InspectionPlanMutation) SetServiceTypeID(u uint32) {
+	m.service_type_id = &u
+	m.addservice_type_id = nil
+}
+
+// ServiceTypeID returns the value of the "service_type_id" field in the mutation.
+func (m *InspectionPlanMutation) ServiceTypeID() (r uint32, exists bool) {
+	v := m.service_type_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldServiceTypeID returns the old "service_type_id" field's value of the InspectionPlan entity.
+// If the InspectionPlan object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InspectionPlanMutation) OldServiceTypeID(ctx context.Context) (v *uint32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldServiceTypeID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldServiceTypeID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldServiceTypeID: %w", err)
+	}
+	return oldValue.ServiceTypeID, nil
+}
+
+// AddServiceTypeID adds u to the "service_type_id" field.
+func (m *InspectionPlanMutation) AddServiceTypeID(u int32) {
+	if m.addservice_type_id != nil {
+		*m.addservice_type_id += u
+	} else {
+		m.addservice_type_id = &u
+	}
+}
+
+// AddedServiceTypeID returns the value that was added to the "service_type_id" field in this mutation.
+func (m *InspectionPlanMutation) AddedServiceTypeID() (r int32, exists bool) {
+	v := m.addservice_type_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearServiceTypeID clears the value of the "service_type_id" field.
+func (m *InspectionPlanMutation) ClearServiceTypeID() {
+	m.service_type_id = nil
+	m.addservice_type_id = nil
+	m.clearedFields[inspectionplan.FieldServiceTypeID] = struct{}{}
+}
+
+// ServiceTypeIDCleared returns if the "service_type_id" field was cleared in this mutation.
+func (m *InspectionPlanMutation) ServiceTypeIDCleared() bool {
+	_, ok := m.clearedFields[inspectionplan.FieldServiceTypeID]
+	return ok
+}
+
+// ResetServiceTypeID resets all changes to the "service_type_id" field.
+func (m *InspectionPlanMutation) ResetServiceTypeID() {
+	m.service_type_id = nil
+	m.addservice_type_id = nil
+	delete(m.clearedFields, inspectionplan.FieldServiceTypeID)
+}
+
+// SetFreqType sets the "freq_type" field.
+func (m *InspectionPlanMutation) SetFreqType(it inspectionplan.FreqType) {
+	m.freq_type = &it
+}
+
+// FreqType returns the value of the "freq_type" field in the mutation.
+func (m *InspectionPlanMutation) FreqType() (r inspectionplan.FreqType, exists bool) {
+	v := m.freq_type
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldFreqType returns the old "freq_type" field's value of the InspectionPlan entity.
+// If the InspectionPlan object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InspectionPlanMutation) OldFreqType(ctx context.Context) (v *inspectionplan.FreqType, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldFreqType is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldFreqType requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldFreqType: %w", err)
+	}
+	return oldValue.FreqType, nil
+}
+
+// ClearFreqType clears the value of the "freq_type" field.
+func (m *InspectionPlanMutation) ClearFreqType() {
+	m.freq_type = nil
+	m.clearedFields[inspectionplan.FieldFreqType] = struct{}{}
+}
+
+// FreqTypeCleared returns if the "freq_type" field was cleared in this mutation.
+func (m *InspectionPlanMutation) FreqTypeCleared() bool {
+	_, ok := m.clearedFields[inspectionplan.FieldFreqType]
+	return ok
+}
+
+// ResetFreqType resets all changes to the "freq_type" field.
+func (m *InspectionPlanMutation) ResetFreqType() {
+	m.freq_type = nil
+	delete(m.clearedFields, inspectionplan.FieldFreqType)
+}
+
+// SetTimes sets the "times" field.
+func (m *InspectionPlanMutation) SetTimes(s []string) {
+	m.times = &s
+	m.appendtimes = nil
+}
+
+// Times returns the value of the "times" field in the mutation.
+func (m *InspectionPlanMutation) Times() (r []string, exists bool) {
+	v := m.times
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTimes returns the old "times" field's value of the InspectionPlan entity.
+// If the InspectionPlan object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InspectionPlanMutation) OldTimes(ctx context.Context) (v []string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTimes is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTimes requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTimes: %w", err)
+	}
+	return oldValue.Times, nil
+}
+
+// AppendTimes adds s to the "times" field.
+func (m *InspectionPlanMutation) AppendTimes(s []string) {
+	m.appendtimes = append(m.appendtimes, s...)
+}
+
+// AppendedTimes returns the list of values that were appended to the "times" field in this mutation.
+func (m *InspectionPlanMutation) AppendedTimes() ([]string, bool) {
+	if len(m.appendtimes) == 0 {
+		return nil, false
+	}
+	return m.appendtimes, true
+}
+
+// ClearTimes clears the value of the "times" field.
+func (m *InspectionPlanMutation) ClearTimes() {
+	m.times = nil
+	m.appendtimes = nil
+	m.clearedFields[inspectionplan.FieldTimes] = struct{}{}
+}
+
+// TimesCleared returns if the "times" field was cleared in this mutation.
+func (m *InspectionPlanMutation) TimesCleared() bool {
+	_, ok := m.clearedFields[inspectionplan.FieldTimes]
+	return ok
+}
+
+// ResetTimes resets all changes to the "times" field.
+func (m *InspectionPlanMutation) ResetTimes() {
+	m.times = nil
+	m.appendtimes = nil
+	delete(m.clearedFields, inspectionplan.FieldTimes)
+}
+
+// SetWeekdays sets the "weekdays" field.
+func (m *InspectionPlanMutation) SetWeekdays(i []int32) {
+	m.weekdays = &i
+	m.appendweekdays = nil
+}
+
+// Weekdays returns the value of the "weekdays" field in the mutation.
+func (m *InspectionPlanMutation) Weekdays() (r []int32, exists bool) {
+	v := m.weekdays
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldWeekdays returns the old "weekdays" field's value of the InspectionPlan entity.
+// If the InspectionPlan object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InspectionPlanMutation) OldWeekdays(ctx context.Context) (v []int32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldWeekdays is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldWeekdays requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldWeekdays: %w", err)
+	}
+	return oldValue.Weekdays, nil
+}
+
+// AppendWeekdays adds i to the "weekdays" field.
+func (m *InspectionPlanMutation) AppendWeekdays(i []int32) {
+	m.appendweekdays = append(m.appendweekdays, i...)
+}
+
+// AppendedWeekdays returns the list of values that were appended to the "weekdays" field in this mutation.
+func (m *InspectionPlanMutation) AppendedWeekdays() ([]int32, bool) {
+	if len(m.appendweekdays) == 0 {
+		return nil, false
+	}
+	return m.appendweekdays, true
+}
+
+// ClearWeekdays clears the value of the "weekdays" field.
+func (m *InspectionPlanMutation) ClearWeekdays() {
+	m.weekdays = nil
+	m.appendweekdays = nil
+	m.clearedFields[inspectionplan.FieldWeekdays] = struct{}{}
+}
+
+// WeekdaysCleared returns if the "weekdays" field was cleared in this mutation.
+func (m *InspectionPlanMutation) WeekdaysCleared() bool {
+	_, ok := m.clearedFields[inspectionplan.FieldWeekdays]
+	return ok
+}
+
+// ResetWeekdays resets all changes to the "weekdays" field.
+func (m *InspectionPlanMutation) ResetWeekdays() {
+	m.weekdays = nil
+	m.appendweekdays = nil
+	delete(m.clearedFields, inspectionplan.FieldWeekdays)
+}
+
+// SetMonthDays sets the "month_days" field.
+func (m *InspectionPlanMutation) SetMonthDays(i []int32) {
+	m.month_days = &i
+	m.appendmonth_days = nil
+}
+
+// MonthDays returns the value of the "month_days" field in the mutation.
+func (m *InspectionPlanMutation) MonthDays() (r []int32, exists bool) {
+	v := m.month_days
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMonthDays returns the old "month_days" field's value of the InspectionPlan entity.
+// If the InspectionPlan object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InspectionPlanMutation) OldMonthDays(ctx context.Context) (v []int32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMonthDays is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMonthDays requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMonthDays: %w", err)
+	}
+	return oldValue.MonthDays, nil
+}
+
+// AppendMonthDays adds i to the "month_days" field.
+func (m *InspectionPlanMutation) AppendMonthDays(i []int32) {
+	m.appendmonth_days = append(m.appendmonth_days, i...)
+}
+
+// AppendedMonthDays returns the list of values that were appended to the "month_days" field in this mutation.
+func (m *InspectionPlanMutation) AppendedMonthDays() ([]int32, bool) {
+	if len(m.appendmonth_days) == 0 {
+		return nil, false
+	}
+	return m.appendmonth_days, true
+}
+
+// ClearMonthDays clears the value of the "month_days" field.
+func (m *InspectionPlanMutation) ClearMonthDays() {
+	m.month_days = nil
+	m.appendmonth_days = nil
+	m.clearedFields[inspectionplan.FieldMonthDays] = struct{}{}
+}
+
+// MonthDaysCleared returns if the "month_days" field was cleared in this mutation.
+func (m *InspectionPlanMutation) MonthDaysCleared() bool {
+	_, ok := m.clearedFields[inspectionplan.FieldMonthDays]
+	return ok
+}
+
+// ResetMonthDays resets all changes to the "month_days" field.
+func (m *InspectionPlanMutation) ResetMonthDays() {
+	m.month_days = nil
+	m.appendmonth_days = nil
+	delete(m.clearedFields, inspectionplan.FieldMonthDays)
+}
+
+// SetClampToMonthEnd sets the "clamp_to_month_end" field.
+func (m *InspectionPlanMutation) SetClampToMonthEnd(b bool) {
+	m.clamp_to_month_end = &b
+}
+
+// ClampToMonthEnd returns the value of the "clamp_to_month_end" field in the mutation.
+func (m *InspectionPlanMutation) ClampToMonthEnd() (r bool, exists bool) {
+	v := m.clamp_to_month_end
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldClampToMonthEnd returns the old "clamp_to_month_end" field's value of the InspectionPlan entity.
+// If the InspectionPlan object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InspectionPlanMutation) OldClampToMonthEnd(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldClampToMonthEnd is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldClampToMonthEnd requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldClampToMonthEnd: %w", err)
+	}
+	return oldValue.ClampToMonthEnd, nil
+}
+
+// ClearClampToMonthEnd clears the value of the "clamp_to_month_end" field.
+func (m *InspectionPlanMutation) ClearClampToMonthEnd() {
+	m.clamp_to_month_end = nil
+	m.clearedFields[inspectionplan.FieldClampToMonthEnd] = struct{}{}
+}
+
+// ClampToMonthEndCleared returns if the "clamp_to_month_end" field was cleared in this mutation.
+func (m *InspectionPlanMutation) ClampToMonthEndCleared() bool {
+	_, ok := m.clearedFields[inspectionplan.FieldClampToMonthEnd]
+	return ok
+}
+
+// ResetClampToMonthEnd resets all changes to the "clamp_to_month_end" field.
+func (m *InspectionPlanMutation) ResetClampToMonthEnd() {
+	m.clamp_to_month_end = nil
+	delete(m.clearedFields, inspectionplan.FieldClampToMonthEnd)
+}
+
+// SetMonths sets the "months" field.
+func (m *InspectionPlanMutation) SetMonths(i []int32) {
+	m.months = &i
+	m.appendmonths = nil
+}
+
+// Months returns the value of the "months" field in the mutation.
+func (m *InspectionPlanMutation) Months() (r []int32, exists bool) {
+	v := m.months
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMonths returns the old "months" field's value of the InspectionPlan entity.
+// If the InspectionPlan object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InspectionPlanMutation) OldMonths(ctx context.Context) (v []int32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMonths is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMonths requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMonths: %w", err)
+	}
+	return oldValue.Months, nil
+}
+
+// AppendMonths adds i to the "months" field.
+func (m *InspectionPlanMutation) AppendMonths(i []int32) {
+	m.appendmonths = append(m.appendmonths, i...)
+}
+
+// AppendedMonths returns the list of values that were appended to the "months" field in this mutation.
+func (m *InspectionPlanMutation) AppendedMonths() ([]int32, bool) {
+	if len(m.appendmonths) == 0 {
+		return nil, false
+	}
+	return m.appendmonths, true
+}
+
+// ClearMonths clears the value of the "months" field.
+func (m *InspectionPlanMutation) ClearMonths() {
+	m.months = nil
+	m.appendmonths = nil
+	m.clearedFields[inspectionplan.FieldMonths] = struct{}{}
+}
+
+// MonthsCleared returns if the "months" field was cleared in this mutation.
+func (m *InspectionPlanMutation) MonthsCleared() bool {
+	_, ok := m.clearedFields[inspectionplan.FieldMonths]
+	return ok
+}
+
+// ResetMonths resets all changes to the "months" field.
+func (m *InspectionPlanMutation) ResetMonths() {
+	m.months = nil
+	m.appendmonths = nil
+	delete(m.clearedFields, inspectionplan.FieldMonths)
+}
+
+// SetExcludedDates sets the "excluded_dates" field.
+func (m *InspectionPlanMutation) SetExcludedDates(s []string) {
+	m.excluded_dates = &s
+	m.appendexcluded_dates = nil
+}
+
+// ExcludedDates returns the value of the "excluded_dates" field in the mutation.
+func (m *InspectionPlanMutation) ExcludedDates() (r []string, exists bool) {
+	v := m.excluded_dates
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldExcludedDates returns the old "excluded_dates" field's value of the InspectionPlan entity.
+// If the InspectionPlan object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InspectionPlanMutation) OldExcludedDates(ctx context.Context) (v []string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldExcludedDates is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldExcludedDates requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldExcludedDates: %w", err)
+	}
+	return oldValue.ExcludedDates, nil
+}
+
+// AppendExcludedDates adds s to the "excluded_dates" field.
+func (m *InspectionPlanMutation) AppendExcludedDates(s []string) {
+	m.appendexcluded_dates = append(m.appendexcluded_dates, s...)
+}
+
+// AppendedExcludedDates returns the list of values that were appended to the "excluded_dates" field in this mutation.
+func (m *InspectionPlanMutation) AppendedExcludedDates() ([]string, bool) {
+	if len(m.appendexcluded_dates) == 0 {
+		return nil, false
+	}
+	return m.appendexcluded_dates, true
+}
+
+// ClearExcludedDates clears the value of the "excluded_dates" field.
+func (m *InspectionPlanMutation) ClearExcludedDates() {
+	m.excluded_dates = nil
+	m.appendexcluded_dates = nil
+	m.clearedFields[inspectionplan.FieldExcludedDates] = struct{}{}
+}
+
+// ExcludedDatesCleared returns if the "excluded_dates" field was cleared in this mutation.
+func (m *InspectionPlanMutation) ExcludedDatesCleared() bool {
+	_, ok := m.clearedFields[inspectionplan.FieldExcludedDates]
+	return ok
+}
+
+// ResetExcludedDates resets all changes to the "excluded_dates" field.
+func (m *InspectionPlanMutation) ResetExcludedDates() {
+	m.excluded_dates = nil
+	m.appendexcluded_dates = nil
+	delete(m.clearedFields, inspectionplan.FieldExcludedDates)
+}
+
+// SetPost sets the "post" field.
+func (m *InspectionPlanMutation) SetPost(s string) {
+	m.post = &s
+}
+
+// Post returns the value of the "post" field in the mutation.
+func (m *InspectionPlanMutation) Post() (r string, exists bool) {
+	v := m.post
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPost returns the old "post" field's value of the InspectionPlan entity.
+// If the InspectionPlan object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InspectionPlanMutation) OldPost(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPost is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPost requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPost: %w", err)
+	}
+	return oldValue.Post, nil
+}
+
+// ClearPost clears the value of the "post" field.
+func (m *InspectionPlanMutation) ClearPost() {
+	m.post = nil
+	m.clearedFields[inspectionplan.FieldPost] = struct{}{}
+}
+
+// PostCleared returns if the "post" field was cleared in this mutation.
+func (m *InspectionPlanMutation) PostCleared() bool {
+	_, ok := m.clearedFields[inspectionplan.FieldPost]
+	return ok
+}
+
+// ResetPost resets all changes to the "post" field.
+func (m *InspectionPlanMutation) ResetPost() {
+	m.post = nil
+	delete(m.clearedFields, inspectionplan.FieldPost)
+}
+
+// SetSpaceItems sets the "space_items" field.
+func (m *InspectionPlanMutation) SetSpaceItems(spi []schema.InspectionPlanItem) {
+	m.space_items = &spi
+	m.appendspace_items = nil
+}
+
+// SpaceItems returns the value of the "space_items" field in the mutation.
+func (m *InspectionPlanMutation) SpaceItems() (r []schema.InspectionPlanItem, exists bool) {
+	v := m.space_items
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSpaceItems returns the old "space_items" field's value of the InspectionPlan entity.
+// If the InspectionPlan object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InspectionPlanMutation) OldSpaceItems(ctx context.Context) (v []schema.InspectionPlanItem, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSpaceItems is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSpaceItems requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSpaceItems: %w", err)
+	}
+	return oldValue.SpaceItems, nil
+}
+
+// AppendSpaceItems adds spi to the "space_items" field.
+func (m *InspectionPlanMutation) AppendSpaceItems(spi []schema.InspectionPlanItem) {
+	m.appendspace_items = append(m.appendspace_items, spi...)
+}
+
+// AppendedSpaceItems returns the list of values that were appended to the "space_items" field in this mutation.
+func (m *InspectionPlanMutation) AppendedSpaceItems() ([]schema.InspectionPlanItem, bool) {
+	if len(m.appendspace_items) == 0 {
+		return nil, false
+	}
+	return m.appendspace_items, true
+}
+
+// ClearSpaceItems clears the value of the "space_items" field.
+func (m *InspectionPlanMutation) ClearSpaceItems() {
+	m.space_items = nil
+	m.appendspace_items = nil
+	m.clearedFields[inspectionplan.FieldSpaceItems] = struct{}{}
+}
+
+// SpaceItemsCleared returns if the "space_items" field was cleared in this mutation.
+func (m *InspectionPlanMutation) SpaceItemsCleared() bool {
+	_, ok := m.clearedFields[inspectionplan.FieldSpaceItems]
+	return ok
+}
+
+// ResetSpaceItems resets all changes to the "space_items" field.
+func (m *InspectionPlanMutation) ResetSpaceItems() {
+	m.space_items = nil
+	m.appendspace_items = nil
+	delete(m.clearedFields, inspectionplan.FieldSpaceItems)
+}
+
+// SetEquipmentItems sets the "equipment_items" field.
+func (m *InspectionPlanMutation) SetEquipmentItems(spi []schema.InspectionPlanItem) {
+	m.equipment_items = &spi
+	m.appendequipment_items = nil
+}
+
+// EquipmentItems returns the value of the "equipment_items" field in the mutation.
+func (m *InspectionPlanMutation) EquipmentItems() (r []schema.InspectionPlanItem, exists bool) {
+	v := m.equipment_items
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldEquipmentItems returns the old "equipment_items" field's value of the InspectionPlan entity.
+// If the InspectionPlan object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InspectionPlanMutation) OldEquipmentItems(ctx context.Context) (v []schema.InspectionPlanItem, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldEquipmentItems is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldEquipmentItems requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldEquipmentItems: %w", err)
+	}
+	return oldValue.EquipmentItems, nil
+}
+
+// AppendEquipmentItems adds spi to the "equipment_items" field.
+func (m *InspectionPlanMutation) AppendEquipmentItems(spi []schema.InspectionPlanItem) {
+	m.appendequipment_items = append(m.appendequipment_items, spi...)
+}
+
+// AppendedEquipmentItems returns the list of values that were appended to the "equipment_items" field in this mutation.
+func (m *InspectionPlanMutation) AppendedEquipmentItems() ([]schema.InspectionPlanItem, bool) {
+	if len(m.appendequipment_items) == 0 {
+		return nil, false
+	}
+	return m.appendequipment_items, true
+}
+
+// ClearEquipmentItems clears the value of the "equipment_items" field.
+func (m *InspectionPlanMutation) ClearEquipmentItems() {
+	m.equipment_items = nil
+	m.appendequipment_items = nil
+	m.clearedFields[inspectionplan.FieldEquipmentItems] = struct{}{}
+}
+
+// EquipmentItemsCleared returns if the "equipment_items" field was cleared in this mutation.
+func (m *InspectionPlanMutation) EquipmentItemsCleared() bool {
+	_, ok := m.clearedFields[inspectionplan.FieldEquipmentItems]
+	return ok
+}
+
+// ResetEquipmentItems resets all changes to the "equipment_items" field.
+func (m *InspectionPlanMutation) ResetEquipmentItems() {
+	m.equipment_items = nil
+	m.appendequipment_items = nil
+	delete(m.clearedFields, inspectionplan.FieldEquipmentItems)
+}
+
+// SetSpaceRefs sets the "space_refs" field.
+func (m *InspectionPlanMutation) SetSpaceRefs(s []string) {
+	m.space_refs = &s
+	m.appendspace_refs = nil
+}
+
+// SpaceRefs returns the value of the "space_refs" field in the mutation.
+func (m *InspectionPlanMutation) SpaceRefs() (r []string, exists bool) {
+	v := m.space_refs
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSpaceRefs returns the old "space_refs" field's value of the InspectionPlan entity.
+// If the InspectionPlan object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InspectionPlanMutation) OldSpaceRefs(ctx context.Context) (v []string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSpaceRefs is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSpaceRefs requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSpaceRefs: %w", err)
+	}
+	return oldValue.SpaceRefs, nil
+}
+
+// AppendSpaceRefs adds s to the "space_refs" field.
+func (m *InspectionPlanMutation) AppendSpaceRefs(s []string) {
+	m.appendspace_refs = append(m.appendspace_refs, s...)
+}
+
+// AppendedSpaceRefs returns the list of values that were appended to the "space_refs" field in this mutation.
+func (m *InspectionPlanMutation) AppendedSpaceRefs() ([]string, bool) {
+	if len(m.appendspace_refs) == 0 {
+		return nil, false
+	}
+	return m.appendspace_refs, true
+}
+
+// ClearSpaceRefs clears the value of the "space_refs" field.
+func (m *InspectionPlanMutation) ClearSpaceRefs() {
+	m.space_refs = nil
+	m.appendspace_refs = nil
+	m.clearedFields[inspectionplan.FieldSpaceRefs] = struct{}{}
+}
+
+// SpaceRefsCleared returns if the "space_refs" field was cleared in this mutation.
+func (m *InspectionPlanMutation) SpaceRefsCleared() bool {
+	_, ok := m.clearedFields[inspectionplan.FieldSpaceRefs]
+	return ok
+}
+
+// ResetSpaceRefs resets all changes to the "space_refs" field.
+func (m *InspectionPlanMutation) ResetSpaceRefs() {
+	m.space_refs = nil
+	m.appendspace_refs = nil
+	delete(m.clearedFields, inspectionplan.FieldSpaceRefs)
+}
+
+// SetEquipmentRefs sets the "equipment_refs" field.
+func (m *InspectionPlanMutation) SetEquipmentRefs(s []string) {
+	m.equipment_refs = &s
+	m.appendequipment_refs = nil
+}
+
+// EquipmentRefs returns the value of the "equipment_refs" field in the mutation.
+func (m *InspectionPlanMutation) EquipmentRefs() (r []string, exists bool) {
+	v := m.equipment_refs
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldEquipmentRefs returns the old "equipment_refs" field's value of the InspectionPlan entity.
+// If the InspectionPlan object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InspectionPlanMutation) OldEquipmentRefs(ctx context.Context) (v []string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldEquipmentRefs is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldEquipmentRefs requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldEquipmentRefs: %w", err)
+	}
+	return oldValue.EquipmentRefs, nil
+}
+
+// AppendEquipmentRefs adds s to the "equipment_refs" field.
+func (m *InspectionPlanMutation) AppendEquipmentRefs(s []string) {
+	m.appendequipment_refs = append(m.appendequipment_refs, s...)
+}
+
+// AppendedEquipmentRefs returns the list of values that were appended to the "equipment_refs" field in this mutation.
+func (m *InspectionPlanMutation) AppendedEquipmentRefs() ([]string, bool) {
+	if len(m.appendequipment_refs) == 0 {
+		return nil, false
+	}
+	return m.appendequipment_refs, true
+}
+
+// ClearEquipmentRefs clears the value of the "equipment_refs" field.
+func (m *InspectionPlanMutation) ClearEquipmentRefs() {
+	m.equipment_refs = nil
+	m.appendequipment_refs = nil
+	m.clearedFields[inspectionplan.FieldEquipmentRefs] = struct{}{}
+}
+
+// EquipmentRefsCleared returns if the "equipment_refs" field was cleared in this mutation.
+func (m *InspectionPlanMutation) EquipmentRefsCleared() bool {
+	_, ok := m.clearedFields[inspectionplan.FieldEquipmentRefs]
+	return ok
+}
+
+// ResetEquipmentRefs resets all changes to the "equipment_refs" field.
+func (m *InspectionPlanMutation) ResetEquipmentRefs() {
+	m.equipment_refs = nil
+	m.appendequipment_refs = nil
+	delete(m.clearedFields, inspectionplan.FieldEquipmentRefs)
+}
+
+// SetEffectiveFrom sets the "effective_from" field.
+func (m *InspectionPlanMutation) SetEffectiveFrom(t time.Time) {
+	m.effective_from = &t
+}
+
+// EffectiveFrom returns the value of the "effective_from" field in the mutation.
+func (m *InspectionPlanMutation) EffectiveFrom() (r time.Time, exists bool) {
+	v := m.effective_from
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldEffectiveFrom returns the old "effective_from" field's value of the InspectionPlan entity.
+// If the InspectionPlan object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InspectionPlanMutation) OldEffectiveFrom(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldEffectiveFrom is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldEffectiveFrom requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldEffectiveFrom: %w", err)
+	}
+	return oldValue.EffectiveFrom, nil
+}
+
+// ClearEffectiveFrom clears the value of the "effective_from" field.
+func (m *InspectionPlanMutation) ClearEffectiveFrom() {
+	m.effective_from = nil
+	m.clearedFields[inspectionplan.FieldEffectiveFrom] = struct{}{}
+}
+
+// EffectiveFromCleared returns if the "effective_from" field was cleared in this mutation.
+func (m *InspectionPlanMutation) EffectiveFromCleared() bool {
+	_, ok := m.clearedFields[inspectionplan.FieldEffectiveFrom]
+	return ok
+}
+
+// ResetEffectiveFrom resets all changes to the "effective_from" field.
+func (m *InspectionPlanMutation) ResetEffectiveFrom() {
+	m.effective_from = nil
+	delete(m.clearedFields, inspectionplan.FieldEffectiveFrom)
+}
+
+// SetEffectiveTo sets the "effective_to" field.
+func (m *InspectionPlanMutation) SetEffectiveTo(t time.Time) {
+	m.effective_to = &t
+}
+
+// EffectiveTo returns the value of the "effective_to" field in the mutation.
+func (m *InspectionPlanMutation) EffectiveTo() (r time.Time, exists bool) {
+	v := m.effective_to
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldEffectiveTo returns the old "effective_to" field's value of the InspectionPlan entity.
+// If the InspectionPlan object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InspectionPlanMutation) OldEffectiveTo(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldEffectiveTo is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldEffectiveTo requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldEffectiveTo: %w", err)
+	}
+	return oldValue.EffectiveTo, nil
+}
+
+// ClearEffectiveTo clears the value of the "effective_to" field.
+func (m *InspectionPlanMutation) ClearEffectiveTo() {
+	m.effective_to = nil
+	m.clearedFields[inspectionplan.FieldEffectiveTo] = struct{}{}
+}
+
+// EffectiveToCleared returns if the "effective_to" field was cleared in this mutation.
+func (m *InspectionPlanMutation) EffectiveToCleared() bool {
+	_, ok := m.clearedFields[inspectionplan.FieldEffectiveTo]
+	return ok
+}
+
+// ResetEffectiveTo resets all changes to the "effective_to" field.
+func (m *InspectionPlanMutation) ResetEffectiveTo() {
+	m.effective_to = nil
+	delete(m.clearedFields, inspectionplan.FieldEffectiveTo)
+}
+
+// Where appends a list predicates to the InspectionPlanMutation builder.
+func (m *InspectionPlanMutation) Where(ps ...predicate.InspectionPlan) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the InspectionPlanMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *InspectionPlanMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.InspectionPlan, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *InspectionPlanMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *InspectionPlanMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (InspectionPlan).
+func (m *InspectionPlanMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *InspectionPlanMutation) Fields() []string {
+	fields := make([]string, 0, 23)
+	if m.created_at != nil {
+		fields = append(fields, inspectionplan.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, inspectionplan.FieldUpdatedAt)
+	}
+	if m.deleted_at != nil {
+		fields = append(fields, inspectionplan.FieldDeletedAt)
+	}
+	if m.created_by != nil {
+		fields = append(fields, inspectionplan.FieldCreatedBy)
+	}
+	if m.updated_by != nil {
+		fields = append(fields, inspectionplan.FieldUpdatedBy)
+	}
+	if m.deleted_by != nil {
+		fields = append(fields, inspectionplan.FieldDeletedBy)
+	}
+	if m.is_enabled != nil {
+		fields = append(fields, inspectionplan.FieldIsEnabled)
+	}
+	if m.name != nil {
+		fields = append(fields, inspectionplan.FieldName)
+	}
+	if m.service_type_id != nil {
+		fields = append(fields, inspectionplan.FieldServiceTypeID)
+	}
+	if m.freq_type != nil {
+		fields = append(fields, inspectionplan.FieldFreqType)
+	}
+	if m.times != nil {
+		fields = append(fields, inspectionplan.FieldTimes)
+	}
+	if m.weekdays != nil {
+		fields = append(fields, inspectionplan.FieldWeekdays)
+	}
+	if m.month_days != nil {
+		fields = append(fields, inspectionplan.FieldMonthDays)
+	}
+	if m.clamp_to_month_end != nil {
+		fields = append(fields, inspectionplan.FieldClampToMonthEnd)
+	}
+	if m.months != nil {
+		fields = append(fields, inspectionplan.FieldMonths)
+	}
+	if m.excluded_dates != nil {
+		fields = append(fields, inspectionplan.FieldExcludedDates)
+	}
+	if m.post != nil {
+		fields = append(fields, inspectionplan.FieldPost)
+	}
+	if m.space_items != nil {
+		fields = append(fields, inspectionplan.FieldSpaceItems)
+	}
+	if m.equipment_items != nil {
+		fields = append(fields, inspectionplan.FieldEquipmentItems)
+	}
+	if m.space_refs != nil {
+		fields = append(fields, inspectionplan.FieldSpaceRefs)
+	}
+	if m.equipment_refs != nil {
+		fields = append(fields, inspectionplan.FieldEquipmentRefs)
+	}
+	if m.effective_from != nil {
+		fields = append(fields, inspectionplan.FieldEffectiveFrom)
+	}
+	if m.effective_to != nil {
+		fields = append(fields, inspectionplan.FieldEffectiveTo)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *InspectionPlanMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case inspectionplan.FieldCreatedAt:
+		return m.CreatedAt()
+	case inspectionplan.FieldUpdatedAt:
+		return m.UpdatedAt()
+	case inspectionplan.FieldDeletedAt:
+		return m.DeletedAt()
+	case inspectionplan.FieldCreatedBy:
+		return m.CreatedBy()
+	case inspectionplan.FieldUpdatedBy:
+		return m.UpdatedBy()
+	case inspectionplan.FieldDeletedBy:
+		return m.DeletedBy()
+	case inspectionplan.FieldIsEnabled:
+		return m.IsEnabled()
+	case inspectionplan.FieldName:
+		return m.Name()
+	case inspectionplan.FieldServiceTypeID:
+		return m.ServiceTypeID()
+	case inspectionplan.FieldFreqType:
+		return m.FreqType()
+	case inspectionplan.FieldTimes:
+		return m.Times()
+	case inspectionplan.FieldWeekdays:
+		return m.Weekdays()
+	case inspectionplan.FieldMonthDays:
+		return m.MonthDays()
+	case inspectionplan.FieldClampToMonthEnd:
+		return m.ClampToMonthEnd()
+	case inspectionplan.FieldMonths:
+		return m.Months()
+	case inspectionplan.FieldExcludedDates:
+		return m.ExcludedDates()
+	case inspectionplan.FieldPost:
+		return m.Post()
+	case inspectionplan.FieldSpaceItems:
+		return m.SpaceItems()
+	case inspectionplan.FieldEquipmentItems:
+		return m.EquipmentItems()
+	case inspectionplan.FieldSpaceRefs:
+		return m.SpaceRefs()
+	case inspectionplan.FieldEquipmentRefs:
+		return m.EquipmentRefs()
+	case inspectionplan.FieldEffectiveFrom:
+		return m.EffectiveFrom()
+	case inspectionplan.FieldEffectiveTo:
+		return m.EffectiveTo()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *InspectionPlanMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case inspectionplan.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case inspectionplan.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	case inspectionplan.FieldDeletedAt:
+		return m.OldDeletedAt(ctx)
+	case inspectionplan.FieldCreatedBy:
+		return m.OldCreatedBy(ctx)
+	case inspectionplan.FieldUpdatedBy:
+		return m.OldUpdatedBy(ctx)
+	case inspectionplan.FieldDeletedBy:
+		return m.OldDeletedBy(ctx)
+	case inspectionplan.FieldIsEnabled:
+		return m.OldIsEnabled(ctx)
+	case inspectionplan.FieldName:
+		return m.OldName(ctx)
+	case inspectionplan.FieldServiceTypeID:
+		return m.OldServiceTypeID(ctx)
+	case inspectionplan.FieldFreqType:
+		return m.OldFreqType(ctx)
+	case inspectionplan.FieldTimes:
+		return m.OldTimes(ctx)
+	case inspectionplan.FieldWeekdays:
+		return m.OldWeekdays(ctx)
+	case inspectionplan.FieldMonthDays:
+		return m.OldMonthDays(ctx)
+	case inspectionplan.FieldClampToMonthEnd:
+		return m.OldClampToMonthEnd(ctx)
+	case inspectionplan.FieldMonths:
+		return m.OldMonths(ctx)
+	case inspectionplan.FieldExcludedDates:
+		return m.OldExcludedDates(ctx)
+	case inspectionplan.FieldPost:
+		return m.OldPost(ctx)
+	case inspectionplan.FieldSpaceItems:
+		return m.OldSpaceItems(ctx)
+	case inspectionplan.FieldEquipmentItems:
+		return m.OldEquipmentItems(ctx)
+	case inspectionplan.FieldSpaceRefs:
+		return m.OldSpaceRefs(ctx)
+	case inspectionplan.FieldEquipmentRefs:
+		return m.OldEquipmentRefs(ctx)
+	case inspectionplan.FieldEffectiveFrom:
+		return m.OldEffectiveFrom(ctx)
+	case inspectionplan.FieldEffectiveTo:
+		return m.OldEffectiveTo(ctx)
+	}
+	return nil, fmt.Errorf("unknown InspectionPlan field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *InspectionPlanMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case inspectionplan.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case inspectionplan.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	case inspectionplan.FieldDeletedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeletedAt(v)
+		return nil
+	case inspectionplan.FieldCreatedBy:
+		v, ok := value.(uint32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedBy(v)
+		return nil
+	case inspectionplan.FieldUpdatedBy:
+		v, ok := value.(uint32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedBy(v)
+		return nil
+	case inspectionplan.FieldDeletedBy:
+		v, ok := value.(uint32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeletedBy(v)
+		return nil
+	case inspectionplan.FieldIsEnabled:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIsEnabled(v)
+		return nil
+	case inspectionplan.FieldName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetName(v)
+		return nil
+	case inspectionplan.FieldServiceTypeID:
+		v, ok := value.(uint32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetServiceTypeID(v)
+		return nil
+	case inspectionplan.FieldFreqType:
+		v, ok := value.(inspectionplan.FreqType)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetFreqType(v)
+		return nil
+	case inspectionplan.FieldTimes:
+		v, ok := value.([]string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTimes(v)
+		return nil
+	case inspectionplan.FieldWeekdays:
+		v, ok := value.([]int32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetWeekdays(v)
+		return nil
+	case inspectionplan.FieldMonthDays:
+		v, ok := value.([]int32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMonthDays(v)
+		return nil
+	case inspectionplan.FieldClampToMonthEnd:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetClampToMonthEnd(v)
+		return nil
+	case inspectionplan.FieldMonths:
+		v, ok := value.([]int32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMonths(v)
+		return nil
+	case inspectionplan.FieldExcludedDates:
+		v, ok := value.([]string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetExcludedDates(v)
+		return nil
+	case inspectionplan.FieldPost:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPost(v)
+		return nil
+	case inspectionplan.FieldSpaceItems:
+		v, ok := value.([]schema.InspectionPlanItem)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSpaceItems(v)
+		return nil
+	case inspectionplan.FieldEquipmentItems:
+		v, ok := value.([]schema.InspectionPlanItem)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetEquipmentItems(v)
+		return nil
+	case inspectionplan.FieldSpaceRefs:
+		v, ok := value.([]string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSpaceRefs(v)
+		return nil
+	case inspectionplan.FieldEquipmentRefs:
+		v, ok := value.([]string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetEquipmentRefs(v)
+		return nil
+	case inspectionplan.FieldEffectiveFrom:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetEffectiveFrom(v)
+		return nil
+	case inspectionplan.FieldEffectiveTo:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetEffectiveTo(v)
+		return nil
+	}
+	return fmt.Errorf("unknown InspectionPlan field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *InspectionPlanMutation) AddedFields() []string {
+	var fields []string
+	if m.addcreated_by != nil {
+		fields = append(fields, inspectionplan.FieldCreatedBy)
+	}
+	if m.addupdated_by != nil {
+		fields = append(fields, inspectionplan.FieldUpdatedBy)
+	}
+	if m.adddeleted_by != nil {
+		fields = append(fields, inspectionplan.FieldDeletedBy)
+	}
+	if m.addservice_type_id != nil {
+		fields = append(fields, inspectionplan.FieldServiceTypeID)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *InspectionPlanMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case inspectionplan.FieldCreatedBy:
+		return m.AddedCreatedBy()
+	case inspectionplan.FieldUpdatedBy:
+		return m.AddedUpdatedBy()
+	case inspectionplan.FieldDeletedBy:
+		return m.AddedDeletedBy()
+	case inspectionplan.FieldServiceTypeID:
+		return m.AddedServiceTypeID()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *InspectionPlanMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case inspectionplan.FieldCreatedBy:
+		v, ok := value.(int32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddCreatedBy(v)
+		return nil
+	case inspectionplan.FieldUpdatedBy:
+		v, ok := value.(int32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddUpdatedBy(v)
+		return nil
+	case inspectionplan.FieldDeletedBy:
+		v, ok := value.(int32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddDeletedBy(v)
+		return nil
+	case inspectionplan.FieldServiceTypeID:
+		v, ok := value.(int32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddServiceTypeID(v)
+		return nil
+	}
+	return fmt.Errorf("unknown InspectionPlan numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *InspectionPlanMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(inspectionplan.FieldCreatedAt) {
+		fields = append(fields, inspectionplan.FieldCreatedAt)
+	}
+	if m.FieldCleared(inspectionplan.FieldUpdatedAt) {
+		fields = append(fields, inspectionplan.FieldUpdatedAt)
+	}
+	if m.FieldCleared(inspectionplan.FieldDeletedAt) {
+		fields = append(fields, inspectionplan.FieldDeletedAt)
+	}
+	if m.FieldCleared(inspectionplan.FieldCreatedBy) {
+		fields = append(fields, inspectionplan.FieldCreatedBy)
+	}
+	if m.FieldCleared(inspectionplan.FieldUpdatedBy) {
+		fields = append(fields, inspectionplan.FieldUpdatedBy)
+	}
+	if m.FieldCleared(inspectionplan.FieldDeletedBy) {
+		fields = append(fields, inspectionplan.FieldDeletedBy)
+	}
+	if m.FieldCleared(inspectionplan.FieldIsEnabled) {
+		fields = append(fields, inspectionplan.FieldIsEnabled)
+	}
+	if m.FieldCleared(inspectionplan.FieldName) {
+		fields = append(fields, inspectionplan.FieldName)
+	}
+	if m.FieldCleared(inspectionplan.FieldServiceTypeID) {
+		fields = append(fields, inspectionplan.FieldServiceTypeID)
+	}
+	if m.FieldCleared(inspectionplan.FieldFreqType) {
+		fields = append(fields, inspectionplan.FieldFreqType)
+	}
+	if m.FieldCleared(inspectionplan.FieldTimes) {
+		fields = append(fields, inspectionplan.FieldTimes)
+	}
+	if m.FieldCleared(inspectionplan.FieldWeekdays) {
+		fields = append(fields, inspectionplan.FieldWeekdays)
+	}
+	if m.FieldCleared(inspectionplan.FieldMonthDays) {
+		fields = append(fields, inspectionplan.FieldMonthDays)
+	}
+	if m.FieldCleared(inspectionplan.FieldClampToMonthEnd) {
+		fields = append(fields, inspectionplan.FieldClampToMonthEnd)
+	}
+	if m.FieldCleared(inspectionplan.FieldMonths) {
+		fields = append(fields, inspectionplan.FieldMonths)
+	}
+	if m.FieldCleared(inspectionplan.FieldExcludedDates) {
+		fields = append(fields, inspectionplan.FieldExcludedDates)
+	}
+	if m.FieldCleared(inspectionplan.FieldPost) {
+		fields = append(fields, inspectionplan.FieldPost)
+	}
+	if m.FieldCleared(inspectionplan.FieldSpaceItems) {
+		fields = append(fields, inspectionplan.FieldSpaceItems)
+	}
+	if m.FieldCleared(inspectionplan.FieldEquipmentItems) {
+		fields = append(fields, inspectionplan.FieldEquipmentItems)
+	}
+	if m.FieldCleared(inspectionplan.FieldSpaceRefs) {
+		fields = append(fields, inspectionplan.FieldSpaceRefs)
+	}
+	if m.FieldCleared(inspectionplan.FieldEquipmentRefs) {
+		fields = append(fields, inspectionplan.FieldEquipmentRefs)
+	}
+	if m.FieldCleared(inspectionplan.FieldEffectiveFrom) {
+		fields = append(fields, inspectionplan.FieldEffectiveFrom)
+	}
+	if m.FieldCleared(inspectionplan.FieldEffectiveTo) {
+		fields = append(fields, inspectionplan.FieldEffectiveTo)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *InspectionPlanMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *InspectionPlanMutation) ClearField(name string) error {
+	switch name {
+	case inspectionplan.FieldCreatedAt:
+		m.ClearCreatedAt()
+		return nil
+	case inspectionplan.FieldUpdatedAt:
+		m.ClearUpdatedAt()
+		return nil
+	case inspectionplan.FieldDeletedAt:
+		m.ClearDeletedAt()
+		return nil
+	case inspectionplan.FieldCreatedBy:
+		m.ClearCreatedBy()
+		return nil
+	case inspectionplan.FieldUpdatedBy:
+		m.ClearUpdatedBy()
+		return nil
+	case inspectionplan.FieldDeletedBy:
+		m.ClearDeletedBy()
+		return nil
+	case inspectionplan.FieldIsEnabled:
+		m.ClearIsEnabled()
+		return nil
+	case inspectionplan.FieldName:
+		m.ClearName()
+		return nil
+	case inspectionplan.FieldServiceTypeID:
+		m.ClearServiceTypeID()
+		return nil
+	case inspectionplan.FieldFreqType:
+		m.ClearFreqType()
+		return nil
+	case inspectionplan.FieldTimes:
+		m.ClearTimes()
+		return nil
+	case inspectionplan.FieldWeekdays:
+		m.ClearWeekdays()
+		return nil
+	case inspectionplan.FieldMonthDays:
+		m.ClearMonthDays()
+		return nil
+	case inspectionplan.FieldClampToMonthEnd:
+		m.ClearClampToMonthEnd()
+		return nil
+	case inspectionplan.FieldMonths:
+		m.ClearMonths()
+		return nil
+	case inspectionplan.FieldExcludedDates:
+		m.ClearExcludedDates()
+		return nil
+	case inspectionplan.FieldPost:
+		m.ClearPost()
+		return nil
+	case inspectionplan.FieldSpaceItems:
+		m.ClearSpaceItems()
+		return nil
+	case inspectionplan.FieldEquipmentItems:
+		m.ClearEquipmentItems()
+		return nil
+	case inspectionplan.FieldSpaceRefs:
+		m.ClearSpaceRefs()
+		return nil
+	case inspectionplan.FieldEquipmentRefs:
+		m.ClearEquipmentRefs()
+		return nil
+	case inspectionplan.FieldEffectiveFrom:
+		m.ClearEffectiveFrom()
+		return nil
+	case inspectionplan.FieldEffectiveTo:
+		m.ClearEffectiveTo()
+		return nil
+	}
+	return fmt.Errorf("unknown InspectionPlan nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *InspectionPlanMutation) ResetField(name string) error {
+	switch name {
+	case inspectionplan.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case inspectionplan.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	case inspectionplan.FieldDeletedAt:
+		m.ResetDeletedAt()
+		return nil
+	case inspectionplan.FieldCreatedBy:
+		m.ResetCreatedBy()
+		return nil
+	case inspectionplan.FieldUpdatedBy:
+		m.ResetUpdatedBy()
+		return nil
+	case inspectionplan.FieldDeletedBy:
+		m.ResetDeletedBy()
+		return nil
+	case inspectionplan.FieldIsEnabled:
+		m.ResetIsEnabled()
+		return nil
+	case inspectionplan.FieldName:
+		m.ResetName()
+		return nil
+	case inspectionplan.FieldServiceTypeID:
+		m.ResetServiceTypeID()
+		return nil
+	case inspectionplan.FieldFreqType:
+		m.ResetFreqType()
+		return nil
+	case inspectionplan.FieldTimes:
+		m.ResetTimes()
+		return nil
+	case inspectionplan.FieldWeekdays:
+		m.ResetWeekdays()
+		return nil
+	case inspectionplan.FieldMonthDays:
+		m.ResetMonthDays()
+		return nil
+	case inspectionplan.FieldClampToMonthEnd:
+		m.ResetClampToMonthEnd()
+		return nil
+	case inspectionplan.FieldMonths:
+		m.ResetMonths()
+		return nil
+	case inspectionplan.FieldExcludedDates:
+		m.ResetExcludedDates()
+		return nil
+	case inspectionplan.FieldPost:
+		m.ResetPost()
+		return nil
+	case inspectionplan.FieldSpaceItems:
+		m.ResetSpaceItems()
+		return nil
+	case inspectionplan.FieldEquipmentItems:
+		m.ResetEquipmentItems()
+		return nil
+	case inspectionplan.FieldSpaceRefs:
+		m.ResetSpaceRefs()
+		return nil
+	case inspectionplan.FieldEquipmentRefs:
+		m.ResetEquipmentRefs()
+		return nil
+	case inspectionplan.FieldEffectiveFrom:
+		m.ResetEffectiveFrom()
+		return nil
+	case inspectionplan.FieldEffectiveTo:
+		m.ResetEffectiveTo()
+		return nil
+	}
+	return fmt.Errorf("unknown InspectionPlan field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *InspectionPlanMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *InspectionPlanMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *InspectionPlanMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *InspectionPlanMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *InspectionPlanMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *InspectionPlanMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *InspectionPlanMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown InspectionPlan unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *InspectionPlanMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown InspectionPlan edge %s", name)
+}
 
 // ServiceTypeMutation represents an operation that mutates the ServiceType nodes in the graph.
 type ServiceTypeMutation struct {
@@ -61,6 +2316,8 @@ type ServiceTypeMutation struct {
 	appendstandard_tools     []string
 	spare_parts              *[]string
 	appendspare_parts        []string
+	inspection_items         *[]string
+	appendinspection_items   []string
 	clearedFields            map[string]struct{}
 	parent                   *uint32
 	clearedparent            bool
@@ -1330,6 +3587,71 @@ func (m *ServiceTypeMutation) ResetSpareParts() {
 	delete(m.clearedFields, servicetype.FieldSpareParts)
 }
 
+// SetInspectionItems sets the "inspection_items" field.
+func (m *ServiceTypeMutation) SetInspectionItems(s []string) {
+	m.inspection_items = &s
+	m.appendinspection_items = nil
+}
+
+// InspectionItems returns the value of the "inspection_items" field in the mutation.
+func (m *ServiceTypeMutation) InspectionItems() (r []string, exists bool) {
+	v := m.inspection_items
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldInspectionItems returns the old "inspection_items" field's value of the ServiceType entity.
+// If the ServiceType object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ServiceTypeMutation) OldInspectionItems(ctx context.Context) (v []string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldInspectionItems is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldInspectionItems requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldInspectionItems: %w", err)
+	}
+	return oldValue.InspectionItems, nil
+}
+
+// AppendInspectionItems adds s to the "inspection_items" field.
+func (m *ServiceTypeMutation) AppendInspectionItems(s []string) {
+	m.appendinspection_items = append(m.appendinspection_items, s...)
+}
+
+// AppendedInspectionItems returns the list of values that were appended to the "inspection_items" field in this mutation.
+func (m *ServiceTypeMutation) AppendedInspectionItems() ([]string, bool) {
+	if len(m.appendinspection_items) == 0 {
+		return nil, false
+	}
+	return m.appendinspection_items, true
+}
+
+// ClearInspectionItems clears the value of the "inspection_items" field.
+func (m *ServiceTypeMutation) ClearInspectionItems() {
+	m.inspection_items = nil
+	m.appendinspection_items = nil
+	m.clearedFields[servicetype.FieldInspectionItems] = struct{}{}
+}
+
+// InspectionItemsCleared returns if the "inspection_items" field was cleared in this mutation.
+func (m *ServiceTypeMutation) InspectionItemsCleared() bool {
+	_, ok := m.clearedFields[servicetype.FieldInspectionItems]
+	return ok
+}
+
+// ResetInspectionItems resets all changes to the "inspection_items" field.
+func (m *ServiceTypeMutation) ResetInspectionItems() {
+	m.inspection_items = nil
+	m.appendinspection_items = nil
+	delete(m.clearedFields, servicetype.FieldInspectionItems)
+}
+
 // ClearParent clears the "parent" edge to the ServiceType entity.
 func (m *ServiceTypeMutation) ClearParent() {
 	m.clearedparent = true
@@ -1445,7 +3767,7 @@ func (m *ServiceTypeMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ServiceTypeMutation) Fields() []string {
-	fields := make([]string, 0, 20)
+	fields := make([]string, 0, 21)
 	if m.created_at != nil {
 		fields = append(fields, servicetype.FieldCreatedAt)
 	}
@@ -1506,6 +3828,9 @@ func (m *ServiceTypeMutation) Fields() []string {
 	if m.spare_parts != nil {
 		fields = append(fields, servicetype.FieldSpareParts)
 	}
+	if m.inspection_items != nil {
+		fields = append(fields, servicetype.FieldInspectionItems)
+	}
 	return fields
 }
 
@@ -1554,6 +3879,8 @@ func (m *ServiceTypeMutation) Field(name string) (ent.Value, bool) {
 		return m.StandardTools()
 	case servicetype.FieldSpareParts:
 		return m.SpareParts()
+	case servicetype.FieldInspectionItems:
+		return m.InspectionItems()
 	}
 	return nil, false
 }
@@ -1603,6 +3930,8 @@ func (m *ServiceTypeMutation) OldField(ctx context.Context, name string) (ent.Va
 		return m.OldStandardTools(ctx)
 	case servicetype.FieldSpareParts:
 		return m.OldSpareParts(ctx)
+	case servicetype.FieldInspectionItems:
+		return m.OldInspectionItems(ctx)
 	}
 	return nil, fmt.Errorf("unknown ServiceType field %s", name)
 }
@@ -1751,6 +4080,13 @@ func (m *ServiceTypeMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetSpareParts(v)
+		return nil
+	case servicetype.FieldInspectionItems:
+		v, ok := value.([]string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetInspectionItems(v)
 		return nil
 	}
 	return fmt.Errorf("unknown ServiceType field %s", name)
@@ -1917,6 +4253,9 @@ func (m *ServiceTypeMutation) ClearedFields() []string {
 	if m.FieldCleared(servicetype.FieldSpareParts) {
 		fields = append(fields, servicetype.FieldSpareParts)
 	}
+	if m.FieldCleared(servicetype.FieldInspectionItems) {
+		fields = append(fields, servicetype.FieldInspectionItems)
+	}
 	return fields
 }
 
@@ -1991,6 +4330,9 @@ func (m *ServiceTypeMutation) ClearField(name string) error {
 	case servicetype.FieldSpareParts:
 		m.ClearSpareParts()
 		return nil
+	case servicetype.FieldInspectionItems:
+		m.ClearInspectionItems()
+		return nil
 	}
 	return fmt.Errorf("unknown ServiceType nullable field %s", name)
 }
@@ -2058,6 +4400,9 @@ func (m *ServiceTypeMutation) ResetField(name string) error {
 		return nil
 	case servicetype.FieldSpareParts:
 		m.ResetSpareParts()
+		return nil
+	case servicetype.FieldInspectionItems:
+		m.ResetInspectionItems()
 		return nil
 	}
 	return fmt.Errorf("unknown ServiceType field %s", name)

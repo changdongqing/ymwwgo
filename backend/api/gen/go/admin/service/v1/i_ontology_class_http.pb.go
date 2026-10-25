@@ -53,12 +53,12 @@ func RegisterOntologyClassServiceHTTPServer(s *http.Server, srv OntologyClassSer
 	r := s.Route("/")
 	r.GET("/admin/v1/ontology/classes/tree", _OntologyClassService_Tree1_HTTP_Handler(srv))
 	r.GET("/admin/v1/ontology/classes/nav-tree", _OntologyClassService_NavTree0_HTTP_Handler(srv))
-	r.GET("/admin/v1/ontology/classes", _OntologyClassService_List22_HTTP_Handler(srv))
+	r.GET("/admin/v1/ontology/classes", _OntologyClassService_List23_HTTP_Handler(srv))
 	r.GET("/admin/v1/ontology/classes/{id}/frame", _OntologyClassService_Frame1_HTTP_Handler(srv))
 	r.GET("/admin/v1/ontology/classes/{id}/usage", _OntologyClassService_Usage1_HTTP_Handler(srv))
-	r.POST("/admin/v1/ontology/classes", _OntologyClassService_Create16_HTTP_Handler(srv))
-	r.PUT("/admin/v1/ontology/classes/{id}", _OntologyClassService_Update17_HTTP_Handler(srv))
-	r.DELETE("/admin/v1/ontology/classes/{id}", _OntologyClassService_Delete18_HTTP_Handler(srv))
+	r.POST("/admin/v1/ontology/classes", _OntologyClassService_Create17_HTTP_Handler(srv))
+	r.PUT("/admin/v1/ontology/classes/{id}", _OntologyClassService_Update18_HTTP_Handler(srv))
+	r.DELETE("/admin/v1/ontology/classes/{id}", _OntologyClassService_Delete19_HTTP_Handler(srv))
 }
 
 func _OntologyClassService_Tree1_HTTP_Handler(srv OntologyClassServiceHTTPServer) func(ctx http.Context) error {
@@ -99,7 +99,7 @@ func _OntologyClassService_NavTree0_HTTP_Handler(srv OntologyClassServiceHTTPSer
 	}
 }
 
-func _OntologyClassService_List22_HTTP_Handler(srv OntologyClassServiceHTTPServer) func(ctx http.Context) error {
+func _OntologyClassService_List23_HTTP_Handler(srv OntologyClassServiceHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in v1.ListOntologyClassesRequest
 		if err := ctx.BindQuery(&in); err != nil {
@@ -162,7 +162,7 @@ func _OntologyClassService_Usage1_HTTP_Handler(srv OntologyClassServiceHTTPServe
 	}
 }
 
-func _OntologyClassService_Create16_HTTP_Handler(srv OntologyClassServiceHTTPServer) func(ctx http.Context) error {
+func _OntologyClassService_Create17_HTTP_Handler(srv OntologyClassServiceHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in v1.CreateOntologyClassRequest
 		if err := ctx.Bind(&in); err != nil {
@@ -184,7 +184,7 @@ func _OntologyClassService_Create16_HTTP_Handler(srv OntologyClassServiceHTTPSer
 	}
 }
 
-func _OntologyClassService_Update17_HTTP_Handler(srv OntologyClassServiceHTTPServer) func(ctx http.Context) error {
+func _OntologyClassService_Update18_HTTP_Handler(srv OntologyClassServiceHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in v1.UpdateOntologyClassRequest
 		if err := ctx.Bind(&in); err != nil {
@@ -209,7 +209,7 @@ func _OntologyClassService_Update17_HTTP_Handler(srv OntologyClassServiceHTTPSer
 	}
 }
 
-func _OntologyClassService_Delete18_HTTP_Handler(srv OntologyClassServiceHTTPServer) func(ctx http.Context) error {
+func _OntologyClassService_Delete19_HTTP_Handler(srv OntologyClassServiceHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in v1.DeleteOntologyClassRequest
 		if err := ctx.BindQuery(&in); err != nil {

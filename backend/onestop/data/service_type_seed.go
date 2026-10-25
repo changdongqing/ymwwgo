@@ -34,6 +34,8 @@ type serviceTypeSeed struct {
 	CommonPhrases       []string `json:"commonPhrases,omitempty"`
 	StandardTools       []string `json:"standardTools,omitempty"`
 	SpareParts          []string `json:"spareParts,omitempty"`
+	// 巡检巡查类型配置（仅 0103 子树携带）
+	InspectionItems []string `json:"inspectionItems,omitempty"`
 }
 
 // SeedDefaults 在服务类型表为空时播种内置四级字典；非空表不做任何写入，
@@ -102,6 +104,9 @@ func (r *ServiceTypeRepo) SeedDefaults(ctx context.Context) error {
 		}
 		if len(seed.SpareParts) > 0 {
 			builder.SetSpareParts(seed.SpareParts)
+		}
+		if len(seed.InspectionItems) > 0 {
+			builder.SetInspectionItems(seed.InspectionItems)
 		}
 
 		if seed.ParentCode != "" {

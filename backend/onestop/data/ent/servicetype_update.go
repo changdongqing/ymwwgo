@@ -446,6 +446,24 @@ func (_u *ServiceTypeUpdate) ClearSpareParts() *ServiceTypeUpdate {
 	return _u
 }
 
+// SetInspectionItems sets the "inspection_items" field.
+func (_u *ServiceTypeUpdate) SetInspectionItems(v []string) *ServiceTypeUpdate {
+	_u.mutation.SetInspectionItems(v)
+	return _u
+}
+
+// AppendInspectionItems appends value to the "inspection_items" field.
+func (_u *ServiceTypeUpdate) AppendInspectionItems(v []string) *ServiceTypeUpdate {
+	_u.mutation.AppendInspectionItems(v)
+	return _u
+}
+
+// ClearInspectionItems clears the value of the "inspection_items" field.
+func (_u *ServiceTypeUpdate) ClearInspectionItems() *ServiceTypeUpdate {
+	_u.mutation.ClearInspectionItems()
+	return _u
+}
+
 // SetParent sets the "parent" edge to the ServiceType entity.
 func (_u *ServiceTypeUpdate) SetParent(v *ServiceType) *ServiceTypeUpdate {
 	return _u.SetParentID(v.ID)
@@ -721,6 +739,17 @@ func (_u *ServiceTypeUpdate) sqlSave(ctx context.Context) (_node int, err error)
 	}
 	if _u.mutation.SparePartsCleared() {
 		_spec.ClearField(servicetype.FieldSpareParts, field.TypeJSON)
+	}
+	if value, ok := _u.mutation.InspectionItems(); ok {
+		_spec.SetField(servicetype.FieldInspectionItems, field.TypeJSON, value)
+	}
+	if value, ok := _u.mutation.AppendedInspectionItems(); ok {
+		_spec.AddModifier(func(u *sql.UpdateBuilder) {
+			sqljson.Append(u, servicetype.FieldInspectionItems, value)
+		})
+	}
+	if _u.mutation.InspectionItemsCleared() {
+		_spec.ClearField(servicetype.FieldInspectionItems, field.TypeJSON)
 	}
 	if _u.mutation.ParentCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -1234,6 +1263,24 @@ func (_u *ServiceTypeUpdateOne) ClearSpareParts() *ServiceTypeUpdateOne {
 	return _u
 }
 
+// SetInspectionItems sets the "inspection_items" field.
+func (_u *ServiceTypeUpdateOne) SetInspectionItems(v []string) *ServiceTypeUpdateOne {
+	_u.mutation.SetInspectionItems(v)
+	return _u
+}
+
+// AppendInspectionItems appends value to the "inspection_items" field.
+func (_u *ServiceTypeUpdateOne) AppendInspectionItems(v []string) *ServiceTypeUpdateOne {
+	_u.mutation.AppendInspectionItems(v)
+	return _u
+}
+
+// ClearInspectionItems clears the value of the "inspection_items" field.
+func (_u *ServiceTypeUpdateOne) ClearInspectionItems() *ServiceTypeUpdateOne {
+	_u.mutation.ClearInspectionItems()
+	return _u
+}
+
 // SetParent sets the "parent" edge to the ServiceType entity.
 func (_u *ServiceTypeUpdateOne) SetParent(v *ServiceType) *ServiceTypeUpdateOne {
 	return _u.SetParentID(v.ID)
@@ -1539,6 +1586,17 @@ func (_u *ServiceTypeUpdateOne) sqlSave(ctx context.Context) (_node *ServiceType
 	}
 	if _u.mutation.SparePartsCleared() {
 		_spec.ClearField(servicetype.FieldSpareParts, field.TypeJSON)
+	}
+	if value, ok := _u.mutation.InspectionItems(); ok {
+		_spec.SetField(servicetype.FieldInspectionItems, field.TypeJSON, value)
+	}
+	if value, ok := _u.mutation.AppendedInspectionItems(); ok {
+		_spec.AddModifier(func(u *sql.UpdateBuilder) {
+			sqljson.Append(u, servicetype.FieldInspectionItems, value)
+		})
+	}
+	if _u.mutation.InspectionItemsCleared() {
+		_spec.ClearField(servicetype.FieldInspectionItems, field.TypeJSON)
 	}
 	if _u.mutation.ParentCleared() {
 		edge := &sqlgraph.EdgeSpec{

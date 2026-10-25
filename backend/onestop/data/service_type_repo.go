@@ -217,6 +217,9 @@ func (r *ServiceTypeRepo) Create(ctx context.Context, req *onestopV1.CreateServi
 	if len(req.Data.GetSpareParts()) > 0 {
 		builder.SetSpareParts(req.Data.GetSpareParts())
 	}
+	if len(req.Data.GetInspectionItems()) > 0 {
+		builder.SetInspectionItems(req.Data.GetInspectionItems())
+	}
 
 	if req.Data.Id != nil {
 		builder.SetID(req.GetData().GetId())
@@ -281,6 +284,9 @@ func (r *ServiceTypeRepo) Update(ctx context.Context, req *onestopV1.UpdateServi
 			}
 			if len(req.Data.GetSpareParts()) > 0 {
 				builder.SetSpareParts(req.Data.GetSpareParts())
+			}
+			if len(req.Data.GetInspectionItems()) > 0 {
+				builder.SetInspectionItems(req.Data.GetInspectionItems())
 			}
 		},
 		func(s *sql.Selector) {

@@ -251,49 +251,105 @@
     "code": "010301",
     "name": "消防巡查",
     "level": "LEVEL_MINOR",
-    "parentCode": "0103"
+    "parentCode": "0103",
+    "inspectionItems": [
+      "疏散通道、安全出口畅通",
+      "应急照明/疏散指示完好",
+      "灭火器压力在绿区、在有效期内",
+      "常闭式防火门处于关闭状态",
+      "消防水带/水枪齐备无破损"
+    ]
   },
   {
     "code": "010302",
     "name": "电气巡检",
     "level": "LEVEL_MINOR",
-    "parentCode": "0103"
+    "parentCode": "0103",
+    "inspectionItems": [
+      "配电柜仪表指示正常、无异响异味",
+      "线缆温升无异常（红外测温）",
+      "接地连接完好",
+      "备用电源/UPS 状态正常",
+      "配电房门窗、挡鼠板完好"
+    ]
   },
   {
     "code": "010303",
     "name": "给排水巡检",
     "level": "LEVEL_MINOR",
-    "parentCode": "0103"
+    "parentCode": "0103",
+    "inspectionItems": [
+      "泵组运行无异响、无渗漏",
+      "水箱水位正常、人孔锁闭",
+      "阀门启闭状态正确",
+      "压力表读数在正常区间",
+      "集水井液位正常"
+    ]
   },
   {
     "code": "010304",
     "name": "机房巡检",
     "level": "LEVEL_MINOR",
-    "parentCode": "0103"
+    "parentCode": "0103",
+    "inspectionItems": [
+      "环境温湿度在规定范围",
+      "设备运行指示灯正常、无异响",
+      "UPS/电池组状态正常",
+      "空调末端排水畅通无漏水",
+      "机房消防设施完好",
+      "门禁与视频监控正常"
+    ]
   },
   {
     "code": "010305",
     "name": "公区设施巡查",
     "level": "LEVEL_MINOR",
-    "parentCode": "0103"
+    "parentCode": "0103",
+    "inspectionItems": [
+      "墙面地面吊顶无破损",
+      "门窗五金完好、开合正常",
+      "公共照明完好",
+      "标识标牌完好",
+      "扶手栏杆牢固"
+    ]
   },
   {
     "code": "010306",
     "name": "秩序巡逻",
     "level": "LEVEL_MINOR",
-    "parentCode": "0103"
+    "parentCode": "0103",
+    "inspectionItems": [
+      "各打点位置按线巡查",
+      "消防通道无占用",
+      "可疑人员/物品处置",
+      "装修/施工区域围挡规范",
+      "公共区域秩序正常"
+    ]
   },
   {
     "code": "010307",
     "name": "装修巡检（商）",
     "level": "LEVEL_MINOR",
-    "parentCode": "0103"
+    "parentCode": "0103",
+    "inspectionItems": [
+      "装修范围与审批一致",
+      "动火作业有审批及监护",
+      "消防设施未被遮挡/挪用",
+      "垃圾清运及时",
+      "施工人员证件齐全"
+    ]
   },
   {
     "code": "010308",
     "name": "医院专项巡查（医）",
     "level": "LEVEL_MINOR",
-    "parentCode": "0103"
+    "parentCode": "0103",
+    "inspectionItems": [
+      "医废暂存点规范无满溢",
+      "禁烟区域无吸烟现象",
+      "危化品/医用氧存储规范",
+      "感控环境秩序正常"
+    ]
   },
   {
     "code": "010401",
@@ -1661,13 +1717,27 @@
     "code": "01030101",
     "name": "每日防火巡查",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010301"
+    "parentCode": "010301",
+    "inspectionItems": [
+      "疏散通道畅通",
+      "安全出口标识正常",
+      "灭火器在位、压力正常",
+      "常闭防火门关闭到位",
+      "用电设备无违规使用"
+    ]
   },
   {
     "code": "01030102",
     "name": "每月防火检查",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010301"
+    "parentCode": "010301",
+    "inspectionItems": [
+      "消防泵手动/自动试运行正常",
+      "消火栓箱配件齐全",
+      "防排烟风机试启动正常",
+      "火灾报警控制器运行正常",
+      "消防车道无占用"
+    ]
   },
   {
     "code": "01030201",

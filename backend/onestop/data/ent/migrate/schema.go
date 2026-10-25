@@ -9,6 +9,52 @@ import (
 )
 
 var (
+	// OnestopInspectionPlansColumns holds the columns for the "onestop_inspection_plans" table.
+	OnestopInspectionPlansColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUint32, Increment: true, Comment: "id"},
+		{Name: "created_at", Type: field.TypeTime, Nullable: true, Comment: "创建时间"},
+		{Name: "updated_at", Type: field.TypeTime, Nullable: true, Comment: "更新时间"},
+		{Name: "deleted_at", Type: field.TypeTime, Nullable: true, Comment: "删除时间"},
+		{Name: "created_by", Type: field.TypeUint32, Nullable: true, Comment: "创建者ID"},
+		{Name: "updated_by", Type: field.TypeUint32, Nullable: true, Comment: "更新者ID"},
+		{Name: "deleted_by", Type: field.TypeUint32, Nullable: true, Comment: "删除者ID"},
+		{Name: "is_enabled", Type: field.TypeBool, Nullable: true, Comment: "是否启用", Default: true},
+		{Name: "name", Type: field.TypeString, Nullable: true, Size: 128, Comment: "计划名称"},
+		{Name: "service_type_id", Type: field.TypeUint32, Nullable: true, Comment: "巡检类别ID（onestop_service_types.id，0103 子树）"},
+		{Name: "freq_type", Type: field.TypeEnum, Nullable: true, Comment: "周期类型 FREQ_DAILY:每日 FREQ_WEEKLY:每周 FREQ_MONTHLY:每月 FREQ_YEARLY:每年", Enums: []string{"FREQ_DAILY", "FREQ_WEEKLY", "FREQ_MONTHLY", "FREQ_YEARLY"}},
+		{Name: "times", Type: field.TypeJSON, Nullable: true, Comment: "执行时间点列表（HH:mm），每个执行日按列表各执行一次"},
+		{Name: "weekdays", Type: field.TypeJSON, Nullable: true, Comment: "周几执行（1=周一…7=周日），每周计划使用"},
+		{Name: "month_days", Type: field.TypeJSON, Nullable: true, Comment: "几号执行（1-31；-1=当月最后一天），每月/每年计划使用"},
+		{Name: "clamp_to_month_end", Type: field.TypeBool, Nullable: true, Comment: "月底日期兼容：号数超出当月天数时顺延至当月最后一天", Default: true},
+		{Name: "months", Type: field.TypeJSON, Nullable: true, Comment: "几月执行（1-12），每年计划使用"},
+		{Name: "excluded_dates", Type: field.TypeJSON, Nullable: true, Comment: "排除日期列表（YYYY-MM-DD，如法定节假日）"},
+		{Name: "post", Type: field.TypeString, Nullable: true, Size: 64, Comment: "执行岗位（派单目标岗位）"},
+		{Name: "space_items", Type: field.TypeJSON, Nullable: true, Comment: "空间巡检点表 [{name,enabled}]"},
+		{Name: "equipment_items", Type: field.TypeJSON, Nullable: true, Comment: "设备巡检点表 [{name,enabled}]"},
+		{Name: "space_refs", Type: field.TypeJSON, Nullable: true, Comment: "空间范围（预留：空间对象标识列表）"},
+		{Name: "equipment_refs", Type: field.TypeJSON, Nullable: true, Comment: "设备范围（预留：设备对象标识列表）"},
+		{Name: "effective_from", Type: field.TypeTime, Nullable: true, Comment: "生效日期（含当日；为空表示立即生效）"},
+		{Name: "effective_to", Type: field.TypeTime, Nullable: true, Comment: "结束日期（含当日；为空表示长期有效）"},
+	}
+	// OnestopInspectionPlansTable holds the schema information for the "onestop_inspection_plans" table.
+	OnestopInspectionPlansTable = &schema.Table{
+		Name:       "onestop_inspection_plans",
+		Comment:    "一站式巡检计划表（0103 巡检巡查类别的计划配置：频率/岗位/点表/生效期）",
+		Columns:    OnestopInspectionPlansColumns,
+		PrimaryKey: []*schema.Column{OnestopInspectionPlansColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "inspectionplan_service_type_id",
+				Unique:  false,
+				Columns: []*schema.Column{OnestopInspectionPlansColumns[9]},
+			},
+			{
+				Name:    "inspectionplan_freq_type",
+				Unique:  false,
+				Columns: []*schema.Column{OnestopInspectionPlansColumns[10]},
+			},
+		},
+	}
 	// OnestopServiceTypesColumns holds the columns for the "onestop_service_types" table.
 	OnestopServiceTypesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUint32, Increment: true, Comment: "id"},
@@ -31,6 +77,7 @@ var (
 		{Name: "common_phrases", Type: field.TypeJSON, Nullable: true, Comment: "常见报修语句清单：报修端快捷语句，兼作语义归型语料"},
 		{Name: "standard_tools", Type: field.TypeJSON, Nullable: true, Comment: "服务标准工具清单：出工标配工具"},
 		{Name: "spare_parts", Type: field.TypeJSON, Nullable: true, Comment: "常用备件/耗材清单：出工常备，配合库存领用"},
+		{Name: "inspection_items", Type: field.TypeJSON, Nullable: true, Comment: "标准巡检项目库：巡检计划点表模板（仅 0103 巡检巡查子树）"},
 		{Name: "parent_id", Type: field.TypeUint32, Nullable: true, Comment: "父节点ID"},
 	}
 	// OnestopServiceTypesTable holds the schema information for the "onestop_service_types" table.
@@ -42,7 +89,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "onestop_service_types_onestop_service_types_children",
-				Columns:    []*schema.Column{OnestopServiceTypesColumns[20]},
+				Columns:    []*schema.Column{OnestopServiceTypesColumns[21]},
 				RefColumns: []*schema.Column{OnestopServiceTypesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -51,7 +98,7 @@ var (
 			{
 				Name:    "servicetype_parent_id",
 				Unique:  false,
-				Columns: []*schema.Column{OnestopServiceTypesColumns[20]},
+				Columns: []*schema.Column{OnestopServiceTypesColumns[21]},
 			},
 			{
 				Name:    "servicetype_level",
@@ -62,11 +109,15 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
+		OnestopInspectionPlansTable,
 		OnestopServiceTypesTable,
 	}
 )
 
 func init() {
+	OnestopInspectionPlansTable.Annotation = &entsql.Annotation{
+		Table: "onestop_inspection_plans",
+	}
 	OnestopServiceTypesTable.ForeignKeys[0].RefTable = OnestopServiceTypesTable
 	OnestopServiceTypesTable.Annotation = &entsql.Annotation{
 		Table: "onestop_service_types",

@@ -278,6 +278,12 @@ func (_c *ServiceTypeCreate) SetSpareParts(v []string) *ServiceTypeCreate {
 	return _c
 }
 
+// SetInspectionItems sets the "inspection_items" field.
+func (_c *ServiceTypeCreate) SetInspectionItems(v []string) *ServiceTypeCreate {
+	_c.mutation.SetInspectionItems(v)
+	return _c
+}
+
 // SetID sets the "id" field.
 func (_c *ServiceTypeCreate) SetID(v uint32) *ServiceTypeCreate {
 	_c.mutation.SetID(v)
@@ -494,6 +500,10 @@ func (_c *ServiceTypeCreate) createSpec() (*ServiceType, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.SpareParts(); ok {
 		_spec.SetField(servicetype.FieldSpareParts, field.TypeJSON, value)
 		_node.SpareParts = value
+	}
+	if value, ok := _c.mutation.InspectionItems(); ok {
+		_spec.SetField(servicetype.FieldInspectionItems, field.TypeJSON, value)
+		_node.InspectionItems = value
 	}
 	if nodes := _c.mutation.ParentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -955,6 +965,24 @@ func (u *ServiceTypeUpsert) UpdateSpareParts() *ServiceTypeUpsert {
 // ClearSpareParts clears the value of the "spare_parts" field.
 func (u *ServiceTypeUpsert) ClearSpareParts() *ServiceTypeUpsert {
 	u.SetNull(servicetype.FieldSpareParts)
+	return u
+}
+
+// SetInspectionItems sets the "inspection_items" field.
+func (u *ServiceTypeUpsert) SetInspectionItems(v []string) *ServiceTypeUpsert {
+	u.Set(servicetype.FieldInspectionItems, v)
+	return u
+}
+
+// UpdateInspectionItems sets the "inspection_items" field to the value that was provided on create.
+func (u *ServiceTypeUpsert) UpdateInspectionItems() *ServiceTypeUpsert {
+	u.SetExcluded(servicetype.FieldInspectionItems)
+	return u
+}
+
+// ClearInspectionItems clears the value of the "inspection_items" field.
+func (u *ServiceTypeUpsert) ClearInspectionItems() *ServiceTypeUpsert {
+	u.SetNull(servicetype.FieldInspectionItems)
 	return u
 }
 
@@ -1447,6 +1475,27 @@ func (u *ServiceTypeUpsertOne) UpdateSpareParts() *ServiceTypeUpsertOne {
 func (u *ServiceTypeUpsertOne) ClearSpareParts() *ServiceTypeUpsertOne {
 	return u.Update(func(s *ServiceTypeUpsert) {
 		s.ClearSpareParts()
+	})
+}
+
+// SetInspectionItems sets the "inspection_items" field.
+func (u *ServiceTypeUpsertOne) SetInspectionItems(v []string) *ServiceTypeUpsertOne {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.SetInspectionItems(v)
+	})
+}
+
+// UpdateInspectionItems sets the "inspection_items" field to the value that was provided on create.
+func (u *ServiceTypeUpsertOne) UpdateInspectionItems() *ServiceTypeUpsertOne {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.UpdateInspectionItems()
+	})
+}
+
+// ClearInspectionItems clears the value of the "inspection_items" field.
+func (u *ServiceTypeUpsertOne) ClearInspectionItems() *ServiceTypeUpsertOne {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.ClearInspectionItems()
 	})
 }
 
@@ -2105,6 +2154,27 @@ func (u *ServiceTypeUpsertBulk) UpdateSpareParts() *ServiceTypeUpsertBulk {
 func (u *ServiceTypeUpsertBulk) ClearSpareParts() *ServiceTypeUpsertBulk {
 	return u.Update(func(s *ServiceTypeUpsert) {
 		s.ClearSpareParts()
+	})
+}
+
+// SetInspectionItems sets the "inspection_items" field.
+func (u *ServiceTypeUpsertBulk) SetInspectionItems(v []string) *ServiceTypeUpsertBulk {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.SetInspectionItems(v)
+	})
+}
+
+// UpdateInspectionItems sets the "inspection_items" field to the value that was provided on create.
+func (u *ServiceTypeUpsertBulk) UpdateInspectionItems() *ServiceTypeUpsertBulk {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.UpdateInspectionItems()
+	})
+}
+
+// ClearInspectionItems clears the value of the "inspection_items" field.
+func (u *ServiceTypeUpsertBulk) ClearInspectionItems() *ServiceTypeUpsertBulk {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.ClearInspectionItems()
 	})
 }
 

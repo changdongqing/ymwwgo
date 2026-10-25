@@ -8,6 +8,18 @@ import (
 	"go-wind-admin/onestop/data/ent"
 )
 
+// The InspectionPlanFunc type is an adapter to allow the use of ordinary
+// function as InspectionPlan mutator.
+type InspectionPlanFunc func(context.Context, *ent.InspectionPlanMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f InspectionPlanFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.InspectionPlanMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.InspectionPlanMutation", m)
+}
+
 // The ServiceTypeFunc type is an adapter to allow the use of ordinary
 // function as ServiceType mutator.
 type ServiceTypeFunc func(context.Context, *ent.ServiceTypeMutation) (ent.Value, error)

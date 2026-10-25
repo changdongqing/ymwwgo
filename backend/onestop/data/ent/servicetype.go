@@ -59,6 +59,8 @@ type ServiceType struct {
 	StandardTools []string `json:"standard_tools,omitempty"`
 	// 常用备件/耗材清单：出工常备，配合库存领用
 	SpareParts []string `json:"spare_parts,omitempty"`
+	// 标准巡检项目库：巡检计划点表模板（仅 0103 巡检巡查子树）
+	InspectionItems []string `json:"inspection_items,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ServiceTypeQuery when eager-loading is set.
 	Edges        ServiceTypeEdges `json:"edges"`
@@ -101,7 +103,7 @@ func (*ServiceType) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case servicetype.FieldCommonPhrases, servicetype.FieldStandardTools, servicetype.FieldSpareParts:
+		case servicetype.FieldCommonPhrases, servicetype.FieldStandardTools, servicetype.FieldSpareParts, servicetype.FieldInspectionItems:
 			values[i] = new([]byte)
 		case servicetype.FieldIsEnabled:
 			values[i] = new(sql.NullBool)
@@ -277,6 +279,14 @@ func (_m *ServiceType) assignValues(columns []string, values []any) error {
 					return fmt.Errorf("unmarshal field spare_parts: %w", err)
 				}
 			}
+		case servicetype.FieldInspectionItems:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field inspection_items", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &_m.InspectionItems); err != nil {
+					return fmt.Errorf("unmarshal field inspection_items: %w", err)
+				}
+			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
 		}
@@ -416,6 +426,9 @@ func (_m *ServiceType) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("spare_parts=")
 	builder.WriteString(fmt.Sprintf("%v", _m.SpareParts))
+	builder.WriteString(", ")
+	builder.WriteString("inspection_items=")
+	builder.WriteString(fmt.Sprintf("%v", _m.InspectionItems))
 	builder.WriteByte(')')
 	return builder.String()
 }

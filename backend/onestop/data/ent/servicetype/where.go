@@ -1070,6 +1070,16 @@ func SparePartsNotNil() predicate.ServiceType {
 	return predicate.ServiceType(sql.FieldNotNull(FieldSpareParts))
 }
 
+// InspectionItemsIsNil applies the IsNil predicate on the "inspection_items" field.
+func InspectionItemsIsNil() predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldIsNull(FieldInspectionItems))
+}
+
+// InspectionItemsNotNil applies the NotNil predicate on the "inspection_items" field.
+func InspectionItemsNotNil() predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldNotNull(FieldInspectionItems))
+}
+
 // HasParent applies the HasEdge predicate on the "parent" edge.
 func HasParent() predicate.ServiceType {
 	return predicate.ServiceType(func(s *sql.Selector) {

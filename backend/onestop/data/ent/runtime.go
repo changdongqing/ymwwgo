@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"go-wind-admin/onestop/data/ent/inspectionplan"
 	"go-wind-admin/onestop/data/ent/schema"
 	"go-wind-admin/onestop/data/ent/servicetype"
 )
@@ -11,6 +12,47 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	inspectionplanMixin := schema.InspectionPlan{}.Mixin()
+	inspectionplanMixinFields0 := inspectionplanMixin[0].Fields()
+	_ = inspectionplanMixinFields0
+	inspectionplanMixinFields3 := inspectionplanMixin[3].Fields()
+	_ = inspectionplanMixinFields3
+	inspectionplanFields := schema.InspectionPlan{}.Fields()
+	_ = inspectionplanFields
+	// inspectionplanDescIsEnabled is the schema descriptor for is_enabled field.
+	inspectionplanDescIsEnabled := inspectionplanMixinFields3[0].Descriptor()
+	// inspectionplan.DefaultIsEnabled holds the default value on creation for the is_enabled field.
+	inspectionplan.DefaultIsEnabled = inspectionplanDescIsEnabled.Default.(bool)
+	// inspectionplanDescName is the schema descriptor for name field.
+	inspectionplanDescName := inspectionplanFields[0].Descriptor()
+	// inspectionplan.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	inspectionplan.NameValidator = func() func(string) error {
+		validators := inspectionplanDescName.Validators
+		fns := [...]func(string) error{
+			validators[0].(func(string) error),
+			validators[1].(func(string) error),
+		}
+		return func(name string) error {
+			for _, fn := range fns {
+				if err := fn(name); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	// inspectionplanDescClampToMonthEnd is the schema descriptor for clamp_to_month_end field.
+	inspectionplanDescClampToMonthEnd := inspectionplanFields[6].Descriptor()
+	// inspectionplan.DefaultClampToMonthEnd holds the default value on creation for the clamp_to_month_end field.
+	inspectionplan.DefaultClampToMonthEnd = inspectionplanDescClampToMonthEnd.Default.(bool)
+	// inspectionplanDescPost is the schema descriptor for post field.
+	inspectionplanDescPost := inspectionplanFields[9].Descriptor()
+	// inspectionplan.PostValidator is a validator for the "post" field. It is called by the builders before save.
+	inspectionplan.PostValidator = inspectionplanDescPost.Validators[0].(func(string) error)
+	// inspectionplanDescID is the schema descriptor for id field.
+	inspectionplanDescID := inspectionplanMixinFields0[0].Descriptor()
+	// inspectionplan.IDValidator is a validator for the "id" field. It is called by the builders before save.
+	inspectionplan.IDValidator = inspectionplanDescID.Validators[0].(func(uint32) error)
 	servicetypeMixin := schema.ServiceType{}.Mixin()
 	servicetypeMixinFields0 := servicetypeMixin[0].Fields()
 	_ = servicetypeMixinFields0

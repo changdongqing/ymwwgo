@@ -18,7 +18,15 @@ import {
 } from '@/api/generated/admin/service/v1';
 import { PaginationQuery } from '@/core';
 import { fetchListServiceTypes, useCreateServiceType, useUpdateServiceType } from '@/api/hooks/onestop';
-import { CODE_PATTERN, getLevelMap, isRepairConfigurable, levelOfCode, REPAIR_POST_SUGGESTIONS } from '../constants';
+import {
+  CODE_PATTERN,
+  getLevelMap,
+  isInspectionConfigurable,
+  isRepairConfigurable,
+  levelOfCode,
+  REPAIR_POST_SUGGESTIONS,
+} from '../constants';
+import InspectionPlanPanel from './InspectionPlanPanel';
 
 interface ServiceTypeFormProps {
   mode: 'create' | 'edit';
@@ -78,6 +86,7 @@ export default function ServiceTypeForm({ mode, data, onSaved, onCancel }: Servi
         commonPhrases: data.commonPhrases ?? [],
         standardTools: data.standardTools ?? [],
         spareParts: data.spareParts ?? [],
+        inspectionItems: data.inspectionItems ?? [],
       });
     } else {
       form.resetFields();
@@ -96,6 +105,8 @@ export default function ServiceTypeForm({ mode, data, onSaved, onCancel }: Servi
   // 报修维修配置仅对 0101 报修维修子树的小类/细类开放（新建时随编码输入出现）
   const effectiveCode = mode === 'edit' ? data?.code : watchedCode;
   const showRepairConfig = isRepairConfigurable(effectiveCode);
+  // 巡检巡查配置：标准巡检项目库（0103 子树）；计划管理仅在编辑态出现
+  const showInspectionConfig = isInspectionConfigurable(effectiveCode);
 
   // 上级候选：只允许挂在恰好上一级之下；编辑时排除自身。
   // 同一层级的候选天然是平铺列表，无需树形结构。
@@ -153,6 +164,9 @@ export default function ServiceTypeForm({ mode, data, onSaved, onCancel }: Servi
       payload.commonPhrases = values.commonPhrases ?? [];
       payload.standardTools = values.standardTools ?? [];
       payload.spareParts = values.spareParts ?? [];
+    }
+    if (showInspectionConfig) {
+      payload.inspectionItems = values.inspectionItems ?? [];
     }
     if (mode === 'create') {
       await createMutation.mutateAsync({ values: payload });
@@ -338,7 +352,40 @@ export default function ServiceTypeForm({ mode, data, onSaved, onCancel }: Servi
             />
           </>
         )}
+
+        {/* 巡检巡查配置（0103 子树）：类别级「标准巡检项目库」，
+            计划（频率/岗位/点表/生效期）在编辑态于表单下方管理 */}
+        {showInspectionConfig && (
+          <>
+            <Divider titlePlacement="left">
+              {t('inspectionConfigSection')}
+            </Divider>
+
+            <ProFormSelect
+              name="inspectionItems"
+              label={t('inspectionItems')}
+              fieldProps={{
+                mode: 'tags',
+                tokenSeparators: [',', '，'],
+                open: false,
+                suffixIcon: null,
+              }}
+              colProps={{ span: 24 }}
+              placeholder={t('inspectionItemsPlaceholder')}
+              extra={t('inspectionItemsExtra')}
+            />
+          </>
+        )}
       </ProForm>
+
+      {/* 巡检计划管理（仅编辑态）：类别已保存才有 id，计划挂类别之下 */}
+      {mode === 'edit' && data?.id != null && showInspectionConfig && (
+        <InspectionPlanPanel
+          serviceTypeId={data.id}
+          serviceTypeLabel={`${data.code ?? ''} ${data.name ?? ''}`.trim()}
+          standardItems={data.inspectionItems ?? []}
+        />
+      )}
     </div>
   );
 }

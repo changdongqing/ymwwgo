@@ -46,15 +46,15 @@ type OntologyServiceHTTPServer interface {
 
 func RegisterOntologyServiceHTTPServer(s *http.Server, srv OntologyServiceHTTPServer) {
 	r := s.Route("/")
-	r.GET("/admin/v1/ontology/ontologies", _OntologyService_List20_HTTP_Handler(srv))
+	r.GET("/admin/v1/ontology/ontologies", _OntologyService_List21_HTTP_Handler(srv))
 	r.GET("/admin/v1/ontology/ontologies/simple-list", _OntologyService_SimpleList0_HTTP_Handler(srv))
-	r.GET("/admin/v1/ontology/ontologies/{id}", _OntologyService_Get18_HTTP_Handler(srv))
-	r.POST("/admin/v1/ontology/ontologies", _OntologyService_Create14_HTTP_Handler(srv))
-	r.PUT("/admin/v1/ontology/ontologies/{id}", _OntologyService_Update15_HTTP_Handler(srv))
-	r.DELETE("/admin/v1/ontology/ontologies", _OntologyService_Delete16_HTTP_Handler(srv))
+	r.GET("/admin/v1/ontology/ontologies/{id}", _OntologyService_Get19_HTTP_Handler(srv))
+	r.POST("/admin/v1/ontology/ontologies", _OntologyService_Create15_HTTP_Handler(srv))
+	r.PUT("/admin/v1/ontology/ontologies/{id}", _OntologyService_Update16_HTTP_Handler(srv))
+	r.DELETE("/admin/v1/ontology/ontologies", _OntologyService_Delete17_HTTP_Handler(srv))
 }
 
-func _OntologyService_List20_HTTP_Handler(srv OntologyServiceHTTPServer) func(ctx http.Context) error {
+func _OntologyService_List21_HTTP_Handler(srv OntologyServiceHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in v1.PagingRequest
 		if err := ctx.BindQuery(&in); err != nil {
@@ -92,7 +92,7 @@ func _OntologyService_SimpleList0_HTTP_Handler(srv OntologyServiceHTTPServer) fu
 	}
 }
 
-func _OntologyService_Get18_HTTP_Handler(srv OntologyServiceHTTPServer) func(ctx http.Context) error {
+func _OntologyService_Get19_HTTP_Handler(srv OntologyServiceHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in v11.GetOntologyRequest
 		if err := ctx.BindQuery(&in); err != nil {
@@ -114,7 +114,7 @@ func _OntologyService_Get18_HTTP_Handler(srv OntologyServiceHTTPServer) func(ctx
 	}
 }
 
-func _OntologyService_Create14_HTTP_Handler(srv OntologyServiceHTTPServer) func(ctx http.Context) error {
+func _OntologyService_Create15_HTTP_Handler(srv OntologyServiceHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in v11.CreateOntologyRequest
 		if err := ctx.Bind(&in); err != nil {
@@ -136,7 +136,7 @@ func _OntologyService_Create14_HTTP_Handler(srv OntologyServiceHTTPServer) func(
 	}
 }
 
-func _OntologyService_Update15_HTTP_Handler(srv OntologyServiceHTTPServer) func(ctx http.Context) error {
+func _OntologyService_Update16_HTTP_Handler(srv OntologyServiceHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in v11.UpdateOntologyRequest
 		if err := ctx.Bind(&in); err != nil {
@@ -161,7 +161,7 @@ func _OntologyService_Update15_HTTP_Handler(srv OntologyServiceHTTPServer) func(
 	}
 }
 
-func _OntologyService_Delete16_HTTP_Handler(srv OntologyServiceHTTPServer) func(ctx http.Context) error {
+func _OntologyService_Delete17_HTTP_Handler(srv OntologyServiceHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in v11.DeleteOntologyRequest
 		if err := ctx.BindQuery(&in); err != nil {

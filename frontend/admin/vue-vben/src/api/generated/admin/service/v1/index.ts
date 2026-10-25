@@ -7490,6 +7490,235 @@ export type notificationservicev1_RenderNotificationTemplateResponse = {
   title: string | undefined;
 };
 
+// 一站式巡检计划管理服务（admin 门面）
+//
+// 源领域 proto 在 onestop/service/v1（独立 Go module go-wind-admin/onestop 拥有
+// 自己的同名生成包 onestopv1）；本门面只挂 HTTP 路由，消息类型直接引用源领域，
+// 生成时 onestop/service/v1 的 go_package 被指到 module 的 gen 包
+// （go-wind-admin/onestop/api/gen/go/onestop/service/v1;onestopv1，见 buf.gen.yaml），
+// 因此本服务生成的 HTTP 接口与 module 内 service 的方法签名完全一致，可直接注册。
+export interface OneStopInspectionPlanService {
+  // 查询巡检计划列表
+  List(
+    request: pagination_PagingRequest,
+  ): Promise<onestopservicev1_ListInspectionPlansResponse>;
+  // 查询巡检计划详情
+  Get(
+    request: onestopservicev1_GetInspectionPlanRequest,
+  ): Promise<onestopservicev1_InspectionPlan>;
+  // 创建巡检计划
+  Create(
+    request: onestopservicev1_CreateInspectionPlanRequest,
+  ): Promise<wellKnownEmpty>;
+  // 更新巡检计划
+  Update(
+    request: onestopservicev1_UpdateInspectionPlanRequest,
+  ): Promise<wellKnownEmpty>;
+  // 删除巡检计划
+  Delete(
+    request: onestopservicev1_DeleteInspectionPlanRequest,
+  ): Promise<wellKnownEmpty>;
+}
+
+export function createOneStopInspectionPlanServiceClient(
+  transport: ClientTransport,
+): OneStopInspectionPlanService {
+  return {
+    List(request) {
+      const path = `/admin/v1/onestop/inspection-plans`;
+      const body = null;
+      const queryParams: string[] = [];
+      if (request.page) {
+        queryParams.push(
+          `page=${encodeURIComponent(request.page.toString())}`,
+        );
+      }
+      if (request.pageSize) {
+        queryParams.push(
+          `pageSize=${encodeURIComponent(request.pageSize.toString())}`,
+        );
+      }
+      if (request.offset) {
+        queryParams.push(
+          `offset=${encodeURIComponent(request.offset.toString())}`,
+        );
+      }
+      if (request.limit) {
+        queryParams.push(
+          `limit=${encodeURIComponent(request.limit.toString())}`,
+        );
+      }
+      if (request.token) {
+        queryParams.push(
+          `token=${encodeURIComponent(request.token.toString())}`,
+        );
+      }
+      if (request.noPaging) {
+        queryParams.push(
+          `noPaging=${encodeURIComponent(request.noPaging.toString())}`,
+        );
+      }
+      if (request.query) {
+        queryParams.push(
+          `query=${encodeURIComponent(request.query.toString())}`,
+        );
+      }
+      if (request.filter) {
+        queryParams.push(
+          `filter=${encodeURIComponent(request.filter.toString())}`,
+        );
+      }
+      if (request.filterExpr?.type) {
+        queryParams.push(
+          `filterExpr.type=${encodeURIComponent(request.filterExpr.type.toString())}`,
+        );
+      }
+      if (request.orderBy) {
+        queryParams.push(
+          `orderBy=${encodeURIComponent(request.orderBy.toString())}`,
+        );
+      }
+      if (request.fieldMask) {
+        queryParams.push(
+          `fieldMask=${encodeURIComponent(request.fieldMask.toString())}`,
+        );
+      }
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join('&')}`;
+      }
+      return transport.unary(uri, 'GET', body, {
+        service: 'OneStopInspectionPlanService',
+        method: 'List',
+      }) as Promise<onestopservicev1_ListInspectionPlansResponse>;
+    },
+    Get(request) {
+      if (request.id === undefined || request.id === null) {
+        throw new Error('missing required field request.id');
+      }
+      const path = `/admin/v1/onestop/inspection-plans/${request.id}`;
+      const body = null;
+      const queryParams: string[] = [];
+      if (request.viewMask) {
+        queryParams.push(
+          `viewMask=${encodeURIComponent(request.viewMask.toString())}`,
+        );
+      }
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join('&')}`;
+      }
+      return transport.unary(uri, 'GET', body, {
+        service: 'OneStopInspectionPlanService',
+        method: 'Get',
+      }) as Promise<onestopservicev1_InspectionPlan>;
+    },
+    Create(request) {
+      const path = `/admin/v1/onestop/inspection-plans`;
+      const body = JSON.stringify(request);
+      return transport.unary(path, 'POST', body, {
+        service: 'OneStopInspectionPlanService',
+        method: 'Create',
+      }) as Promise<wellKnownEmpty>;
+    },
+    Update(request) {
+      if (request.id === undefined || request.id === null) {
+        throw new Error('missing required field request.id');
+      }
+      const path = `/admin/v1/onestop/inspection-plans/${request.id}`;
+      const bodyMap = { ...request } as Record<string, unknown>;
+      delete bodyMap["id"];
+      const body = JSON.stringify(bodyMap);
+      return transport.unary(path, 'PUT', body, {
+        service: 'OneStopInspectionPlanService',
+        method: 'Update',
+      }) as Promise<wellKnownEmpty>;
+    },
+    Delete(request) {
+      if (request.id === undefined || request.id === null) {
+        throw new Error('missing required field request.id');
+      }
+      const path = `/admin/v1/onestop/inspection-plans/${request.id}`;
+      const body = null;
+      return transport.unary(path, 'DELETE', body, {
+        service: 'OneStopInspectionPlanService',
+        method: 'Delete',
+      }) as Promise<wellKnownEmpty>;
+    },
+  };
+}
+// 查询巡检计划列表 - 回应
+export type onestopservicev1_ListInspectionPlansResponse = {
+  items: onestopservicev1_InspectionPlan[] | undefined;
+  total: number | undefined;
+};
+
+// 一站式巡检计划
+export type onestopservicev1_InspectionPlan = {
+  clampToMonthEnd?: boolean;
+  createdAt?: wellKnownTimestamp;
+  createdBy?: number;
+  deletedAt?: wellKnownTimestamp;
+  deletedBy?: number;
+  effectiveFrom?: wellKnownTimestamp;
+  effectiveTo?: wellKnownTimestamp;
+  equipmentItems: onestopservicev1_InspectionPlanItem[] | undefined;
+  equipmentRefs: string[] | undefined;
+  excludedDates: string[] | undefined;
+  freqType?: onestopservicev1_FreqType;
+  id?: number;
+  isEnabled?: boolean;
+  monthDays: number[] | undefined;
+  months: number[] | undefined;
+  name?: string;
+  post?: string;
+  serviceTypeId?: number;
+  spaceItems: onestopservicev1_InspectionPlanItem[] | undefined;
+  // —— 预留：空间/设备对象模块落地后启用（当前无业务表，仅保留契约）——
+  spaceRefs: string[] | undefined;
+  times: string[] | undefined;
+  updatedAt?: wellKnownTimestamp;
+  updatedBy?: number;
+  weekdays: number[] | undefined;
+};
+
+// 巡检计划周期类型
+export type onestopservicev1_FreqType =
+  | 'FREQ_DAILY'
+  | 'FREQ_MONTHLY'
+  | 'FREQ_UNSPECIFIED'
+  | 'FREQ_WEEKLY'
+  | 'FREQ_YEARLY';
+// 巡检点表项（计划内可基于类别标准项目增删/停用启用）
+export type onestopservicev1_InspectionPlanItem = {
+  enabled: boolean | undefined;
+  name: string | undefined;
+};
+
+// 查询巡检计划详情 - 请求
+export type onestopservicev1_GetInspectionPlanRequest = {
+  id?: number;
+  viewMask?: wellKnownFieldMask;
+};
+
+// 创建巡检计划 - 请求
+export type onestopservicev1_CreateInspectionPlanRequest = {
+  data: onestopservicev1_InspectionPlan | undefined;
+};
+
+// 更新巡检计划 - 请求
+export type onestopservicev1_UpdateInspectionPlanRequest = {
+  allowMissing?: boolean;
+  data: onestopservicev1_InspectionPlan | undefined;
+  id: number | undefined;
+  updateMask: undefined | wellKnownFieldMask;
+};
+
+// 删除巡检计划 - 请求
+export type onestopservicev1_DeleteInspectionPlanRequest = {
+  id?: number;
+};
+
 // 一站式服务类型管理服务（admin 门面）
 //
 // 源领域 proto 在 onestop/service/v1（独立 Go module go-wind-admin/onestop 拥有
@@ -7665,6 +7894,7 @@ export type onestopservicev1_ServiceType = {
   description?: string;
   guidance?: string;
   id?: number;
+  inspectionItems: string[] | undefined;
   isEnabled?: boolean;
   level?: onestopservicev1_Level;
   name?: string;
@@ -14641,6 +14871,7 @@ export class ApiClient {
   private _notificationRuleService?: NotificationRuleService;
   private _notificationService?: NotificationService;
   private _notificationTemplateService?: NotificationTemplateService;
+  private _oneStopInspectionPlanService?: OneStopInspectionPlanService;
   private _oneStopServiceTypeService?: OneStopServiceTypeService;
   private _onlineSessionService?: OnlineSessionService;
   private _ontologyAnnotationPropertyService?: OntologyAnnotationPropertyService;
@@ -14820,6 +15051,10 @@ export class ApiClient {
 
   get notificationTemplateService(): NotificationTemplateService {
     return this._notificationTemplateService ??= createNotificationTemplateServiceClient(this._transport);
+  }
+
+  get oneStopInspectionPlanService(): OneStopInspectionPlanService {
+    return this._oneStopInspectionPlanService ??= createOneStopInspectionPlanServiceClient(this._transport);
   }
 
   get oneStopServiceTypeService(): OneStopServiceTypeService {

@@ -1,0 +1,239 @@
+syntax = "proto3";
+
+package onestop.service.v1;
+
+import "gnostic/openapi/v3/annotations.proto";
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/field_mask.proto";
+import "google/protobuf/timestamp.proto";
+
+import "pagination/v1/pagination.proto";
+
+// 一站式巡检计划管理服务
+//
+// 巡检计划是「巡检巡查（0103）」类别节点下的列表型子资源：一个类别可挂多套
+// 周期不同的计划（区别于报修配置的单值参数）。计划描述"谁（岗位）按什么频率
+// 在什么范围内查哪些点（点表）"，生效区间约束计划的执行窗口；
+// 运行期由后续工单对象按计划生成巡检任务（本期只做配置管理）。
+service OneStopInspectionPlanService {
+  // 查询巡检计划列表
+  rpc List (pagination.PagingRequest) returns (ListInspectionPlansResponse) {
+    option (google.api.http) = {
+      get: "/admin/v1/onestop/inspection-plans"
+    };
+  }
+
+  // 查询巡检计划详情
+  rpc Get (GetInspectionPlanRequest) returns (InspectionPlan) {
+    option (google.api.http) = {
+      get: "/admin/v1/onestop/inspection-plans/{id}"
+    };
+  }
+
+  // 创建巡检计划
+  rpc Create (CreateInspectionPlanRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/admin/v1/onestop/inspection-plans"
+      body: "*"
+    };
+  }
+
+  // 更新巡检计划
+  rpc Update (UpdateInspectionPlanRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      put: "/admin/v1/onestop/inspection-plans/{id}"
+      body: "*"
+    };
+  }
+
+  // 删除巡检计划
+  rpc Delete (DeleteInspectionPlanRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete: "/admin/v1/onestop/inspection-plans/{id}"
+    };
+  }
+}
+
+// 巡检计划周期类型
+enum FreqType {
+  FREQ_UNSPECIFIED = 0; // 未指定
+  FREQ_DAILY = 1; // 每日：times 内每个时间点一次，支持每日多次
+  FREQ_WEEKLY = 2; // 每周：weekdays 内每天执行，支持每周多次
+  FREQ_MONTHLY = 3; // 每月：month_days 内每号执行，月末日期按 clamp_to_month_end 兼容
+  FREQ_YEARLY = 4; // 每年：months 内每月的 month_days 执行
+}
+
+// 巡检点表项（计划内可基于类别标准项目增删/停用启用）
+message InspectionPlanItem {
+  string name = 1 [
+    json_name = "name",
+    (gnostic.openapi.v3.property) = { description: "巡检项目名称" }
+  ]; // 巡检项目名称
+
+  bool enabled = 2 [
+    json_name = "enabled",
+    (gnostic.openapi.v3.property) = { description: "是否启用（停用项保留在点表中但不执行）" }
+  ]; // 是否启用
+}
+
+// 一站式巡检计划
+message InspectionPlan {
+  optional uint32 id = 1 [
+    json_name = "id",
+    (gnostic.openapi.v3.property) = { description: "巡检计划ID" }
+  ]; // 巡检计划ID
+
+  optional string name = 2 [
+    json_name = "name",
+    (gnostic.openapi.v3.property) = { description: "计划名称" }
+  ]; // 计划名称
+
+  optional uint32 service_type_id = 3 [
+    json_name = "serviceTypeId",
+    (gnostic.openapi.v3.property) = { description: "巡检类别ID（0103 巡检巡查子树的小类/细类）" }
+  ]; // 巡检类别ID
+
+  optional FreqType freq_type = 4 [
+    json_name = "freqType",
+    (gnostic.openapi.v3.property) = { description: "周期类型（每日/每周/每月/每年）" }
+  ]; // 周期类型
+
+  repeated string times = 5 [
+    json_name = "times",
+    (gnostic.openapi.v3.property) = { description: "执行时间点列表（HH:mm），每个执行日按此列表各执行一次；每日多次即多个时间点" }
+  ]; // 执行时间点列表
+
+  repeated int32 weekdays = 6 [
+    json_name = "weekdays",
+    (gnostic.openapi.v3.property) = { description: "周几执行（1=周一…7=周日），每周计划必填" }
+  ]; // 周几执行
+
+  repeated int32 month_days = 7 [
+    json_name = "monthDays",
+    (gnostic.openapi.v3.property) = { description: "几号执行（1-31；-1 表示当月最后一天），每月/每年计划必填" }
+  ]; // 几号执行
+
+  optional bool clamp_to_month_end = 8 [
+    json_name = "clampToMonthEnd",
+    (gnostic.openapi.v3.property) = { description: "月底日期兼容：号数超出当月天数时顺延至当月最后一天（默认 true；false 则当月跳过）" }
+  ]; // 月底日期兼容开关
+
+  repeated int32 months = 9 [
+    json_name = "months",
+    (gnostic.openapi.v3.property) = { description: "几月执行（1-12），每年计划必填，支持多年多次" }
+  ]; // 几月执行
+
+  repeated string excluded_dates = 10 [
+    json_name = "excludedDates",
+    (gnostic.openapi.v3.property) = { description: "排除日期列表（YYYY-MM-DD，如法定节假日），命中则当日不生成任务" }
+  ]; // 排除日期列表
+
+  optional string post = 11 [
+    json_name = "post",
+    (gnostic.openapi.v3.property) = { description: "执行岗位（派单目标岗位）" }
+  ]; // 执行岗位
+
+  repeated InspectionPlanItem space_items = 12 [
+    json_name = "spaceItems",
+    (gnostic.openapi.v3.property) = { description: "空间巡检点表（基于类别标准项目增删/停用启用）" }
+  ]; // 空间巡检点表
+
+  repeated InspectionPlanItem equipment_items = 13 [
+    json_name = "equipmentItems",
+    (gnostic.openapi.v3.property) = { description: "设备巡检点表（基于类别标准项目增删/停用启用）" }
+  ]; // 设备巡检点表
+
+  // —— 预留：空间/设备对象模块落地后启用（当前无业务表，仅保留契约）——
+  repeated string space_refs = 14 [
+    json_name = "spaceRefs",
+    (gnostic.openapi.v3.property) = { description: "空间范围（预留：空间对象标识列表）" }
+  ]; // 空间范围（预留）
+
+  repeated string equipment_refs = 15 [
+    json_name = "equipmentRefs",
+    (gnostic.openapi.v3.property) = { description: "设备范围（预留：设备对象标识列表）" }
+  ]; // 设备范围（预留）
+
+  optional google.protobuf.Timestamp effective_from = 16 [
+    json_name = "effectiveFrom",
+    (gnostic.openapi.v3.property) = { description: "生效日期（含当日；为空表示立即生效）" }
+  ]; // 生效日期
+
+  optional google.protobuf.Timestamp effective_to = 17 [
+    json_name = "effectiveTo",
+    (gnostic.openapi.v3.property) = { description: "结束日期（含当日；为空表示长期有效）" }
+  ]; // 结束日期
+
+  optional bool is_enabled = 18 [
+    json_name = "isEnabled",
+    (gnostic.openapi.v3.property) = { description: "是否启用" }
+  ]; // 是否启用
+
+  optional uint32 created_by = 100 [json_name = "createdBy", (gnostic.openapi.v3.property) = {description: "创建者ID"}]; // 创建者ID
+  optional uint32 updated_by = 101 [json_name = "updatedBy", (gnostic.openapi.v3.property) = {description: "更新者ID"}]; // 更新者ID
+  optional uint32 deleted_by = 102 [json_name = "deletedBy", (gnostic.openapi.v3.property) = {description: "删除者用户ID"}]; // 删除者用户ID
+
+  optional google.protobuf.Timestamp created_at = 200 [json_name = "createdAt", (gnostic.openapi.v3.property) = {description: "创建时间"}];// 创建时间
+  optional google.protobuf.Timestamp updated_at = 201 [json_name = "updatedAt", (gnostic.openapi.v3.property) = {description: "更新时间"}];// 更新时间
+  optional google.protobuf.Timestamp deleted_at = 202 [json_name = "deletedAt", (gnostic.openapi.v3.property) = {description: "删除时间"}];// 删除时间
+}
+
+// 查询巡检计划列表 - 回应
+message ListInspectionPlansResponse {
+  repeated InspectionPlan items = 1;
+  uint64 total = 2;
+}
+
+// 查询巡检计划详情 - 请求
+message GetInspectionPlanRequest {
+  oneof query_by {
+    uint32 id = 1 [
+      (gnostic.openapi.v3.property) = {description: "ID", read_only: true},
+      json_name = "id"
+    ]; // ID
+  }
+
+  optional google.protobuf.FieldMask view_mask = 100 [
+    json_name = "viewMask",
+    (gnostic.openapi.v3.property) = {
+      description: "视图字段过滤器，用于控制返回的字段"
+    }
+  ]; // 视图字段过滤器
+}
+
+// 创建巡检计划 - 请求
+message CreateInspectionPlanRequest {
+  InspectionPlan data = 1;
+}
+
+// 更新巡检计划 - 请求
+message UpdateInspectionPlanRequest {
+  uint32 id = 1;
+
+  InspectionPlan data = 2;
+
+  google.protobuf.FieldMask update_mask = 3 [
+    (gnostic.openapi.v3.property) = {
+      description: "要更新的字段列表",
+      example: {yaml : "id,name,freqType"}
+    },
+    json_name = "updateMask"
+  ]; // 要更新的字段列表
+
+  optional bool allow_missing = 4 [
+    (gnostic.openapi.v3.property) = {description: "如果设置为true的时候，资源不存在则会新增(插入)，并且在这种情况下`updateMask`字段将会被忽略。"},
+    json_name = "allowMissing"
+  ]; // 资源不存在时是否新增
+}
+
+// 删除巡检计划 - 请求
+message DeleteInspectionPlanRequest {
+  oneof query_by {
+    uint32 id = 1 [
+      (gnostic.openapi.v3.property) = {description: "ID", read_only: true},
+      json_name = "id"
+    ]; // ID
+  }
+}

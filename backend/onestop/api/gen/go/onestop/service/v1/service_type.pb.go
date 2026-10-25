@@ -101,6 +101,7 @@ type ServiceType struct {
 	CommonPhrases       []string               `protobuf:"bytes,14,rep,name=common_phrases,json=commonPhrases,proto3" json:"common_phrases,omitempty"`                            // 常见报修语句清单
 	StandardTools       []string               `protobuf:"bytes,15,rep,name=standard_tools,json=standardTools,proto3" json:"standard_tools,omitempty"`                            // 服务标准工具清单
 	SpareParts          []string               `protobuf:"bytes,16,rep,name=spare_parts,json=spareParts,proto3" json:"spare_parts,omitempty"`                                     // 常用备件/耗材清单
+	InspectionItems     []string               `protobuf:"bytes,17,rep,name=inspection_items,json=inspectionItems,proto3" json:"inspection_items,omitempty"`                      // 标准巡检项目库
 	CreatedBy           *uint32                `protobuf:"varint,100,opt,name=created_by,json=createdBy,proto3,oneof" json:"created_by,omitempty"`                                // 创建者ID
 	UpdatedBy           *uint32                `protobuf:"varint,101,opt,name=updated_by,json=updatedBy,proto3,oneof" json:"updated_by,omitempty"`                                // 更新者ID
 	DeletedBy           *uint32                `protobuf:"varint,102,opt,name=deleted_by,json=deletedBy,proto3,oneof" json:"deleted_by,omitempty"`                                // 删除者用户ID
@@ -242,6 +243,13 @@ func (x *ServiceType) GetStandardTools() []string {
 func (x *ServiceType) GetSpareParts() []string {
 	if x != nil {
 		return x.SpareParts
+	}
+	return nil
+}
+
+func (x *ServiceType) GetInspectionItems() []string {
+	if x != nil {
+		return x.InspectionItems
 	}
 	return nil
 }
@@ -601,7 +609,7 @@ var File_onestop_service_v1_service_type_proto protoreflect.FileDescriptor
 
 const file_onestop_service_v1_service_type_proto_rawDesc = "" +
 	"\n" +
-	"%onestop/service/v1/service_type.proto\x12\x12onestop.service.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a google/protobuf/field_mask.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1epagination/v1/pagination.proto\"\xab\x10\n" +
+	"%onestop/service/v1/service_type.proto\x12\x12onestop.service.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a google/protobuf/field_mask.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1epagination/v1/pagination.proto\"\xb0\x11\n" +
 	"\vServiceType\x12)\n" +
 	"\x02id\x18\x01 \x01(\rB\x14\xbaG\x11\x92\x02\x0e服务类型IDH\x00R\x02id\x88\x01\x01\x12Z\n" +
 	"\x04code\x18\x02 \x01(\tBA\xbaG>\x92\x02;服务编码，2/4/6/8 位数字字符串，位数即层级H\x01R\x04code\x88\x01\x01\x12+\n" +
@@ -622,7 +630,8 @@ const file_onestop_service_v1_service_type_proto_rawDesc = "" +
 	"\x0ecommon_phrases\x18\x0e \x03(\tBQ\xbaGN\x92\x02K常见报修语句清单：报修端快捷语句，兼作语义归型语料R\rcommonPhrases\x12Z\n" +
 	"\x0estandard_tools\x18\x0f \x03(\tB3\xbaG0\x92\x02-服务标准工具清单：出工标配工具R\rstandardTools\x12d\n" +
 	"\vspare_parts\x18\x10 \x03(\tBC\xbaG@\x92\x02=常用备件/耗材清单：出工常备，配合库存领用R\n" +
-	"spareParts\x125\n" +
+	"spareParts\x12\x82\x01\n" +
+	"\x10inspection_items\x18\x11 \x03(\tBW\xbaGT\x92\x02Q标准巡检项目库：巡检计划点表模板（仅 0103 巡检巡查子树）R\x0finspectionItems\x125\n" +
 	"\n" +
 	"created_by\x18d \x01(\rB\x11\xbaG\x0e\x92\x02\v创建者IDH\fR\tcreatedBy\x88\x01\x01\x125\n" +
 	"\n" +

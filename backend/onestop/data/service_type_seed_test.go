@@ -58,6 +58,25 @@ func TestServiceTypeSeedData(t *testing.T) {
 			t.Errorf("seed %q: 本期报修配置只允许出现在 0101 报修维修子树", seed.Code)
 		}
 
+		// —— 巡检巡查配置：标准巡检项目库只允许出现在 0103 子树 ——
+
+		isInspection := len(seed.Code) >= 6 && seed.Code[:4] == "0103"
+		if len(seed.InspectionItems) > 0 && !isInspection {
+			t.Errorf("seed %q: 标准巡检项目库只允许出现在 0103 巡检巡查子树", seed.Code)
+		}
+		if isInspection && len(seed.InspectionItems) > 0 {
+			seen := make(map[string]bool)
+			for _, item := range seed.InspectionItems {
+				if item == "" {
+					t.Errorf("seed %q: 标准巡检项目含空串", seed.Code)
+				}
+				if seen[item] {
+					t.Errorf("seed %q: 标准巡检项目重复 %q", seed.Code, item)
+				}
+				seen[item] = true
+			}
+		}
+
 		if seed.RepairPost != nil {
 			if len(seed.Code) != 6 {
 				t.Errorf("seed %q: 维修岗位只配在小类层", seed.Code)
@@ -103,6 +122,20 @@ func TestServiceTypeSeedData(t *testing.T) {
 	// 电梯困人是全字典唯一的 SLA 覆盖样例：10 分钟到场、30 分钟完成救援
 	if s := findSeed(seeds, "01010501"); s == nil || s.ResponseTimeLimit == nil || *s.ResponseTimeLimit != 10 {
 		t.Errorf("seed 01010501 电梯困人：响应时限须为 10 分钟")
+	}
+
+	// 标准巡检项目库覆盖钉死：0103 的 8 个小类 + 每日防火巡查/每月防火检查两个细类
+	inspectionSeeded := 0
+	for _, seed := range seeds {
+		if len(seed.InspectionItems) > 0 {
+			inspectionSeeded++
+		}
+	}
+	if inspectionSeeded != 10 {
+		t.Errorf("标准巡检项目库覆盖节点数 = %d, want 10（0103 八小类 + 两个防火细类）", inspectionSeeded)
+	}
+	if s := findSeed(seeds, "010301"); s == nil || len(s.InspectionItems) == 0 {
+		t.Errorf("seed 010301 消防巡查：须预置标准巡检项目库")
 	}
 }
 

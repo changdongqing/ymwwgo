@@ -51,17 +51,17 @@ type OntologyIndividualServiceHTTPServer interface {
 
 func RegisterOntologyIndividualServiceHTTPServer(s *http.Server, srv OntologyIndividualServiceHTTPServer) {
 	r := s.Route("/")
-	r.GET("/admin/v1/ontology/individuals", _OntologyIndividualService_List25_HTTP_Handler(srv))
+	r.GET("/admin/v1/ontology/individuals", _OntologyIndividualService_List26_HTTP_Handler(srv))
 	r.GET("/admin/v1/ontology/individuals/{id}/frame", _OntologyIndividualService_Frame4_HTTP_Handler(srv))
 	r.GET("/admin/v1/ontology/individuals/code-preview", _OntologyIndividualService_CodePreview0_HTTP_Handler(srv))
 	r.GET("/admin/v1/ontology/individuals/count-by-class", _OntologyIndividualService_CountByClass0_HTTP_Handler(srv))
 	r.GET("/admin/v1/ontology/individuals/{id}/usage", _OntologyIndividualService_Usage4_HTTP_Handler(srv))
-	r.POST("/admin/v1/ontology/individuals", _OntologyIndividualService_Create19_HTTP_Handler(srv))
-	r.PUT("/admin/v1/ontology/individuals/{id}", _OntologyIndividualService_Update20_HTTP_Handler(srv))
-	r.DELETE("/admin/v1/ontology/individuals/{id}", _OntologyIndividualService_Delete21_HTTP_Handler(srv))
+	r.POST("/admin/v1/ontology/individuals", _OntologyIndividualService_Create20_HTTP_Handler(srv))
+	r.PUT("/admin/v1/ontology/individuals/{id}", _OntologyIndividualService_Update21_HTTP_Handler(srv))
+	r.DELETE("/admin/v1/ontology/individuals/{id}", _OntologyIndividualService_Delete22_HTTP_Handler(srv))
 }
 
-func _OntologyIndividualService_List25_HTTP_Handler(srv OntologyIndividualServiceHTTPServer) func(ctx http.Context) error {
+func _OntologyIndividualService_List26_HTTP_Handler(srv OntologyIndividualServiceHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in v1.ListIndividualsRequest
 		if err := ctx.BindQuery(&in); err != nil {
@@ -162,7 +162,7 @@ func _OntologyIndividualService_Usage4_HTTP_Handler(srv OntologyIndividualServic
 	}
 }
 
-func _OntologyIndividualService_Create19_HTTP_Handler(srv OntologyIndividualServiceHTTPServer) func(ctx http.Context) error {
+func _OntologyIndividualService_Create20_HTTP_Handler(srv OntologyIndividualServiceHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in v1.CreateIndividualRequest
 		if err := ctx.Bind(&in); err != nil {
@@ -184,7 +184,7 @@ func _OntologyIndividualService_Create19_HTTP_Handler(srv OntologyIndividualServ
 	}
 }
 
-func _OntologyIndividualService_Update20_HTTP_Handler(srv OntologyIndividualServiceHTTPServer) func(ctx http.Context) error {
+func _OntologyIndividualService_Update21_HTTP_Handler(srv OntologyIndividualServiceHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in v1.UpdateIndividualRequest
 		if err := ctx.Bind(&in); err != nil {
@@ -209,7 +209,7 @@ func _OntologyIndividualService_Update20_HTTP_Handler(srv OntologyIndividualServ
 	}
 }
 
-func _OntologyIndividualService_Delete21_HTTP_Handler(srv OntologyIndividualServiceHTTPServer) func(ctx http.Context) error {
+func _OntologyIndividualService_Delete22_HTTP_Handler(srv OntologyIndividualServiceHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in v1.DeleteIndividualRequest
 		if err := ctx.BindQuery(&in); err != nil {

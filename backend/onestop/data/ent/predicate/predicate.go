@@ -6,5 +6,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 )
 
+// InspectionPlan is the predicate function for inspectionplan builders.
+type InspectionPlan func(*sql.Selector)
+
 // ServiceType is the predicate function for servicetype builders.
 type ServiceType func(*sql.Selector)

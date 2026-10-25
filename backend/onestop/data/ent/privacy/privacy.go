@@ -111,6 +111,30 @@ func DenyMutationOperationRule(op ent.Op) MutationRule {
 	return OnMutationOperation(rule, op)
 }
 
+// The InspectionPlanQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type InspectionPlanQueryRuleFunc func(context.Context, *ent.InspectionPlanQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f InspectionPlanQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.InspectionPlanQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.InspectionPlanQuery", q)
+}
+
+// The InspectionPlanMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type InspectionPlanMutationRuleFunc func(context.Context, *ent.InspectionPlanMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f InspectionPlanMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.InspectionPlanMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.InspectionPlanMutation", m)
+}
+
 // The ServiceTypeQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
 type ServiceTypeQueryRuleFunc func(context.Context, *ent.ServiceTypeQuery) error
@@ -170,6 +194,8 @@ var _ QueryMutationRule = FilterFunc(nil)
 
 func queryFilter(q ent.Query) (Filter, error) {
 	switch q := q.(type) {
+	case *ent.InspectionPlanQuery:
+		return q.Filter(), nil
 	case *ent.ServiceTypeQuery:
 		return q.Filter(), nil
 	default:
@@ -179,6 +205,8 @@ func queryFilter(q ent.Query) (Filter, error) {
 
 func mutationFilter(m ent.Mutation) (Filter, error) {
 	switch m := m.(type) {
+	case *ent.InspectionPlanMutation:
+		return m.Filter(), nil
 	case *ent.ServiceTypeMutation:
 		return m.Filter(), nil
 	default:

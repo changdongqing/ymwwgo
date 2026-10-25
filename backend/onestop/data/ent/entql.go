@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"go-wind-admin/onestop/data/ent/inspectionplan"
 	"go-wind-admin/onestop/data/ent/predicate"
 	"go-wind-admin/onestop/data/ent/servicetype"
 
@@ -14,8 +15,44 @@ import (
 
 // schemaGraph holds a representation of ent/schema at runtime.
 var schemaGraph = func() *sqlgraph.Schema {
-	graph := &sqlgraph.Schema{Nodes: make([]*sqlgraph.Node, 1)}
+	graph := &sqlgraph.Schema{Nodes: make([]*sqlgraph.Node, 2)}
 	graph.Nodes[0] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
+			Table:   inspectionplan.Table,
+			Columns: inspectionplan.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeUint32,
+				Column: inspectionplan.FieldID,
+			},
+		},
+		Type: "InspectionPlan",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			inspectionplan.FieldCreatedAt:       {Type: field.TypeTime, Column: inspectionplan.FieldCreatedAt},
+			inspectionplan.FieldUpdatedAt:       {Type: field.TypeTime, Column: inspectionplan.FieldUpdatedAt},
+			inspectionplan.FieldDeletedAt:       {Type: field.TypeTime, Column: inspectionplan.FieldDeletedAt},
+			inspectionplan.FieldCreatedBy:       {Type: field.TypeUint32, Column: inspectionplan.FieldCreatedBy},
+			inspectionplan.FieldUpdatedBy:       {Type: field.TypeUint32, Column: inspectionplan.FieldUpdatedBy},
+			inspectionplan.FieldDeletedBy:       {Type: field.TypeUint32, Column: inspectionplan.FieldDeletedBy},
+			inspectionplan.FieldIsEnabled:       {Type: field.TypeBool, Column: inspectionplan.FieldIsEnabled},
+			inspectionplan.FieldName:            {Type: field.TypeString, Column: inspectionplan.FieldName},
+			inspectionplan.FieldServiceTypeID:   {Type: field.TypeUint32, Column: inspectionplan.FieldServiceTypeID},
+			inspectionplan.FieldFreqType:        {Type: field.TypeEnum, Column: inspectionplan.FieldFreqType},
+			inspectionplan.FieldTimes:           {Type: field.TypeJSON, Column: inspectionplan.FieldTimes},
+			inspectionplan.FieldWeekdays:        {Type: field.TypeJSON, Column: inspectionplan.FieldWeekdays},
+			inspectionplan.FieldMonthDays:       {Type: field.TypeJSON, Column: inspectionplan.FieldMonthDays},
+			inspectionplan.FieldClampToMonthEnd: {Type: field.TypeBool, Column: inspectionplan.FieldClampToMonthEnd},
+			inspectionplan.FieldMonths:          {Type: field.TypeJSON, Column: inspectionplan.FieldMonths},
+			inspectionplan.FieldExcludedDates:   {Type: field.TypeJSON, Column: inspectionplan.FieldExcludedDates},
+			inspectionplan.FieldPost:            {Type: field.TypeString, Column: inspectionplan.FieldPost},
+			inspectionplan.FieldSpaceItems:      {Type: field.TypeJSON, Column: inspectionplan.FieldSpaceItems},
+			inspectionplan.FieldEquipmentItems:  {Type: field.TypeJSON, Column: inspectionplan.FieldEquipmentItems},
+			inspectionplan.FieldSpaceRefs:       {Type: field.TypeJSON, Column: inspectionplan.FieldSpaceRefs},
+			inspectionplan.FieldEquipmentRefs:   {Type: field.TypeJSON, Column: inspectionplan.FieldEquipmentRefs},
+			inspectionplan.FieldEffectiveFrom:   {Type: field.TypeTime, Column: inspectionplan.FieldEffectiveFrom},
+			inspectionplan.FieldEffectiveTo:     {Type: field.TypeTime, Column: inspectionplan.FieldEffectiveTo},
+		},
+	}
+	graph.Nodes[1] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   servicetype.Table,
 			Columns: servicetype.Columns,
@@ -46,6 +83,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			servicetype.FieldCommonPhrases:       {Type: field.TypeJSON, Column: servicetype.FieldCommonPhrases},
 			servicetype.FieldStandardTools:       {Type: field.TypeJSON, Column: servicetype.FieldStandardTools},
 			servicetype.FieldSpareParts:          {Type: field.TypeJSON, Column: servicetype.FieldSpareParts},
+			servicetype.FieldInspectionItems:     {Type: field.TypeJSON, Column: servicetype.FieldInspectionItems},
 		},
 	}
 	graph.MustAddE(
@@ -82,6 +120,161 @@ type predicateAdder interface {
 }
 
 // addPredicate implements the predicateAdder interface.
+func (_q *InspectionPlanQuery) addPredicate(pred func(s *sql.Selector)) {
+	_q.predicates = append(_q.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the InspectionPlanQuery builder.
+func (_q *InspectionPlanQuery) Filter() *InspectionPlanFilter {
+	return &InspectionPlanFilter{config: _q.config, predicateAdder: _q}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *InspectionPlanMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the InspectionPlanMutation builder.
+func (m *InspectionPlanMutation) Filter() *InspectionPlanFilter {
+	return &InspectionPlanFilter{config: m.config, predicateAdder: m}
+}
+
+// InspectionPlanFilter provides a generic filtering capability at runtime for InspectionPlanQuery.
+type InspectionPlanFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *InspectionPlanFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[0].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql uint32 predicate on the id field.
+func (f *InspectionPlanFilter) WhereID(p entql.Uint32P) {
+	f.Where(p.Field(inspectionplan.FieldID))
+}
+
+// WhereCreatedAt applies the entql time.Time predicate on the created_at field.
+func (f *InspectionPlanFilter) WhereCreatedAt(p entql.TimeP) {
+	f.Where(p.Field(inspectionplan.FieldCreatedAt))
+}
+
+// WhereUpdatedAt applies the entql time.Time predicate on the updated_at field.
+func (f *InspectionPlanFilter) WhereUpdatedAt(p entql.TimeP) {
+	f.Where(p.Field(inspectionplan.FieldUpdatedAt))
+}
+
+// WhereDeletedAt applies the entql time.Time predicate on the deleted_at field.
+func (f *InspectionPlanFilter) WhereDeletedAt(p entql.TimeP) {
+	f.Where(p.Field(inspectionplan.FieldDeletedAt))
+}
+
+// WhereCreatedBy applies the entql uint32 predicate on the created_by field.
+func (f *InspectionPlanFilter) WhereCreatedBy(p entql.Uint32P) {
+	f.Where(p.Field(inspectionplan.FieldCreatedBy))
+}
+
+// WhereUpdatedBy applies the entql uint32 predicate on the updated_by field.
+func (f *InspectionPlanFilter) WhereUpdatedBy(p entql.Uint32P) {
+	f.Where(p.Field(inspectionplan.FieldUpdatedBy))
+}
+
+// WhereDeletedBy applies the entql uint32 predicate on the deleted_by field.
+func (f *InspectionPlanFilter) WhereDeletedBy(p entql.Uint32P) {
+	f.Where(p.Field(inspectionplan.FieldDeletedBy))
+}
+
+// WhereIsEnabled applies the entql bool predicate on the is_enabled field.
+func (f *InspectionPlanFilter) WhereIsEnabled(p entql.BoolP) {
+	f.Where(p.Field(inspectionplan.FieldIsEnabled))
+}
+
+// WhereName applies the entql string predicate on the name field.
+func (f *InspectionPlanFilter) WhereName(p entql.StringP) {
+	f.Where(p.Field(inspectionplan.FieldName))
+}
+
+// WhereServiceTypeID applies the entql uint32 predicate on the service_type_id field.
+func (f *InspectionPlanFilter) WhereServiceTypeID(p entql.Uint32P) {
+	f.Where(p.Field(inspectionplan.FieldServiceTypeID))
+}
+
+// WhereFreqType applies the entql string predicate on the freq_type field.
+func (f *InspectionPlanFilter) WhereFreqType(p entql.StringP) {
+	f.Where(p.Field(inspectionplan.FieldFreqType))
+}
+
+// WhereTimes applies the entql json.RawMessage predicate on the times field.
+func (f *InspectionPlanFilter) WhereTimes(p entql.BytesP) {
+	f.Where(p.Field(inspectionplan.FieldTimes))
+}
+
+// WhereWeekdays applies the entql json.RawMessage predicate on the weekdays field.
+func (f *InspectionPlanFilter) WhereWeekdays(p entql.BytesP) {
+	f.Where(p.Field(inspectionplan.FieldWeekdays))
+}
+
+// WhereMonthDays applies the entql json.RawMessage predicate on the month_days field.
+func (f *InspectionPlanFilter) WhereMonthDays(p entql.BytesP) {
+	f.Where(p.Field(inspectionplan.FieldMonthDays))
+}
+
+// WhereClampToMonthEnd applies the entql bool predicate on the clamp_to_month_end field.
+func (f *InspectionPlanFilter) WhereClampToMonthEnd(p entql.BoolP) {
+	f.Where(p.Field(inspectionplan.FieldClampToMonthEnd))
+}
+
+// WhereMonths applies the entql json.RawMessage predicate on the months field.
+func (f *InspectionPlanFilter) WhereMonths(p entql.BytesP) {
+	f.Where(p.Field(inspectionplan.FieldMonths))
+}
+
+// WhereExcludedDates applies the entql json.RawMessage predicate on the excluded_dates field.
+func (f *InspectionPlanFilter) WhereExcludedDates(p entql.BytesP) {
+	f.Where(p.Field(inspectionplan.FieldExcludedDates))
+}
+
+// WherePost applies the entql string predicate on the post field.
+func (f *InspectionPlanFilter) WherePost(p entql.StringP) {
+	f.Where(p.Field(inspectionplan.FieldPost))
+}
+
+// WhereSpaceItems applies the entql json.RawMessage predicate on the space_items field.
+func (f *InspectionPlanFilter) WhereSpaceItems(p entql.BytesP) {
+	f.Where(p.Field(inspectionplan.FieldSpaceItems))
+}
+
+// WhereEquipmentItems applies the entql json.RawMessage predicate on the equipment_items field.
+func (f *InspectionPlanFilter) WhereEquipmentItems(p entql.BytesP) {
+	f.Where(p.Field(inspectionplan.FieldEquipmentItems))
+}
+
+// WhereSpaceRefs applies the entql json.RawMessage predicate on the space_refs field.
+func (f *InspectionPlanFilter) WhereSpaceRefs(p entql.BytesP) {
+	f.Where(p.Field(inspectionplan.FieldSpaceRefs))
+}
+
+// WhereEquipmentRefs applies the entql json.RawMessage predicate on the equipment_refs field.
+func (f *InspectionPlanFilter) WhereEquipmentRefs(p entql.BytesP) {
+	f.Where(p.Field(inspectionplan.FieldEquipmentRefs))
+}
+
+// WhereEffectiveFrom applies the entql time.Time predicate on the effective_from field.
+func (f *InspectionPlanFilter) WhereEffectiveFrom(p entql.TimeP) {
+	f.Where(p.Field(inspectionplan.FieldEffectiveFrom))
+}
+
+// WhereEffectiveTo applies the entql time.Time predicate on the effective_to field.
+func (f *InspectionPlanFilter) WhereEffectiveTo(p entql.TimeP) {
+	f.Where(p.Field(inspectionplan.FieldEffectiveTo))
+}
+
+// addPredicate implements the predicateAdder interface.
 func (_q *ServiceTypeQuery) addPredicate(pred func(s *sql.Selector)) {
 	_q.predicates = append(_q.predicates, pred)
 }
@@ -110,7 +303,7 @@ type ServiceTypeFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *ServiceTypeFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[0].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[1].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -219,6 +412,11 @@ func (f *ServiceTypeFilter) WhereStandardTools(p entql.BytesP) {
 // WhereSpareParts applies the entql json.RawMessage predicate on the spare_parts field.
 func (f *ServiceTypeFilter) WhereSpareParts(p entql.BytesP) {
 	f.Where(p.Field(servicetype.FieldSpareParts))
+}
+
+// WhereInspectionItems applies the entql json.RawMessage predicate on the inspection_items field.
+func (f *ServiceTypeFilter) WhereInspectionItems(p entql.BytesP) {
+	f.Where(p.Field(servicetype.FieldInspectionItems))
 }
 
 // WhereHasParent applies a predicate to check if query has an edge parent.

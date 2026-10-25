@@ -212,6 +212,7 @@ func NewRestServer(
 
 	// 一站式服务（独立 Go module go-wind-admin/onestop）
 	oneStopServiceTypeService *onestopService.ServiceTypeService,
+	oneStopInspectionPlanService *onestopService.InspectionPlanService,
 ) (*http.Server, error) {
 	cfg := ctx.GetConfig()
 
@@ -341,6 +342,7 @@ func NewRestServer(
 	// 接口签名与 module service 完全一致，零适配直接注册；
 	// 认证/鉴权/审计/租户闸门走本 server 的统一中间件链。
 	adminV1.RegisterOneStopServiceTypeServiceHTTPServer(srv, oneStopServiceTypeService)
+	adminV1.RegisterOneStopInspectionPlanServiceHTTPServer(srv, oneStopInspectionPlanService)
 
 	if cfg.GetServer().GetRest().GetEnableSwagger() {
 		swaggerUI.RegisterSwaggerUIServerWithOption(

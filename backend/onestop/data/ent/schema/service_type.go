@@ -107,6 +107,11 @@ func (ServiceType) Fields() []ent.Field {
 		field.Strings("spare_parts").
 			Comment("常用备件/耗材清单：出工常备，配合库存领用").
 			Optional(),
+
+		// —— 巡检巡查类型配置（本期仅 0103 巡检巡查子树的小类/细类填写）——
+		field.Strings("inspection_items").
+			Comment("标准巡检项目库：巡检计划点表模板（仅 0103 巡检巡查子树）").
+			Optional(),
 	}
 }
 

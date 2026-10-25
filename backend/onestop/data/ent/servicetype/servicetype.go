@@ -54,6 +54,8 @@ const (
 	FieldStandardTools = "standard_tools"
 	// FieldSpareParts holds the string denoting the spare_parts field in the database.
 	FieldSpareParts = "spare_parts"
+	// FieldInspectionItems holds the string denoting the inspection_items field in the database.
+	FieldInspectionItems = "inspection_items"
 	// EdgeParent holds the string denoting the parent edge name in mutations.
 	EdgeParent = "parent"
 	// EdgeChildren holds the string denoting the children edge name in mutations.
@@ -93,6 +95,7 @@ var Columns = []string{
 	FieldCommonPhrases,
 	FieldStandardTools,
 	FieldSpareParts,
+	FieldInspectionItems,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
