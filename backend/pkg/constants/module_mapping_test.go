@@ -74,7 +74,8 @@ func TestServiceTagToBusinessModuleExactMapping(t *testing.T) {
 		"NotificationPreferenceService":   identityV1.Module_INTERNAL_MESSAGE,
 
 		"OneStopServiceTypeService":         identityV1.Module_SYSTEM,
-		"OneStopInspectionPlanService":      identityV1.Module_SYSTEM,
+		"OneStopPeriodicPlanService":        identityV1.Module_SYSTEM,
+		"OneStopTransportRouteService":      identityV1.Module_SYSTEM,
 		"OntologyService":                   identityV1.Module_SYSTEM,
 		"OntologyClassService":              identityV1.Module_SYSTEM,
 		"OntologyObjectPropertyService":     identityV1.Module_SYSTEM,
@@ -98,7 +99,7 @@ func TestServiceTagToBusinessModuleReverseMapping(t *testing.T) {
 		identityV1.Module_OPM:              {"UserService", "OrgUnitService", "PositionService", "UserProfileService", "RoleService"},
 		identityV1.Module_PERMISSION:       {"MenuService", "ApiService", "PermissionService", "PermissionGroupService"},
 		identityV1.Module_DICT:             {"DictTypeService", "DictEntryService"},
-		identityV1.Module_SYSTEM:           {"LanguageService", "LoginPolicyService", "ConfigService", "AccessKeyService", "ServerMonitorService", "NotificationChannelService", "NotificationService", "NotificationRuleService", "NotificationTemplateService", "MonitorAlertService", "OnlineSessionService", "OneStopServiceTypeService", "OneStopInspectionPlanService", "OntologyService", "OntologyClassService", "OntologyObjectPropertyService", "OntologyDataPropertyService", "OntologyAnnotationPropertyService", "OntologyDatatypeService", "OntologyIndividualService", "OntologyOwlIOService", "OntologyReferenceService"},
+		identityV1.Module_SYSTEM:           {"LanguageService", "LoginPolicyService", "ConfigService", "AccessKeyService", "ServerMonitorService", "NotificationChannelService", "NotificationService", "NotificationRuleService", "NotificationTemplateService", "MonitorAlertService", "OnlineSessionService", "OneStopServiceTypeService", "OneStopPeriodicPlanService", "OneStopTransportRouteService", "OntologyService", "OntologyClassService", "OntologyObjectPropertyService", "OntologyDataPropertyService", "OntologyAnnotationPropertyService", "OntologyDatatypeService", "OntologyIndividualService", "OntologyOwlIOService", "OntologyReferenceService"},
 		identityV1.Module_FILE:             {"FileService", "FileTransferService"},
 		identityV1.Module_TASK:             {"TaskService", "TaskMonitorService"},
 		identityV1.Module_TENANT:           {"TenantService", "PlanService", "PlanQuotaService", "MyTenantUsageService"},

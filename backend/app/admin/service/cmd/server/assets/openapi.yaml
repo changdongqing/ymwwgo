@@ -4889,12 +4889,12 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/RenderNotificationTemplateResponse'
-    /admin/v1/onestop/inspection-plans:
+    /admin/v1/onestop/periodic-plans:
         get:
             tags:
-                - OneStopInspectionPlanService
-            description: 查询巡检计划列表
-            operationId: OneStopInspectionPlanService_List
+                - OneStopPeriodicPlanService
+            description: 查询周期计划列表
+            operationId: OneStopPeriodicPlanService_List
             parameters:
                 - name: page
                   in: query
@@ -4966,28 +4966,28 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/ListInspectionPlansResponse'
+                                $ref: '#/components/schemas/ListPeriodicPlansResponse'
         post:
             tags:
-                - OneStopInspectionPlanService
-            description: 创建巡检计划
-            operationId: OneStopInspectionPlanService_Create
+                - OneStopPeriodicPlanService
+            description: 创建周期计划
+            operationId: OneStopPeriodicPlanService_Create
             requestBody:
                 content:
                     application/json:
                         schema:
-                            $ref: '#/components/schemas/CreateInspectionPlanRequest'
+                            $ref: '#/components/schemas/CreatePeriodicPlanRequest'
                 required: true
             responses:
                 "200":
                     description: OK
                     content: {}
-    /admin/v1/onestop/inspection-plans/{id}:
+    /admin/v1/onestop/periodic-plans/{id}:
         get:
             tags:
-                - OneStopInspectionPlanService
-            description: 查询巡检计划详情
-            operationId: OneStopInspectionPlanService_Get
+                - OneStopPeriodicPlanService
+            description: 查询周期计划详情
+            operationId: OneStopPeriodicPlanService_Get
             parameters:
                 - name: id
                   in: path
@@ -5006,12 +5006,12 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/InspectionPlan'
+                                $ref: '#/components/schemas/PeriodicPlan'
         put:
             tags:
-                - OneStopInspectionPlanService
-            description: 更新巡检计划
-            operationId: OneStopInspectionPlanService_Update
+                - OneStopPeriodicPlanService
+            description: 更新周期计划
+            operationId: OneStopPeriodicPlanService_Update
             parameters:
                 - name: id
                   in: path
@@ -5023,7 +5023,7 @@ paths:
                 content:
                     application/json:
                         schema:
-                            $ref: '#/components/schemas/UpdateInspectionPlanRequest'
+                            $ref: '#/components/schemas/UpdatePeriodicPlanRequest'
                 required: true
             responses:
                 "200":
@@ -5031,9 +5031,9 @@ paths:
                     content: {}
         delete:
             tags:
-                - OneStopInspectionPlanService
-            description: 删除巡检计划
-            operationId: OneStopInspectionPlanService_Delete
+                - OneStopPeriodicPlanService
+            description: 删除周期计划
+            operationId: OneStopPeriodicPlanService_Delete
             parameters:
                 - name: id
                   in: path
@@ -5190,6 +5190,162 @@ paths:
                 - OneStopServiceTypeService
             description: 删除服务类型
             operationId: OneStopServiceTypeService_Delete
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint32
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+    /admin/v1/onestop/transport-routes:
+        get:
+            tags:
+                - OneStopTransportRouteService
+            description: 查询运送路线列表
+            operationId: OneStopTransportRouteService_List
+            parameters:
+                - name: page
+                  in: query
+                  description: 当前页码（从1开始，默认1）
+                  schema:
+                    type: integer
+                    format: uint32
+                - name: pageSize
+                  in: query
+                  description: 每页条数（默认10，建议设置上限如100）
+                  schema:
+                    type: integer
+                    format: uint32
+                - name: offset
+                  in: query
+                  description: 跳过的记录数（从0开始，默认0）
+                  schema:
+                    type: string
+                - name: limit
+                  in: query
+                  description: 最多返回的记录数（默认10，建议设置上限如100）
+                  schema:
+                    type: integer
+                    format: uint32
+                - name: token
+                  in: query
+                  description: 上一页最后一条记录的游标（如ID/时间戳+ID，首次请求为空）
+                  schema:
+                    type: string
+                - name: noPaging
+                  in: query
+                  description: 是否不分页，如果为true，则page和pageSize参数无效。
+                  schema:
+                    type: boolean
+                - name: query
+                  in: query
+                  description: JSON字符串过滤条件，基础语法：{"field1":"val1", "field2___icontains":"val2"}，具体请参见：https://github.com/tx7do/go-crud/tree/main/pagination/filter/README.md
+                  schema:
+                    type: string
+                - name: filter
+                  in: query
+                  description: Google AIP规范字符串过滤条件
+                  schema:
+                    type: string
+                - name: filterExpr.type
+                  in: query
+                  description: 过滤表达式类型
+                  schema:
+                    enum:
+                        - EXPR_TYPE_UNSPECIFIED
+                        - AND
+                        - OR
+                    type: string
+                    format: enum
+                - name: orderBy
+                  in: query
+                  description: 排序条件
+                  schema:
+                    type: string
+                - name: fieldMask
+                  in: query
+                  description: 字段掩码，其作用为SELECT中的字段，其语法为使用逗号分隔字段名，例如：id,realName,userName。如果为空则选中所有字段，即SELECT *。
+                  schema:
+                    type: string
+                    format: field-mask
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListTransportRoutesResponse'
+        post:
+            tags:
+                - OneStopTransportRouteService
+            description: 创建运送路线
+            operationId: OneStopTransportRouteService_Create
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/CreateTransportRouteRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+    /admin/v1/onestop/transport-routes/{id}:
+        get:
+            tags:
+                - OneStopTransportRouteService
+            description: 查询运送路线详情
+            operationId: OneStopTransportRouteService_Get
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint32
+                - name: viewMask
+                  in: query
+                  schema:
+                    type: string
+                    format: field-mask
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/TransportRoute'
+        put:
+            tags:
+                - OneStopTransportRouteService
+            description: 更新运送路线
+            operationId: OneStopTransportRouteService_Update
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint32
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/UpdateTransportRouteRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+        delete:
+            tags:
+                - OneStopTransportRouteService
+            description: 删除运送路线
+            operationId: OneStopTransportRouteService_Delete
             parameters:
                 - name: id
                   in: path
@@ -11079,12 +11235,6 @@ components:
                 code:
                     type: string
             description: 创建个体 - 回应（新实体 id + 变更后本体版本 + 落定的编码）
-        CreateInspectionPlanRequest:
-            type: object
-            properties:
-                data:
-                    $ref: '#/components/schemas/InspectionPlan'
-            description: 创建巡检计划 - 请求
         CreateInternalMessageCategoryRequest:
             type: object
             properties:
@@ -11264,6 +11414,12 @@ components:
                 data:
                     $ref: '#/components/schemas/OrgUnit'
             description: 创建组织单元 - 请求
+        CreatePeriodicPlanRequest:
+            type: object
+            properties:
+                data:
+                    $ref: '#/components/schemas/PeriodicPlan'
+            description: 创建周期计划 - 请求
         CreatePermissionGroupRequest:
             type: object
             properties:
@@ -11340,6 +11496,12 @@ components:
                 password:
                     type: string
             description: 创建租户及管理员用户 - 请求
+        CreateTransportRouteRequest:
+            type: object
+            properties:
+                data:
+                    $ref: '#/components/schemas/TransportRoute'
+            description: 创建运送路线 - 请求
         CreateUserRequest:
             type: object
             properties:
@@ -12758,130 +12920,6 @@ components:
                     items:
                         $ref: '#/components/schemas/SystemTaskStateSummary'
                     description: 只汇总系统级常驻任务涉及的任务类型；无任何记录时不出现在结果里
-        InspectionPlan:
-            type: object
-            properties:
-                id:
-                    type: integer
-                    description: 巡检计划ID
-                    format: uint32
-                name:
-                    type: string
-                    description: 计划名称
-                serviceTypeId:
-                    type: integer
-                    description: 巡检类别ID（0103 巡检巡查子树的小类/细类）
-                    format: uint32
-                freqType:
-                    enum:
-                        - FREQ_UNSPECIFIED
-                        - FREQ_DAILY
-                        - FREQ_WEEKLY
-                        - FREQ_MONTHLY
-                        - FREQ_YEARLY
-                    type: string
-                    description: 周期类型（每日/每周/每月/每年）
-                    format: enum
-                times:
-                    type: array
-                    items:
-                        type: string
-                    description: 执行时间点列表（HH:mm），每个执行日按此列表各执行一次；每日多次即多个时间点
-                weekdays:
-                    type: array
-                    items:
-                        type: integer
-                        format: int32
-                    description: 周几执行（1=周一…7=周日），每周计划必填
-                monthDays:
-                    type: array
-                    items:
-                        type: integer
-                        format: int32
-                    description: 几号执行（1-31；-1 表示当月最后一天），每月/每年计划必填
-                clampToMonthEnd:
-                    type: boolean
-                    description: 月底日期兼容：号数超出当月天数时顺延至当月最后一天（默认 true；false 则当月跳过）
-                months:
-                    type: array
-                    items:
-                        type: integer
-                        format: int32
-                    description: 几月执行（1-12），每年计划必填，支持多年多次
-                excludedDates:
-                    type: array
-                    items:
-                        type: string
-                    description: 排除日期列表（YYYY-MM-DD，如法定节假日），命中则当日不生成任务
-                post:
-                    type: string
-                    description: 执行岗位（派单目标岗位）
-                spaceItems:
-                    type: array
-                    items:
-                        $ref: '#/components/schemas/InspectionPlanItem'
-                    description: 空间巡检点表（基于类别标准项目增删/停用启用）
-                equipmentItems:
-                    type: array
-                    items:
-                        $ref: '#/components/schemas/InspectionPlanItem'
-                    description: 设备巡检点表（基于类别标准项目增删/停用启用）
-                spaceRefs:
-                    type: array
-                    items:
-                        type: string
-                    description: 空间范围（预留：空间对象标识列表）
-                equipmentRefs:
-                    type: array
-                    items:
-                        type: string
-                    description: 设备范围（预留：设备对象标识列表）
-                effectiveFrom:
-                    type: string
-                    description: 生效日期（含当日；为空表示立即生效）
-                    format: date-time
-                effectiveTo:
-                    type: string
-                    description: 结束日期（含当日；为空表示长期有效）
-                    format: date-time
-                isEnabled:
-                    type: boolean
-                    description: 是否启用
-                createdBy:
-                    type: integer
-                    description: 创建者ID
-                    format: uint32
-                updatedBy:
-                    type: integer
-                    description: 更新者ID
-                    format: uint32
-                deletedBy:
-                    type: integer
-                    description: 删除者用户ID
-                    format: uint32
-                createdAt:
-                    type: string
-                    description: 创建时间
-                    format: date-time
-                updatedAt:
-                    type: string
-                    description: 更新时间
-                    format: date-time
-                deletedAt:
-                    type: string
-                    description: 删除时间
-                    format: date-time
-            description: 一站式巡检计划
-        InspectionPlanItem:
-            type: object
-            properties:
-                name:
-                    type: string
-                    description: 巡检项目名称
-                enabled:
-                    type: boolean
-                    description: 是否启用（停用项保留在点表中但不执行）
-            description: 巡检点表项（计划内可基于类别标准项目增删/停用启用）
         InternalMessage:
             type: object
             properties:
@@ -13427,16 +13465,6 @@ components:
                 total:
                     type: string
             description: 查询个体列表 - 回应
-        ListInspectionPlansResponse:
-            type: object
-            properties:
-                items:
-                    type: array
-                    items:
-                        $ref: '#/components/schemas/InspectionPlan'
-                total:
-                    type: string
-            description: 查询巡检计划列表 - 回应
         ListInternalMessageCategoryResponse:
             type: object
             properties:
@@ -13621,6 +13649,16 @@ components:
                 total:
                     type: string
             description: 获取组织单元列表 - 答复
+        ListPeriodicPlansResponse:
+            type: object
+            properties:
+                items:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/PeriodicPlan'
+                total:
+                    type: string
+            description: 查询周期计划列表 - 回应
         ListPermissionAuditLogResponse:
             type: object
             properties:
@@ -13801,6 +13839,16 @@ components:
                 total:
                     type: string
             description: 租户列表 - 答复
+        ListTransportRoutesResponse:
+            type: object
+            properties:
+                items:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/TransportRoute'
+                total:
+                    type: string
+            description: 查询运送路线列表 - 回应
         ListUserInboxResponse:
             type: object
             properties:
@@ -15670,6 +15718,130 @@ components:
                 original:
                     type: string
             description: 局部名替补明细
+        PeriodicPlan:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    description: 周期计划ID
+                    format: uint32
+                name:
+                    type: string
+                    description: 计划名称
+                serviceTypeId:
+                    type: integer
+                    description: 计划类别ID（触发模式为计划生成的小类/细类）
+                    format: uint32
+                freqType:
+                    enum:
+                        - FREQ_UNSPECIFIED
+                        - FREQ_DAILY
+                        - FREQ_WEEKLY
+                        - FREQ_MONTHLY
+                        - FREQ_YEARLY
+                    type: string
+                    description: 周期类型（每日/每周/每月/每年）
+                    format: enum
+                times:
+                    type: array
+                    items:
+                        type: string
+                    description: 执行时间点列表（HH:mm），每个执行日按此列表各执行一次；每日多次即多个时间点
+                weekdays:
+                    type: array
+                    items:
+                        type: integer
+                        format: int32
+                    description: 周几执行（1=周一…7=周日），每周计划必填
+                monthDays:
+                    type: array
+                    items:
+                        type: integer
+                        format: int32
+                    description: 几号执行（1-31；-1 表示当月最后一天；半月维保如 [1,15]），每月/每年计划必填
+                clampToMonthEnd:
+                    type: boolean
+                    description: 月底日期兼容：号数超出当月天数时顺延至当月最后一天（默认 true；false 则当月跳过）
+                months:
+                    type: array
+                    items:
+                        type: integer
+                        format: int32
+                    description: 几月执行（1-12），每年计划必填；季度以多值表达（如 [1,4,7,10]）
+                excludedDates:
+                    type: array
+                    items:
+                        type: string
+                    description: 排除日期列表（YYYY-MM-DD，如法定节假日），命中则当日不生成任务
+                post:
+                    type: string
+                    description: 执行岗位（派单目标岗位，覆盖类别执行岗位）
+                spaceItems:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/PeriodicPlanItem'
+                    description: 空间作业点表（基于类别标准项目库增删/停用启用）
+                equipmentItems:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/PeriodicPlanItem'
+                    description: 设备作业点表（基于类别标准项目库增删/停用启用）
+                spaceRefs:
+                    type: array
+                    items:
+                        type: string
+                    description: 空间范围（预留：空间对象标识列表）
+                equipmentRefs:
+                    type: array
+                    items:
+                        type: string
+                    description: 设备范围（预留：设备对象标识列表）
+                effectiveFrom:
+                    type: string
+                    description: 生效日期（含当日；为空表示立即生效）
+                    format: date-time
+                effectiveTo:
+                    type: string
+                    description: 结束日期（含当日；为空表示长期有效）
+                    format: date-time
+                isEnabled:
+                    type: boolean
+                    description: 是否启用
+                createdBy:
+                    type: integer
+                    description: 创建者ID
+                    format: uint32
+                updatedBy:
+                    type: integer
+                    description: 更新者ID
+                    format: uint32
+                deletedBy:
+                    type: integer
+                    description: 删除者用户ID
+                    format: uint32
+                createdAt:
+                    type: string
+                    description: 创建时间
+                    format: date-time
+                updatedAt:
+                    type: string
+                    description: 更新时间
+                    format: date-time
+                deletedAt:
+                    type: string
+                    description: 删除时间
+                    format: date-time
+            description: 一站式周期计划
+        PeriodicPlanItem:
+            type: object
+            properties:
+                name:
+                    type: string
+                    description: 作业项目名称
+                enabled:
+                    type: boolean
+                    description: 是否启用（停用项保留在点表中但不执行）
+            description: 作业点表项（计划内可基于类别标准项目库增删/停用启用）
         Permission:
             type: object
             properties:
@@ -16817,6 +16989,16 @@ components:
                     description: 采集时间
                     format: date-time
             description: 服务监控聚合信息
+        ServiceAcceptanceItem:
+            type: object
+            properties:
+                name:
+                    type: string
+                    description: 验收项名称（如：数量准确、现场已清理）
+                required:
+                    type: boolean
+                    description: 是否必检项（false = 提示项，可跳过）
+            description: 验收项：完工（报修）/送达（运送）确认页逐项核对的 checklist 项
         ServiceType:
             type: object
             properties:
@@ -16850,20 +17032,17 @@ components:
                 isEnabled:
                     type: boolean
                     description: 是否启用
-                repairPost:
-                    type: string
-                    description: 维修岗位（派单目标岗位，如：电工/管工/空调工）
                 standardWorkHours:
                     type: number
                     description: 标准工时（小时）：单次作业标准人时，绩效与负载核算用
                     format: double
                 responseTimeLimit:
                     type: integer
-                    description: 响应时限（分钟）：受理到到场的 SLA
+                    description: 响应时限（分钟）：受理到到场/取件/处置的 SLA（文案按业态）
                     format: uint32
                 completionTimeLimit:
                     type: integer
-                    description: 完成时限（分钟）：受理到完工的 SLA
+                    description: 完成时限（分钟）：受理到完工/送达/办结的 SLA（文案按业态）
                     format: uint32
                 guidance:
                     type: string
@@ -16872,22 +17051,70 @@ components:
                     type: array
                     items:
                         type: string
-                    description: 常见报修语句清单：报修端快捷语句，兼作语义归型语料
+                    description: 常见语句清单：发起端快捷语句，兼作语义归型语料
                 standardTools:
                     type: array
                     items:
                         type: string
-                    description: 服务标准工具清单：出工标配工具
+                    description: 服务标准工具清单：出工标配工具/装备
                 spareParts:
                     type: array
                     items:
                         type: string
                     description: 常用备件/耗材清单：出工常备，配合库存领用
-                inspectionItems:
+                defaultPriority:
+                    enum:
+                        - PRIORITY_UNSPECIFIED
+                        - PRIORITY_NORMAL
+                        - PRIORITY_URGENT
+                        - PRIORITY_EMERGENCY
+                    type: string
+                    description: 默认优先级：派单排序与超时预警加权（细类可覆盖小类，如急送标本=加急、电梯困人=特急）
+                    format: enum
+                acceptanceModes:
                     type: array
                     items:
                         type: string
-                    description: 标准巡检项目库：巡检计划点表模板（仅 0103 巡检巡查子树）
+                    description: 验收方式（多选）：ACCEPT_SIGN 签名确认 / ACCEPT_SCAN 扫码核对 / ACCEPT_PHOTO 拍照留证 / ACCEPT_DUAL 双人验收，值域由服务层校验
+                acceptanceItems:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/ServiceAcceptanceItem'
+                    description: 验收项清单：完工（报修）/送达（运送）确认页逐项核对的 checklist
+                temperatureRequirement:
+                    enum:
+                        - TEMP_UNSPECIFIED
+                        - TEMP_NORMAL
+                        - TEMP_COLD
+                        - TEMP_FROZEN
+                        - TEMP_WARM
+                    type: string
+                    description: 温控要求：常温/冷藏 2-8℃/冷冻/保温（标本、药品、营养餐等冷链管理，推荐 0106 运送子树）
+                    format: enum
+                requiresApproval:
+                    type: boolean
+                    description: 是否需事前审批（搬入搬出押运、动火作业、资源申请等管控类服务）
+                cargoTypes:
+                    type: array
+                    items:
+                        type: string
+                    description: 运送物品细目清单：该类型承接的物品范围（如：血标本/病理标本/静配药品），推荐 0106 运送配送子树
+                executionPost:
+                    type: string
+                    description: 执行岗位（派单目标岗位，如：电工/运送员/保洁员）
+                standardItems:
+                    type: array
+                    items:
+                        type: string
+                    description: 标准作业项目库：周期计划点表模板（巡检点/维保项目单/保洁作业标准）
+                triggerMode:
+                    enum:
+                        - TRIGGER_UNSPECIFIED
+                        - TRIGGER_ON_DEMAND
+                        - TRIGGER_SCHEDULED
+                    type: string
+                    description: 任务触发方式：按需发起（工单由用户/呼叫触发）或计划生成（可挂周期计划，任务按频率生成）；未设置回退上级，默认按需
+                    format: enum
                 createdBy:
                     type: integer
                     description: 创建者ID
@@ -17438,6 +17665,71 @@ components:
                 durationMs:
                     type: string
             description: 试运行脚本 - 回应
+        TransportRoute:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    description: 运送路线ID
+                    format: uint32
+                name:
+                    type: string
+                    description: 路线名称（如：静配中心→内科楼病区巡回）
+                serviceTypeId:
+                    type: integer
+                    description: 运送类别ID（0106 运送配送子树的小类/细类）
+                    format: uint32
+                origin:
+                    type: string
+                    description: 起点（取件地，如：静配中心）
+                destination:
+                    type: string
+                    description: 终点（送达地，如：内科楼 12 病区）
+                viaPoints:
+                    type: array
+                    items:
+                        type: string
+                    description: 途经点列表（按序途经的中间点，可空）
+                estDurationMinutes:
+                    type: integer
+                    description: 预计单程时长（分钟，1-1440）：调度 ETA 与超时判定基准
+                    format: uint32
+                roundTrip:
+                    type: boolean
+                    description: 是否往返路线（送达后原路返回起点，如餐车回收）
+                departureTimes:
+                    type: array
+                    items:
+                        type: string
+                    description: 定时班次发班时间点列表（HH:mm，每日按点发班）；为空表示按需即时派单
+                isEnabled:
+                    type: boolean
+                    description: 是否启用
+                createdBy:
+                    type: integer
+                    description: 创建者ID
+                    format: uint32
+                updatedBy:
+                    type: integer
+                    description: 更新者ID
+                    format: uint32
+                deletedBy:
+                    type: integer
+                    description: 删除者用户ID
+                    format: uint32
+                createdAt:
+                    type: string
+                    description: 创建时间
+                    format: date-time
+                updatedAt:
+                    type: string
+                    description: 更新时间
+                    format: date-time
+                deletedAt:
+                    type: string
+                    description: 删除时间
+                    format: date-time
+            description: 一站式运送路线
         TrendPoint:
             type: object
             properties:
@@ -17740,23 +18032,6 @@ components:
                     items:
                         $ref: '#/components/schemas/AnnotationAssertionInput'
             description: 更新个体 - 请求（frame 全量提交语义；local_name 忽略——不可变；主类目变更不触发改码）
-        UpdateInspectionPlanRequest:
-            type: object
-            properties:
-                id:
-                    type: integer
-                    format: uint32
-                data:
-                    $ref: '#/components/schemas/InspectionPlan'
-                updateMask:
-                    example: id,name,freqType
-                    type: string
-                    description: 要更新的字段列表
-                    format: field-mask
-                allowMissing:
-                    type: boolean
-                    description: 如果设置为true的时候，资源不存在则会新增(插入)，并且在这种情况下`updateMask`字段将会被忽略。
-            description: 更新巡检计划 - 请求
         UpdateInternalMessageCategoryRequest:
             type: object
             properties:
@@ -18041,6 +18316,23 @@ components:
                     type: boolean
                     description: 如果设置为true的时候，资源不存在则会新增(插入)，并且在这种情况下`updateMask`字段将会被忽略。
             description: 更新组织单元 - 请求
+        UpdatePeriodicPlanRequest:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: uint32
+                data:
+                    $ref: '#/components/schemas/PeriodicPlan'
+                updateMask:
+                    example: id,name,freqType
+                    type: string
+                    description: 要更新的字段列表
+                    format: field-mask
+                allowMissing:
+                    type: boolean
+                    description: 如果设置为true的时候，资源不存在则会新增(插入)，并且在这种情况下`updateMask`字段将会被忽略。
+            description: 更新周期计划 - 请求
         UpdatePermissionGroupRequest:
             type: object
             properties:
@@ -18228,6 +18520,23 @@ components:
                     type: boolean
                     description: 如果设置为true的时候，资源不存在则会新增(插入)，并且在这种情况下`updateMask`字段将会被忽略。
             description: 更新租户 -请求
+        UpdateTransportRouteRequest:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: uint32
+                data:
+                    $ref: '#/components/schemas/TransportRoute'
+                updateMask:
+                    example: id,name,origin
+                    type: string
+                    description: 要更新的字段列表
+                    format: field-mask
+                allowMissing:
+                    type: boolean
+                    description: 如果设置为true的时候，资源不存在则会新增(插入)，并且在这种情况下`updateMask`字段将会被忽略。
+            description: 更新运送路线 - 请求
         UpdateUserRequest:
             required:
                 - data
@@ -18681,9 +18990,9 @@ tags:
          渠道配置页的 send-test-email，与路由规则页的 notification-rules/{id}/test-dispatch。
     - name: NotificationTemplateService
       description: 通知模板管理服务（平台管理员；租户由 notification_platform_guard 拒绝）
-    - name: OneStopInspectionPlanService
+    - name: OneStopPeriodicPlanService
       description: |-
-        一站式巡检计划管理服务（admin 门面）
+        一站式周期计划管理服务（admin 门面）
 
          源领域 proto 在 onestop/service/v1（独立 Go module go-wind-admin/onestop 拥有
          自己的同名生成包 onestopv1）；本门面只挂 HTTP 路由，消息类型直接引用源领域，
@@ -18693,6 +19002,15 @@ tags:
     - name: OneStopServiceTypeService
       description: |-
         一站式服务类型管理服务（admin 门面）
+
+         源领域 proto 在 onestop/service/v1（独立 Go module go-wind-admin/onestop 拥有
+         自己的同名生成包 onestopv1）；本门面只挂 HTTP 路由，消息类型直接引用源领域，
+         生成时 onestop/service/v1 的 go_package 被指到 module 的 gen 包
+         （go-wind-admin/onestop/api/gen/go/onestop/service/v1;onestopv1，见 buf.gen.yaml），
+         因此本服务生成的 HTTP 接口与 module 内 service 的方法签名完全一致，可直接注册。
+    - name: OneStopTransportRouteService
+      description: |-
+        一站式运送路线管理服务（admin 门面）
 
          源领域 proto 在 onestop/service/v1（独立 Go module go-wind-admin/onestop 拥有
          自己的同名生成包 onestopv1）；本门面只挂 HTTP 路由，消息类型直接引用源领域，

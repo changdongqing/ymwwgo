@@ -7,8 +7,36 @@ import (
 	"fmt"
 	"time"
 
+	"go-wind-admin/onestop/data/ent/schema"
 	"go-wind-admin/onestop/data/ent/servicetype"
 )
+
+// temperatureOfSeed / priorityOfSeed / triggerOfSeed 种子枚举串 → ent 枚举
+// （空串返回零值 = 不写）。非法值在 Level 校验同款位置兜不住（这里静默忽略会制造
+// "看似播种成功"的假象），因此直接透传给 ent 枚举构造，非法值由种子守卫测试钉死。
+func temperatureOfSeed(v *string) *servicetype.TemperatureRequirement {
+	if v == nil || *v == "" {
+		return nil
+	}
+	t := servicetype.TemperatureRequirement(*v)
+	return &t
+}
+
+func priorityOfSeed(v *string) *servicetype.DefaultPriority {
+	if v == nil || *v == "" {
+		return nil
+	}
+	p := servicetype.DefaultPriority(*v)
+	return &p
+}
+
+func triggerOfSeed(v *string) *servicetype.TriggerMode {
+	if v == nil || *v == "" {
+		return nil
+	}
+	t := servicetype.TriggerMode(*v)
+	return &t
+}
 
 // 服务类型内置字典：docs/leixing/biaodan/README.md 的 211 行细类平铺清单，
 // 按编码前缀拆成 1 大类 + 12 中类 + 75 小类 + 211 细类 = 299 个节点。
@@ -25,17 +53,30 @@ type serviceTypeSeed struct {
 	Name       string `json:"name"`
 	Level      string `json:"level"`
 	ParentCode string `json:"parentCode"`
-	// 报修维修类型配置（仅 0101 子树的小类/细类携带，其余条目留空）
-	RepairPost          *string  `json:"repairPost,omitempty"`
-	StandardWorkHours   *float64 `json:"standardWorkHours,omitempty"`
-	ResponseTimeLimit   *uint32  `json:"responseTimeLimit,omitempty"`
-	CompletionTimeLimit *uint32  `json:"completionTimeLimit,omitempty"`
-	Guidance            *string  `json:"guidance,omitempty"`
-	CommonPhrases       []string `json:"commonPhrases,omitempty"`
-	StandardTools       []string `json:"standardTools,omitempty"`
-	SpareParts          []string `json:"spareParts,omitempty"`
-	// 巡检巡查类型配置（仅 0103 子树携带）
-	InspectionItems []string `json:"inspectionItems,omitempty"`
+	// 统一履约配置模板（仅小类/细类携带，全部可空；可见性由前端展示矩阵按中类驱动）
+	ExecutionPost          *string                     `json:"executionPost,omitempty"`
+	StandardWorkHours      *float64                    `json:"standardWorkHours,omitempty"`
+	ResponseTimeLimit      *uint32                     `json:"responseTimeLimit,omitempty"`
+	CompletionTimeLimit    *uint32                     `json:"completionTimeLimit,omitempty"`
+	Guidance               *string                     `json:"guidance,omitempty"`
+	CommonPhrases          []string                    `json:"commonPhrases,omitempty"`
+	StandardTools          []string                    `json:"standardTools,omitempty"`
+	SpareParts             []string                    `json:"spareParts,omitempty"`
+	DefaultPriority        *string                     `json:"defaultPriority,omitempty"`
+	AcceptanceModes        []string                    `json:"acceptanceModes,omitempty"`
+	AcceptanceItems        []serviceTypeAcceptanceSeed `json:"acceptanceItems,omitempty"`
+	TemperatureRequirement *string                     `json:"temperatureRequirement,omitempty"`
+	RequiresApproval       *bool                       `json:"requiresApproval,omitempty"`
+	CargoTypes             []string                    `json:"cargoTypes,omitempty"`
+	// 标准作业项目库：周期计划点表模板（计划型子树的小类/细类携带）
+	StandardItems []string `json:"standardItems,omitempty"`
+	// 任务触发方式：仅 SCHEDULED 节点显式标记，其余留空（NULL = 回退上级，默认按需）
+	TriggerMode *string `json:"triggerMode,omitempty"`
+}
+
+type serviceTypeAcceptanceSeed struct {
+	Name     string `json:"name"`
+	Required bool   `json:"required"`
 }
 
 // SeedDefaults 在服务类型表为空时播种内置四级字典；非空表不做任何写入，
@@ -87,11 +128,15 @@ func (r *ServiceTypeRepo) SeedDefaults(ctx context.Context) error {
 			SetName(seed.Name).
 			SetLevel(level).
 			SetIsEnabled(true).
-			SetNillableRepairPost(seed.RepairPost).
+			SetNillableExecutionPost(seed.ExecutionPost).
 			SetNillableStandardWorkHours(seed.StandardWorkHours).
 			SetNillableResponseTimeLimit(seed.ResponseTimeLimit).
 			SetNillableCompletionTimeLimit(seed.CompletionTimeLimit).
 			SetNillableGuidance(seed.Guidance).
+			SetNillableTemperatureRequirement(temperatureOfSeed(seed.TemperatureRequirement)).
+			SetNillableRequiresApproval(seed.RequiresApproval).
+			SetNillableDefaultPriority(priorityOfSeed(seed.DefaultPriority)).
+			SetNillableTriggerMode(triggerOfSeed(seed.TriggerMode)).
 			SetCreatedAt(now).
 			SetUpdatedAt(now)
 
@@ -105,8 +150,21 @@ func (r *ServiceTypeRepo) SeedDefaults(ctx context.Context) error {
 		if len(seed.SpareParts) > 0 {
 			builder.SetSpareParts(seed.SpareParts)
 		}
-		if len(seed.InspectionItems) > 0 {
-			builder.SetInspectionItems(seed.InspectionItems)
+		if len(seed.StandardItems) > 0 {
+			builder.SetStandardItems(seed.StandardItems)
+		}
+		if len(seed.CargoTypes) > 0 {
+			builder.SetCargoTypes(seed.CargoTypes)
+		}
+		if len(seed.AcceptanceModes) > 0 {
+			builder.SetAcceptanceModes(seed.AcceptanceModes)
+		}
+		if len(seed.AcceptanceItems) > 0 {
+			items := make([]schema.ServiceAcceptanceItem, 0, len(seed.AcceptanceItems))
+			for _, item := range seed.AcceptanceItems {
+				items = append(items, schema.ServiceAcceptanceItem{Name: item.Name, Required: item.Required})
+			}
+			builder.SetAcceptanceItems(items)
 		}
 
 		if seed.ParentCode != "" {

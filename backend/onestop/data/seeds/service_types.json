@@ -82,280 +82,540 @@
     "name": "强电维修",
     "level": "LEVEL_MINOR",
     "parentCode": "0101",
-    "repairPost": "电工",
     "responseTimeLimit": 30,
     "completionTimeLimit": 480,
-    "guidance": "持低压电工证上岗；配电柜（箱）作业两人到场、停电挂牌验电后作业；2米以上登高系安全带。"
+    "guidance": "持低压电工证上岗；配电柜（箱）作业两人到场、停电挂牌验电后作业；2米以上登高系安全带。",
+    "defaultPriority": "PRIORITY_NORMAL",
+    "acceptanceModes": [
+      "ACCEPT_SIGN"
+    ],
+    "acceptanceItems": [
+      {
+        "name": "故障已修复并现场验证",
+        "required": true
+      },
+      {
+        "name": "现场已清理恢复整洁",
+        "required": true
+      }
+    ],
+    "executionPost": "电工"
   },
   {
     "code": "010102",
     "name": "弱电智能化维修",
     "level": "LEVEL_MINOR",
     "parentCode": "0101",
-    "repairPost": "弱电工",
     "responseTimeLimit": 30,
     "completionTimeLimit": 480,
-    "guidance": "涉及门禁/监控/网络中断的先通知使用科室或商户；弱电井内作业注意光纤防护，熔接须用专用设备。"
+    "guidance": "涉及门禁/监控/网络中断的先通知使用科室或商户；弱电井内作业注意光纤防护，熔接须用专用设备。",
+    "defaultPriority": "PRIORITY_NORMAL",
+    "acceptanceModes": [
+      "ACCEPT_SIGN"
+    ],
+    "acceptanceItems": [
+      {
+        "name": "故障已修复并现场验证",
+        "required": true
+      },
+      {
+        "name": "现场已清理恢复整洁",
+        "required": true
+      }
+    ],
+    "executionPost": "弱电工"
   },
   {
     "code": "010103",
     "name": "给排水维修",
     "level": "LEVEL_MINOR",
     "parentCode": "0101",
-    "repairPost": "管工",
     "responseTimeLimit": 20,
     "completionTimeLimit": 240,
-    "guidance": "先关阀止水再拆解；医患区域与商户区域作业设警示牌围挡，完工后清干地面积水。"
+    "guidance": "先关阀止水再拆解；医患区域与商户区域作业设警示牌围挡，完工后清干地面积水。",
+    "defaultPriority": "PRIORITY_NORMAL",
+    "acceptanceModes": [
+      "ACCEPT_SIGN"
+    ],
+    "acceptanceItems": [
+      {
+        "name": "故障已修复并现场验证",
+        "required": true
+      },
+      {
+        "name": "现场已清理恢复整洁",
+        "required": true
+      }
+    ],
+    "executionPost": "管工"
   },
   {
     "code": "010104",
     "name": "暖通空调维修",
     "level": "LEVEL_MINOR",
     "parentCode": "0101",
-    "repairPost": "空调工",
     "responseTimeLimit": 30,
     "completionTimeLimit": 480,
-    "guidance": "高处作业遵守登高规程；制冷剂须回收不得直排；机房作业双人到岗。"
+    "guidance": "高处作业遵守登高规程；制冷剂须回收不得直排；机房作业双人到岗。",
+    "defaultPriority": "PRIORITY_NORMAL",
+    "acceptanceModes": [
+      "ACCEPT_SIGN"
+    ],
+    "acceptanceItems": [
+      {
+        "name": "故障已修复并现场验证",
+        "required": true
+      },
+      {
+        "name": "现场已清理恢复整洁",
+        "required": true
+      }
+    ],
+    "executionPost": "空调工"
   },
   {
     "code": "010105",
     "name": "电梯维修",
     "level": "LEVEL_MINOR",
     "parentCode": "0101",
-    "repairPost": "电梯维保工",
     "responseTimeLimit": 30,
     "completionTimeLimit": 240,
-    "guidance": "电梯为特种设备：困人救援10分钟内到场（细类另有覆盖）；本体维修由持证维保单位实施，物业复核签字。"
+    "guidance": "电梯为特种设备：困人救援10分钟内到场（细类另有覆盖）；本体维修由持证维保单位实施，物业复核签字。",
+    "defaultPriority": "PRIORITY_NORMAL",
+    "acceptanceModes": [
+      "ACCEPT_SIGN"
+    ],
+    "acceptanceItems": [
+      {
+        "name": "故障已修复并现场验证",
+        "required": true
+      },
+      {
+        "name": "现场已清理恢复整洁",
+        "required": true
+      }
+    ],
+    "executionPost": "电梯维保工"
   },
   {
     "code": "010106",
     "name": "锅炉/压力容器维修",
     "level": "LEVEL_MINOR",
     "parentCode": "0101",
-    "repairPost": "锅炉工",
     "responseTimeLimit": 30,
     "completionTimeLimit": 480,
-    "guidance": "锅炉/压力容器为特种设备：安全附件失效立即停机；承压部件维修须持证人员实施，焊接作业须持焊工证。"
+    "guidance": "锅炉/压力容器为特种设备：安全附件失效立即停机；承压部件维修须持证人员实施，焊接作业须持焊工证。",
+    "defaultPriority": "PRIORITY_NORMAL",
+    "acceptanceModes": [
+      "ACCEPT_SIGN"
+    ],
+    "acceptanceItems": [
+      {
+        "name": "故障已修复并现场验证",
+        "required": true
+      },
+      {
+        "name": "现场已清理恢复整洁",
+        "required": true
+      }
+    ],
+    "executionPost": "锅炉工"
   },
   {
     "code": "010107",
     "name": "建筑本体维修",
     "level": "LEVEL_MINOR",
     "parentCode": "0101",
-    "repairPost": "综合维修工",
     "responseTimeLimit": 60,
     "completionTimeLimit": 1440,
-    "guidance": "高空外墙作业须吊篮/登高车并双人监护；动火作业先办动火证并配灭火器；噪音粉尘作业避开诊疗与营业高峰。"
+    "guidance": "高空外墙作业须吊篮/登高车并双人监护；动火作业先办动火证并配灭火器；噪音粉尘作业避开诊疗与营业高峰。",
+    "defaultPriority": "PRIORITY_NORMAL",
+    "acceptanceModes": [
+      "ACCEPT_SIGN"
+    ],
+    "acceptanceItems": [
+      {
+        "name": "故障已修复并现场验证",
+        "required": true
+      },
+      {
+        "name": "现场已清理恢复整洁",
+        "required": true
+      }
+    ],
+    "executionPost": "综合维修工"
   },
   {
     "code": "010108",
     "name": "家具设施维修",
     "level": "LEVEL_MINOR",
     "parentCode": "0101",
-    "repairPost": "综合维修工",
     "responseTimeLimit": 60,
     "completionTimeLimit": 480,
-    "guidance": "病床等带轮设施维修后须复锁脚轮刹车；病房内作业尽量床旁完成，搬离维修的须置换备用。"
+    "guidance": "病床等带轮设施维修后须复锁脚轮刹车；病房内作业尽量床旁完成，搬离维修的须置换备用。",
+    "defaultPriority": "PRIORITY_NORMAL",
+    "acceptanceModes": [
+      "ACCEPT_SIGN"
+    ],
+    "acceptanceItems": [
+      {
+        "name": "故障已修复并现场验证",
+        "required": true
+      },
+      {
+        "name": "现场已清理恢复整洁",
+        "required": true
+      }
+    ],
+    "executionPost": "综合维修工"
   },
   {
     "code": "010109",
     "name": "医用专项设施维修（医）",
     "level": "LEVEL_MINOR",
     "parentCode": "0101",
-    "repairPost": "医学工程技师",
     "responseTimeLimit": 15,
     "completionTimeLimit": 240,
-    "guidance": "医用气体/净化区域作业先报备使用科室；停气、停层流须走审批并约定时限；终端维修后须检漏。"
+    "guidance": "医用气体/净化区域作业先报备使用科室；停气、停层流须走审批并约定时限；终端维修后须检漏。",
+    "defaultPriority": "PRIORITY_NORMAL",
+    "acceptanceModes": [
+      "ACCEPT_SIGN"
+    ],
+    "acceptanceItems": [
+      {
+        "name": "故障已修复并现场验证",
+        "required": true
+      },
+      {
+        "name": "现场已清理恢复整洁",
+        "required": true
+      }
+    ],
+    "executionPost": "医学工程技师"
   },
   {
     "code": "010110",
     "name": "餐厨/洗衣设备维修",
     "level": "LEVEL_MINOR",
     "parentCode": "0101",
-    "repairPost": "机电维修工",
     "responseTimeLimit": 60,
     "completionTimeLimit": 720,
-    "guidance": "燃气设备维修后必须检漏；蒸箱/高温设备开门防烫伤；冷库维修先转移存储物品。"
+    "guidance": "燃气设备维修后必须检漏；蒸箱/高温设备开门防烫伤；冷库维修先转移存储物品。",
+    "defaultPriority": "PRIORITY_NORMAL",
+    "acceptanceModes": [
+      "ACCEPT_SIGN"
+    ],
+    "acceptanceItems": [
+      {
+        "name": "故障已修复并现场验证",
+        "required": true
+      },
+      {
+        "name": "现场已清理恢复整洁",
+        "required": true
+      }
+    ],
+    "executionPost": "机电维修工"
   },
   {
     "code": "010111",
     "name": "车场设备维修（商）",
     "level": "LEVEL_MINOR",
     "parentCode": "0101",
-    "repairPost": "机电维修工",
     "responseTimeLimit": 30,
     "completionTimeLimit": 480,
-    "guidance": "车道作业先布锥桶引导车流，夜间加闪灯；道闸作业防止误砸车辆。"
+    "guidance": "车道作业先布锥桶引导车流，夜间加闪灯；道闸作业防止误砸车辆。",
+    "defaultPriority": "PRIORITY_NORMAL",
+    "acceptanceModes": [
+      "ACCEPT_SIGN"
+    ],
+    "acceptanceItems": [
+      {
+        "name": "故障已修复并现场验证",
+        "required": true
+      },
+      {
+        "name": "现场已清理恢复整洁",
+        "required": true
+      }
+    ],
+    "executionPost": "机电维修工"
   },
   {
     "code": "010201",
     "name": "电梯维保",
     "level": "LEVEL_MINOR",
-    "parentCode": "0102"
+    "parentCode": "0102",
+    "triggerMode": "TRIGGER_SCHEDULED",
+    "executionPost": "电梯维保工",
+    "guidance": "按 TSG T5002 规范作业；机房断电挂牌，双人作业；困人救援 10 分钟内到场。",
+    "standardItems": [
+      "轿厢照明/按钮功能正常",
+      "门机润滑与门锁啮合",
+      "导轨润滑/运行异响检查",
+      "安全钳/限速器外观",
+      "应急救援装置可用"
+    ]
   },
   {
     "code": "010202",
     "name": "消防设施维保",
     "level": "LEVEL_MINOR",
-    "parentCode": "0102"
+    "parentCode": "0102",
+    "triggerMode": "TRIGGER_SCHEDULED",
+    "executionPost": "消防专员",
+    "guidance": "联动试验前知会消控室与值班主管；喷淋末端试水须防淹水。",
+    "standardItems": [
+      "报警控制器功能测试",
+      "喷淋末端试水压力",
+      "消火栓出水/栓箱配件",
+      "防排烟风机试启动",
+      "防火卷帘升降"
+    ]
   },
   {
     "code": "010203",
     "name": "电气预防性维护",
     "level": "LEVEL_MINOR",
-    "parentCode": "0102"
+    "parentCode": "0102",
+    "triggerMode": "TRIGGER_SCHEDULED",
+    "executionPost": "电工",
+    "guidance": "高压作业持证双人；红外测温在负载高峰时段进行。",
+    "standardItems": [
+      "配电柜指示/仪表读数",
+      "红外测温（接头温升）",
+      "绝缘工器具检查",
+      "标识与警示完好"
+    ]
   },
   {
     "code": "010204",
     "name": "应急电源维护",
     "level": "LEVEL_MINOR",
-    "parentCode": "0102"
+    "parentCode": "0102",
+    "triggerMode": "TRIGGER_SCHEDULED",
+    "executionPost": "电工",
+    "guidance": "发电机试机通知相关区域；切换试验防瞬间断电风险。",
+    "standardItems": [
+      "发电机试机 15 分钟",
+      "燃油储量/液位",
+      "蓄电池电压/充电器",
+      "UPS 旁路切换试验"
+    ]
   },
   {
     "code": "010205",
     "name": "给排水设施维保",
     "level": "LEVEL_MINOR",
-    "parentCode": "0102"
+    "parentCode": "0102",
+    "triggerMode": "TRIGGER_SCHEDULED",
+    "executionPost": "管工",
+    "guidance": "水箱开盖作业双人并加锁管理；消毒后水质送检。",
+    "standardItems": [
+      "水箱人孔/锁具",
+      "液位计/浮球阀",
+      "泵体渗漏与异响",
+      "消毒记录核对"
+    ]
   },
   {
     "code": "010206",
     "name": "暖通空调保养",
     "level": "LEVEL_MINOR",
-    "parentCode": "0102"
+    "parentCode": "0102",
+    "triggerMode": "TRIGGER_SCHEDULED",
+    "executionPost": "空调工",
+    "guidance": "高处作业系安全带；清洗剂防腐蚀翅片。",
+    "standardItems": [
+      "滤网脏堵清洗",
+      "盘管/翅片清洗",
+      "冷凝水排水通畅",
+      "皮带/轴承润滑"
+    ]
   },
   {
     "code": "010207",
     "name": "特种设备年检",
     "level": "LEVEL_MINOR",
-    "parentCode": "0102"
+    "parentCode": "0102",
+    "triggerMode": "TRIGGER_SCHEDULED",
+    "executionPost": "特种设备管理员",
+    "guidance": "年检计划与检验机构对接；到期前 1 个月启动报检。",
+    "standardItems": [
+      "检验报告归档",
+      "安全附件校验有效期",
+      "年检计划跟踪"
+    ]
   },
   {
     "code": "010208",
     "name": "防雷与外立面",
     "level": "LEVEL_MINOR",
-    "parentCode": "0102"
+    "parentCode": "0102",
+    "triggerMode": "TRIGGER_SCHEDULED",
+    "executionPost": "综合维修工",
+    "guidance": "屋面/幕墙作业防坠落；检测记录留档。",
+    "standardItems": [
+      "接闪器/引下线连接",
+      "接地电阻检测报告",
+      "外立面饰面/幕墙螺栓"
+    ]
   },
   {
     "code": "010209",
     "name": "医用专项维保（医）",
     "level": "LEVEL_MINOR",
-    "parentCode": "0102"
+    "parentCode": "0102",
+    "triggerMode": "TRIGGER_SCHEDULED",
+    "executionPost": "医学工程技师",
+    "guidance": "医用气体作业通知临床；高效过滤器更换记录感控追溯。",
+    "standardItems": [
+      "医用气体终端压力",
+      "高效过滤器压差",
+      "纯水水质检测记录"
+    ]
   },
   {
     "code": "010210",
     "name": "其他设施维保",
     "level": "LEVEL_MINOR",
-    "parentCode": "0102"
+    "parentCode": "0102",
+    "triggerMode": "TRIGGER_SCHEDULED",
+    "executionPost": "机电维修工",
+    "guidance": "外包维保按合同考核；作业区域围挡。",
+    "standardItems": [
+      "设备润滑/紧固",
+      "安全装置试验",
+      "外观与标识"
+    ]
   },
   {
     "code": "010301",
     "name": "消防巡查",
     "level": "LEVEL_MINOR",
     "parentCode": "0103",
-    "inspectionItems": [
+    "standardItems": [
       "疏散通道、安全出口畅通",
       "应急照明/疏散指示完好",
       "灭火器压力在绿区、在有效期内",
       "常闭式防火门处于关闭状态",
       "消防水带/水枪齐备无破损"
-    ]
+    ],
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "010302",
     "name": "电气巡检",
     "level": "LEVEL_MINOR",
     "parentCode": "0103",
-    "inspectionItems": [
+    "standardItems": [
       "配电柜仪表指示正常、无异响异味",
       "线缆温升无异常（红外测温）",
       "接地连接完好",
       "备用电源/UPS 状态正常",
       "配电房门窗、挡鼠板完好"
-    ]
+    ],
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "010303",
     "name": "给排水巡检",
     "level": "LEVEL_MINOR",
     "parentCode": "0103",
-    "inspectionItems": [
+    "standardItems": [
       "泵组运行无异响、无渗漏",
       "水箱水位正常、人孔锁闭",
       "阀门启闭状态正确",
       "压力表读数在正常区间",
       "集水井液位正常"
-    ]
+    ],
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "010304",
     "name": "机房巡检",
     "level": "LEVEL_MINOR",
     "parentCode": "0103",
-    "inspectionItems": [
+    "standardItems": [
       "环境温湿度在规定范围",
       "设备运行指示灯正常、无异响",
       "UPS/电池组状态正常",
       "空调末端排水畅通无漏水",
       "机房消防设施完好",
       "门禁与视频监控正常"
-    ]
+    ],
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "010305",
     "name": "公区设施巡查",
     "level": "LEVEL_MINOR",
     "parentCode": "0103",
-    "inspectionItems": [
+    "standardItems": [
       "墙面地面吊顶无破损",
       "门窗五金完好、开合正常",
       "公共照明完好",
       "标识标牌完好",
       "扶手栏杆牢固"
-    ]
+    ],
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "010306",
     "name": "秩序巡逻",
     "level": "LEVEL_MINOR",
     "parentCode": "0103",
-    "inspectionItems": [
+    "standardItems": [
       "各打点位置按线巡查",
       "消防通道无占用",
       "可疑人员/物品处置",
       "装修/施工区域围挡规范",
       "公共区域秩序正常"
-    ]
+    ],
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "010307",
     "name": "装修巡检（商）",
     "level": "LEVEL_MINOR",
     "parentCode": "0103",
-    "inspectionItems": [
+    "standardItems": [
       "装修范围与审批一致",
       "动火作业有审批及监护",
       "消防设施未被遮挡/挪用",
       "垃圾清运及时",
       "施工人员证件齐全"
-    ]
+    ],
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "010308",
     "name": "医院专项巡查（医）",
     "level": "LEVEL_MINOR",
     "parentCode": "0103",
-    "inspectionItems": [
+    "standardItems": [
       "医废暂存点规范无满溢",
       "禁烟区域无吸烟现象",
       "危化品/医用氧存储规范",
       "感控环境秩序正常"
-    ]
+    ],
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "010401",
     "name": "日常保洁",
     "level": "LEVEL_MINOR",
-    "parentCode": "0104"
+    "parentCode": "0104",
+    "triggerMode": "TRIGGER_SCHEDULED",
+    "executionPost": "保洁员",
+    "guidance": "按区域作业标准执行；保洁用具分区颜色管理，医患动线避峰作业。",
+    "standardItems": [
+      "地面清洁无污渍",
+      "垃圾收集点无满溢",
+      "卫生间无异味/耗材补齐",
+      "电梯轿厢/扶手清洁",
+      "公共设施表面除尘"
+    ]
   },
   {
     "code": "010402",
@@ -379,7 +639,16 @@
     "code": "010405",
     "name": "被服洗涤（医）",
     "level": "LEVEL_MINOR",
-    "parentCode": "0104"
+    "parentCode": "0104",
+    "triggerMode": "TRIGGER_SCHEDULED",
+    "executionPost": "运送员（护工）",
+    "guidance": "脏净被服分袋封闭运送不落地；交接双方清点签字。",
+    "standardItems": [
+      "脏被服分类收集",
+      "清点数量与登记",
+      "封闭运送不落地",
+      "净被服按数发放"
+    ]
   },
   {
     "code": "010406",
@@ -409,7 +678,16 @@
     "code": "010503",
     "name": "消防检测",
     "level": "LEVEL_MINOR",
-    "parentCode": "0105"
+    "parentCode": "0105",
+    "triggerMode": "TRIGGER_SCHEDULED",
+    "executionPost": "消防专员",
+    "guidance": "年度检测委托有资质机构；报告存档备消防检查。",
+    "standardItems": [
+      "火灾报警系统联动测试",
+      "喷淋/消火栓系统检查",
+      "防排烟系统测试",
+      "应急照明/疏散指示"
+    ]
   },
   {
     "code": "010504",
@@ -421,13 +699,31 @@
     "code": "010505",
     "name": "消防值守",
     "level": "LEVEL_MINOR",
-    "parentCode": "0105"
+    "parentCode": "0105",
+    "triggerMode": "TRIGGER_SCHEDULED",
+    "executionPost": "消控员",
+    "guidance": "持证上岗；值班记录 24 小时不间断，交接班双签。",
+    "standardItems": [
+      "持证上岗/值班记录",
+      "设备状态巡检记录",
+      "交接班事项交接",
+      "异常处置登记"
+    ]
   },
   {
     "code": "010506",
     "name": "培训演练",
     "level": "LEVEL_MINOR",
-    "parentCode": "0105"
+    "parentCode": "0105",
+    "triggerMode": "TRIGGER_SCHEDULED",
+    "executionPost": "消防管理员",
+    "guidance": "演练方案报备安全负责人；全员参与率留档。",
+    "standardItems": [
+      "演练方案与脚本",
+      "人员到位与分工",
+      "演练记录与影像",
+      "问题整改跟踪"
+    ]
   },
   {
     "code": "010507",
@@ -445,31 +741,178 @@
     "code": "010601",
     "name": "患者运送（医）",
     "level": "LEVEL_MINOR",
-    "parentCode": "0106"
+    "parentCode": "0106",
+    "responseTimeLimit": 10,
+    "completionTimeLimit": 40,
+    "defaultPriority": "PRIORITY_NORMAL",
+    "cargoTypes": [
+      "住院患者",
+      "检查陪检患者",
+      "转科患者",
+      "出入院患者",
+      "行动不便就诊者"
+    ],
+    "guidance": "轮椅/平车使用前检查刹车与安全带；转运前核对患者身份与目的地，危重患者须医护陪同；途中观察患者状况、防跌倒坠床；使用后终末消毒。",
+    "acceptanceModes": [
+      "ACCEPT_SIGN"
+    ],
+    "acceptanceItems": [
+      {
+        "name": "患者安全送达目的地",
+        "required": true
+      },
+      {
+        "name": "接收方当面签收确认",
+        "required": true
+      }
+    ],
+    "executionPost": "运送员（护工）"
   },
   {
     "code": "010602",
     "name": "标本配送（医）",
     "level": "LEVEL_MINOR",
-    "parentCode": "0106"
+    "parentCode": "0106",
+    "responseTimeLimit": 10,
+    "completionTimeLimit": 30,
+    "defaultPriority": "PRIORITY_NORMAL",
+    "temperatureRequirement": "TEMP_COLD",
+    "cargoTypes": [
+      "血标本",
+      "尿便标本",
+      "病理标本",
+      "分泌物标本",
+      "核酸标本"
+    ],
+    "guidance": "标本置专用密闭箱运送，防洒漏防倾倒；冷链标本用冰排保温箱（2-8℃）；发生洒漏按生物安全应急预案处置并上报，禁止徒手清理。",
+    "acceptanceModes": [
+      "ACCEPT_SCAN",
+      "ACCEPT_SIGN"
+    ],
+    "acceptanceItems": [
+      {
+        "name": "标本数量核对无误",
+        "required": true
+      },
+      {
+        "name": "标本包装完好无渗漏",
+        "required": true
+      },
+      {
+        "name": "冷链温度达标",
+        "required": true
+      },
+      {
+        "name": "送检单随标本同行",
+        "required": true
+      }
+    ],
+    "executionPost": "标本运送员"
   },
   {
     "code": "010603",
     "name": "药品配送（医）",
     "level": "LEVEL_MINOR",
-    "parentCode": "0106"
+    "parentCode": "0106",
+    "responseTimeLimit": 15,
+    "completionTimeLimit": 60,
+    "defaultPriority": "PRIORITY_NORMAL",
+    "temperatureRequirement": "TEMP_COLD",
+    "cargoTypes": [
+      "静配成品输液",
+      "病区药品",
+      "退回药品",
+      "麻精药品"
+    ],
+    "guidance": "药品分类密闭运送、针剂防震；冷链药品全程 2-8℃ 保温箱并记录温度；麻精药品双人押运、双人双签、专册登记；退回药品单独封装标识。",
+    "acceptanceModes": [
+      "ACCEPT_SCAN",
+      "ACCEPT_SIGN"
+    ],
+    "acceptanceItems": [
+      {
+        "name": "药品品规数量核对无误",
+        "required": true
+      },
+      {
+        "name": "包装完好无破损",
+        "required": true
+      },
+      {
+        "name": "冷链温度记录完整",
+        "required": true
+      },
+      {
+        "name": "护士站签收确认",
+        "required": true
+      }
+    ],
+    "executionPost": "药品运送员"
   },
   {
     "code": "010604",
     "name": "后勤物资配送",
     "level": "LEVEL_MINOR",
-    "parentCode": "0106"
+    "parentCode": "0106",
+    "responseTimeLimit": 15,
+    "completionTimeLimit": 120,
+    "defaultPriority": "PRIORITY_NORMAL",
+    "cargoTypes": [
+      "耗材/物资",
+      "病历文件",
+      "营养餐",
+      "被服"
+    ],
+    "guidance": "重物搬运使用推车、量力而行（单人不超过 15kg）；营养餐保温运送、限时送达；病历文件密封防遗失防翻阅。",
+    "acceptanceModes": [
+      "ACCEPT_SIGN"
+    ],
+    "acceptanceItems": [
+      {
+        "name": "物资数量核对无误",
+        "required": true
+      },
+      {
+        "name": "接收方签收确认",
+        "required": true
+      }
+    ],
+    "executionPost": "后勤运送员"
   },
   {
     "code": "010605",
     "name": "商写运送（商）",
     "level": "LEVEL_MINOR",
-    "parentCode": "0106"
+    "parentCode": "0106",
+    "responseTimeLimit": 15,
+    "completionTimeLimit": 90,
+    "defaultPriority": "PRIORITY_NORMAL",
+    "requiresApproval": true,
+    "cargoTypes": [
+      "快递包裹",
+      "搬入搬出物品",
+      "大件垃圾"
+    ],
+    "guidance": "搬入搬出须持物业审批单、按货梯专用时段运送；大件垃圾按规定路线清运、避开客流高峰；快递分楼层登记签收。",
+    "acceptanceModes": [
+      "ACCEPT_SIGN",
+      "ACCEPT_PHOTO"
+    ],
+    "acceptanceItems": [
+      {
+        "name": "物品数量核对无误",
+        "required": true
+      },
+      {
+        "name": "审批手续齐全",
+        "required": true
+      },
+      {
+        "name": "现场清理完毕",
+        "required": false
+      }
+    ],
+    "executionPost": "商写运送员"
   },
   {
     "code": "010701",
@@ -553,7 +996,15 @@
     "code": "010903",
     "name": "环境检测",
     "level": "LEVEL_MINOR",
-    "parentCode": "0109"
+    "parentCode": "0109",
+    "triggerMode": "TRIGGER_SCHEDULED",
+    "executionPost": "环境检测员",
+    "guidance": "采样按规范点位与频次；超标项复测并启动整改。",
+    "standardItems": [
+      "采样点与频次",
+      "检测报告归档",
+      "超标项复核"
+    ]
   },
   {
     "code": "010904",
@@ -565,7 +1016,17 @@
     "code": "011001",
     "name": "绿化养护",
     "level": "LEVEL_MINOR",
-    "parentCode": "0110"
+    "parentCode": "0110",
+    "triggerMode": "TRIGGER_SCHEDULED",
+    "executionPost": "绿化工",
+    "guidance": "农药施放做好防护与告知；高空修剪双人配合。",
+    "standardItems": [
+      "修剪整形",
+      "除草松土",
+      "浇灌施肥",
+      "病虫害检查与防治",
+      "补种补植成活率"
+    ]
   },
   {
     "code": "011002",
@@ -1030,6 +1491,25 @@
       "三角钥匙",
       "盘车轮",
       "对讲机"
+    ],
+    "defaultPriority": "PRIORITY_EMERGENCY",
+    "acceptanceModes": [
+      "ACCEPT_SIGN",
+      "ACCEPT_PHOTO"
+    ],
+    "acceptanceItems": [
+      {
+        "name": "被困人员已全部安全解救",
+        "required": true
+      },
+      {
+        "name": "故障原因已查明并记录",
+        "required": true
+      },
+      {
+        "name": "电梯恢复运行或已挂牌停用",
+        "required": true
+      }
     ]
   },
   {
@@ -1543,339 +2023,393 @@
     "code": "01020101",
     "name": "半月维保",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010201"
+    "parentCode": "010201",
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "01020102",
     "name": "季度维保",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010201"
+    "parentCode": "010201",
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "01020103",
     "name": "半年/年度维保",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010201"
+    "parentCode": "010201",
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "01020201",
     "name": "月度维保",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010202"
+    "parentCode": "010202",
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "01020202",
     "name": "季度/年度维保",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010202"
+    "parentCode": "010202",
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "01020301",
     "name": "高压预防性试验",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010203"
+    "parentCode": "010203",
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "01020302",
     "name": "配电清扫紧固",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010203"
+    "parentCode": "010203",
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "01020303",
     "name": "红外测温",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010203"
+    "parentCode": "010203",
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "01020401",
     "name": "发电机试机保养",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010204"
+    "parentCode": "010204",
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "01020402",
     "name": "UPS/蓄电池维护",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010204"
+    "parentCode": "010204",
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "01020403",
     "name": "双电源切换试验",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010204"
+    "parentCode": "010204",
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "01020501",
     "name": "二次供水水箱清洗消毒",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010205"
+    "parentCode": "010205",
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "01020502",
     "name": "水泵保养",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010205"
+    "parentCode": "010205",
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "01020503",
     "name": "水质送检",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010205"
+    "parentCode": "010205",
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "01020601",
     "name": "滤网/末端清洗",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010206"
+    "parentCode": "010206",
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "01020602",
     "name": "冷却塔清洗",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010206"
+    "parentCode": "010206",
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "01020603",
     "name": "换季保养",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010206"
+    "parentCode": "010206",
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "01020604",
     "name": "空调水处理",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010206"
+    "parentCode": "010206",
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "01020701",
     "name": "锅炉/压力容器定期检验",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010207"
+    "parentCode": "010207",
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "01020702",
     "name": "安全附件校验",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010207"
+    "parentCode": "010207",
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "01020703",
     "name": "电梯年度检验",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010207"
+    "parentCode": "010207",
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "01020801",
     "name": "防雷接地检测",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010208"
+    "parentCode": "010208",
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "01020802",
     "name": "外立面/幕墙检查",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010208"
+    "parentCode": "010208",
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "01020901",
     "name": "医用气体系统维保",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010209"
+    "parentCode": "010209",
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "01020902",
     "name": "净化机组/高效过滤器维保",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010209"
+    "parentCode": "010209",
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "01020903",
     "name": "纯水系统耗材更换",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010209"
+    "parentCode": "010209",
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "01021001",
     "name": "机械车库/游乐设施维保（商）",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010210"
+    "parentCode": "010210",
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "01021002",
     "name": "安防设备维保",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010210"
+    "parentCode": "010210",
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "01021003",
     "name": "水景/喷泉维护",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010210"
+    "parentCode": "010210",
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "01030101",
     "name": "每日防火巡查",
     "level": "LEVEL_DETAIL",
     "parentCode": "010301",
-    "inspectionItems": [
+    "standardItems": [
       "疏散通道畅通",
       "安全出口标识正常",
       "灭火器在位、压力正常",
       "常闭防火门关闭到位",
       "用电设备无违规使用"
-    ]
+    ],
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "01030102",
     "name": "每月防火检查",
     "level": "LEVEL_DETAIL",
     "parentCode": "010301",
-    "inspectionItems": [
+    "standardItems": [
       "消防泵手动/自动试运行正常",
       "消火栓箱配件齐全",
       "防排烟风机试启动正常",
       "火灾报警控制器运行正常",
       "消防车道无占用"
-    ]
+    ],
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "01030201",
     "name": "高配房巡检抄表",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010302"
+    "parentCode": "010302",
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "01030202",
     "name": "层间/竖井配电巡检",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010302"
+    "parentCode": "010302",
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "01030301",
     "name": "泵房水箱巡检",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010303"
+    "parentCode": "010303",
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "01030302",
     "name": "集水井/潜污泵巡检",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010303"
+    "parentCode": "010303",
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "01030401",
     "name": "电梯机房巡检",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010304"
+    "parentCode": "010304",
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "01030402",
     "name": "空调机房巡检",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010304"
+    "parentCode": "010304",
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "01030403",
     "name": "锅炉房巡检",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010304"
+    "parentCode": "010304",
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "01030501",
     "name": "土建/门窗/标识巡查",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010305"
+    "parentCode": "010305",
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "01030502",
     "name": "路面/井盖巡查",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010305"
+    "parentCode": "010305",
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "01030503",
     "name": "屋面/雨水系统巡查",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010305"
+    "parentCode": "010305",
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "01030601",
     "name": "白班巡逻打点",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010306"
+    "parentCode": "010306",
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "01030602",
     "name": "夜班巡逻打点",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010306"
+    "parentCode": "010306",
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "01030603",
     "name": "节能夜巡（商）",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010306"
+    "parentCode": "010306",
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "01030701",
     "name": "装修日常巡查",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010307"
+    "parentCode": "010307",
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "01030702",
     "name": "违规行为检查",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010307"
+    "parentCode": "010307",
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "01030801",
     "name": "感控环境巡查",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010308"
+    "parentCode": "010308",
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "01030802",
     "name": "危化品/医用氧巡查",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010308"
+    "parentCode": "010308",
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "01030803",
     "name": "禁烟巡查",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010308"
+    "parentCode": "010308",
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "01040101",
     "name": "大厅/前区保洁",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010401"
+    "parentCode": "010401",
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "01040102",
     "name": "电梯/扶梯保洁",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010401"
+    "parentCode": "010401",
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "01040103",
     "name": "卫生间保洁",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010401"
+    "parentCode": "010401",
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "01040104",
     "name": "走廊/病区保洁（医）",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010401"
+    "parentCode": "010401",
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "01040105",
     "name": "办公室/诊室保洁",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010401"
+    "parentCode": "010401",
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "01040201",
@@ -1905,7 +2439,8 @@
     "code": "01040301",
     "name": "四害消杀",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010403"
+    "parentCode": "010403",
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "01040302",
@@ -1917,13 +2452,15 @@
     "code": "01040303",
     "name": "公共区预防性消毒",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010403"
+    "parentCode": "010403",
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "01040401",
     "name": "日常垃圾清运",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010404"
+    "parentCode": "010404",
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "01040402",
@@ -1947,13 +2484,15 @@
     "code": "01040501",
     "name": "脏被服收集",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010405"
+    "parentCode": "010405",
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "01040502",
     "name": "净被服发放",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010405"
+    "parentCode": "010405",
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "01040601",
@@ -2031,13 +2570,15 @@
     "code": "01050301",
     "name": "消防设施年度检测",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010503"
+    "parentCode": "010503",
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "01050302",
     "name": "电气防火检测",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010503"
+    "parentCode": "010503",
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "01050401",
@@ -2055,25 +2596,29 @@
     "code": "01050501",
     "name": "消控室值班",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010505"
+    "parentCode": "010505",
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "01050502",
     "name": "交接班检查",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010505"
+    "parentCode": "010505",
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "01050601",
     "name": "疏散演练",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010506"
+    "parentCode": "010506",
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "01050602",
     "name": "消防培训",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010506"
+    "parentCode": "010506",
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "01050701",
@@ -2109,73 +2654,202 @@
     "code": "01060101",
     "name": "陪检运送(检查/转科)",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010601"
+    "parentCode": "010601",
+    "standardWorkHours": 0.75,
+    "commonPhrases": [
+      "需要轮椅陪检",
+      "平车转运",
+      "病人转科"
+    ],
+    "standardTools": [
+      "轮椅",
+      "平车",
+      "担架车",
+      "盖被"
+    ]
   },
   {
     "code": "01060102",
     "name": "出入院护送",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010601"
+    "parentCode": "010601",
+    "standardWorkHours": 0.5,
+    "commonPhrases": [
+      "出院患者护送",
+      "入院患者接送到病区"
+    ],
+    "standardTools": [
+      "轮椅",
+      "平车",
+      "行李车"
+    ]
   },
   {
     "code": "01060201",
     "name": "定时巡回配送",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010602"
+    "parentCode": "010602",
+    "standardWorkHours": 0.25,
+    "commonPhrases": [
+      "巡回收标本",
+      "到点收标本"
+    ],
+    "standardTools": [
+      "标本密闭箱",
+      "标本架推车",
+      "冰排保温箱"
+    ],
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "01060202",
     "name": "急送标本",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010602"
+    "parentCode": "010602",
+    "standardWorkHours": 0.25,
+    "defaultPriority": "PRIORITY_URGENT",
+    "responseTimeLimit": 5,
+    "completionTimeLimit": 15,
+    "commonPhrases": [
+      "急送标本",
+      "标本马上送检验科",
+      "危急值标本"
+    ],
+    "standardTools": [
+      "标本密闭箱",
+      "冰排保温箱"
+    ]
   },
   {
     "code": "01060301",
     "name": "静配中心→病区配送",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010603"
+    "parentCode": "010603",
+    "standardWorkHours": 0.5,
+    "commonPhrases": [
+      "静配液送到病区",
+      "成品输液配送"
+    ],
+    "standardTools": [
+      "药品周转箱",
+      "保温箱",
+      "封闭推车"
+    ],
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "01060302",
     "name": "退药回收",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010603"
+    "parentCode": "010603",
+    "standardWorkHours": 0.25,
+    "commonPhrases": [
+      "病区退药回收",
+      "退回药品请来收"
+    ],
+    "standardTools": [
+      "药品周转箱",
+      "密闭袋"
+    ]
   },
   {
     "code": "01060401",
     "name": "病历/文件配送",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010604"
+    "parentCode": "010604",
+    "standardWorkHours": 0.25,
+    "commonPhrases": [
+      "病历送病案室",
+      "文件送达"
+    ],
+    "standardTools": [
+      "文件密封袋",
+      "文件推车"
+    ]
   },
   {
     "code": "01060402",
     "name": "耗材/物资配送",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010604"
+    "parentCode": "010604",
+    "standardWorkHours": 0.5,
+    "commonPhrases": [
+      "耗材补货",
+      "物资送到病区"
+    ],
+    "standardTools": [
+      "液压推车",
+      "周转箱"
+    ]
   },
   {
     "code": "01060403",
     "name": "营养餐配送",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010604"
+    "parentCode": "010604",
+    "standardWorkHours": 0.5,
+    "temperatureRequirement": "TEMP_WARM",
+    "responseTimeLimit": 10,
+    "completionTimeLimit": 30,
+    "commonPhrases": [
+      "营养餐配送",
+      "餐车到病区"
+    ],
+    "standardTools": [
+      "保温餐车",
+      "保温箱"
+    ]
   },
   {
     "code": "01060501",
     "name": "搬入搬出审批押运",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010605"
+    "parentCode": "010605",
+    "standardWorkHours": 1,
+    "requiresApproval": true,
+    "commonPhrases": [
+      "商铺进货搬运",
+      "办公室搬迁",
+      "大件物品搬入"
+    ],
+    "standardTools": [
+      "液压推车",
+      "搬运带",
+      "货梯钥匙"
+    ]
   },
   {
     "code": "01060502",
     "name": "快递集中收发",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010605"
+    "parentCode": "010605",
+    "standardWorkHours": 0.5,
+    "commonPhrases": [
+      "快递到楼",
+      "代收快递分发"
+    ],
+    "standardTools": [
+      "快递推车",
+      "扫码枪",
+      "打包带"
+    ],
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "01060503",
     "name": "大件垃圾清运",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010605"
+    "parentCode": "010605",
+    "standardWorkHours": 1,
+    "commonPhrases": [
+      "大件垃圾清运",
+      "旧家具拉走"
+    ],
+    "standardTools": [
+      "垃圾清运车",
+      "防护手套",
+      "防护口罩"
+    ]
   },
   {
     "code": "01070101",
@@ -2319,7 +2993,8 @@
     "code": "01080402",
     "name": "满意度调查",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010804"
+    "parentCode": "010804",
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "01080501",
@@ -2355,7 +3030,8 @@
     "code": "01090102",
     "name": "能源抄表核对",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010901"
+    "parentCode": "010901",
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "01090201",
@@ -2373,19 +3049,22 @@
     "code": "01090301",
     "name": "水质检测",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010903"
+    "parentCode": "010903",
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "01090302",
     "name": "空气质量检测",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010903"
+    "parentCode": "010903",
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "01090303",
     "name": "噪音检测",
     "level": "LEVEL_DETAIL",
-    "parentCode": "010903"
+    "parentCode": "010903",
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "01090401",
@@ -2403,31 +3082,36 @@
     "code": "01100101",
     "name": "修剪除草",
     "level": "LEVEL_DETAIL",
-    "parentCode": "011001"
+    "parentCode": "011001",
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "01100102",
     "name": "浇灌施肥",
     "level": "LEVEL_DETAIL",
-    "parentCode": "011001"
+    "parentCode": "011001",
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "01100103",
     "name": "病虫害防治",
     "level": "LEVEL_DETAIL",
-    "parentCode": "011001"
+    "parentCode": "011001",
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "01100104",
     "name": "补种补植",
     "level": "LEVEL_DETAIL",
-    "parentCode": "011001"
+    "parentCode": "011001",
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "01100201",
     "name": "室内绿植更换",
     "level": "LEVEL_DETAIL",
-    "parentCode": "011002"
+    "parentCode": "011002",
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "01100202",
@@ -2571,12 +3255,14 @@
     "code": "01120402",
     "name": "库存盘点",
     "level": "LEVEL_DETAIL",
-    "parentCode": "011204"
+    "parentCode": "011204",
+    "triggerMode": "TRIGGER_SCHEDULED"
   },
   {
     "code": "01120403",
     "name": "外包履约考核",
     "level": "LEVEL_DETAIL",
-    "parentCode": "011204"
+    "parentCode": "011204",
+    "triggerMode": "TRIGGER_SCHEDULED"
   }
 ]

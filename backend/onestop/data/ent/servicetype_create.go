@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"go-wind-admin/onestop/data/ent/schema"
 	"go-wind-admin/onestop/data/ent/servicetype"
 	"time"
 
@@ -190,16 +191,16 @@ func (_c *ServiceTypeCreate) SetNillableDescription(v *string) *ServiceTypeCreat
 	return _c
 }
 
-// SetRepairPost sets the "repair_post" field.
-func (_c *ServiceTypeCreate) SetRepairPost(v string) *ServiceTypeCreate {
-	_c.mutation.SetRepairPost(v)
+// SetExecutionPost sets the "execution_post" field.
+func (_c *ServiceTypeCreate) SetExecutionPost(v string) *ServiceTypeCreate {
+	_c.mutation.SetExecutionPost(v)
 	return _c
 }
 
-// SetNillableRepairPost sets the "repair_post" field if the given value is not nil.
-func (_c *ServiceTypeCreate) SetNillableRepairPost(v *string) *ServiceTypeCreate {
+// SetNillableExecutionPost sets the "execution_post" field if the given value is not nil.
+func (_c *ServiceTypeCreate) SetNillableExecutionPost(v *string) *ServiceTypeCreate {
 	if v != nil {
-		_c.SetRepairPost(*v)
+		_c.SetExecutionPost(*v)
 	}
 	return _c
 }
@@ -278,9 +279,83 @@ func (_c *ServiceTypeCreate) SetSpareParts(v []string) *ServiceTypeCreate {
 	return _c
 }
 
-// SetInspectionItems sets the "inspection_items" field.
-func (_c *ServiceTypeCreate) SetInspectionItems(v []string) *ServiceTypeCreate {
-	_c.mutation.SetInspectionItems(v)
+// SetTriggerMode sets the "trigger_mode" field.
+func (_c *ServiceTypeCreate) SetTriggerMode(v servicetype.TriggerMode) *ServiceTypeCreate {
+	_c.mutation.SetTriggerMode(v)
+	return _c
+}
+
+// SetNillableTriggerMode sets the "trigger_mode" field if the given value is not nil.
+func (_c *ServiceTypeCreate) SetNillableTriggerMode(v *servicetype.TriggerMode) *ServiceTypeCreate {
+	if v != nil {
+		_c.SetTriggerMode(*v)
+	}
+	return _c
+}
+
+// SetDefaultPriority sets the "default_priority" field.
+func (_c *ServiceTypeCreate) SetDefaultPriority(v servicetype.DefaultPriority) *ServiceTypeCreate {
+	_c.mutation.SetDefaultPriority(v)
+	return _c
+}
+
+// SetNillableDefaultPriority sets the "default_priority" field if the given value is not nil.
+func (_c *ServiceTypeCreate) SetNillableDefaultPriority(v *servicetype.DefaultPriority) *ServiceTypeCreate {
+	if v != nil {
+		_c.SetDefaultPriority(*v)
+	}
+	return _c
+}
+
+// SetAcceptanceModes sets the "acceptance_modes" field.
+func (_c *ServiceTypeCreate) SetAcceptanceModes(v []string) *ServiceTypeCreate {
+	_c.mutation.SetAcceptanceModes(v)
+	return _c
+}
+
+// SetAcceptanceItems sets the "acceptance_items" field.
+func (_c *ServiceTypeCreate) SetAcceptanceItems(v []schema.ServiceAcceptanceItem) *ServiceTypeCreate {
+	_c.mutation.SetAcceptanceItems(v)
+	return _c
+}
+
+// SetTemperatureRequirement sets the "temperature_requirement" field.
+func (_c *ServiceTypeCreate) SetTemperatureRequirement(v servicetype.TemperatureRequirement) *ServiceTypeCreate {
+	_c.mutation.SetTemperatureRequirement(v)
+	return _c
+}
+
+// SetNillableTemperatureRequirement sets the "temperature_requirement" field if the given value is not nil.
+func (_c *ServiceTypeCreate) SetNillableTemperatureRequirement(v *servicetype.TemperatureRequirement) *ServiceTypeCreate {
+	if v != nil {
+		_c.SetTemperatureRequirement(*v)
+	}
+	return _c
+}
+
+// SetRequiresApproval sets the "requires_approval" field.
+func (_c *ServiceTypeCreate) SetRequiresApproval(v bool) *ServiceTypeCreate {
+	_c.mutation.SetRequiresApproval(v)
+	return _c
+}
+
+// SetNillableRequiresApproval sets the "requires_approval" field if the given value is not nil.
+func (_c *ServiceTypeCreate) SetNillableRequiresApproval(v *bool) *ServiceTypeCreate {
+	if v != nil {
+		_c.SetRequiresApproval(*v)
+	}
+	return _c
+}
+
+// SetCargoTypes sets the "cargo_types" field.
+func (_c *ServiceTypeCreate) SetCargoTypes(v []string) *ServiceTypeCreate {
+	_c.mutation.SetCargoTypes(v)
+	return _c
+}
+
+// SetStandardItems sets the "standard_items" field.
+func (_c *ServiceTypeCreate) SetStandardItems(v []string) *ServiceTypeCreate {
+	_c.mutation.SetStandardItems(v)
 	return _c
 }
 
@@ -353,6 +428,10 @@ func (_c *ServiceTypeCreate) defaults() {
 		v := servicetype.DefaultDescription
 		_c.mutation.SetDescription(v)
 	}
+	if _, ok := _c.mutation.RequiresApproval(); !ok {
+		v := servicetype.DefaultRequiresApproval
+		_c.mutation.SetRequiresApproval(v)
+	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -377,14 +456,29 @@ func (_c *ServiceTypeCreate) check() error {
 			return &ValidationError{Name: "description", err: fmt.Errorf(`ent: validator failed for field "ServiceType.description": %w`, err)}
 		}
 	}
-	if v, ok := _c.mutation.RepairPost(); ok {
-		if err := servicetype.RepairPostValidator(v); err != nil {
-			return &ValidationError{Name: "repair_post", err: fmt.Errorf(`ent: validator failed for field "ServiceType.repair_post": %w`, err)}
+	if v, ok := _c.mutation.ExecutionPost(); ok {
+		if err := servicetype.ExecutionPostValidator(v); err != nil {
+			return &ValidationError{Name: "execution_post", err: fmt.Errorf(`ent: validator failed for field "ServiceType.execution_post": %w`, err)}
 		}
 	}
 	if v, ok := _c.mutation.Guidance(); ok {
 		if err := servicetype.GuidanceValidator(v); err != nil {
 			return &ValidationError{Name: "guidance", err: fmt.Errorf(`ent: validator failed for field "ServiceType.guidance": %w`, err)}
+		}
+	}
+	if v, ok := _c.mutation.TriggerMode(); ok {
+		if err := servicetype.TriggerModeValidator(v); err != nil {
+			return &ValidationError{Name: "trigger_mode", err: fmt.Errorf(`ent: validator failed for field "ServiceType.trigger_mode": %w`, err)}
+		}
+	}
+	if v, ok := _c.mutation.DefaultPriority(); ok {
+		if err := servicetype.DefaultPriorityValidator(v); err != nil {
+			return &ValidationError{Name: "default_priority", err: fmt.Errorf(`ent: validator failed for field "ServiceType.default_priority": %w`, err)}
+		}
+	}
+	if v, ok := _c.mutation.TemperatureRequirement(); ok {
+		if err := servicetype.TemperatureRequirementValidator(v); err != nil {
+			return &ValidationError{Name: "temperature_requirement", err: fmt.Errorf(`ent: validator failed for field "ServiceType.temperature_requirement": %w`, err)}
 		}
 	}
 	if v, ok := _c.mutation.ID(); ok {
@@ -469,9 +563,9 @@ func (_c *ServiceTypeCreate) createSpec() (*ServiceType, *sqlgraph.CreateSpec) {
 		_spec.SetField(servicetype.FieldDescription, field.TypeString, value)
 		_node.Description = &value
 	}
-	if value, ok := _c.mutation.RepairPost(); ok {
-		_spec.SetField(servicetype.FieldRepairPost, field.TypeString, value)
-		_node.RepairPost = &value
+	if value, ok := _c.mutation.ExecutionPost(); ok {
+		_spec.SetField(servicetype.FieldExecutionPost, field.TypeString, value)
+		_node.ExecutionPost = &value
 	}
 	if value, ok := _c.mutation.StandardWorkHours(); ok {
 		_spec.SetField(servicetype.FieldStandardWorkHours, field.TypeFloat64, value)
@@ -501,9 +595,37 @@ func (_c *ServiceTypeCreate) createSpec() (*ServiceType, *sqlgraph.CreateSpec) {
 		_spec.SetField(servicetype.FieldSpareParts, field.TypeJSON, value)
 		_node.SpareParts = value
 	}
-	if value, ok := _c.mutation.InspectionItems(); ok {
-		_spec.SetField(servicetype.FieldInspectionItems, field.TypeJSON, value)
-		_node.InspectionItems = value
+	if value, ok := _c.mutation.TriggerMode(); ok {
+		_spec.SetField(servicetype.FieldTriggerMode, field.TypeEnum, value)
+		_node.TriggerMode = &value
+	}
+	if value, ok := _c.mutation.DefaultPriority(); ok {
+		_spec.SetField(servicetype.FieldDefaultPriority, field.TypeEnum, value)
+		_node.DefaultPriority = &value
+	}
+	if value, ok := _c.mutation.AcceptanceModes(); ok {
+		_spec.SetField(servicetype.FieldAcceptanceModes, field.TypeJSON, value)
+		_node.AcceptanceModes = value
+	}
+	if value, ok := _c.mutation.AcceptanceItems(); ok {
+		_spec.SetField(servicetype.FieldAcceptanceItems, field.TypeJSON, value)
+		_node.AcceptanceItems = value
+	}
+	if value, ok := _c.mutation.TemperatureRequirement(); ok {
+		_spec.SetField(servicetype.FieldTemperatureRequirement, field.TypeEnum, value)
+		_node.TemperatureRequirement = &value
+	}
+	if value, ok := _c.mutation.RequiresApproval(); ok {
+		_spec.SetField(servicetype.FieldRequiresApproval, field.TypeBool, value)
+		_node.RequiresApproval = value
+	}
+	if value, ok := _c.mutation.CargoTypes(); ok {
+		_spec.SetField(servicetype.FieldCargoTypes, field.TypeJSON, value)
+		_node.CargoTypes = value
+	}
+	if value, ok := _c.mutation.StandardItems(); ok {
+		_spec.SetField(servicetype.FieldStandardItems, field.TypeJSON, value)
+		_node.StandardItems = value
 	}
 	if nodes := _c.mutation.ParentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -806,21 +928,21 @@ func (u *ServiceTypeUpsert) ClearDescription() *ServiceTypeUpsert {
 	return u
 }
 
-// SetRepairPost sets the "repair_post" field.
-func (u *ServiceTypeUpsert) SetRepairPost(v string) *ServiceTypeUpsert {
-	u.Set(servicetype.FieldRepairPost, v)
+// SetExecutionPost sets the "execution_post" field.
+func (u *ServiceTypeUpsert) SetExecutionPost(v string) *ServiceTypeUpsert {
+	u.Set(servicetype.FieldExecutionPost, v)
 	return u
 }
 
-// UpdateRepairPost sets the "repair_post" field to the value that was provided on create.
-func (u *ServiceTypeUpsert) UpdateRepairPost() *ServiceTypeUpsert {
-	u.SetExcluded(servicetype.FieldRepairPost)
+// UpdateExecutionPost sets the "execution_post" field to the value that was provided on create.
+func (u *ServiceTypeUpsert) UpdateExecutionPost() *ServiceTypeUpsert {
+	u.SetExcluded(servicetype.FieldExecutionPost)
 	return u
 }
 
-// ClearRepairPost clears the value of the "repair_post" field.
-func (u *ServiceTypeUpsert) ClearRepairPost() *ServiceTypeUpsert {
-	u.SetNull(servicetype.FieldRepairPost)
+// ClearExecutionPost clears the value of the "execution_post" field.
+func (u *ServiceTypeUpsert) ClearExecutionPost() *ServiceTypeUpsert {
+	u.SetNull(servicetype.FieldExecutionPost)
 	return u
 }
 
@@ -968,21 +1090,147 @@ func (u *ServiceTypeUpsert) ClearSpareParts() *ServiceTypeUpsert {
 	return u
 }
 
-// SetInspectionItems sets the "inspection_items" field.
-func (u *ServiceTypeUpsert) SetInspectionItems(v []string) *ServiceTypeUpsert {
-	u.Set(servicetype.FieldInspectionItems, v)
+// SetTriggerMode sets the "trigger_mode" field.
+func (u *ServiceTypeUpsert) SetTriggerMode(v servicetype.TriggerMode) *ServiceTypeUpsert {
+	u.Set(servicetype.FieldTriggerMode, v)
 	return u
 }
 
-// UpdateInspectionItems sets the "inspection_items" field to the value that was provided on create.
-func (u *ServiceTypeUpsert) UpdateInspectionItems() *ServiceTypeUpsert {
-	u.SetExcluded(servicetype.FieldInspectionItems)
+// UpdateTriggerMode sets the "trigger_mode" field to the value that was provided on create.
+func (u *ServiceTypeUpsert) UpdateTriggerMode() *ServiceTypeUpsert {
+	u.SetExcluded(servicetype.FieldTriggerMode)
 	return u
 }
 
-// ClearInspectionItems clears the value of the "inspection_items" field.
-func (u *ServiceTypeUpsert) ClearInspectionItems() *ServiceTypeUpsert {
-	u.SetNull(servicetype.FieldInspectionItems)
+// ClearTriggerMode clears the value of the "trigger_mode" field.
+func (u *ServiceTypeUpsert) ClearTriggerMode() *ServiceTypeUpsert {
+	u.SetNull(servicetype.FieldTriggerMode)
+	return u
+}
+
+// SetDefaultPriority sets the "default_priority" field.
+func (u *ServiceTypeUpsert) SetDefaultPriority(v servicetype.DefaultPriority) *ServiceTypeUpsert {
+	u.Set(servicetype.FieldDefaultPriority, v)
+	return u
+}
+
+// UpdateDefaultPriority sets the "default_priority" field to the value that was provided on create.
+func (u *ServiceTypeUpsert) UpdateDefaultPriority() *ServiceTypeUpsert {
+	u.SetExcluded(servicetype.FieldDefaultPriority)
+	return u
+}
+
+// ClearDefaultPriority clears the value of the "default_priority" field.
+func (u *ServiceTypeUpsert) ClearDefaultPriority() *ServiceTypeUpsert {
+	u.SetNull(servicetype.FieldDefaultPriority)
+	return u
+}
+
+// SetAcceptanceModes sets the "acceptance_modes" field.
+func (u *ServiceTypeUpsert) SetAcceptanceModes(v []string) *ServiceTypeUpsert {
+	u.Set(servicetype.FieldAcceptanceModes, v)
+	return u
+}
+
+// UpdateAcceptanceModes sets the "acceptance_modes" field to the value that was provided on create.
+func (u *ServiceTypeUpsert) UpdateAcceptanceModes() *ServiceTypeUpsert {
+	u.SetExcluded(servicetype.FieldAcceptanceModes)
+	return u
+}
+
+// ClearAcceptanceModes clears the value of the "acceptance_modes" field.
+func (u *ServiceTypeUpsert) ClearAcceptanceModes() *ServiceTypeUpsert {
+	u.SetNull(servicetype.FieldAcceptanceModes)
+	return u
+}
+
+// SetAcceptanceItems sets the "acceptance_items" field.
+func (u *ServiceTypeUpsert) SetAcceptanceItems(v []schema.ServiceAcceptanceItem) *ServiceTypeUpsert {
+	u.Set(servicetype.FieldAcceptanceItems, v)
+	return u
+}
+
+// UpdateAcceptanceItems sets the "acceptance_items" field to the value that was provided on create.
+func (u *ServiceTypeUpsert) UpdateAcceptanceItems() *ServiceTypeUpsert {
+	u.SetExcluded(servicetype.FieldAcceptanceItems)
+	return u
+}
+
+// ClearAcceptanceItems clears the value of the "acceptance_items" field.
+func (u *ServiceTypeUpsert) ClearAcceptanceItems() *ServiceTypeUpsert {
+	u.SetNull(servicetype.FieldAcceptanceItems)
+	return u
+}
+
+// SetTemperatureRequirement sets the "temperature_requirement" field.
+func (u *ServiceTypeUpsert) SetTemperatureRequirement(v servicetype.TemperatureRequirement) *ServiceTypeUpsert {
+	u.Set(servicetype.FieldTemperatureRequirement, v)
+	return u
+}
+
+// UpdateTemperatureRequirement sets the "temperature_requirement" field to the value that was provided on create.
+func (u *ServiceTypeUpsert) UpdateTemperatureRequirement() *ServiceTypeUpsert {
+	u.SetExcluded(servicetype.FieldTemperatureRequirement)
+	return u
+}
+
+// ClearTemperatureRequirement clears the value of the "temperature_requirement" field.
+func (u *ServiceTypeUpsert) ClearTemperatureRequirement() *ServiceTypeUpsert {
+	u.SetNull(servicetype.FieldTemperatureRequirement)
+	return u
+}
+
+// SetRequiresApproval sets the "requires_approval" field.
+func (u *ServiceTypeUpsert) SetRequiresApproval(v bool) *ServiceTypeUpsert {
+	u.Set(servicetype.FieldRequiresApproval, v)
+	return u
+}
+
+// UpdateRequiresApproval sets the "requires_approval" field to the value that was provided on create.
+func (u *ServiceTypeUpsert) UpdateRequiresApproval() *ServiceTypeUpsert {
+	u.SetExcluded(servicetype.FieldRequiresApproval)
+	return u
+}
+
+// ClearRequiresApproval clears the value of the "requires_approval" field.
+func (u *ServiceTypeUpsert) ClearRequiresApproval() *ServiceTypeUpsert {
+	u.SetNull(servicetype.FieldRequiresApproval)
+	return u
+}
+
+// SetCargoTypes sets the "cargo_types" field.
+func (u *ServiceTypeUpsert) SetCargoTypes(v []string) *ServiceTypeUpsert {
+	u.Set(servicetype.FieldCargoTypes, v)
+	return u
+}
+
+// UpdateCargoTypes sets the "cargo_types" field to the value that was provided on create.
+func (u *ServiceTypeUpsert) UpdateCargoTypes() *ServiceTypeUpsert {
+	u.SetExcluded(servicetype.FieldCargoTypes)
+	return u
+}
+
+// ClearCargoTypes clears the value of the "cargo_types" field.
+func (u *ServiceTypeUpsert) ClearCargoTypes() *ServiceTypeUpsert {
+	u.SetNull(servicetype.FieldCargoTypes)
+	return u
+}
+
+// SetStandardItems sets the "standard_items" field.
+func (u *ServiceTypeUpsert) SetStandardItems(v []string) *ServiceTypeUpsert {
+	u.Set(servicetype.FieldStandardItems, v)
+	return u
+}
+
+// UpdateStandardItems sets the "standard_items" field to the value that was provided on create.
+func (u *ServiceTypeUpsert) UpdateStandardItems() *ServiceTypeUpsert {
+	u.SetExcluded(servicetype.FieldStandardItems)
+	return u
+}
+
+// ClearStandardItems clears the value of the "standard_items" field.
+func (u *ServiceTypeUpsert) ClearStandardItems() *ServiceTypeUpsert {
+	u.SetNull(servicetype.FieldStandardItems)
 	return u
 }
 
@@ -1289,24 +1537,24 @@ func (u *ServiceTypeUpsertOne) ClearDescription() *ServiceTypeUpsertOne {
 	})
 }
 
-// SetRepairPost sets the "repair_post" field.
-func (u *ServiceTypeUpsertOne) SetRepairPost(v string) *ServiceTypeUpsertOne {
+// SetExecutionPost sets the "execution_post" field.
+func (u *ServiceTypeUpsertOne) SetExecutionPost(v string) *ServiceTypeUpsertOne {
 	return u.Update(func(s *ServiceTypeUpsert) {
-		s.SetRepairPost(v)
+		s.SetExecutionPost(v)
 	})
 }
 
-// UpdateRepairPost sets the "repair_post" field to the value that was provided on create.
-func (u *ServiceTypeUpsertOne) UpdateRepairPost() *ServiceTypeUpsertOne {
+// UpdateExecutionPost sets the "execution_post" field to the value that was provided on create.
+func (u *ServiceTypeUpsertOne) UpdateExecutionPost() *ServiceTypeUpsertOne {
 	return u.Update(func(s *ServiceTypeUpsert) {
-		s.UpdateRepairPost()
+		s.UpdateExecutionPost()
 	})
 }
 
-// ClearRepairPost clears the value of the "repair_post" field.
-func (u *ServiceTypeUpsertOne) ClearRepairPost() *ServiceTypeUpsertOne {
+// ClearExecutionPost clears the value of the "execution_post" field.
+func (u *ServiceTypeUpsertOne) ClearExecutionPost() *ServiceTypeUpsertOne {
 	return u.Update(func(s *ServiceTypeUpsert) {
-		s.ClearRepairPost()
+		s.ClearExecutionPost()
 	})
 }
 
@@ -1478,24 +1726,171 @@ func (u *ServiceTypeUpsertOne) ClearSpareParts() *ServiceTypeUpsertOne {
 	})
 }
 
-// SetInspectionItems sets the "inspection_items" field.
-func (u *ServiceTypeUpsertOne) SetInspectionItems(v []string) *ServiceTypeUpsertOne {
+// SetTriggerMode sets the "trigger_mode" field.
+func (u *ServiceTypeUpsertOne) SetTriggerMode(v servicetype.TriggerMode) *ServiceTypeUpsertOne {
 	return u.Update(func(s *ServiceTypeUpsert) {
-		s.SetInspectionItems(v)
+		s.SetTriggerMode(v)
 	})
 }
 
-// UpdateInspectionItems sets the "inspection_items" field to the value that was provided on create.
-func (u *ServiceTypeUpsertOne) UpdateInspectionItems() *ServiceTypeUpsertOne {
+// UpdateTriggerMode sets the "trigger_mode" field to the value that was provided on create.
+func (u *ServiceTypeUpsertOne) UpdateTriggerMode() *ServiceTypeUpsertOne {
 	return u.Update(func(s *ServiceTypeUpsert) {
-		s.UpdateInspectionItems()
+		s.UpdateTriggerMode()
 	})
 }
 
-// ClearInspectionItems clears the value of the "inspection_items" field.
-func (u *ServiceTypeUpsertOne) ClearInspectionItems() *ServiceTypeUpsertOne {
+// ClearTriggerMode clears the value of the "trigger_mode" field.
+func (u *ServiceTypeUpsertOne) ClearTriggerMode() *ServiceTypeUpsertOne {
 	return u.Update(func(s *ServiceTypeUpsert) {
-		s.ClearInspectionItems()
+		s.ClearTriggerMode()
+	})
+}
+
+// SetDefaultPriority sets the "default_priority" field.
+func (u *ServiceTypeUpsertOne) SetDefaultPriority(v servicetype.DefaultPriority) *ServiceTypeUpsertOne {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.SetDefaultPriority(v)
+	})
+}
+
+// UpdateDefaultPriority sets the "default_priority" field to the value that was provided on create.
+func (u *ServiceTypeUpsertOne) UpdateDefaultPriority() *ServiceTypeUpsertOne {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.UpdateDefaultPriority()
+	})
+}
+
+// ClearDefaultPriority clears the value of the "default_priority" field.
+func (u *ServiceTypeUpsertOne) ClearDefaultPriority() *ServiceTypeUpsertOne {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.ClearDefaultPriority()
+	})
+}
+
+// SetAcceptanceModes sets the "acceptance_modes" field.
+func (u *ServiceTypeUpsertOne) SetAcceptanceModes(v []string) *ServiceTypeUpsertOne {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.SetAcceptanceModes(v)
+	})
+}
+
+// UpdateAcceptanceModes sets the "acceptance_modes" field to the value that was provided on create.
+func (u *ServiceTypeUpsertOne) UpdateAcceptanceModes() *ServiceTypeUpsertOne {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.UpdateAcceptanceModes()
+	})
+}
+
+// ClearAcceptanceModes clears the value of the "acceptance_modes" field.
+func (u *ServiceTypeUpsertOne) ClearAcceptanceModes() *ServiceTypeUpsertOne {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.ClearAcceptanceModes()
+	})
+}
+
+// SetAcceptanceItems sets the "acceptance_items" field.
+func (u *ServiceTypeUpsertOne) SetAcceptanceItems(v []schema.ServiceAcceptanceItem) *ServiceTypeUpsertOne {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.SetAcceptanceItems(v)
+	})
+}
+
+// UpdateAcceptanceItems sets the "acceptance_items" field to the value that was provided on create.
+func (u *ServiceTypeUpsertOne) UpdateAcceptanceItems() *ServiceTypeUpsertOne {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.UpdateAcceptanceItems()
+	})
+}
+
+// ClearAcceptanceItems clears the value of the "acceptance_items" field.
+func (u *ServiceTypeUpsertOne) ClearAcceptanceItems() *ServiceTypeUpsertOne {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.ClearAcceptanceItems()
+	})
+}
+
+// SetTemperatureRequirement sets the "temperature_requirement" field.
+func (u *ServiceTypeUpsertOne) SetTemperatureRequirement(v servicetype.TemperatureRequirement) *ServiceTypeUpsertOne {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.SetTemperatureRequirement(v)
+	})
+}
+
+// UpdateTemperatureRequirement sets the "temperature_requirement" field to the value that was provided on create.
+func (u *ServiceTypeUpsertOne) UpdateTemperatureRequirement() *ServiceTypeUpsertOne {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.UpdateTemperatureRequirement()
+	})
+}
+
+// ClearTemperatureRequirement clears the value of the "temperature_requirement" field.
+func (u *ServiceTypeUpsertOne) ClearTemperatureRequirement() *ServiceTypeUpsertOne {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.ClearTemperatureRequirement()
+	})
+}
+
+// SetRequiresApproval sets the "requires_approval" field.
+func (u *ServiceTypeUpsertOne) SetRequiresApproval(v bool) *ServiceTypeUpsertOne {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.SetRequiresApproval(v)
+	})
+}
+
+// UpdateRequiresApproval sets the "requires_approval" field to the value that was provided on create.
+func (u *ServiceTypeUpsertOne) UpdateRequiresApproval() *ServiceTypeUpsertOne {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.UpdateRequiresApproval()
+	})
+}
+
+// ClearRequiresApproval clears the value of the "requires_approval" field.
+func (u *ServiceTypeUpsertOne) ClearRequiresApproval() *ServiceTypeUpsertOne {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.ClearRequiresApproval()
+	})
+}
+
+// SetCargoTypes sets the "cargo_types" field.
+func (u *ServiceTypeUpsertOne) SetCargoTypes(v []string) *ServiceTypeUpsertOne {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.SetCargoTypes(v)
+	})
+}
+
+// UpdateCargoTypes sets the "cargo_types" field to the value that was provided on create.
+func (u *ServiceTypeUpsertOne) UpdateCargoTypes() *ServiceTypeUpsertOne {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.UpdateCargoTypes()
+	})
+}
+
+// ClearCargoTypes clears the value of the "cargo_types" field.
+func (u *ServiceTypeUpsertOne) ClearCargoTypes() *ServiceTypeUpsertOne {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.ClearCargoTypes()
+	})
+}
+
+// SetStandardItems sets the "standard_items" field.
+func (u *ServiceTypeUpsertOne) SetStandardItems(v []string) *ServiceTypeUpsertOne {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.SetStandardItems(v)
+	})
+}
+
+// UpdateStandardItems sets the "standard_items" field to the value that was provided on create.
+func (u *ServiceTypeUpsertOne) UpdateStandardItems() *ServiceTypeUpsertOne {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.UpdateStandardItems()
+	})
+}
+
+// ClearStandardItems clears the value of the "standard_items" field.
+func (u *ServiceTypeUpsertOne) ClearStandardItems() *ServiceTypeUpsertOne {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.ClearStandardItems()
 	})
 }
 
@@ -1968,24 +2363,24 @@ func (u *ServiceTypeUpsertBulk) ClearDescription() *ServiceTypeUpsertBulk {
 	})
 }
 
-// SetRepairPost sets the "repair_post" field.
-func (u *ServiceTypeUpsertBulk) SetRepairPost(v string) *ServiceTypeUpsertBulk {
+// SetExecutionPost sets the "execution_post" field.
+func (u *ServiceTypeUpsertBulk) SetExecutionPost(v string) *ServiceTypeUpsertBulk {
 	return u.Update(func(s *ServiceTypeUpsert) {
-		s.SetRepairPost(v)
+		s.SetExecutionPost(v)
 	})
 }
 
-// UpdateRepairPost sets the "repair_post" field to the value that was provided on create.
-func (u *ServiceTypeUpsertBulk) UpdateRepairPost() *ServiceTypeUpsertBulk {
+// UpdateExecutionPost sets the "execution_post" field to the value that was provided on create.
+func (u *ServiceTypeUpsertBulk) UpdateExecutionPost() *ServiceTypeUpsertBulk {
 	return u.Update(func(s *ServiceTypeUpsert) {
-		s.UpdateRepairPost()
+		s.UpdateExecutionPost()
 	})
 }
 
-// ClearRepairPost clears the value of the "repair_post" field.
-func (u *ServiceTypeUpsertBulk) ClearRepairPost() *ServiceTypeUpsertBulk {
+// ClearExecutionPost clears the value of the "execution_post" field.
+func (u *ServiceTypeUpsertBulk) ClearExecutionPost() *ServiceTypeUpsertBulk {
 	return u.Update(func(s *ServiceTypeUpsert) {
-		s.ClearRepairPost()
+		s.ClearExecutionPost()
 	})
 }
 
@@ -2157,24 +2552,171 @@ func (u *ServiceTypeUpsertBulk) ClearSpareParts() *ServiceTypeUpsertBulk {
 	})
 }
 
-// SetInspectionItems sets the "inspection_items" field.
-func (u *ServiceTypeUpsertBulk) SetInspectionItems(v []string) *ServiceTypeUpsertBulk {
+// SetTriggerMode sets the "trigger_mode" field.
+func (u *ServiceTypeUpsertBulk) SetTriggerMode(v servicetype.TriggerMode) *ServiceTypeUpsertBulk {
 	return u.Update(func(s *ServiceTypeUpsert) {
-		s.SetInspectionItems(v)
+		s.SetTriggerMode(v)
 	})
 }
 
-// UpdateInspectionItems sets the "inspection_items" field to the value that was provided on create.
-func (u *ServiceTypeUpsertBulk) UpdateInspectionItems() *ServiceTypeUpsertBulk {
+// UpdateTriggerMode sets the "trigger_mode" field to the value that was provided on create.
+func (u *ServiceTypeUpsertBulk) UpdateTriggerMode() *ServiceTypeUpsertBulk {
 	return u.Update(func(s *ServiceTypeUpsert) {
-		s.UpdateInspectionItems()
+		s.UpdateTriggerMode()
 	})
 }
 
-// ClearInspectionItems clears the value of the "inspection_items" field.
-func (u *ServiceTypeUpsertBulk) ClearInspectionItems() *ServiceTypeUpsertBulk {
+// ClearTriggerMode clears the value of the "trigger_mode" field.
+func (u *ServiceTypeUpsertBulk) ClearTriggerMode() *ServiceTypeUpsertBulk {
 	return u.Update(func(s *ServiceTypeUpsert) {
-		s.ClearInspectionItems()
+		s.ClearTriggerMode()
+	})
+}
+
+// SetDefaultPriority sets the "default_priority" field.
+func (u *ServiceTypeUpsertBulk) SetDefaultPriority(v servicetype.DefaultPriority) *ServiceTypeUpsertBulk {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.SetDefaultPriority(v)
+	})
+}
+
+// UpdateDefaultPriority sets the "default_priority" field to the value that was provided on create.
+func (u *ServiceTypeUpsertBulk) UpdateDefaultPriority() *ServiceTypeUpsertBulk {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.UpdateDefaultPriority()
+	})
+}
+
+// ClearDefaultPriority clears the value of the "default_priority" field.
+func (u *ServiceTypeUpsertBulk) ClearDefaultPriority() *ServiceTypeUpsertBulk {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.ClearDefaultPriority()
+	})
+}
+
+// SetAcceptanceModes sets the "acceptance_modes" field.
+func (u *ServiceTypeUpsertBulk) SetAcceptanceModes(v []string) *ServiceTypeUpsertBulk {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.SetAcceptanceModes(v)
+	})
+}
+
+// UpdateAcceptanceModes sets the "acceptance_modes" field to the value that was provided on create.
+func (u *ServiceTypeUpsertBulk) UpdateAcceptanceModes() *ServiceTypeUpsertBulk {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.UpdateAcceptanceModes()
+	})
+}
+
+// ClearAcceptanceModes clears the value of the "acceptance_modes" field.
+func (u *ServiceTypeUpsertBulk) ClearAcceptanceModes() *ServiceTypeUpsertBulk {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.ClearAcceptanceModes()
+	})
+}
+
+// SetAcceptanceItems sets the "acceptance_items" field.
+func (u *ServiceTypeUpsertBulk) SetAcceptanceItems(v []schema.ServiceAcceptanceItem) *ServiceTypeUpsertBulk {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.SetAcceptanceItems(v)
+	})
+}
+
+// UpdateAcceptanceItems sets the "acceptance_items" field to the value that was provided on create.
+func (u *ServiceTypeUpsertBulk) UpdateAcceptanceItems() *ServiceTypeUpsertBulk {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.UpdateAcceptanceItems()
+	})
+}
+
+// ClearAcceptanceItems clears the value of the "acceptance_items" field.
+func (u *ServiceTypeUpsertBulk) ClearAcceptanceItems() *ServiceTypeUpsertBulk {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.ClearAcceptanceItems()
+	})
+}
+
+// SetTemperatureRequirement sets the "temperature_requirement" field.
+func (u *ServiceTypeUpsertBulk) SetTemperatureRequirement(v servicetype.TemperatureRequirement) *ServiceTypeUpsertBulk {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.SetTemperatureRequirement(v)
+	})
+}
+
+// UpdateTemperatureRequirement sets the "temperature_requirement" field to the value that was provided on create.
+func (u *ServiceTypeUpsertBulk) UpdateTemperatureRequirement() *ServiceTypeUpsertBulk {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.UpdateTemperatureRequirement()
+	})
+}
+
+// ClearTemperatureRequirement clears the value of the "temperature_requirement" field.
+func (u *ServiceTypeUpsertBulk) ClearTemperatureRequirement() *ServiceTypeUpsertBulk {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.ClearTemperatureRequirement()
+	})
+}
+
+// SetRequiresApproval sets the "requires_approval" field.
+func (u *ServiceTypeUpsertBulk) SetRequiresApproval(v bool) *ServiceTypeUpsertBulk {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.SetRequiresApproval(v)
+	})
+}
+
+// UpdateRequiresApproval sets the "requires_approval" field to the value that was provided on create.
+func (u *ServiceTypeUpsertBulk) UpdateRequiresApproval() *ServiceTypeUpsertBulk {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.UpdateRequiresApproval()
+	})
+}
+
+// ClearRequiresApproval clears the value of the "requires_approval" field.
+func (u *ServiceTypeUpsertBulk) ClearRequiresApproval() *ServiceTypeUpsertBulk {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.ClearRequiresApproval()
+	})
+}
+
+// SetCargoTypes sets the "cargo_types" field.
+func (u *ServiceTypeUpsertBulk) SetCargoTypes(v []string) *ServiceTypeUpsertBulk {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.SetCargoTypes(v)
+	})
+}
+
+// UpdateCargoTypes sets the "cargo_types" field to the value that was provided on create.
+func (u *ServiceTypeUpsertBulk) UpdateCargoTypes() *ServiceTypeUpsertBulk {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.UpdateCargoTypes()
+	})
+}
+
+// ClearCargoTypes clears the value of the "cargo_types" field.
+func (u *ServiceTypeUpsertBulk) ClearCargoTypes() *ServiceTypeUpsertBulk {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.ClearCargoTypes()
+	})
+}
+
+// SetStandardItems sets the "standard_items" field.
+func (u *ServiceTypeUpsertBulk) SetStandardItems(v []string) *ServiceTypeUpsertBulk {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.SetStandardItems(v)
+	})
+}
+
+// UpdateStandardItems sets the "standard_items" field to the value that was provided on create.
+func (u *ServiceTypeUpsertBulk) UpdateStandardItems() *ServiceTypeUpsertBulk {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.UpdateStandardItems()
+	})
+}
+
+// ClearStandardItems clears the value of the "standard_items" field.
+func (u *ServiceTypeUpsertBulk) ClearStandardItems() *ServiceTypeUpsertBulk {
+	return u.Update(func(s *ServiceTypeUpsert) {
+		s.ClearStandardItems()
 	})
 }
 

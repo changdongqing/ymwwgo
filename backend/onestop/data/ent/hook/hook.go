@@ -8,16 +8,16 @@ import (
 	"go-wind-admin/onestop/data/ent"
 )
 
-// The InspectionPlanFunc type is an adapter to allow the use of ordinary
-// function as InspectionPlan mutator.
-type InspectionPlanFunc func(context.Context, *ent.InspectionPlanMutation) (ent.Value, error)
+// The PeriodicPlanFunc type is an adapter to allow the use of ordinary
+// function as PeriodicPlan mutator.
+type PeriodicPlanFunc func(context.Context, *ent.PeriodicPlanMutation) (ent.Value, error)
 
 // Mutate calls f(ctx, m).
-func (f InspectionPlanFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.InspectionPlanMutation); ok {
+func (f PeriodicPlanFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.PeriodicPlanMutation); ok {
 		return f(ctx, mv)
 	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.InspectionPlanMutation", m)
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.PeriodicPlanMutation", m)
 }
 
 // The ServiceTypeFunc type is an adapter to allow the use of ordinary
@@ -30,6 +30,18 @@ func (f ServiceTypeFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value,
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ServiceTypeMutation", m)
+}
+
+// The TransportRouteFunc type is an adapter to allow the use of ordinary
+// function as TransportRoute mutator.
+type TransportRouteFunc func(context.Context, *ent.TransportRouteMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f TransportRouteFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.TransportRouteMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.TransportRouteMutation", m)
 }
 
 // Condition is a hook condition function.

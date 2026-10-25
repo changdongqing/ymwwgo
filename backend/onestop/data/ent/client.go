@@ -11,8 +11,9 @@ import (
 
 	"go-wind-admin/onestop/data/ent/migrate"
 
-	"go-wind-admin/onestop/data/ent/inspectionplan"
+	"go-wind-admin/onestop/data/ent/periodicplan"
 	"go-wind-admin/onestop/data/ent/servicetype"
+	"go-wind-admin/onestop/data/ent/transportroute"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect"
@@ -25,10 +26,12 @@ type Client struct {
 	config
 	// Schema is the client for creating, migrating and dropping schema.
 	Schema *migrate.Schema
-	// InspectionPlan is the client for interacting with the InspectionPlan builders.
-	InspectionPlan *InspectionPlanClient
+	// PeriodicPlan is the client for interacting with the PeriodicPlan builders.
+	PeriodicPlan *PeriodicPlanClient
 	// ServiceType is the client for interacting with the ServiceType builders.
 	ServiceType *ServiceTypeClient
+	// TransportRoute is the client for interacting with the TransportRoute builders.
+	TransportRoute *TransportRouteClient
 }
 
 // NewClient creates a new client configured with the given options.
@@ -40,8 +43,9 @@ func NewClient(opts ...Option) *Client {
 
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
-	c.InspectionPlan = NewInspectionPlanClient(c.config)
+	c.PeriodicPlan = NewPeriodicPlanClient(c.config)
 	c.ServiceType = NewServiceTypeClient(c.config)
+	c.TransportRoute = NewTransportRouteClient(c.config)
 }
 
 type (
@@ -134,8 +138,9 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	return &Tx{
 		ctx:            ctx,
 		config:         cfg,
-		InspectionPlan: NewInspectionPlanClient(cfg),
+		PeriodicPlan:   NewPeriodicPlanClient(cfg),
 		ServiceType:    NewServiceTypeClient(cfg),
+		TransportRoute: NewTransportRouteClient(cfg),
 	}, nil
 }
 
@@ -155,15 +160,16 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	return &Tx{
 		ctx:            ctx,
 		config:         cfg,
-		InspectionPlan: NewInspectionPlanClient(cfg),
+		PeriodicPlan:   NewPeriodicPlanClient(cfg),
 		ServiceType:    NewServiceTypeClient(cfg),
+		TransportRoute: NewTransportRouteClient(cfg),
 	}, nil
 }
 
 // Debug returns a new debug-client. It's used to get verbose logging on specific operations.
 //
 //	client.Debug().
-//		InspectionPlan.
+//		PeriodicPlan.
 //		Query().
 //		Count(ctx)
 func (c *Client) Debug() *Client {
@@ -185,130 +191,134 @@ func (c *Client) Close() error {
 // Use adds the mutation hooks to all the entity clients.
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
-	c.InspectionPlan.Use(hooks...)
+	c.PeriodicPlan.Use(hooks...)
 	c.ServiceType.Use(hooks...)
+	c.TransportRoute.Use(hooks...)
 }
 
 // Intercept adds the query interceptors to all the entity clients.
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
-	c.InspectionPlan.Intercept(interceptors...)
+	c.PeriodicPlan.Intercept(interceptors...)
 	c.ServiceType.Intercept(interceptors...)
+	c.TransportRoute.Intercept(interceptors...)
 }
 
 // Mutate implements the ent.Mutator interface.
 func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
-	case *InspectionPlanMutation:
-		return c.InspectionPlan.mutate(ctx, m)
+	case *PeriodicPlanMutation:
+		return c.PeriodicPlan.mutate(ctx, m)
 	case *ServiceTypeMutation:
 		return c.ServiceType.mutate(ctx, m)
+	case *TransportRouteMutation:
+		return c.TransportRoute.mutate(ctx, m)
 	default:
 		return nil, fmt.Errorf("ent: unknown mutation type %T", m)
 	}
 }
 
-// InspectionPlanClient is a client for the InspectionPlan schema.
-type InspectionPlanClient struct {
+// PeriodicPlanClient is a client for the PeriodicPlan schema.
+type PeriodicPlanClient struct {
 	config
 }
 
-// NewInspectionPlanClient returns a client for the InspectionPlan from the given config.
-func NewInspectionPlanClient(c config) *InspectionPlanClient {
-	return &InspectionPlanClient{config: c}
+// NewPeriodicPlanClient returns a client for the PeriodicPlan from the given config.
+func NewPeriodicPlanClient(c config) *PeriodicPlanClient {
+	return &PeriodicPlanClient{config: c}
 }
 
 // Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `inspectionplan.Hooks(f(g(h())))`.
-func (c *InspectionPlanClient) Use(hooks ...Hook) {
-	c.hooks.InspectionPlan = append(c.hooks.InspectionPlan, hooks...)
+// A call to `Use(f, g, h)` equals to `periodicplan.Hooks(f(g(h())))`.
+func (c *PeriodicPlanClient) Use(hooks ...Hook) {
+	c.hooks.PeriodicPlan = append(c.hooks.PeriodicPlan, hooks...)
 }
 
 // Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `inspectionplan.Intercept(f(g(h())))`.
-func (c *InspectionPlanClient) Intercept(interceptors ...Interceptor) {
-	c.inters.InspectionPlan = append(c.inters.InspectionPlan, interceptors...)
+// A call to `Intercept(f, g, h)` equals to `periodicplan.Intercept(f(g(h())))`.
+func (c *PeriodicPlanClient) Intercept(interceptors ...Interceptor) {
+	c.inters.PeriodicPlan = append(c.inters.PeriodicPlan, interceptors...)
 }
 
-// Create returns a builder for creating a InspectionPlan entity.
-func (c *InspectionPlanClient) Create() *InspectionPlanCreate {
-	mutation := newInspectionPlanMutation(c.config, OpCreate)
-	return &InspectionPlanCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Create returns a builder for creating a PeriodicPlan entity.
+func (c *PeriodicPlanClient) Create() *PeriodicPlanCreate {
+	mutation := newPeriodicPlanMutation(c.config, OpCreate)
+	return &PeriodicPlanCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// CreateBulk returns a builder for creating a bulk of InspectionPlan entities.
-func (c *InspectionPlanClient) CreateBulk(builders ...*InspectionPlanCreate) *InspectionPlanCreateBulk {
-	return &InspectionPlanCreateBulk{config: c.config, builders: builders}
+// CreateBulk returns a builder for creating a bulk of PeriodicPlan entities.
+func (c *PeriodicPlanClient) CreateBulk(builders ...*PeriodicPlanCreate) *PeriodicPlanCreateBulk {
+	return &PeriodicPlanCreateBulk{config: c.config, builders: builders}
 }
 
 // MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
 // a builder and applies setFunc on it.
-func (c *InspectionPlanClient) MapCreateBulk(slice any, setFunc func(*InspectionPlanCreate, int)) *InspectionPlanCreateBulk {
+func (c *PeriodicPlanClient) MapCreateBulk(slice any, setFunc func(*PeriodicPlanCreate, int)) *PeriodicPlanCreateBulk {
 	rv := reflect.ValueOf(slice)
 	if rv.Kind() != reflect.Slice {
-		return &InspectionPlanCreateBulk{err: fmt.Errorf("calling to InspectionPlanClient.MapCreateBulk with wrong type %T, need slice", slice)}
+		return &PeriodicPlanCreateBulk{err: fmt.Errorf("calling to PeriodicPlanClient.MapCreateBulk with wrong type %T, need slice", slice)}
 	}
-	builders := make([]*InspectionPlanCreate, rv.Len())
+	builders := make([]*PeriodicPlanCreate, rv.Len())
 	for i := 0; i < rv.Len(); i++ {
 		builders[i] = c.Create()
 		setFunc(builders[i], i)
 	}
-	return &InspectionPlanCreateBulk{config: c.config, builders: builders}
+	return &PeriodicPlanCreateBulk{config: c.config, builders: builders}
 }
 
-// Update returns an update builder for InspectionPlan.
-func (c *InspectionPlanClient) Update() *InspectionPlanUpdate {
-	mutation := newInspectionPlanMutation(c.config, OpUpdate)
-	return &InspectionPlanUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Update returns an update builder for PeriodicPlan.
+func (c *PeriodicPlanClient) Update() *PeriodicPlanUpdate {
+	mutation := newPeriodicPlanMutation(c.config, OpUpdate)
+	return &PeriodicPlanUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOne returns an update builder for the given entity.
-func (c *InspectionPlanClient) UpdateOne(_m *InspectionPlan) *InspectionPlanUpdateOne {
-	mutation := newInspectionPlanMutation(c.config, OpUpdateOne, withInspectionPlan(_m))
-	return &InspectionPlanUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *PeriodicPlanClient) UpdateOne(_m *PeriodicPlan) *PeriodicPlanUpdateOne {
+	mutation := newPeriodicPlanMutation(c.config, OpUpdateOne, withPeriodicPlan(_m))
+	return &PeriodicPlanUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *InspectionPlanClient) UpdateOneID(id uint32) *InspectionPlanUpdateOne {
-	mutation := newInspectionPlanMutation(c.config, OpUpdateOne, withInspectionPlanID(id))
-	return &InspectionPlanUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *PeriodicPlanClient) UpdateOneID(id uint32) *PeriodicPlanUpdateOne {
+	mutation := newPeriodicPlanMutation(c.config, OpUpdateOne, withPeriodicPlanID(id))
+	return &PeriodicPlanUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// Delete returns a delete builder for InspectionPlan.
-func (c *InspectionPlanClient) Delete() *InspectionPlanDelete {
-	mutation := newInspectionPlanMutation(c.config, OpDelete)
-	return &InspectionPlanDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Delete returns a delete builder for PeriodicPlan.
+func (c *PeriodicPlanClient) Delete() *PeriodicPlanDelete {
+	mutation := newPeriodicPlanMutation(c.config, OpDelete)
+	return &PeriodicPlanDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // DeleteOne returns a builder for deleting the given entity.
-func (c *InspectionPlanClient) DeleteOne(_m *InspectionPlan) *InspectionPlanDeleteOne {
+func (c *PeriodicPlanClient) DeleteOne(_m *PeriodicPlan) *PeriodicPlanDeleteOne {
 	return c.DeleteOneID(_m.ID)
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *InspectionPlanClient) DeleteOneID(id uint32) *InspectionPlanDeleteOne {
-	builder := c.Delete().Where(inspectionplan.ID(id))
+func (c *PeriodicPlanClient) DeleteOneID(id uint32) *PeriodicPlanDeleteOne {
+	builder := c.Delete().Where(periodicplan.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
-	return &InspectionPlanDeleteOne{builder}
+	return &PeriodicPlanDeleteOne{builder}
 }
 
-// Query returns a query builder for InspectionPlan.
-func (c *InspectionPlanClient) Query() *InspectionPlanQuery {
-	return &InspectionPlanQuery{
+// Query returns a query builder for PeriodicPlan.
+func (c *PeriodicPlanClient) Query() *PeriodicPlanQuery {
+	return &PeriodicPlanQuery{
 		config: c.config,
-		ctx:    &QueryContext{Type: TypeInspectionPlan},
+		ctx:    &QueryContext{Type: TypePeriodicPlan},
 		inters: c.Interceptors(),
 	}
 }
 
-// Get returns a InspectionPlan entity by its id.
-func (c *InspectionPlanClient) Get(ctx context.Context, id uint32) (*InspectionPlan, error) {
-	return c.Query().Where(inspectionplan.ID(id)).Only(ctx)
+// Get returns a PeriodicPlan entity by its id.
+func (c *PeriodicPlanClient) Get(ctx context.Context, id uint32) (*PeriodicPlan, error) {
+	return c.Query().Where(periodicplan.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *InspectionPlanClient) GetX(ctx context.Context, id uint32) *InspectionPlan {
+func (c *PeriodicPlanClient) GetX(ctx context.Context, id uint32) *PeriodicPlan {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -317,27 +327,27 @@ func (c *InspectionPlanClient) GetX(ctx context.Context, id uint32) *InspectionP
 }
 
 // Hooks returns the client hooks.
-func (c *InspectionPlanClient) Hooks() []Hook {
-	return c.hooks.InspectionPlan
+func (c *PeriodicPlanClient) Hooks() []Hook {
+	return c.hooks.PeriodicPlan
 }
 
 // Interceptors returns the client interceptors.
-func (c *InspectionPlanClient) Interceptors() []Interceptor {
-	return c.inters.InspectionPlan
+func (c *PeriodicPlanClient) Interceptors() []Interceptor {
+	return c.inters.PeriodicPlan
 }
 
-func (c *InspectionPlanClient) mutate(ctx context.Context, m *InspectionPlanMutation) (Value, error) {
+func (c *PeriodicPlanClient) mutate(ctx context.Context, m *PeriodicPlanMutation) (Value, error) {
 	switch m.Op() {
 	case OpCreate:
-		return (&InspectionPlanCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&PeriodicPlanCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpUpdate:
-		return (&InspectionPlanUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&PeriodicPlanUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpUpdateOne:
-		return (&InspectionPlanUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&PeriodicPlanUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpDelete, OpDeleteOne:
-		return (&InspectionPlanDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+		return (&PeriodicPlanDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
-		return nil, fmt.Errorf("ent: unknown InspectionPlan mutation op: %q", m.Op())
+		return nil, fmt.Errorf("ent: unknown PeriodicPlan mutation op: %q", m.Op())
 	}
 }
 
@@ -506,12 +516,145 @@ func (c *ServiceTypeClient) mutate(ctx context.Context, m *ServiceTypeMutation) 
 	}
 }
 
+// TransportRouteClient is a client for the TransportRoute schema.
+type TransportRouteClient struct {
+	config
+}
+
+// NewTransportRouteClient returns a client for the TransportRoute from the given config.
+func NewTransportRouteClient(c config) *TransportRouteClient {
+	return &TransportRouteClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `transportroute.Hooks(f(g(h())))`.
+func (c *TransportRouteClient) Use(hooks ...Hook) {
+	c.hooks.TransportRoute = append(c.hooks.TransportRoute, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `transportroute.Intercept(f(g(h())))`.
+func (c *TransportRouteClient) Intercept(interceptors ...Interceptor) {
+	c.inters.TransportRoute = append(c.inters.TransportRoute, interceptors...)
+}
+
+// Create returns a builder for creating a TransportRoute entity.
+func (c *TransportRouteClient) Create() *TransportRouteCreate {
+	mutation := newTransportRouteMutation(c.config, OpCreate)
+	return &TransportRouteCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of TransportRoute entities.
+func (c *TransportRouteClient) CreateBulk(builders ...*TransportRouteCreate) *TransportRouteCreateBulk {
+	return &TransportRouteCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *TransportRouteClient) MapCreateBulk(slice any, setFunc func(*TransportRouteCreate, int)) *TransportRouteCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &TransportRouteCreateBulk{err: fmt.Errorf("calling to TransportRouteClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*TransportRouteCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &TransportRouteCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for TransportRoute.
+func (c *TransportRouteClient) Update() *TransportRouteUpdate {
+	mutation := newTransportRouteMutation(c.config, OpUpdate)
+	return &TransportRouteUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *TransportRouteClient) UpdateOne(_m *TransportRoute) *TransportRouteUpdateOne {
+	mutation := newTransportRouteMutation(c.config, OpUpdateOne, withTransportRoute(_m))
+	return &TransportRouteUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *TransportRouteClient) UpdateOneID(id uint32) *TransportRouteUpdateOne {
+	mutation := newTransportRouteMutation(c.config, OpUpdateOne, withTransportRouteID(id))
+	return &TransportRouteUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for TransportRoute.
+func (c *TransportRouteClient) Delete() *TransportRouteDelete {
+	mutation := newTransportRouteMutation(c.config, OpDelete)
+	return &TransportRouteDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *TransportRouteClient) DeleteOne(_m *TransportRoute) *TransportRouteDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *TransportRouteClient) DeleteOneID(id uint32) *TransportRouteDeleteOne {
+	builder := c.Delete().Where(transportroute.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &TransportRouteDeleteOne{builder}
+}
+
+// Query returns a query builder for TransportRoute.
+func (c *TransportRouteClient) Query() *TransportRouteQuery {
+	return &TransportRouteQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeTransportRoute},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a TransportRoute entity by its id.
+func (c *TransportRouteClient) Get(ctx context.Context, id uint32) (*TransportRoute, error) {
+	return c.Query().Where(transportroute.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *TransportRouteClient) GetX(ctx context.Context, id uint32) *TransportRoute {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *TransportRouteClient) Hooks() []Hook {
+	return c.hooks.TransportRoute
+}
+
+// Interceptors returns the client interceptors.
+func (c *TransportRouteClient) Interceptors() []Interceptor {
+	return c.inters.TransportRoute
+}
+
+func (c *TransportRouteClient) mutate(ctx context.Context, m *TransportRouteMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&TransportRouteCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&TransportRouteUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&TransportRouteUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&TransportRouteDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown TransportRoute mutation op: %q", m.Op())
+	}
+}
+
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		InspectionPlan, ServiceType []ent.Hook
+		PeriodicPlan, ServiceType, TransportRoute []ent.Hook
 	}
 	inters struct {
-		InspectionPlan, ServiceType []ent.Interceptor
+		PeriodicPlan, ServiceType, TransportRoute []ent.Interceptor
 	}
 )

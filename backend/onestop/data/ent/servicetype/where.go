@@ -110,9 +110,9 @@ func Description(v string) predicate.ServiceType {
 	return predicate.ServiceType(sql.FieldEQ(FieldDescription, v))
 }
 
-// RepairPost applies equality check predicate on the "repair_post" field. It's identical to RepairPostEQ.
-func RepairPost(v string) predicate.ServiceType {
-	return predicate.ServiceType(sql.FieldEQ(FieldRepairPost, v))
+// ExecutionPost applies equality check predicate on the "execution_post" field. It's identical to ExecutionPostEQ.
+func ExecutionPost(v string) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldEQ(FieldExecutionPost, v))
 }
 
 // StandardWorkHours applies equality check predicate on the "standard_work_hours" field. It's identical to StandardWorkHoursEQ.
@@ -133,6 +133,11 @@ func CompletionTimeLimit(v uint32) predicate.ServiceType {
 // Guidance applies equality check predicate on the "guidance" field. It's identical to GuidanceEQ.
 func Guidance(v string) predicate.ServiceType {
 	return predicate.ServiceType(sql.FieldEQ(FieldGuidance, v))
+}
+
+// RequiresApproval applies equality check predicate on the "requires_approval" field. It's identical to RequiresApprovalEQ.
+func RequiresApproval(v bool) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldEQ(FieldRequiresApproval, v))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
@@ -740,79 +745,79 @@ func DescriptionContainsFold(v string) predicate.ServiceType {
 	return predicate.ServiceType(sql.FieldContainsFold(FieldDescription, v))
 }
 
-// RepairPostEQ applies the EQ predicate on the "repair_post" field.
-func RepairPostEQ(v string) predicate.ServiceType {
-	return predicate.ServiceType(sql.FieldEQ(FieldRepairPost, v))
+// ExecutionPostEQ applies the EQ predicate on the "execution_post" field.
+func ExecutionPostEQ(v string) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldEQ(FieldExecutionPost, v))
 }
 
-// RepairPostNEQ applies the NEQ predicate on the "repair_post" field.
-func RepairPostNEQ(v string) predicate.ServiceType {
-	return predicate.ServiceType(sql.FieldNEQ(FieldRepairPost, v))
+// ExecutionPostNEQ applies the NEQ predicate on the "execution_post" field.
+func ExecutionPostNEQ(v string) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldNEQ(FieldExecutionPost, v))
 }
 
-// RepairPostIn applies the In predicate on the "repair_post" field.
-func RepairPostIn(vs ...string) predicate.ServiceType {
-	return predicate.ServiceType(sql.FieldIn(FieldRepairPost, vs...))
+// ExecutionPostIn applies the In predicate on the "execution_post" field.
+func ExecutionPostIn(vs ...string) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldIn(FieldExecutionPost, vs...))
 }
 
-// RepairPostNotIn applies the NotIn predicate on the "repair_post" field.
-func RepairPostNotIn(vs ...string) predicate.ServiceType {
-	return predicate.ServiceType(sql.FieldNotIn(FieldRepairPost, vs...))
+// ExecutionPostNotIn applies the NotIn predicate on the "execution_post" field.
+func ExecutionPostNotIn(vs ...string) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldNotIn(FieldExecutionPost, vs...))
 }
 
-// RepairPostGT applies the GT predicate on the "repair_post" field.
-func RepairPostGT(v string) predicate.ServiceType {
-	return predicate.ServiceType(sql.FieldGT(FieldRepairPost, v))
+// ExecutionPostGT applies the GT predicate on the "execution_post" field.
+func ExecutionPostGT(v string) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldGT(FieldExecutionPost, v))
 }
 
-// RepairPostGTE applies the GTE predicate on the "repair_post" field.
-func RepairPostGTE(v string) predicate.ServiceType {
-	return predicate.ServiceType(sql.FieldGTE(FieldRepairPost, v))
+// ExecutionPostGTE applies the GTE predicate on the "execution_post" field.
+func ExecutionPostGTE(v string) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldGTE(FieldExecutionPost, v))
 }
 
-// RepairPostLT applies the LT predicate on the "repair_post" field.
-func RepairPostLT(v string) predicate.ServiceType {
-	return predicate.ServiceType(sql.FieldLT(FieldRepairPost, v))
+// ExecutionPostLT applies the LT predicate on the "execution_post" field.
+func ExecutionPostLT(v string) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldLT(FieldExecutionPost, v))
 }
 
-// RepairPostLTE applies the LTE predicate on the "repair_post" field.
-func RepairPostLTE(v string) predicate.ServiceType {
-	return predicate.ServiceType(sql.FieldLTE(FieldRepairPost, v))
+// ExecutionPostLTE applies the LTE predicate on the "execution_post" field.
+func ExecutionPostLTE(v string) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldLTE(FieldExecutionPost, v))
 }
 
-// RepairPostContains applies the Contains predicate on the "repair_post" field.
-func RepairPostContains(v string) predicate.ServiceType {
-	return predicate.ServiceType(sql.FieldContains(FieldRepairPost, v))
+// ExecutionPostContains applies the Contains predicate on the "execution_post" field.
+func ExecutionPostContains(v string) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldContains(FieldExecutionPost, v))
 }
 
-// RepairPostHasPrefix applies the HasPrefix predicate on the "repair_post" field.
-func RepairPostHasPrefix(v string) predicate.ServiceType {
-	return predicate.ServiceType(sql.FieldHasPrefix(FieldRepairPost, v))
+// ExecutionPostHasPrefix applies the HasPrefix predicate on the "execution_post" field.
+func ExecutionPostHasPrefix(v string) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldHasPrefix(FieldExecutionPost, v))
 }
 
-// RepairPostHasSuffix applies the HasSuffix predicate on the "repair_post" field.
-func RepairPostHasSuffix(v string) predicate.ServiceType {
-	return predicate.ServiceType(sql.FieldHasSuffix(FieldRepairPost, v))
+// ExecutionPostHasSuffix applies the HasSuffix predicate on the "execution_post" field.
+func ExecutionPostHasSuffix(v string) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldHasSuffix(FieldExecutionPost, v))
 }
 
-// RepairPostIsNil applies the IsNil predicate on the "repair_post" field.
-func RepairPostIsNil() predicate.ServiceType {
-	return predicate.ServiceType(sql.FieldIsNull(FieldRepairPost))
+// ExecutionPostIsNil applies the IsNil predicate on the "execution_post" field.
+func ExecutionPostIsNil() predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldIsNull(FieldExecutionPost))
 }
 
-// RepairPostNotNil applies the NotNil predicate on the "repair_post" field.
-func RepairPostNotNil() predicate.ServiceType {
-	return predicate.ServiceType(sql.FieldNotNull(FieldRepairPost))
+// ExecutionPostNotNil applies the NotNil predicate on the "execution_post" field.
+func ExecutionPostNotNil() predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldNotNull(FieldExecutionPost))
 }
 
-// RepairPostEqualFold applies the EqualFold predicate on the "repair_post" field.
-func RepairPostEqualFold(v string) predicate.ServiceType {
-	return predicate.ServiceType(sql.FieldEqualFold(FieldRepairPost, v))
+// ExecutionPostEqualFold applies the EqualFold predicate on the "execution_post" field.
+func ExecutionPostEqualFold(v string) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldEqualFold(FieldExecutionPost, v))
 }
 
-// RepairPostContainsFold applies the ContainsFold predicate on the "repair_post" field.
-func RepairPostContainsFold(v string) predicate.ServiceType {
-	return predicate.ServiceType(sql.FieldContainsFold(FieldRepairPost, v))
+// ExecutionPostContainsFold applies the ContainsFold predicate on the "execution_post" field.
+func ExecutionPostContainsFold(v string) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldContainsFold(FieldExecutionPost, v))
 }
 
 // StandardWorkHoursEQ applies the EQ predicate on the "standard_work_hours" field.
@@ -1070,14 +1075,154 @@ func SparePartsNotNil() predicate.ServiceType {
 	return predicate.ServiceType(sql.FieldNotNull(FieldSpareParts))
 }
 
-// InspectionItemsIsNil applies the IsNil predicate on the "inspection_items" field.
-func InspectionItemsIsNil() predicate.ServiceType {
-	return predicate.ServiceType(sql.FieldIsNull(FieldInspectionItems))
+// TriggerModeEQ applies the EQ predicate on the "trigger_mode" field.
+func TriggerModeEQ(v TriggerMode) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldEQ(FieldTriggerMode, v))
 }
 
-// InspectionItemsNotNil applies the NotNil predicate on the "inspection_items" field.
-func InspectionItemsNotNil() predicate.ServiceType {
-	return predicate.ServiceType(sql.FieldNotNull(FieldInspectionItems))
+// TriggerModeNEQ applies the NEQ predicate on the "trigger_mode" field.
+func TriggerModeNEQ(v TriggerMode) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldNEQ(FieldTriggerMode, v))
+}
+
+// TriggerModeIn applies the In predicate on the "trigger_mode" field.
+func TriggerModeIn(vs ...TriggerMode) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldIn(FieldTriggerMode, vs...))
+}
+
+// TriggerModeNotIn applies the NotIn predicate on the "trigger_mode" field.
+func TriggerModeNotIn(vs ...TriggerMode) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldNotIn(FieldTriggerMode, vs...))
+}
+
+// TriggerModeIsNil applies the IsNil predicate on the "trigger_mode" field.
+func TriggerModeIsNil() predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldIsNull(FieldTriggerMode))
+}
+
+// TriggerModeNotNil applies the NotNil predicate on the "trigger_mode" field.
+func TriggerModeNotNil() predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldNotNull(FieldTriggerMode))
+}
+
+// DefaultPriorityEQ applies the EQ predicate on the "default_priority" field.
+func DefaultPriorityEQ(v DefaultPriority) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldEQ(FieldDefaultPriority, v))
+}
+
+// DefaultPriorityNEQ applies the NEQ predicate on the "default_priority" field.
+func DefaultPriorityNEQ(v DefaultPriority) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldNEQ(FieldDefaultPriority, v))
+}
+
+// DefaultPriorityIn applies the In predicate on the "default_priority" field.
+func DefaultPriorityIn(vs ...DefaultPriority) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldIn(FieldDefaultPriority, vs...))
+}
+
+// DefaultPriorityNotIn applies the NotIn predicate on the "default_priority" field.
+func DefaultPriorityNotIn(vs ...DefaultPriority) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldNotIn(FieldDefaultPriority, vs...))
+}
+
+// DefaultPriorityIsNil applies the IsNil predicate on the "default_priority" field.
+func DefaultPriorityIsNil() predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldIsNull(FieldDefaultPriority))
+}
+
+// DefaultPriorityNotNil applies the NotNil predicate on the "default_priority" field.
+func DefaultPriorityNotNil() predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldNotNull(FieldDefaultPriority))
+}
+
+// AcceptanceModesIsNil applies the IsNil predicate on the "acceptance_modes" field.
+func AcceptanceModesIsNil() predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldIsNull(FieldAcceptanceModes))
+}
+
+// AcceptanceModesNotNil applies the NotNil predicate on the "acceptance_modes" field.
+func AcceptanceModesNotNil() predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldNotNull(FieldAcceptanceModes))
+}
+
+// AcceptanceItemsIsNil applies the IsNil predicate on the "acceptance_items" field.
+func AcceptanceItemsIsNil() predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldIsNull(FieldAcceptanceItems))
+}
+
+// AcceptanceItemsNotNil applies the NotNil predicate on the "acceptance_items" field.
+func AcceptanceItemsNotNil() predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldNotNull(FieldAcceptanceItems))
+}
+
+// TemperatureRequirementEQ applies the EQ predicate on the "temperature_requirement" field.
+func TemperatureRequirementEQ(v TemperatureRequirement) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldEQ(FieldTemperatureRequirement, v))
+}
+
+// TemperatureRequirementNEQ applies the NEQ predicate on the "temperature_requirement" field.
+func TemperatureRequirementNEQ(v TemperatureRequirement) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldNEQ(FieldTemperatureRequirement, v))
+}
+
+// TemperatureRequirementIn applies the In predicate on the "temperature_requirement" field.
+func TemperatureRequirementIn(vs ...TemperatureRequirement) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldIn(FieldTemperatureRequirement, vs...))
+}
+
+// TemperatureRequirementNotIn applies the NotIn predicate on the "temperature_requirement" field.
+func TemperatureRequirementNotIn(vs ...TemperatureRequirement) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldNotIn(FieldTemperatureRequirement, vs...))
+}
+
+// TemperatureRequirementIsNil applies the IsNil predicate on the "temperature_requirement" field.
+func TemperatureRequirementIsNil() predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldIsNull(FieldTemperatureRequirement))
+}
+
+// TemperatureRequirementNotNil applies the NotNil predicate on the "temperature_requirement" field.
+func TemperatureRequirementNotNil() predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldNotNull(FieldTemperatureRequirement))
+}
+
+// RequiresApprovalEQ applies the EQ predicate on the "requires_approval" field.
+func RequiresApprovalEQ(v bool) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldEQ(FieldRequiresApproval, v))
+}
+
+// RequiresApprovalNEQ applies the NEQ predicate on the "requires_approval" field.
+func RequiresApprovalNEQ(v bool) predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldNEQ(FieldRequiresApproval, v))
+}
+
+// RequiresApprovalIsNil applies the IsNil predicate on the "requires_approval" field.
+func RequiresApprovalIsNil() predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldIsNull(FieldRequiresApproval))
+}
+
+// RequiresApprovalNotNil applies the NotNil predicate on the "requires_approval" field.
+func RequiresApprovalNotNil() predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldNotNull(FieldRequiresApproval))
+}
+
+// CargoTypesIsNil applies the IsNil predicate on the "cargo_types" field.
+func CargoTypesIsNil() predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldIsNull(FieldCargoTypes))
+}
+
+// CargoTypesNotNil applies the NotNil predicate on the "cargo_types" field.
+func CargoTypesNotNil() predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldNotNull(FieldCargoTypes))
+}
+
+// StandardItemsIsNil applies the IsNil predicate on the "standard_items" field.
+func StandardItemsIsNil() predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldIsNull(FieldStandardItems))
+}
+
+// StandardItemsNotNil applies the NotNil predicate on the "standard_items" field.
+func StandardItemsNotNil() predicate.ServiceType {
+	return predicate.ServiceType(sql.FieldNotNull(FieldStandardItems))
 }
 
 // HasParent applies the HasEdge predicate on the "parent" edge.

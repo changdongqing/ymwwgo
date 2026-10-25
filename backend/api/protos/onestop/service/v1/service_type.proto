@@ -65,6 +65,46 @@ enum Level {
   LEVEL_DETAIL = 4; // 细类，8 位编码
 }
 
+// 默认优先级：工单派单排序与超时预警加权（0101 报修 / 0106 运送子树）
+enum ServicePriority {
+  PRIORITY_UNSPECIFIED = 0; // 未指定（按常规处理）
+  PRIORITY_NORMAL = 1; // 常规：按队列顺序派发
+  PRIORITY_URGENT = 2; // 加急：插队派发、超时预警提前（如急送标本）
+  PRIORITY_EMERGENCY = 3; // 特急：立即派发并逐级上报（如电梯困人、危重患者转运）
+}
+
+// 温控要求：运送配送的冷链/保温管理（标本、药品、血液、营养餐）
+enum TemperatureRequirement {
+  TEMP_UNSPECIFIED = 0; // 未指定（按常温处理）
+  TEMP_NORMAL = 1; // 常温
+  TEMP_COLD = 2; // 冷藏 2-8℃（标本、静配药品、血液制品）
+  TEMP_FROZEN = 3; // 冷冻 ≤-18℃（冰冻血浆、冷冻试剂）
+  TEMP_WARM = 4; // 保温 ≥60℃（营养餐配送）
+}
+
+// 任务触发方式：周期计划的统一开关。按需发起 = 工单由用户/呼叫触发，
+// 无周期计划入口；计划生成 = 可挂周期计划（OneStopPeriodicPlanService），
+// 任务由后续工单调度器按频率生成（定时班次即计划的 times）。
+// 细类未设置回退小类，小类也未设置按 TRIGGER_ON_DEMAND。
+enum TriggerMode {
+  TRIGGER_UNSPECIFIED = 0; // 未指定（回退上级，最终默认按需）
+  TRIGGER_ON_DEMAND = 1; // 按需发起：报修、突发、投诉、应急等事件型服务
+  TRIGGER_SCHEDULED = 2; // 计划生成：巡检、维保、日常保洁、消杀、抄表等周期型服务
+}
+
+// 验收项：完工（报修）/送达（运送）确认页逐项核对的 checklist 项
+message ServiceAcceptanceItem {
+  string name = 1 [
+    json_name = "name",
+    (gnostic.openapi.v3.property) = { description: "验收项名称（如：数量准确、现场已清理）" }
+  ]; // 验收项名称
+
+  bool required = 2 [
+    json_name = "required",
+    (gnostic.openapi.v3.property) = { description: "是否必检项（false = 提示项，可跳过）" }
+  ]; // 是否必检项
+}
+
 // 一站式服务类型
 message ServiceType {
   optional uint32 id = 1 [
@@ -107,16 +147,17 @@ message ServiceType {
   reserved 8;
   reserved "sort_order";
 
-  // —— 报修维修类型配置（配置详情）——
-  // 本期仅对 0101 报修维修子树的小类（岗位/时限/指导）与细类（工时/语句/工具/备件）
-  // 开放配置，其余类型一律留空；全部可空，未配置 = NULL。
-  // 消费方为后续工单对象：派单（岗位）、SLA 超时预警（时限）、绩效工时核算（工时）、
-  // 报修快捷语句与语义归型语料（语句）、出工准备（工具/备件）。
+  // 9/17/18 号字段原为 repair_post / inspection_items / transport_post，
+  // 统一配置模板期退役：岗位合并为 execution_post（25），巡检项目库泛化为
+  // standard_items（26）。保留字段号，避免历史客户端误复用。
+  reserved 9, 17, 18;
+  reserved "repair_post", "inspection_items", "transport_post";
 
-  optional string repair_post = 9 [
-    json_name = "repairPost",
-    (gnostic.openapi.v3.property) = { description: "维修岗位（派单目标岗位，如：电工/管工/空调工）" }
-  ]; // 维修岗位
+  // —— 统一履约配置模板（所有小类/细类两级可填，全部可空，未配置 = NULL）——
+  // 四组：派单与时效（岗位/优先级/时限/工时）、作业标准（指导/语句/工具/耗材）、
+  // 验收方案（方式/验收项）、专项属性（温控/审批/物品细目/标准项目库）。
+  // 存储层不限子树，可见性与文案由前端展示矩阵按中类驱动；消费方为后续工单对象
+  // （派单/SLA 预警/绩效工时核算）与发起端（快捷语句/语义归型语料）。
 
   optional double standard_work_hours = 10 [
     json_name = "standardWorkHours",
@@ -125,12 +166,12 @@ message ServiceType {
 
   optional uint32 response_time_limit = 11 [
     json_name = "responseTimeLimit",
-    (gnostic.openapi.v3.property) = { description: "响应时限（分钟）：受理到到场的 SLA" }
+    (gnostic.openapi.v3.property) = { description: "响应时限（分钟）：受理到到场/取件/处置的 SLA（文案按业态）" }
   ]; // 响应时限（分钟）
 
   optional uint32 completion_time_limit = 12 [
     json_name = "completionTimeLimit",
-    (gnostic.openapi.v3.property) = { description: "完成时限（分钟）：受理到完工的 SLA" }
+    (gnostic.openapi.v3.property) = { description: "完成时限（分钟）：受理到完工/送达/办结的 SLA（文案按业态）" }
   ]; // 完成时限（分钟）
 
   optional string guidance = 13 [
@@ -140,12 +181,12 @@ message ServiceType {
 
   repeated string common_phrases = 14 [
     json_name = "commonPhrases",
-    (gnostic.openapi.v3.property) = { description: "常见报修语句清单：报修端快捷语句，兼作语义归型语料" }
-  ]; // 常见报修语句清单
+    (gnostic.openapi.v3.property) = { description: "常见语句清单：发起端快捷语句，兼作语义归型语料" }
+  ]; // 常见语句清单
 
   repeated string standard_tools = 15 [
     json_name = "standardTools",
-    (gnostic.openapi.v3.property) = { description: "服务标准工具清单：出工标配工具" }
+    (gnostic.openapi.v3.property) = { description: "服务标准工具清单：出工标配工具/装备" }
   ]; // 服务标准工具清单
 
   repeated string spare_parts = 16 [
@@ -153,14 +194,56 @@ message ServiceType {
     (gnostic.openapi.v3.property) = { description: "常用备件/耗材清单：出工常备，配合库存领用" }
   ]; // 常用备件/耗材清单
 
-  // —— 巡检巡查类型配置（0103 子树）——
-  // 标准巡检项目库：巡检计划点表的模板来源（计划内可增删/停用启用），
-  // 仅对 0103 巡检巡查子树的小类/细类开放配置。
+  // —— 验收方案（通用履约）——
+  // 报修场景 = 完工验收（签名/拍照 + 故障已修复/现场已清理），运送场景 =
+  // 交接签收（扫码/双签 + 数量准确/包装完好/温度达标），客服场景 = 办结回访。
 
-  repeated string inspection_items = 17 [
-    json_name = "inspectionItems",
-    (gnostic.openapi.v3.property) = { description: "标准巡检项目库：巡检计划点表模板（仅 0103 巡检巡查子树）" }
-  ]; // 标准巡检项目库
+  optional ServicePriority default_priority = 22 [
+    json_name = "defaultPriority",
+    (gnostic.openapi.v3.property) = { description: "默认优先级：派单排序与超时预警加权（细类可覆盖小类，如急送标本=加急、电梯困人=特急）" }
+  ]; // 默认优先级
+
+  repeated string acceptance_modes = 23 [
+    json_name = "acceptanceModes",
+    (gnostic.openapi.v3.property) = { description: "验收方式（多选）：ACCEPT_SIGN 签名确认 / ACCEPT_SCAN 扫码核对 / ACCEPT_PHOTO 拍照留证 / ACCEPT_DUAL 双人验收，值域由服务层校验" }
+  ]; // 验收方式（多选）
+
+  repeated ServiceAcceptanceItem acceptance_items = 24 [
+    json_name = "acceptanceItems",
+    (gnostic.openapi.v3.property) = { description: "验收项清单：完工（报修）/送达（运送）确认页逐项核对的 checklist" }
+  ]; // 验收项清单
+
+  // —— 专项属性（推荐填写子树见展示矩阵；存储层不限子树）——
+
+  optional TemperatureRequirement temperature_requirement = 19 [
+    json_name = "temperatureRequirement",
+    (gnostic.openapi.v3.property) = { description: "温控要求：常温/冷藏 2-8℃/冷冻/保温（标本、药品、营养餐等冷链管理，推荐 0106 运送子树）" }
+  ]; // 温控要求
+
+  optional bool requires_approval = 20 [
+    json_name = "requiresApproval",
+    (gnostic.openapi.v3.property) = { description: "是否需事前审批（搬入搬出押运、动火作业、资源申请等管控类服务）" }
+  ]; // 是否需事前审批
+
+  repeated string cargo_types = 21 [
+    json_name = "cargoTypes",
+    (gnostic.openapi.v3.property) = { description: "运送物品细目清单：该类型承接的物品范围（如：血标本/病理标本/静配药品），推荐 0106 运送配送子树" }
+  ]; // 运送物品细目清单
+
+  optional string execution_post = 25 [
+    json_name = "executionPost",
+    (gnostic.openapi.v3.property) = { description: "执行岗位（派单目标岗位，如：电工/运送员/保洁员）" }
+  ]; // 执行岗位
+
+  repeated string standard_items = 26 [
+    json_name = "standardItems",
+    (gnostic.openapi.v3.property) = { description: "标准作业项目库：周期计划点表模板（巡检点/维保项目单/保洁作业标准）" }
+  ]; // 标准作业项目库
+
+  optional TriggerMode trigger_mode = 27 [
+    json_name = "triggerMode",
+    (gnostic.openapi.v3.property) = { description: "任务触发方式：按需发起（工单由用户/呼叫触发）或计划生成（可挂周期计划，任务按频率生成）；未设置回退上级，默认按需" }
+  ]; // 任务触发方式
 
   optional uint32 created_by = 100 [json_name = "createdBy", (gnostic.openapi.v3.property) = {description: "创建者ID"}]; // 创建者ID
   optional uint32 updated_by = 101 [json_name = "updatedBy", (gnostic.openapi.v3.property) = {description: "更新者ID"}]; // 更新者ID

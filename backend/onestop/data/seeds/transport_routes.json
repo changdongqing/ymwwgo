@@ -1,0 +1,101 @@
+[
+  {
+    "code": "01060301",
+    "name": "静配中心→内科楼病区巡回",
+    "origin": "静配中心",
+    "destination": "内科楼各病区",
+    "viaPoints": ["住院药房"],
+    "estDurationMinutes": 20,
+    "roundTrip": true,
+    "departureTimes": ["09:00", "11:00", "15:00"]
+  },
+  {
+    "code": "01060301",
+    "name": "静配中心→外科楼病区巡回",
+    "origin": "静配中心",
+    "destination": "外科楼各病区",
+    "estDurationMinutes": 25,
+    "roundTrip": true,
+    "departureTimes": ["09:15", "11:15", "15:15"]
+  },
+  {
+    "code": "01060201",
+    "name": "病区→检验科标本巡回",
+    "origin": "住院部各病区",
+    "destination": "检验科标本接收窗口",
+    "viaPoints": ["内科楼", "外科楼", "门急诊医技楼"],
+    "estDurationMinutes": 40,
+    "roundTrip": true,
+    "departureTimes": ["08:00", "10:00", "12:00", "14:00", "16:00"]
+  },
+  {
+    "code": "01060202",
+    "name": "病区→检验科急送直达",
+    "origin": "呼叫病区",
+    "destination": "检验科标本接收窗口",
+    "estDurationMinutes": 10
+  },
+  {
+    "code": "01060101",
+    "name": "病房→医技楼检查陪检",
+    "origin": "住院病房",
+    "destination": "医技楼检查科室（CT/MRI/B超）",
+    "viaPoints": ["住院部电梯厅"],
+    "estDurationMinutes": 15
+  },
+  {
+    "code": "01060403",
+    "name": "营养食堂→住院部病区餐配",
+    "origin": "营养食堂",
+    "destination": "住院部各病区配餐间",
+    "viaPoints": ["餐梯"],
+    "estDurationMinutes": 25,
+    "roundTrip": true,
+    "departureTimes": ["10:30", "16:30"]
+  },
+  {
+    "code": "01060402",
+    "name": "中心库房→住院部病区补货",
+    "origin": "中心库房",
+    "destination": "住院部各病区",
+    "viaPoints": ["洁梯"],
+    "estDurationMinutes": 35,
+    "roundTrip": true,
+    "departureTimes": ["14:00"]
+  },
+  {
+    "code": "01060401",
+    "name": "病区→病案室病历文件回收",
+    "origin": "出院病区",
+    "destination": "病案室",
+    "estDurationMinutes": 20,
+    "roundTrip": true,
+    "departureTimes": ["15:00"]
+  },
+  {
+    "code": "01060502",
+    "name": "快递驿站→写字楼楼层分发",
+    "origin": "一层快递驿站",
+    "destination": "写字楼各楼层前台",
+    "viaPoints": ["低区货梯", "高区货梯"],
+    "estDurationMinutes": 45,
+    "roundTrip": true,
+    "departureTimes": ["13:30", "17:00"]
+  },
+  {
+    "code": "01060501",
+    "name": "商铺/租户搬入搬出（货梯专用时段）",
+    "origin": "地下货运通道卸货区",
+    "destination": "目标商铺/楼层",
+    "estDurationMinutes": 30
+  },
+  {
+    "code": "01060503",
+    "name": "园区大件垃圾清运线",
+    "origin": "各楼栋垃圾集中点",
+    "destination": "园区垃圾转运站",
+    "estDurationMinutes": 40,
+    "roundTrip": true,
+    "departureTimes": ["06:30"]
+  }
+]

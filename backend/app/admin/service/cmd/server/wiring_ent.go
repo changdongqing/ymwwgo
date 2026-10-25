@@ -200,17 +200,28 @@ func initApp(ctx *bootstrap.Context) (*kratos.App, func(), error) {
 	}
 	cleanups = append(cleanups, cleanupOneStopEnt)
 	oneStopServiceTypeRepo := onestopData.NewServiceTypeRepo(ctx, oneStopEntClient)
-	oneStopServiceTypeService := onestopService.NewServiceTypeService(ctx, oneStopServiceTypeRepo, func(ctx context.Context) (uint32, error) {
+	// 周期计划仓储先行构造：类型服务的触发方式切换守卫要用它查"节点/子级
+	// 是否仍挂计划"（巡检计划泛化为通用周期计划，挂载门控由触发方式驱动）
+	oneStopPeriodicPlanRepo := onestopData.NewPeriodicPlanRepo(ctx, oneStopEntClient)
+	oneStopServiceTypeService := onestopService.NewServiceTypeService(ctx, oneStopServiceTypeRepo, oneStopPeriodicPlanRepo, func(ctx context.Context) (uint32, error) {
 		operator, err := auth.FromContext(ctx)
 		if err != nil {
 			return 0, err
 		}
 		return operator.UserId, nil
 	})
-	// 巡检计划：依赖 ServiceTypeService 先行构造（其构造函数按空表守卫播种类别字典，
+	// 周期计划：依赖 ServiceTypeService 先行构造（其构造函数按空表守卫播种类别字典，
 	// 计划种子按编码解析类别才能命中）
-	oneStopInspectionPlanRepo := onestopData.NewInspectionPlanRepo(ctx, oneStopEntClient)
-	oneStopInspectionPlanService := onestopService.NewInspectionPlanService(ctx, oneStopInspectionPlanRepo, oneStopServiceTypeRepo, func(ctx context.Context) (uint32, error) {
+	oneStopPeriodicPlanService := onestopService.NewPeriodicPlanService(ctx, oneStopPeriodicPlanRepo, oneStopServiceTypeRepo, func(ctx context.Context) (uint32, error) {
+		operator, err := auth.FromContext(ctx)
+		if err != nil {
+			return 0, err
+		}
+		return operator.UserId, nil
+	})
+	// 运送路线：同样依赖 ServiceTypeService 先行构造（路线种子按编码解析类别）
+	oneStopTransportRouteRepo := onestopData.NewTransportRouteRepo(ctx, oneStopEntClient)
+	oneStopTransportRouteService := onestopService.NewTransportRouteService(ctx, oneStopTransportRouteRepo, oneStopServiceTypeRepo, func(ctx context.Context) (uint32, error) {
 		operator, err := auth.FromContext(ctx)
 		if err != nil {
 			return 0, err
@@ -415,7 +426,8 @@ func initApp(ctx *bootstrap.Context) (*kratos.App, func(), error) {
 		aiContentService,
 		aaAiAgentService,
 		oneStopServiceTypeService,
-		oneStopInspectionPlanService,
+		oneStopPeriodicPlanService,
+		oneStopTransportRouteService,
 	)
 	if err != nil {
 		rollback()

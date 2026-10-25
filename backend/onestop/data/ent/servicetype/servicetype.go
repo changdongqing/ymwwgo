@@ -38,8 +38,8 @@ const (
 	FieldLevel = "level"
 	// FieldDescription holds the string denoting the description field in the database.
 	FieldDescription = "description"
-	// FieldRepairPost holds the string denoting the repair_post field in the database.
-	FieldRepairPost = "repair_post"
+	// FieldExecutionPost holds the string denoting the execution_post field in the database.
+	FieldExecutionPost = "execution_post"
 	// FieldStandardWorkHours holds the string denoting the standard_work_hours field in the database.
 	FieldStandardWorkHours = "standard_work_hours"
 	// FieldResponseTimeLimit holds the string denoting the response_time_limit field in the database.
@@ -54,8 +54,22 @@ const (
 	FieldStandardTools = "standard_tools"
 	// FieldSpareParts holds the string denoting the spare_parts field in the database.
 	FieldSpareParts = "spare_parts"
-	// FieldInspectionItems holds the string denoting the inspection_items field in the database.
-	FieldInspectionItems = "inspection_items"
+	// FieldTriggerMode holds the string denoting the trigger_mode field in the database.
+	FieldTriggerMode = "trigger_mode"
+	// FieldDefaultPriority holds the string denoting the default_priority field in the database.
+	FieldDefaultPriority = "default_priority"
+	// FieldAcceptanceModes holds the string denoting the acceptance_modes field in the database.
+	FieldAcceptanceModes = "acceptance_modes"
+	// FieldAcceptanceItems holds the string denoting the acceptance_items field in the database.
+	FieldAcceptanceItems = "acceptance_items"
+	// FieldTemperatureRequirement holds the string denoting the temperature_requirement field in the database.
+	FieldTemperatureRequirement = "temperature_requirement"
+	// FieldRequiresApproval holds the string denoting the requires_approval field in the database.
+	FieldRequiresApproval = "requires_approval"
+	// FieldCargoTypes holds the string denoting the cargo_types field in the database.
+	FieldCargoTypes = "cargo_types"
+	// FieldStandardItems holds the string denoting the standard_items field in the database.
+	FieldStandardItems = "standard_items"
 	// EdgeParent holds the string denoting the parent edge name in mutations.
 	EdgeParent = "parent"
 	// EdgeChildren holds the string denoting the children edge name in mutations.
@@ -87,7 +101,7 @@ var Columns = []string{
 	FieldName,
 	FieldLevel,
 	FieldDescription,
-	FieldRepairPost,
+	FieldExecutionPost,
 	FieldStandardWorkHours,
 	FieldResponseTimeLimit,
 	FieldCompletionTimeLimit,
@@ -95,7 +109,14 @@ var Columns = []string{
 	FieldCommonPhrases,
 	FieldStandardTools,
 	FieldSpareParts,
-	FieldInspectionItems,
+	FieldTriggerMode,
+	FieldDefaultPriority,
+	FieldAcceptanceModes,
+	FieldAcceptanceItems,
+	FieldTemperatureRequirement,
+	FieldRequiresApproval,
+	FieldCargoTypes,
+	FieldStandardItems,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -119,10 +140,12 @@ var (
 	DefaultDescription string
 	// DescriptionValidator is a validator for the "description" field. It is called by the builders before save.
 	DescriptionValidator func(string) error
-	// RepairPostValidator is a validator for the "repair_post" field. It is called by the builders before save.
-	RepairPostValidator func(string) error
+	// ExecutionPostValidator is a validator for the "execution_post" field. It is called by the builders before save.
+	ExecutionPostValidator func(string) error
 	// GuidanceValidator is a validator for the "guidance" field. It is called by the builders before save.
 	GuidanceValidator func(string) error
+	// DefaultRequiresApproval holds the default value on creation for the "requires_approval" field.
+	DefaultRequiresApproval bool
 	// IDValidator is a validator for the "id" field. It is called by the builders before save.
 	IDValidator func(uint32) error
 )
@@ -149,6 +172,78 @@ func LevelValidator(l Level) error {
 		return nil
 	default:
 		return fmt.Errorf("servicetype: invalid enum value for level field: %q", l)
+	}
+}
+
+// TriggerMode defines the type for the "trigger_mode" enum field.
+type TriggerMode string
+
+// TriggerMode values.
+const (
+	TriggerModeOnDemand  TriggerMode = "TRIGGER_ON_DEMAND"
+	TriggerModeScheduled TriggerMode = "TRIGGER_SCHEDULED"
+)
+
+func (tm TriggerMode) String() string {
+	return string(tm)
+}
+
+// TriggerModeValidator is a validator for the "trigger_mode" field enum values. It is called by the builders before save.
+func TriggerModeValidator(tm TriggerMode) error {
+	switch tm {
+	case TriggerModeOnDemand, TriggerModeScheduled:
+		return nil
+	default:
+		return fmt.Errorf("servicetype: invalid enum value for trigger_mode field: %q", tm)
+	}
+}
+
+// DefaultPriority defines the type for the "default_priority" enum field.
+type DefaultPriority string
+
+// DefaultPriority values.
+const (
+	DefaultPriorityNormal    DefaultPriority = "PRIORITY_NORMAL"
+	DefaultPriorityUrgent    DefaultPriority = "PRIORITY_URGENT"
+	DefaultPriorityEmergency DefaultPriority = "PRIORITY_EMERGENCY"
+)
+
+func (dp DefaultPriority) String() string {
+	return string(dp)
+}
+
+// DefaultPriorityValidator is a validator for the "default_priority" field enum values. It is called by the builders before save.
+func DefaultPriorityValidator(dp DefaultPriority) error {
+	switch dp {
+	case DefaultPriorityNormal, DefaultPriorityUrgent, DefaultPriorityEmergency:
+		return nil
+	default:
+		return fmt.Errorf("servicetype: invalid enum value for default_priority field: %q", dp)
+	}
+}
+
+// TemperatureRequirement defines the type for the "temperature_requirement" enum field.
+type TemperatureRequirement string
+
+// TemperatureRequirement values.
+const (
+	TemperatureRequirementNormal TemperatureRequirement = "TEMP_NORMAL"
+	TemperatureRequirementCold   TemperatureRequirement = "TEMP_COLD"
+	TemperatureRequirementFrozen TemperatureRequirement = "TEMP_FROZEN"
+	TemperatureRequirementWarm   TemperatureRequirement = "TEMP_WARM"
+)
+
+func (tr TemperatureRequirement) String() string {
+	return string(tr)
+}
+
+// TemperatureRequirementValidator is a validator for the "temperature_requirement" field enum values. It is called by the builders before save.
+func TemperatureRequirementValidator(tr TemperatureRequirement) error {
+	switch tr {
+	case TemperatureRequirementNormal, TemperatureRequirementCold, TemperatureRequirementFrozen, TemperatureRequirementWarm:
+		return nil
+	default:
+		return fmt.Errorf("servicetype: invalid enum value for temperature_requirement field: %q", tr)
 	}
 }
 
@@ -220,9 +315,9 @@ func ByDescription(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldDescription, opts...).ToFunc()
 }
 
-// ByRepairPost orders the results by the repair_post field.
-func ByRepairPost(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldRepairPost, opts...).ToFunc()
+// ByExecutionPost orders the results by the execution_post field.
+func ByExecutionPost(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldExecutionPost, opts...).ToFunc()
 }
 
 // ByStandardWorkHours orders the results by the standard_work_hours field.
@@ -243,6 +338,26 @@ func ByCompletionTimeLimit(opts ...sql.OrderTermOption) OrderOption {
 // ByGuidance orders the results by the guidance field.
 func ByGuidance(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldGuidance, opts...).ToFunc()
+}
+
+// ByTriggerMode orders the results by the trigger_mode field.
+func ByTriggerMode(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTriggerMode, opts...).ToFunc()
+}
+
+// ByDefaultPriority orders the results by the default_priority field.
+func ByDefaultPriority(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldDefaultPriority, opts...).ToFunc()
+}
+
+// ByTemperatureRequirement orders the results by the temperature_requirement field.
+func ByTemperatureRequirement(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTemperatureRequirement, opts...).ToFunc()
+}
+
+// ByRequiresApproval orders the results by the requires_approval field.
+func ByRequiresApproval(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldRequiresApproval, opts...).ToFunc()
 }
 
 // ByParentField orders the results by parent field.

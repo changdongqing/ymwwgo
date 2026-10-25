@@ -49,12 +49,12 @@ type OntologyAnnotationPropertyServiceHTTPServer interface {
 func RegisterOntologyAnnotationPropertyServiceHTTPServer(s *http.Server, srv OntologyAnnotationPropertyServiceHTTPServer) {
 	r := s.Route("/")
 	r.GET("/admin/v1/ontology/annotation-properties/tree", _OntologyAnnotationPropertyService_Tree0_HTTP_Handler(srv))
-	r.GET("/admin/v1/ontology/annotation-properties", _OntologyAnnotationPropertyService_List22_HTTP_Handler(srv))
+	r.GET("/admin/v1/ontology/annotation-properties", _OntologyAnnotationPropertyService_List23_HTTP_Handler(srv))
 	r.GET("/admin/v1/ontology/annotation-properties/{id}/frame", _OntologyAnnotationPropertyService_Frame0_HTTP_Handler(srv))
 	r.GET("/admin/v1/ontology/annotation-properties/{id}/usage", _OntologyAnnotationPropertyService_Usage0_HTTP_Handler(srv))
-	r.POST("/admin/v1/ontology/annotation-properties", _OntologyAnnotationPropertyService_Create16_HTTP_Handler(srv))
-	r.PUT("/admin/v1/ontology/annotation-properties/{id}", _OntologyAnnotationPropertyService_Update17_HTTP_Handler(srv))
-	r.DELETE("/admin/v1/ontology/annotation-properties/{id}", _OntologyAnnotationPropertyService_Delete18_HTTP_Handler(srv))
+	r.POST("/admin/v1/ontology/annotation-properties", _OntologyAnnotationPropertyService_Create17_HTTP_Handler(srv))
+	r.PUT("/admin/v1/ontology/annotation-properties/{id}", _OntologyAnnotationPropertyService_Update18_HTTP_Handler(srv))
+	r.DELETE("/admin/v1/ontology/annotation-properties/{id}", _OntologyAnnotationPropertyService_Delete19_HTTP_Handler(srv))
 }
 
 func _OntologyAnnotationPropertyService_Tree0_HTTP_Handler(srv OntologyAnnotationPropertyServiceHTTPServer) func(ctx http.Context) error {
@@ -76,7 +76,7 @@ func _OntologyAnnotationPropertyService_Tree0_HTTP_Handler(srv OntologyAnnotatio
 	}
 }
 
-func _OntologyAnnotationPropertyService_List22_HTTP_Handler(srv OntologyAnnotationPropertyServiceHTTPServer) func(ctx http.Context) error {
+func _OntologyAnnotationPropertyService_List23_HTTP_Handler(srv OntologyAnnotationPropertyServiceHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in v1.ListAnnotationPropertiesRequest
 		if err := ctx.BindQuery(&in); err != nil {
@@ -139,7 +139,7 @@ func _OntologyAnnotationPropertyService_Usage0_HTTP_Handler(srv OntologyAnnotati
 	}
 }
 
-func _OntologyAnnotationPropertyService_Create16_HTTP_Handler(srv OntologyAnnotationPropertyServiceHTTPServer) func(ctx http.Context) error {
+func _OntologyAnnotationPropertyService_Create17_HTTP_Handler(srv OntologyAnnotationPropertyServiceHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in v1.CreateAnnotationPropertyRequest
 		if err := ctx.Bind(&in); err != nil {
@@ -161,7 +161,7 @@ func _OntologyAnnotationPropertyService_Create16_HTTP_Handler(srv OntologyAnnota
 	}
 }
 
-func _OntologyAnnotationPropertyService_Update17_HTTP_Handler(srv OntologyAnnotationPropertyServiceHTTPServer) func(ctx http.Context) error {
+func _OntologyAnnotationPropertyService_Update18_HTTP_Handler(srv OntologyAnnotationPropertyServiceHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in v1.UpdateAnnotationPropertyRequest
 		if err := ctx.Bind(&in); err != nil {
@@ -186,7 +186,7 @@ func _OntologyAnnotationPropertyService_Update17_HTTP_Handler(srv OntologyAnnota
 	}
 }
 
-func _OntologyAnnotationPropertyService_Delete18_HTTP_Handler(srv OntologyAnnotationPropertyServiceHTTPServer) func(ctx http.Context) error {
+func _OntologyAnnotationPropertyService_Delete19_HTTP_Handler(srv OntologyAnnotationPropertyServiceHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in v1.DeleteAnnotationPropertyRequest
 		if err := ctx.BindQuery(&in); err != nil {

@@ -7490,42 +7490,42 @@ export type notificationservicev1_RenderNotificationTemplateResponse = {
   title: string | undefined;
 };
 
-// 一站式巡检计划管理服务（admin 门面）
+// 一站式周期计划管理服务（admin 门面）
 //
 // 源领域 proto 在 onestop/service/v1（独立 Go module go-wind-admin/onestop 拥有
 // 自己的同名生成包 onestopv1）；本门面只挂 HTTP 路由，消息类型直接引用源领域，
 // 生成时 onestop/service/v1 的 go_package 被指到 module 的 gen 包
 // （go-wind-admin/onestop/api/gen/go/onestop/service/v1;onestopv1，见 buf.gen.yaml），
 // 因此本服务生成的 HTTP 接口与 module 内 service 的方法签名完全一致，可直接注册。
-export interface OneStopInspectionPlanService {
-  // 查询巡检计划列表
+export interface OneStopPeriodicPlanService {
+  // 查询周期计划列表
   List(
     request: pagination_PagingRequest,
-  ): Promise<onestopservicev1_ListInspectionPlansResponse>;
-  // 查询巡检计划详情
+  ): Promise<onestopservicev1_ListPeriodicPlansResponse>;
+  // 查询周期计划详情
   Get(
-    request: onestopservicev1_GetInspectionPlanRequest,
-  ): Promise<onestopservicev1_InspectionPlan>;
-  // 创建巡检计划
+    request: onestopservicev1_GetPeriodicPlanRequest,
+  ): Promise<onestopservicev1_PeriodicPlan>;
+  // 创建周期计划
   Create(
-    request: onestopservicev1_CreateInspectionPlanRequest,
+    request: onestopservicev1_CreatePeriodicPlanRequest,
   ): Promise<wellKnownEmpty>;
-  // 更新巡检计划
+  // 更新周期计划
   Update(
-    request: onestopservicev1_UpdateInspectionPlanRequest,
+    request: onestopservicev1_UpdatePeriodicPlanRequest,
   ): Promise<wellKnownEmpty>;
-  // 删除巡检计划
+  // 删除周期计划
   Delete(
-    request: onestopservicev1_DeleteInspectionPlanRequest,
+    request: onestopservicev1_DeletePeriodicPlanRequest,
   ): Promise<wellKnownEmpty>;
 }
 
-export function createOneStopInspectionPlanServiceClient(
+export function createOneStopPeriodicPlanServiceClient(
   transport: ClientTransport,
-): OneStopInspectionPlanService {
+): OneStopPeriodicPlanService {
   return {
     List(request) {
-      const path = `/admin/v1/onestop/inspection-plans`;
+      const path = `/admin/v1/onestop/periodic-plans`;
       const body = null;
       const queryParams: string[] = [];
       if (request.page) {
@@ -7588,15 +7588,15 @@ export function createOneStopInspectionPlanServiceClient(
         uri += `?${queryParams.join('&')}`;
       }
       return transport.unary(uri, 'GET', body, {
-        service: 'OneStopInspectionPlanService',
+        service: 'OneStopPeriodicPlanService',
         method: 'List',
-      }) as Promise<onestopservicev1_ListInspectionPlansResponse>;
+      }) as Promise<onestopservicev1_ListPeriodicPlansResponse>;
     },
     Get(request) {
       if (request.id === undefined || request.id === null) {
         throw new Error('missing required field request.id');
       }
-      const path = `/admin/v1/onestop/inspection-plans/${request.id}`;
+      const path = `/admin/v1/onestop/periodic-plans/${request.id}`;
       const body = null;
       const queryParams: string[] = [];
       if (request.viewMask) {
@@ -7609,15 +7609,15 @@ export function createOneStopInspectionPlanServiceClient(
         uri += `?${queryParams.join('&')}`;
       }
       return transport.unary(uri, 'GET', body, {
-        service: 'OneStopInspectionPlanService',
+        service: 'OneStopPeriodicPlanService',
         method: 'Get',
-      }) as Promise<onestopservicev1_InspectionPlan>;
+      }) as Promise<onestopservicev1_PeriodicPlan>;
     },
     Create(request) {
-      const path = `/admin/v1/onestop/inspection-plans`;
+      const path = `/admin/v1/onestop/periodic-plans`;
       const body = JSON.stringify(request);
       return transport.unary(path, 'POST', body, {
-        service: 'OneStopInspectionPlanService',
+        service: 'OneStopPeriodicPlanService',
         method: 'Create',
       }) as Promise<wellKnownEmpty>;
     },
@@ -7625,12 +7625,12 @@ export function createOneStopInspectionPlanServiceClient(
       if (request.id === undefined || request.id === null) {
         throw new Error('missing required field request.id');
       }
-      const path = `/admin/v1/onestop/inspection-plans/${request.id}`;
+      const path = `/admin/v1/onestop/periodic-plans/${request.id}`;
       const bodyMap = { ...request } as Record<string, unknown>;
       delete bodyMap["id"];
       const body = JSON.stringify(bodyMap);
       return transport.unary(path, 'PUT', body, {
-        service: 'OneStopInspectionPlanService',
+        service: 'OneStopPeriodicPlanService',
         method: 'Update',
       }) as Promise<wellKnownEmpty>;
     },
@@ -7638,23 +7638,23 @@ export function createOneStopInspectionPlanServiceClient(
       if (request.id === undefined || request.id === null) {
         throw new Error('missing required field request.id');
       }
-      const path = `/admin/v1/onestop/inspection-plans/${request.id}`;
+      const path = `/admin/v1/onestop/periodic-plans/${request.id}`;
       const body = null;
       return transport.unary(path, 'DELETE', body, {
-        service: 'OneStopInspectionPlanService',
+        service: 'OneStopPeriodicPlanService',
         method: 'Delete',
       }) as Promise<wellKnownEmpty>;
     },
   };
 }
-// 查询巡检计划列表 - 回应
-export type onestopservicev1_ListInspectionPlansResponse = {
-  items: onestopservicev1_InspectionPlan[] | undefined;
+// 查询周期计划列表 - 回应
+export type onestopservicev1_ListPeriodicPlansResponse = {
+  items: onestopservicev1_PeriodicPlan[] | undefined;
   total: number | undefined;
 };
 
-// 一站式巡检计划
-export type onestopservicev1_InspectionPlan = {
+// 一站式周期计划
+export type onestopservicev1_PeriodicPlan = {
   clampToMonthEnd?: boolean;
   createdAt?: wellKnownTimestamp;
   createdBy?: number;
@@ -7662,7 +7662,7 @@ export type onestopservicev1_InspectionPlan = {
   deletedBy?: number;
   effectiveFrom?: wellKnownTimestamp;
   effectiveTo?: wellKnownTimestamp;
-  equipmentItems: onestopservicev1_InspectionPlanItem[] | undefined;
+  equipmentItems: onestopservicev1_PeriodicPlanItem[] | undefined;
   equipmentRefs: string[] | undefined;
   excludedDates: string[] | undefined;
   freqType?: onestopservicev1_FreqType;
@@ -7673,7 +7673,7 @@ export type onestopservicev1_InspectionPlan = {
   name?: string;
   post?: string;
   serviceTypeId?: number;
-  spaceItems: onestopservicev1_InspectionPlanItem[] | undefined;
+  spaceItems: onestopservicev1_PeriodicPlanItem[] | undefined;
   // —— 预留：空间/设备对象模块落地后启用（当前无业务表，仅保留契约）——
   spaceRefs: string[] | undefined;
   times: string[] | undefined;
@@ -7682,40 +7682,40 @@ export type onestopservicev1_InspectionPlan = {
   weekdays: number[] | undefined;
 };
 
-// 巡检计划周期类型
+// 周期计划周期类型
 export type onestopservicev1_FreqType =
   | 'FREQ_DAILY'
   | 'FREQ_MONTHLY'
   | 'FREQ_UNSPECIFIED'
   | 'FREQ_WEEKLY'
   | 'FREQ_YEARLY';
-// 巡检点表项（计划内可基于类别标准项目增删/停用启用）
-export type onestopservicev1_InspectionPlanItem = {
+// 作业点表项（计划内可基于类别标准项目库增删/停用启用）
+export type onestopservicev1_PeriodicPlanItem = {
   enabled: boolean | undefined;
   name: string | undefined;
 };
 
-// 查询巡检计划详情 - 请求
-export type onestopservicev1_GetInspectionPlanRequest = {
+// 查询周期计划详情 - 请求
+export type onestopservicev1_GetPeriodicPlanRequest = {
   id?: number;
   viewMask?: wellKnownFieldMask;
 };
 
-// 创建巡检计划 - 请求
-export type onestopservicev1_CreateInspectionPlanRequest = {
-  data: onestopservicev1_InspectionPlan | undefined;
+// 创建周期计划 - 请求
+export type onestopservicev1_CreatePeriodicPlanRequest = {
+  data: onestopservicev1_PeriodicPlan | undefined;
 };
 
-// 更新巡检计划 - 请求
-export type onestopservicev1_UpdateInspectionPlanRequest = {
+// 更新周期计划 - 请求
+export type onestopservicev1_UpdatePeriodicPlanRequest = {
   allowMissing?: boolean;
-  data: onestopservicev1_InspectionPlan | undefined;
+  data: onestopservicev1_PeriodicPlan | undefined;
   id: number | undefined;
   updateMask: undefined | wellKnownFieldMask;
 };
 
-// 删除巡检计划 - 请求
-export type onestopservicev1_DeleteInspectionPlanRequest = {
+// 删除周期计划 - 请求
+export type onestopservicev1_DeletePeriodicPlanRequest = {
   id?: number;
 };
 
@@ -7884,26 +7884,33 @@ export type onestopservicev1_ListServiceTypeResponse = {
 
 // 一站式服务类型
 export type onestopservicev1_ServiceType = {
+  acceptanceItems: onestopservicev1_ServiceAcceptanceItem[] | undefined;
+  acceptanceModes: string[] | undefined;
+  cargoTypes: string[] | undefined;
   code?: string;
   commonPhrases: string[] | undefined;
   completionTimeLimit?: number;
   createdAt?: wellKnownTimestamp;
   createdBy?: number;
+  defaultPriority?: onestopservicev1_ServicePriority;
   deletedAt?: wellKnownTimestamp;
   deletedBy?: number;
   description?: string;
+  executionPost?: string;
   guidance?: string;
   id?: number;
-  inspectionItems: string[] | undefined;
   isEnabled?: boolean;
   level?: onestopservicev1_Level;
   name?: string;
   parentId?: number;
-  repairPost?: string;
+  requiresApproval?: boolean;
   responseTimeLimit?: number;
   spareParts: string[] | undefined;
+  standardItems: string[] | undefined;
   standardTools: string[] | undefined;
   standardWorkHours?: number;
+  temperatureRequirement?: onestopservicev1_TemperatureRequirement;
+  triggerMode?: onestopservicev1_TriggerMode;
   updatedAt?: wellKnownTimestamp;
   updatedBy?: number;
 };
@@ -7915,6 +7922,33 @@ export type onestopservicev1_Level =
   | 'LEVEL_MIDDLE'
   | 'LEVEL_MINOR'
   | 'LEVEL_UNSPECIFIED';
+// 默认优先级：工单派单排序与超时预警加权（0101 报修 / 0106 运送子树）
+export type onestopservicev1_ServicePriority =
+  | 'PRIORITY_EMERGENCY'
+  | 'PRIORITY_NORMAL'
+  | 'PRIORITY_UNSPECIFIED'
+  | 'PRIORITY_URGENT';
+// 验收项：完工（报修）/送达（运送）确认页逐项核对的 checklist 项
+export type onestopservicev1_ServiceAcceptanceItem = {
+  name: string | undefined;
+  required: boolean | undefined;
+};
+
+// 温控要求：运送配送的冷链/保温管理（标本、药品、血液、营养餐）
+export type onestopservicev1_TemperatureRequirement =
+  | 'TEMP_COLD'
+  | 'TEMP_FROZEN'
+  | 'TEMP_NORMAL'
+  | 'TEMP_UNSPECIFIED'
+  | 'TEMP_WARM';
+// 任务触发方式：周期计划的统一开关。按需发起 = 工单由用户/呼叫触发，
+// 无周期计划入口；计划生成 = 可挂周期计划（OneStopPeriodicPlanService），
+// 任务由后续工单调度器按频率生成（定时班次即计划的 times）。
+// 细类未设置回退小类，小类也未设置按 TRIGGER_ON_DEMAND。
+export type onestopservicev1_TriggerMode =
+  | 'TRIGGER_ON_DEMAND'
+  | 'TRIGGER_SCHEDULED'
+  | 'TRIGGER_UNSPECIFIED';
 // 查询服务类型详情 - 请求
 export type onestopservicev1_GetServiceTypeRequest = {
   id?: number;
@@ -7936,6 +7970,213 @@ export type onestopservicev1_UpdateServiceTypeRequest = {
 
 // 删除服务类型 - 请求
 export type onestopservicev1_DeleteServiceTypeRequest = {
+  id?: number;
+};
+
+// 一站式运送路线管理服务（admin 门面）
+//
+// 源领域 proto 在 onestop/service/v1（独立 Go module go-wind-admin/onestop 拥有
+// 自己的同名生成包 onestopv1）；本门面只挂 HTTP 路由，消息类型直接引用源领域，
+// 生成时 onestop/service/v1 的 go_package 被指到 module 的 gen 包
+// （go-wind-admin/onestop/api/gen/go/onestop/service/v1;onestopv1，见 buf.gen.yaml），
+// 因此本服务生成的 HTTP 接口与 module 内 service 的方法签名完全一致，可直接注册。
+export interface OneStopTransportRouteService {
+  // 查询运送路线列表
+  List(
+    request: pagination_PagingRequest,
+  ): Promise<onestopservicev1_ListTransportRoutesResponse>;
+  // 查询运送路线详情
+  Get(
+    request: onestopservicev1_GetTransportRouteRequest,
+  ): Promise<onestopservicev1_TransportRoute>;
+  // 创建运送路线
+  Create(
+    request: onestopservicev1_CreateTransportRouteRequest,
+  ): Promise<wellKnownEmpty>;
+  // 更新运送路线
+  Update(
+    request: onestopservicev1_UpdateTransportRouteRequest,
+  ): Promise<wellKnownEmpty>;
+  // 删除运送路线
+  Delete(
+    request: onestopservicev1_DeleteTransportRouteRequest,
+  ): Promise<wellKnownEmpty>;
+}
+
+export function createOneStopTransportRouteServiceClient(
+  transport: ClientTransport,
+): OneStopTransportRouteService {
+  return {
+    List(request) {
+      const path = `/admin/v1/onestop/transport-routes`;
+      const body = null;
+      const queryParams: string[] = [];
+      if (request.page) {
+        queryParams.push(
+          `page=${encodeURIComponent(request.page.toString())}`,
+        );
+      }
+      if (request.pageSize) {
+        queryParams.push(
+          `pageSize=${encodeURIComponent(request.pageSize.toString())}`,
+        );
+      }
+      if (request.offset) {
+        queryParams.push(
+          `offset=${encodeURIComponent(request.offset.toString())}`,
+        );
+      }
+      if (request.limit) {
+        queryParams.push(
+          `limit=${encodeURIComponent(request.limit.toString())}`,
+        );
+      }
+      if (request.token) {
+        queryParams.push(
+          `token=${encodeURIComponent(request.token.toString())}`,
+        );
+      }
+      if (request.noPaging) {
+        queryParams.push(
+          `noPaging=${encodeURIComponent(request.noPaging.toString())}`,
+        );
+      }
+      if (request.query) {
+        queryParams.push(
+          `query=${encodeURIComponent(request.query.toString())}`,
+        );
+      }
+      if (request.filter) {
+        queryParams.push(
+          `filter=${encodeURIComponent(request.filter.toString())}`,
+        );
+      }
+      if (request.filterExpr?.type) {
+        queryParams.push(
+          `filterExpr.type=${encodeURIComponent(request.filterExpr.type.toString())}`,
+        );
+      }
+      if (request.orderBy) {
+        queryParams.push(
+          `orderBy=${encodeURIComponent(request.orderBy.toString())}`,
+        );
+      }
+      if (request.fieldMask) {
+        queryParams.push(
+          `fieldMask=${encodeURIComponent(request.fieldMask.toString())}`,
+        );
+      }
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join('&')}`;
+      }
+      return transport.unary(uri, 'GET', body, {
+        service: 'OneStopTransportRouteService',
+        method: 'List',
+      }) as Promise<onestopservicev1_ListTransportRoutesResponse>;
+    },
+    Get(request) {
+      if (request.id === undefined || request.id === null) {
+        throw new Error('missing required field request.id');
+      }
+      const path = `/admin/v1/onestop/transport-routes/${request.id}`;
+      const body = null;
+      const queryParams: string[] = [];
+      if (request.viewMask) {
+        queryParams.push(
+          `viewMask=${encodeURIComponent(request.viewMask.toString())}`,
+        );
+      }
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join('&')}`;
+      }
+      return transport.unary(uri, 'GET', body, {
+        service: 'OneStopTransportRouteService',
+        method: 'Get',
+      }) as Promise<onestopservicev1_TransportRoute>;
+    },
+    Create(request) {
+      const path = `/admin/v1/onestop/transport-routes`;
+      const body = JSON.stringify(request);
+      return transport.unary(path, 'POST', body, {
+        service: 'OneStopTransportRouteService',
+        method: 'Create',
+      }) as Promise<wellKnownEmpty>;
+    },
+    Update(request) {
+      if (request.id === undefined || request.id === null) {
+        throw new Error('missing required field request.id');
+      }
+      const path = `/admin/v1/onestop/transport-routes/${request.id}`;
+      const bodyMap = { ...request } as Record<string, unknown>;
+      delete bodyMap["id"];
+      const body = JSON.stringify(bodyMap);
+      return transport.unary(path, 'PUT', body, {
+        service: 'OneStopTransportRouteService',
+        method: 'Update',
+      }) as Promise<wellKnownEmpty>;
+    },
+    Delete(request) {
+      if (request.id === undefined || request.id === null) {
+        throw new Error('missing required field request.id');
+      }
+      const path = `/admin/v1/onestop/transport-routes/${request.id}`;
+      const body = null;
+      return transport.unary(path, 'DELETE', body, {
+        service: 'OneStopTransportRouteService',
+        method: 'Delete',
+      }) as Promise<wellKnownEmpty>;
+    },
+  };
+}
+// 查询运送路线列表 - 回应
+export type onestopservicev1_ListTransportRoutesResponse = {
+  items: onestopservicev1_TransportRoute[] | undefined;
+  total: number | undefined;
+};
+
+// 一站式运送路线
+export type onestopservicev1_TransportRoute = {
+  createdAt?: wellKnownTimestamp;
+  createdBy?: number;
+  deletedAt?: wellKnownTimestamp;
+  deletedBy?: number;
+  departureTimes: string[] | undefined;
+  destination?: string;
+  estDurationMinutes?: number;
+  id?: number;
+  isEnabled?: boolean;
+  name?: string;
+  origin?: string;
+  roundTrip?: boolean;
+  serviceTypeId?: number;
+  updatedAt?: wellKnownTimestamp;
+  updatedBy?: number;
+  viaPoints: string[] | undefined;
+};
+
+// 查询运送路线详情 - 请求
+export type onestopservicev1_GetTransportRouteRequest = {
+  id?: number;
+  viewMask?: wellKnownFieldMask;
+};
+
+// 创建运送路线 - 请求
+export type onestopservicev1_CreateTransportRouteRequest = {
+  data: onestopservicev1_TransportRoute | undefined;
+};
+
+// 更新运送路线 - 请求
+export type onestopservicev1_UpdateTransportRouteRequest = {
+  allowMissing?: boolean;
+  data: onestopservicev1_TransportRoute | undefined;
+  id: number | undefined;
+  updateMask: undefined | wellKnownFieldMask;
+};
+
+// 删除运送路线 - 请求
+export type onestopservicev1_DeleteTransportRouteRequest = {
   id?: number;
 };
 
@@ -14871,8 +15112,9 @@ export class ApiClient {
   private _notificationRuleService?: NotificationRuleService;
   private _notificationService?: NotificationService;
   private _notificationTemplateService?: NotificationTemplateService;
-  private _oneStopInspectionPlanService?: OneStopInspectionPlanService;
+  private _oneStopPeriodicPlanService?: OneStopPeriodicPlanService;
   private _oneStopServiceTypeService?: OneStopServiceTypeService;
+  private _oneStopTransportRouteService?: OneStopTransportRouteService;
   private _onlineSessionService?: OnlineSessionService;
   private _ontologyAnnotationPropertyService?: OntologyAnnotationPropertyService;
   private _ontologyClassService?: OntologyClassService;
@@ -15053,12 +15295,16 @@ export class ApiClient {
     return this._notificationTemplateService ??= createNotificationTemplateServiceClient(this._transport);
   }
 
-  get oneStopInspectionPlanService(): OneStopInspectionPlanService {
-    return this._oneStopInspectionPlanService ??= createOneStopInspectionPlanServiceClient(this._transport);
+  get oneStopPeriodicPlanService(): OneStopPeriodicPlanService {
+    return this._oneStopPeriodicPlanService ??= createOneStopPeriodicPlanServiceClient(this._transport);
   }
 
   get oneStopServiceTypeService(): OneStopServiceTypeService {
     return this._oneStopServiceTypeService ??= createOneStopServiceTypeServiceClient(this._transport);
+  }
+
+  get oneStopTransportRouteService(): OneStopTransportRouteService {
+    return this._oneStopTransportRouteService ??= createOneStopTransportRouteServiceClient(this._transport);
   }
 
   get onlineSessionService(): OnlineSessionService {

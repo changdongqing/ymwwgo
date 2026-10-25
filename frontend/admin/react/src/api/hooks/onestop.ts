@@ -1,12 +1,15 @@
 import { useMutation, type UseMutationOptions, useQuery, type UseQueryOptions } from '@tanstack/react-query';
 import {
-  type onestopservicev1_DeleteInspectionPlanRequest,
+  type onestopservicev1_DeletePeriodicPlanRequest,
   type onestopservicev1_DeleteServiceTypeRequest,
+  type onestopservicev1_DeleteTransportRouteRequest,
   type onestopservicev1_GetServiceTypeRequest,
-  type onestopservicev1_InspectionPlan,
-  type onestopservicev1_ListInspectionPlansResponse,
+  type onestopservicev1_ListPeriodicPlansResponse,
   type onestopservicev1_ListServiceTypeResponse,
+  type onestopservicev1_ListTransportRoutesResponse,
+  type onestopservicev1_PeriodicPlan,
   type onestopservicev1_ServiceType,
+  type onestopservicev1_TransportRoute,
   type pagination_PagingRequest,
 } from '@/api/generated/admin/service/v1';
 import { makeUpdateMask, type PaginationQuery, queryClient } from '@/core';
@@ -81,20 +84,20 @@ export function useDeleteServiceType(
   });
 }
 
-// —— 巡检计划（onestop 巡检计划管理）——
+// —— 周期计划（触发方式为「计划生成」的类别管理）——
 
-const PLANS_QUERY_KEY = 'listInspectionPlans';
+const PLANS_QUERY_KEY = 'listPeriodicPlans';
 
-/** 按巡检类别取计划列表（类别下计划量少，一次取全） */
-export function useListInspectionPlans(
+/** 按类别取周期计划列表（类别下计划量少，一次取全） */
+export function useListPeriodicPlans(
   serviceTypeId: number | undefined,
-  options?: UseQueryOptions<onestopservicev1_ListInspectionPlansResponse, Error>,
+  options?: UseQueryOptions<onestopservicev1_ListPeriodicPlansResponse, Error>,
 ) {
   return useQuery({
     queryKey: [PLANS_QUERY_KEY, serviceTypeId],
     enabled: serviceTypeId != null,
     queryFn: () =>
-      apiClient.oneStopInspectionPlanService.List({
+      apiClient.oneStopPeriodicPlanService.List({
         page: 1,
         pageSize: 200,
         query: JSON.stringify({ serviceTypeId__eq: serviceTypeId }),
@@ -105,45 +108,112 @@ export function useListInspectionPlans(
   });
 }
 
-/** 创建巡检计划 */
-export function useCreateInspectionPlan(
-  options?: UseMutationOptions<unknown, Error, { values: Partial<onestopservicev1_InspectionPlan> }>,
+/** 创建周期计划 */
+export function useCreatePeriodicPlan(
+  options?: UseMutationOptions<unknown, Error, { values: Partial<onestopservicev1_PeriodicPlan> }>,
 ) {
   return useMutation({
     mutationFn: ({ values }) =>
-      apiClient.oneStopInspectionPlanService.Create({
-        data: { ...values } as onestopservicev1_InspectionPlan,
+      apiClient.oneStopPeriodicPlanService.Create({
+        data: { ...values } as onestopservicev1_PeriodicPlan,
       }),
     ...options,
   });
 }
 
-/** 更新巡检计划（{ data: {...} } 包装 + updateMask 在 hooks 层完成） */
-export function useUpdateInspectionPlan(
-  options?: UseMutationOptions<unknown, Error, { id: number; values: Partial<onestopservicev1_InspectionPlan> }>,
+/** 更新周期计划（{ data: {...} } 包装 + updateMask 在 hooks 层完成） */
+export function useUpdatePeriodicPlan(
+  options?: UseMutationOptions<unknown, Error, { id: number; values: Partial<onestopservicev1_PeriodicPlan> }>,
 ) {
   return useMutation({
     mutationFn: ({ id, values }) =>
-      apiClient.oneStopInspectionPlanService.Update({
+      apiClient.oneStopPeriodicPlanService.Update({
         id,
-        data: { ...values } as onestopservicev1_InspectionPlan,
+        data: { ...values } as onestopservicev1_PeriodicPlan,
         updateMask: makeUpdateMask(Object.keys(values ?? {})),
       }),
     ...options,
   });
 }
 
-/** 删除巡检计划 */
-export function useDeleteInspectionPlan(
-  options?: UseMutationOptions<unknown, Error, onestopservicev1_DeleteInspectionPlanRequest>,
+/** 删除周期计划 */
+export function useDeletePeriodicPlan(
+  options?: UseMutationOptions<unknown, Error, onestopservicev1_DeletePeriodicPlanRequest>,
 ) {
   return useMutation({
-    mutationFn: (data) => apiClient.oneStopInspectionPlanService.Delete(data),
+    mutationFn: (data) => apiClient.oneStopPeriodicPlanService.Delete(data),
     ...options,
   });
 }
 
-/** 巡检计划写操作后失效计划列表缓存 */
-export function invalidateInspectionPlans(queryClientInstance: typeof queryClient) {
+/** 周期计划写操作后失效计划列表缓存 */
+export function invalidatePeriodicPlans(queryClientInstance: typeof queryClient) {
   queryClientInstance.invalidateQueries({ queryKey: [PLANS_QUERY_KEY] });
+}
+
+// —— 运送路线（onestop 运送配送类别管理）——
+
+const ROUTES_QUERY_KEY = 'listTransportRoutes';
+
+/** 按运送类别取路线列表（类别下路线量少，一次取全） */
+export function useListTransportRoutes(
+  serviceTypeId: number | undefined,
+  options?: UseQueryOptions<onestopservicev1_ListTransportRoutesResponse, Error>,
+) {
+  return useQuery({
+    queryKey: [ROUTES_QUERY_KEY, serviceTypeId],
+    enabled: serviceTypeId != null,
+    queryFn: () =>
+      apiClient.oneStopTransportRouteService.List({
+        page: 1,
+        pageSize: 200,
+        query: JSON.stringify({ serviceTypeId__eq: serviceTypeId }),
+        orderBy: JSON.stringify(['id']),
+        sorting: [],
+      } as pagination_PagingRequest),
+    ...options,
+  });
+}
+
+/** 创建运送路线 */
+export function useCreateTransportRoute(
+  options?: UseMutationOptions<unknown, Error, { values: Partial<onestopservicev1_TransportRoute> }>,
+) {
+  return useMutation({
+    mutationFn: ({ values }) =>
+      apiClient.oneStopTransportRouteService.Create({
+        data: { ...values } as onestopservicev1_TransportRoute,
+      }),
+    ...options,
+  });
+}
+
+/** 更新运送路线（{ data: {...} } 包装 + updateMask 在 hooks 层完成） */
+export function useUpdateTransportRoute(
+  options?: UseMutationOptions<unknown, Error, { id: number; values: Partial<onestopservicev1_TransportRoute> }>,
+) {
+  return useMutation({
+    mutationFn: ({ id, values }) =>
+      apiClient.oneStopTransportRouteService.Update({
+        id,
+        data: { ...values } as onestopservicev1_TransportRoute,
+        updateMask: makeUpdateMask(Object.keys(values ?? {})),
+      }),
+    ...options,
+  });
+}
+
+/** 删除运送路线 */
+export function useDeleteTransportRoute(
+  options?: UseMutationOptions<unknown, Error, onestopservicev1_DeleteTransportRouteRequest>,
+) {
+  return useMutation({
+    mutationFn: (data) => apiClient.oneStopTransportRouteService.Delete(data),
+    ...options,
+  });
+}
+
+/** 运送路线写操作后失效路线列表缓存 */
+export function invalidateTransportRoutes(queryClientInstance: typeof queryClient) {
+  queryClientInstance.invalidateQueries({ queryKey: [ROUTES_QUERY_KEY] });
 }

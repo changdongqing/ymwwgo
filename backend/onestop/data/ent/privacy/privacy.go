@@ -111,28 +111,28 @@ func DenyMutationOperationRule(op ent.Op) MutationRule {
 	return OnMutationOperation(rule, op)
 }
 
-// The InspectionPlanQueryRuleFunc type is an adapter to allow the use of ordinary
+// The PeriodicPlanQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
-type InspectionPlanQueryRuleFunc func(context.Context, *ent.InspectionPlanQuery) error
+type PeriodicPlanQueryRuleFunc func(context.Context, *ent.PeriodicPlanQuery) error
 
 // EvalQuery return f(ctx, q).
-func (f InspectionPlanQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.InspectionPlanQuery); ok {
+func (f PeriodicPlanQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.PeriodicPlanQuery); ok {
 		return f(ctx, q)
 	}
-	return Denyf("ent/privacy: unexpected query type %T, expect *ent.InspectionPlanQuery", q)
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.PeriodicPlanQuery", q)
 }
 
-// The InspectionPlanMutationRuleFunc type is an adapter to allow the use of ordinary
+// The PeriodicPlanMutationRuleFunc type is an adapter to allow the use of ordinary
 // functions as a mutation rule.
-type InspectionPlanMutationRuleFunc func(context.Context, *ent.InspectionPlanMutation) error
+type PeriodicPlanMutationRuleFunc func(context.Context, *ent.PeriodicPlanMutation) error
 
 // EvalMutation calls f(ctx, m).
-func (f InspectionPlanMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
-	if m, ok := m.(*ent.InspectionPlanMutation); ok {
+func (f PeriodicPlanMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.PeriodicPlanMutation); ok {
 		return f(ctx, m)
 	}
-	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.InspectionPlanMutation", m)
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.PeriodicPlanMutation", m)
 }
 
 // The ServiceTypeQueryRuleFunc type is an adapter to allow the use of ordinary
@@ -157,6 +157,30 @@ func (f ServiceTypeMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mut
 		return f(ctx, m)
 	}
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.ServiceTypeMutation", m)
+}
+
+// The TransportRouteQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type TransportRouteQueryRuleFunc func(context.Context, *ent.TransportRouteQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f TransportRouteQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.TransportRouteQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.TransportRouteQuery", q)
+}
+
+// The TransportRouteMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type TransportRouteMutationRuleFunc func(context.Context, *ent.TransportRouteMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f TransportRouteMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.TransportRouteMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.TransportRouteMutation", m)
 }
 
 type (
@@ -194,9 +218,11 @@ var _ QueryMutationRule = FilterFunc(nil)
 
 func queryFilter(q ent.Query) (Filter, error) {
 	switch q := q.(type) {
-	case *ent.InspectionPlanQuery:
+	case *ent.PeriodicPlanQuery:
 		return q.Filter(), nil
 	case *ent.ServiceTypeQuery:
+		return q.Filter(), nil
+	case *ent.TransportRouteQuery:
 		return q.Filter(), nil
 	default:
 		return nil, Denyf("ent/privacy: unexpected query type %T for query filter", q)
@@ -205,9 +231,11 @@ func queryFilter(q ent.Query) (Filter, error) {
 
 func mutationFilter(m ent.Mutation) (Filter, error) {
 	switch m := m.(type) {
-	case *ent.InspectionPlanMutation:
+	case *ent.PeriodicPlanMutation:
 		return m.Filter(), nil
 	case *ent.ServiceTypeMutation:
+		return m.Filter(), nil
+	case *ent.TransportRouteMutation:
 		return m.Filter(), nil
 	default:
 		return nil, Denyf("ent/privacy: unexpected mutation type %T for mutation filter", m)

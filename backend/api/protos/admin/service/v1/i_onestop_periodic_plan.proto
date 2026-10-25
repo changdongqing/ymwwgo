@@ -1,0 +1,56 @@
+syntax = "proto3";
+
+package admin.service.v1;
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+
+import "pagination/v1/pagination.proto";
+
+import "onestop/service/v1/periodic_plan.proto";
+
+// 一站式周期计划管理服务（admin 门面）
+//
+// 源领域 proto 在 onestop/service/v1（独立 Go module go-wind-admin/onestop 拥有
+// 自己的同名生成包 onestopv1）；本门面只挂 HTTP 路由，消息类型直接引用源领域，
+// 生成时 onestop/service/v1 的 go_package 被指到 module 的 gen 包
+// （go-wind-admin/onestop/api/gen/go/onestop/service/v1;onestopv1，见 buf.gen.yaml），
+// 因此本服务生成的 HTTP 接口与 module 内 service 的方法签名完全一致，可直接注册。
+service OneStopPeriodicPlanService {
+  // 查询周期计划列表
+  rpc List (pagination.PagingRequest) returns (onestop.service.v1.ListPeriodicPlansResponse) {
+    option (google.api.http) = {
+      get: "/admin/v1/onestop/periodic-plans"
+    };
+  }
+
+  // 查询周期计划详情
+  rpc Get (onestop.service.v1.GetPeriodicPlanRequest) returns (onestop.service.v1.PeriodicPlan) {
+    option (google.api.http) = {
+      get: "/admin/v1/onestop/periodic-plans/{id}"
+    };
+  }
+
+  // 创建周期计划
+  rpc Create (onestop.service.v1.CreatePeriodicPlanRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/admin/v1/onestop/periodic-plans"
+      body: "*"
+    };
+  }
+
+  // 更新周期计划
+  rpc Update (onestop.service.v1.UpdatePeriodicPlanRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      put: "/admin/v1/onestop/periodic-plans/{id}"
+      body: "*"
+    };
+  }
+
+  // 删除周期计划
+  rpc Delete (onestop.service.v1.DeletePeriodicPlanRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete: "/admin/v1/onestop/periodic-plans/{id}"
+    };
+  }
+}

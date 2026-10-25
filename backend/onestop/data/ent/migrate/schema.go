@@ -9,8 +9,8 @@ import (
 )
 
 var (
-	// OnestopInspectionPlansColumns holds the columns for the "onestop_inspection_plans" table.
-	OnestopInspectionPlansColumns = []*schema.Column{
+	// OnestopPeriodicPlansColumns holds the columns for the "onestop_periodic_plans" table.
+	OnestopPeriodicPlansColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUint32, Increment: true, Comment: "id"},
 		{Name: "created_at", Type: field.TypeTime, Nullable: true, Comment: "创建时间"},
 		{Name: "updated_at", Type: field.TypeTime, Nullable: true, Comment: "更新时间"},
@@ -20,7 +20,7 @@ var (
 		{Name: "deleted_by", Type: field.TypeUint32, Nullable: true, Comment: "删除者ID"},
 		{Name: "is_enabled", Type: field.TypeBool, Nullable: true, Comment: "是否启用", Default: true},
 		{Name: "name", Type: field.TypeString, Nullable: true, Size: 128, Comment: "计划名称"},
-		{Name: "service_type_id", Type: field.TypeUint32, Nullable: true, Comment: "巡检类别ID（onestop_service_types.id，0103 子树）"},
+		{Name: "service_type_id", Type: field.TypeUint32, Nullable: true, Comment: "计划类别ID（onestop_service_types.id，触发模式为计划生成的小类/细类）"},
 		{Name: "freq_type", Type: field.TypeEnum, Nullable: true, Comment: "周期类型 FREQ_DAILY:每日 FREQ_WEEKLY:每周 FREQ_MONTHLY:每月 FREQ_YEARLY:每年", Enums: []string{"FREQ_DAILY", "FREQ_WEEKLY", "FREQ_MONTHLY", "FREQ_YEARLY"}},
 		{Name: "times", Type: field.TypeJSON, Nullable: true, Comment: "执行时间点列表（HH:mm），每个执行日按列表各执行一次"},
 		{Name: "weekdays", Type: field.TypeJSON, Nullable: true, Comment: "周几执行（1=周一…7=周日），每周计划使用"},
@@ -29,29 +29,29 @@ var (
 		{Name: "months", Type: field.TypeJSON, Nullable: true, Comment: "几月执行（1-12），每年计划使用"},
 		{Name: "excluded_dates", Type: field.TypeJSON, Nullable: true, Comment: "排除日期列表（YYYY-MM-DD，如法定节假日）"},
 		{Name: "post", Type: field.TypeString, Nullable: true, Size: 64, Comment: "执行岗位（派单目标岗位）"},
-		{Name: "space_items", Type: field.TypeJSON, Nullable: true, Comment: "空间巡检点表 [{name,enabled}]"},
-		{Name: "equipment_items", Type: field.TypeJSON, Nullable: true, Comment: "设备巡检点表 [{name,enabled}]"},
+		{Name: "space_items", Type: field.TypeJSON, Nullable: true, Comment: "空间作业点表 [{name,enabled}]"},
+		{Name: "equipment_items", Type: field.TypeJSON, Nullable: true, Comment: "设备作业点表 [{name,enabled}]"},
 		{Name: "space_refs", Type: field.TypeJSON, Nullable: true, Comment: "空间范围（预留：空间对象标识列表）"},
 		{Name: "equipment_refs", Type: field.TypeJSON, Nullable: true, Comment: "设备范围（预留：设备对象标识列表）"},
 		{Name: "effective_from", Type: field.TypeTime, Nullable: true, Comment: "生效日期（含当日；为空表示立即生效）"},
 		{Name: "effective_to", Type: field.TypeTime, Nullable: true, Comment: "结束日期（含当日；为空表示长期有效）"},
 	}
-	// OnestopInspectionPlansTable holds the schema information for the "onestop_inspection_plans" table.
-	OnestopInspectionPlansTable = &schema.Table{
-		Name:       "onestop_inspection_plans",
-		Comment:    "一站式巡检计划表（0103 巡检巡查类别的计划配置：频率/岗位/点表/生效期）",
-		Columns:    OnestopInspectionPlansColumns,
-		PrimaryKey: []*schema.Column{OnestopInspectionPlansColumns[0]},
+	// OnestopPeriodicPlansTable holds the schema information for the "onestop_periodic_plans" table.
+	OnestopPeriodicPlansTable = &schema.Table{
+		Name:       "onestop_periodic_plans",
+		Comment:    "一站式周期计划表（计划生成类类别的计划配置：频率/岗位/点表/生效期）",
+		Columns:    OnestopPeriodicPlansColumns,
+		PrimaryKey: []*schema.Column{OnestopPeriodicPlansColumns[0]},
 		Indexes: []*schema.Index{
 			{
-				Name:    "inspectionplan_service_type_id",
+				Name:    "periodicplan_service_type_id",
 				Unique:  false,
-				Columns: []*schema.Column{OnestopInspectionPlansColumns[9]},
+				Columns: []*schema.Column{OnestopPeriodicPlansColumns[9]},
 			},
 			{
-				Name:    "inspectionplan_freq_type",
+				Name:    "periodicplan_freq_type",
 				Unique:  false,
-				Columns: []*schema.Column{OnestopInspectionPlansColumns[10]},
+				Columns: []*schema.Column{OnestopPeriodicPlansColumns[10]},
 			},
 		},
 	}
@@ -69,15 +69,22 @@ var (
 		{Name: "name", Type: field.TypeString, Nullable: true, Size: 128, Comment: "服务名称"},
 		{Name: "level", Type: field.TypeEnum, Nullable: true, Comment: "服务层级 LEVEL_MAJOR:大类 LEVEL_MIDDLE:中类 LEVEL_MINOR:小类 LEVEL_DETAIL:细类", Enums: []string{"LEVEL_MAJOR", "LEVEL_MIDDLE", "LEVEL_MINOR", "LEVEL_DETAIL"}},
 		{Name: "description", Type: field.TypeString, Nullable: true, Size: 512, Comment: "描述", Default: ""},
-		{Name: "repair_post", Type: field.TypeString, Nullable: true, Size: 64, Comment: "维修岗位（派单目标岗位，如：电工/管工/空调工）"},
+		{Name: "execution_post", Type: field.TypeString, Nullable: true, Size: 64, Comment: "执行岗位（派单目标岗位，如：电工/运送员/保洁员）"},
 		{Name: "standard_work_hours", Type: field.TypeFloat64, Nullable: true, Comment: "标准工时（小时）：单次作业标准人时，绩效与负载核算用"},
 		{Name: "response_time_limit", Type: field.TypeUint32, Nullable: true, Comment: "响应时限（分钟）：受理到到场的 SLA"},
 		{Name: "completion_time_limit", Type: field.TypeUint32, Nullable: true, Comment: "完成时限（分钟）：受理到完工的 SLA"},
 		{Name: "guidance", Type: field.TypeString, Nullable: true, Size: 2048, Comment: "标准指导说明：作业 SOP 与安全注意事项"},
-		{Name: "common_phrases", Type: field.TypeJSON, Nullable: true, Comment: "常见报修语句清单：报修端快捷语句，兼作语义归型语料"},
+		{Name: "common_phrases", Type: field.TypeJSON, Nullable: true, Comment: "常见语句清单：发起端快捷语句，兼作语义归型语料"},
 		{Name: "standard_tools", Type: field.TypeJSON, Nullable: true, Comment: "服务标准工具清单：出工标配工具"},
 		{Name: "spare_parts", Type: field.TypeJSON, Nullable: true, Comment: "常用备件/耗材清单：出工常备，配合库存领用"},
-		{Name: "inspection_items", Type: field.TypeJSON, Nullable: true, Comment: "标准巡检项目库：巡检计划点表模板（仅 0103 巡检巡查子树）"},
+		{Name: "trigger_mode", Type: field.TypeEnum, Nullable: true, Comment: "任务触发方式 TRIGGER_ON_DEMAND:按需发起 TRIGGER_SCHEDULED:计划生成（未设置回退上级，默认按需）", Enums: []string{"TRIGGER_ON_DEMAND", "TRIGGER_SCHEDULED"}},
+		{Name: "default_priority", Type: field.TypeEnum, Nullable: true, Comment: "默认优先级 PRIORITY_NORMAL:常规 PRIORITY_URGENT:加急 PRIORITY_EMERGENCY:特急（派单排序与超时预警加权）", Enums: []string{"PRIORITY_NORMAL", "PRIORITY_URGENT", "PRIORITY_EMERGENCY"}},
+		{Name: "acceptance_modes", Type: field.TypeJSON, Nullable: true, Comment: "验收方式（多选 ACCEPT_SIGN:签名确认 ACCEPT_SCAN:扫码核对 ACCEPT_PHOTO:拍照留证 ACCEPT_DUAL:双人验收）"},
+		{Name: "acceptance_items", Type: field.TypeJSON, Nullable: true, Comment: "验收项清单 [{name,required}]：完工/送达确认页逐项核对"},
+		{Name: "temperature_requirement", Type: field.TypeEnum, Nullable: true, Comment: "温控要求 TEMP_NORMAL:常温 TEMP_COLD:冷藏2-8℃ TEMP_FROZEN:冷冻 TEMP_WARM:保温", Enums: []string{"TEMP_NORMAL", "TEMP_COLD", "TEMP_FROZEN", "TEMP_WARM"}},
+		{Name: "requires_approval", Type: field.TypeBool, Nullable: true, Comment: "是否需事前审批（搬入搬出押运、动火作业、资源申请等管控类服务）", Default: false},
+		{Name: "cargo_types", Type: field.TypeJSON, Nullable: true, Comment: "运送物品细目清单：该类型承接的物品范围（推荐 0106 运送配送子树填写）"},
+		{Name: "standard_items", Type: field.TypeJSON, Nullable: true, Comment: "标准作业项目库：周期计划点表模板"},
 		{Name: "parent_id", Type: field.TypeUint32, Nullable: true, Comment: "父节点ID"},
 	}
 	// OnestopServiceTypesTable holds the schema information for the "onestop_service_types" table.
@@ -89,7 +96,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "onestop_service_types_onestop_service_types_children",
-				Columns:    []*schema.Column{OnestopServiceTypesColumns[21]},
+				Columns:    []*schema.Column{OnestopServiceTypesColumns[28]},
 				RefColumns: []*schema.Column{OnestopServiceTypesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -98,7 +105,7 @@ var (
 			{
 				Name:    "servicetype_parent_id",
 				Unique:  false,
-				Columns: []*schema.Column{OnestopServiceTypesColumns[21]},
+				Columns: []*schema.Column{OnestopServiceTypesColumns[28]},
 			},
 			{
 				Name:    "servicetype_level",
@@ -107,19 +114,56 @@ var (
 			},
 		},
 	}
+	// OnestopTransportRoutesColumns holds the columns for the "onestop_transport_routes" table.
+	OnestopTransportRoutesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUint32, Increment: true, Comment: "id"},
+		{Name: "created_at", Type: field.TypeTime, Nullable: true, Comment: "创建时间"},
+		{Name: "updated_at", Type: field.TypeTime, Nullable: true, Comment: "更新时间"},
+		{Name: "deleted_at", Type: field.TypeTime, Nullable: true, Comment: "删除时间"},
+		{Name: "created_by", Type: field.TypeUint32, Nullable: true, Comment: "创建者ID"},
+		{Name: "updated_by", Type: field.TypeUint32, Nullable: true, Comment: "更新者ID"},
+		{Name: "deleted_by", Type: field.TypeUint32, Nullable: true, Comment: "删除者ID"},
+		{Name: "is_enabled", Type: field.TypeBool, Nullable: true, Comment: "是否启用", Default: true},
+		{Name: "name", Type: field.TypeString, Nullable: true, Size: 128, Comment: "路线名称"},
+		{Name: "service_type_id", Type: field.TypeUint32, Nullable: true, Comment: "运送类别ID（onestop_service_types.id，0106 子树）"},
+		{Name: "origin", Type: field.TypeString, Nullable: true, Size: 128, Comment: "起点（取件地，如：静配中心）"},
+		{Name: "destination", Type: field.TypeString, Nullable: true, Size: 128, Comment: "终点（送达地，如：内科楼 12 病区）"},
+		{Name: "via_points", Type: field.TypeJSON, Nullable: true, Comment: "途经点列表（按序途经的中间点，可空）"},
+		{Name: "est_duration_minutes", Type: field.TypeUint32, Nullable: true, Comment: "预计单程时长（分钟，1-1440）：调度 ETA 与超时判定基准"},
+		{Name: "round_trip", Type: field.TypeBool, Nullable: true, Comment: "是否往返路线（送达后原路返回起点，如餐车回收）", Default: false},
+		{Name: "departure_times", Type: field.TypeJSON, Nullable: true, Comment: "定时班次发班时间点列表（HH:mm，每日按点发班）；为空表示按需即时派单"},
+	}
+	// OnestopTransportRoutesTable holds the schema information for the "onestop_transport_routes" table.
+	OnestopTransportRoutesTable = &schema.Table{
+		Name:       "onestop_transport_routes",
+		Comment:    "一站式运送路线表（0106 运送配送类别的常用路线：起终点/途经点/时长/往返/定时班次）",
+		Columns:    OnestopTransportRoutesColumns,
+		PrimaryKey: []*schema.Column{OnestopTransportRoutesColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "transportroute_service_type_id",
+				Unique:  false,
+				Columns: []*schema.Column{OnestopTransportRoutesColumns[9]},
+			},
+		},
+	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
-		OnestopInspectionPlansTable,
+		OnestopPeriodicPlansTable,
 		OnestopServiceTypesTable,
+		OnestopTransportRoutesTable,
 	}
 )
 
 func init() {
-	OnestopInspectionPlansTable.Annotation = &entsql.Annotation{
-		Table: "onestop_inspection_plans",
+	OnestopPeriodicPlansTable.Annotation = &entsql.Annotation{
+		Table: "onestop_periodic_plans",
 	}
 	OnestopServiceTypesTable.ForeignKeys[0].RefTable = OnestopServiceTypesTable
 	OnestopServiceTypesTable.Annotation = &entsql.Annotation{
 		Table: "onestop_service_types",
+	}
+	OnestopTransportRoutesTable.Annotation = &entsql.Annotation{
+		Table: "onestop_transport_routes",
 	}
 }

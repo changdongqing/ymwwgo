@@ -5,6 +5,7 @@ package ent
 import (
 	"encoding/json"
 	"fmt"
+	"go-wind-admin/onestop/data/ent/schema"
 	"go-wind-admin/onestop/data/ent/servicetype"
 	"strings"
 	"time"
@@ -43,8 +44,8 @@ type ServiceType struct {
 	Level *servicetype.Level `json:"level,omitempty"`
 	// 描述
 	Description *string `json:"description,omitempty"`
-	// 维修岗位（派单目标岗位，如：电工/管工/空调工）
-	RepairPost *string `json:"repair_post,omitempty"`
+	// 执行岗位（派单目标岗位，如：电工/运送员/保洁员）
+	ExecutionPost *string `json:"execution_post,omitempty"`
 	// 标准工时（小时）：单次作业标准人时，绩效与负载核算用
 	StandardWorkHours *float64 `json:"standard_work_hours,omitempty"`
 	// 响应时限（分钟）：受理到到场的 SLA
@@ -53,14 +54,28 @@ type ServiceType struct {
 	CompletionTimeLimit *uint32 `json:"completion_time_limit,omitempty"`
 	// 标准指导说明：作业 SOP 与安全注意事项
 	Guidance *string `json:"guidance,omitempty"`
-	// 常见报修语句清单：报修端快捷语句，兼作语义归型语料
+	// 常见语句清单：发起端快捷语句，兼作语义归型语料
 	CommonPhrases []string `json:"common_phrases,omitempty"`
 	// 服务标准工具清单：出工标配工具
 	StandardTools []string `json:"standard_tools,omitempty"`
 	// 常用备件/耗材清单：出工常备，配合库存领用
 	SpareParts []string `json:"spare_parts,omitempty"`
-	// 标准巡检项目库：巡检计划点表模板（仅 0103 巡检巡查子树）
-	InspectionItems []string `json:"inspection_items,omitempty"`
+	// 任务触发方式 TRIGGER_ON_DEMAND:按需发起 TRIGGER_SCHEDULED:计划生成（未设置回退上级，默认按需）
+	TriggerMode *servicetype.TriggerMode `json:"trigger_mode,omitempty"`
+	// 默认优先级 PRIORITY_NORMAL:常规 PRIORITY_URGENT:加急 PRIORITY_EMERGENCY:特急（派单排序与超时预警加权）
+	DefaultPriority *servicetype.DefaultPriority `json:"default_priority,omitempty"`
+	// 验收方式（多选 ACCEPT_SIGN:签名确认 ACCEPT_SCAN:扫码核对 ACCEPT_PHOTO:拍照留证 ACCEPT_DUAL:双人验收）
+	AcceptanceModes []string `json:"acceptance_modes,omitempty"`
+	// 验收项清单 [{name,required}]：完工/送达确认页逐项核对
+	AcceptanceItems []schema.ServiceAcceptanceItem `json:"acceptance_items,omitempty"`
+	// 温控要求 TEMP_NORMAL:常温 TEMP_COLD:冷藏2-8℃ TEMP_FROZEN:冷冻 TEMP_WARM:保温
+	TemperatureRequirement *servicetype.TemperatureRequirement `json:"temperature_requirement,omitempty"`
+	// 是否需事前审批（搬入搬出押运、动火作业、资源申请等管控类服务）
+	RequiresApproval bool `json:"requires_approval,omitempty"`
+	// 运送物品细目清单：该类型承接的物品范围（推荐 0106 运送配送子树填写）
+	CargoTypes []string `json:"cargo_types,omitempty"`
+	// 标准作业项目库：周期计划点表模板
+	StandardItems []string `json:"standard_items,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ServiceTypeQuery when eager-loading is set.
 	Edges        ServiceTypeEdges `json:"edges"`
@@ -103,15 +118,15 @@ func (*ServiceType) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case servicetype.FieldCommonPhrases, servicetype.FieldStandardTools, servicetype.FieldSpareParts, servicetype.FieldInspectionItems:
+		case servicetype.FieldCommonPhrases, servicetype.FieldStandardTools, servicetype.FieldSpareParts, servicetype.FieldAcceptanceModes, servicetype.FieldAcceptanceItems, servicetype.FieldCargoTypes, servicetype.FieldStandardItems:
 			values[i] = new([]byte)
-		case servicetype.FieldIsEnabled:
+		case servicetype.FieldIsEnabled, servicetype.FieldRequiresApproval:
 			values[i] = new(sql.NullBool)
 		case servicetype.FieldStandardWorkHours:
 			values[i] = new(sql.NullFloat64)
 		case servicetype.FieldID, servicetype.FieldCreatedBy, servicetype.FieldUpdatedBy, servicetype.FieldDeletedBy, servicetype.FieldParentID, servicetype.FieldResponseTimeLimit, servicetype.FieldCompletionTimeLimit:
 			values[i] = new(sql.NullInt64)
-		case servicetype.FieldCode, servicetype.FieldName, servicetype.FieldLevel, servicetype.FieldDescription, servicetype.FieldRepairPost, servicetype.FieldGuidance:
+		case servicetype.FieldCode, servicetype.FieldName, servicetype.FieldLevel, servicetype.FieldDescription, servicetype.FieldExecutionPost, servicetype.FieldGuidance, servicetype.FieldTriggerMode, servicetype.FieldDefaultPriority, servicetype.FieldTemperatureRequirement:
 			values[i] = new(sql.NullString)
 		case servicetype.FieldCreatedAt, servicetype.FieldUpdatedAt, servicetype.FieldDeletedAt:
 			values[i] = new(sql.NullTime)
@@ -220,12 +235,12 @@ func (_m *ServiceType) assignValues(columns []string, values []any) error {
 				_m.Description = new(string)
 				*_m.Description = value.String
 			}
-		case servicetype.FieldRepairPost:
+		case servicetype.FieldExecutionPost:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field repair_post", values[i])
+				return fmt.Errorf("unexpected type %T for field execution_post", values[i])
 			} else if value.Valid {
-				_m.RepairPost = new(string)
-				*_m.RepairPost = value.String
+				_m.ExecutionPost = new(string)
+				*_m.ExecutionPost = value.String
 			}
 		case servicetype.FieldStandardWorkHours:
 			if value, ok := values[i].(*sql.NullFloat64); !ok {
@@ -279,12 +294,63 @@ func (_m *ServiceType) assignValues(columns []string, values []any) error {
 					return fmt.Errorf("unmarshal field spare_parts: %w", err)
 				}
 			}
-		case servicetype.FieldInspectionItems:
+		case servicetype.FieldTriggerMode:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field trigger_mode", values[i])
+			} else if value.Valid {
+				_m.TriggerMode = new(servicetype.TriggerMode)
+				*_m.TriggerMode = servicetype.TriggerMode(value.String)
+			}
+		case servicetype.FieldDefaultPriority:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field default_priority", values[i])
+			} else if value.Valid {
+				_m.DefaultPriority = new(servicetype.DefaultPriority)
+				*_m.DefaultPriority = servicetype.DefaultPriority(value.String)
+			}
+		case servicetype.FieldAcceptanceModes:
 			if value, ok := values[i].(*[]byte); !ok {
-				return fmt.Errorf("unexpected type %T for field inspection_items", values[i])
+				return fmt.Errorf("unexpected type %T for field acceptance_modes", values[i])
 			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &_m.InspectionItems); err != nil {
-					return fmt.Errorf("unmarshal field inspection_items: %w", err)
+				if err := json.Unmarshal(*value, &_m.AcceptanceModes); err != nil {
+					return fmt.Errorf("unmarshal field acceptance_modes: %w", err)
+				}
+			}
+		case servicetype.FieldAcceptanceItems:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field acceptance_items", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &_m.AcceptanceItems); err != nil {
+					return fmt.Errorf("unmarshal field acceptance_items: %w", err)
+				}
+			}
+		case servicetype.FieldTemperatureRequirement:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field temperature_requirement", values[i])
+			} else if value.Valid {
+				_m.TemperatureRequirement = new(servicetype.TemperatureRequirement)
+				*_m.TemperatureRequirement = servicetype.TemperatureRequirement(value.String)
+			}
+		case servicetype.FieldRequiresApproval:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field requires_approval", values[i])
+			} else if value.Valid {
+				_m.RequiresApproval = value.Bool
+			}
+		case servicetype.FieldCargoTypes:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field cargo_types", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &_m.CargoTypes); err != nil {
+					return fmt.Errorf("unmarshal field cargo_types: %w", err)
+				}
+			}
+		case servicetype.FieldStandardItems:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field standard_items", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &_m.StandardItems); err != nil {
+					return fmt.Errorf("unmarshal field standard_items: %w", err)
 				}
 			}
 		default:
@@ -393,8 +459,8 @@ func (_m *ServiceType) String() string {
 		builder.WriteString(*v)
 	}
 	builder.WriteString(", ")
-	if v := _m.RepairPost; v != nil {
-		builder.WriteString("repair_post=")
+	if v := _m.ExecutionPost; v != nil {
+		builder.WriteString("execution_post=")
 		builder.WriteString(*v)
 	}
 	builder.WriteString(", ")
@@ -427,8 +493,35 @@ func (_m *ServiceType) String() string {
 	builder.WriteString("spare_parts=")
 	builder.WriteString(fmt.Sprintf("%v", _m.SpareParts))
 	builder.WriteString(", ")
-	builder.WriteString("inspection_items=")
-	builder.WriteString(fmt.Sprintf("%v", _m.InspectionItems))
+	if v := _m.TriggerMode; v != nil {
+		builder.WriteString("trigger_mode=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	if v := _m.DefaultPriority; v != nil {
+		builder.WriteString("default_priority=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	builder.WriteString("acceptance_modes=")
+	builder.WriteString(fmt.Sprintf("%v", _m.AcceptanceModes))
+	builder.WriteString(", ")
+	builder.WriteString("acceptance_items=")
+	builder.WriteString(fmt.Sprintf("%v", _m.AcceptanceItems))
+	builder.WriteString(", ")
+	if v := _m.TemperatureRequirement; v != nil {
+		builder.WriteString("temperature_requirement=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	builder.WriteString("requires_approval=")
+	builder.WriteString(fmt.Sprintf("%v", _m.RequiresApproval))
+	builder.WriteString(", ")
+	builder.WriteString("cargo_types=")
+	builder.WriteString(fmt.Sprintf("%v", _m.CargoTypes))
+	builder.WriteString(", ")
+	builder.WriteString("standard_items=")
+	builder.WriteString(fmt.Sprintf("%v", _m.StandardItems))
 	builder.WriteByte(')')
 	return builder.String()
 }

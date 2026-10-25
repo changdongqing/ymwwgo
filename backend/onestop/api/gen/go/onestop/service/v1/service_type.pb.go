@@ -83,38 +83,260 @@ func (Level) EnumDescriptor() ([]byte, []int) {
 	return file_onestop_service_v1_service_type_proto_rawDescGZIP(), []int{0}
 }
 
+// 默认优先级：工单派单排序与超时预警加权（0101 报修 / 0106 运送子树）
+type ServicePriority int32
+
+const (
+	ServicePriority_PRIORITY_UNSPECIFIED ServicePriority = 0 // 未指定（按常规处理）
+	ServicePriority_PRIORITY_NORMAL      ServicePriority = 1 // 常规：按队列顺序派发
+	ServicePriority_PRIORITY_URGENT      ServicePriority = 2 // 加急：插队派发、超时预警提前（如急送标本）
+	ServicePriority_PRIORITY_EMERGENCY   ServicePriority = 3 // 特急：立即派发并逐级上报（如电梯困人、危重患者转运）
+)
+
+// Enum value maps for ServicePriority.
+var (
+	ServicePriority_name = map[int32]string{
+		0: "PRIORITY_UNSPECIFIED",
+		1: "PRIORITY_NORMAL",
+		2: "PRIORITY_URGENT",
+		3: "PRIORITY_EMERGENCY",
+	}
+	ServicePriority_value = map[string]int32{
+		"PRIORITY_UNSPECIFIED": 0,
+		"PRIORITY_NORMAL":      1,
+		"PRIORITY_URGENT":      2,
+		"PRIORITY_EMERGENCY":   3,
+	}
+)
+
+func (x ServicePriority) Enum() *ServicePriority {
+	p := new(ServicePriority)
+	*p = x
+	return p
+}
+
+func (x ServicePriority) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (ServicePriority) Descriptor() protoreflect.EnumDescriptor {
+	return file_onestop_service_v1_service_type_proto_enumTypes[1].Descriptor()
+}
+
+func (ServicePriority) Type() protoreflect.EnumType {
+	return &file_onestop_service_v1_service_type_proto_enumTypes[1]
+}
+
+func (x ServicePriority) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use ServicePriority.Descriptor instead.
+func (ServicePriority) EnumDescriptor() ([]byte, []int) {
+	return file_onestop_service_v1_service_type_proto_rawDescGZIP(), []int{1}
+}
+
+// 温控要求：运送配送的冷链/保温管理（标本、药品、血液、营养餐）
+type TemperatureRequirement int32
+
+const (
+	TemperatureRequirement_TEMP_UNSPECIFIED TemperatureRequirement = 0 // 未指定（按常温处理）
+	TemperatureRequirement_TEMP_NORMAL      TemperatureRequirement = 1 // 常温
+	TemperatureRequirement_TEMP_COLD        TemperatureRequirement = 2 // 冷藏 2-8℃（标本、静配药品、血液制品）
+	TemperatureRequirement_TEMP_FROZEN      TemperatureRequirement = 3 // 冷冻 ≤-18℃（冰冻血浆、冷冻试剂）
+	TemperatureRequirement_TEMP_WARM        TemperatureRequirement = 4 // 保温 ≥60℃（营养餐配送）
+)
+
+// Enum value maps for TemperatureRequirement.
+var (
+	TemperatureRequirement_name = map[int32]string{
+		0: "TEMP_UNSPECIFIED",
+		1: "TEMP_NORMAL",
+		2: "TEMP_COLD",
+		3: "TEMP_FROZEN",
+		4: "TEMP_WARM",
+	}
+	TemperatureRequirement_value = map[string]int32{
+		"TEMP_UNSPECIFIED": 0,
+		"TEMP_NORMAL":      1,
+		"TEMP_COLD":        2,
+		"TEMP_FROZEN":      3,
+		"TEMP_WARM":        4,
+	}
+)
+
+func (x TemperatureRequirement) Enum() *TemperatureRequirement {
+	p := new(TemperatureRequirement)
+	*p = x
+	return p
+}
+
+func (x TemperatureRequirement) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (TemperatureRequirement) Descriptor() protoreflect.EnumDescriptor {
+	return file_onestop_service_v1_service_type_proto_enumTypes[2].Descriptor()
+}
+
+func (TemperatureRequirement) Type() protoreflect.EnumType {
+	return &file_onestop_service_v1_service_type_proto_enumTypes[2]
+}
+
+func (x TemperatureRequirement) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use TemperatureRequirement.Descriptor instead.
+func (TemperatureRequirement) EnumDescriptor() ([]byte, []int) {
+	return file_onestop_service_v1_service_type_proto_rawDescGZIP(), []int{2}
+}
+
+// 任务触发方式：周期计划的统一开关。按需发起 = 工单由用户/呼叫触发，
+// 无周期计划入口；计划生成 = 可挂周期计划（OneStopPeriodicPlanService），
+// 任务由后续工单调度器按频率生成（定时班次即计划的 times）。
+// 细类未设置回退小类，小类也未设置按 TRIGGER_ON_DEMAND。
+type TriggerMode int32
+
+const (
+	TriggerMode_TRIGGER_UNSPECIFIED TriggerMode = 0 // 未指定（回退上级，最终默认按需）
+	TriggerMode_TRIGGER_ON_DEMAND   TriggerMode = 1 // 按需发起：报修、突发、投诉、应急等事件型服务
+	TriggerMode_TRIGGER_SCHEDULED   TriggerMode = 2 // 计划生成：巡检、维保、日常保洁、消杀、抄表等周期型服务
+)
+
+// Enum value maps for TriggerMode.
+var (
+	TriggerMode_name = map[int32]string{
+		0: "TRIGGER_UNSPECIFIED",
+		1: "TRIGGER_ON_DEMAND",
+		2: "TRIGGER_SCHEDULED",
+	}
+	TriggerMode_value = map[string]int32{
+		"TRIGGER_UNSPECIFIED": 0,
+		"TRIGGER_ON_DEMAND":   1,
+		"TRIGGER_SCHEDULED":   2,
+	}
+)
+
+func (x TriggerMode) Enum() *TriggerMode {
+	p := new(TriggerMode)
+	*p = x
+	return p
+}
+
+func (x TriggerMode) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (TriggerMode) Descriptor() protoreflect.EnumDescriptor {
+	return file_onestop_service_v1_service_type_proto_enumTypes[3].Descriptor()
+}
+
+func (TriggerMode) Type() protoreflect.EnumType {
+	return &file_onestop_service_v1_service_type_proto_enumTypes[3]
+}
+
+func (x TriggerMode) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use TriggerMode.Descriptor instead.
+func (TriggerMode) EnumDescriptor() ([]byte, []int) {
+	return file_onestop_service_v1_service_type_proto_rawDescGZIP(), []int{3}
+}
+
+// 验收项：完工（报修）/送达（运送）确认页逐项核对的 checklist 项
+type ServiceAcceptanceItem struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`          // 验收项名称
+	Required      bool                   `protobuf:"varint,2,opt,name=required,proto3" json:"required,omitempty"` // 是否必检项
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ServiceAcceptanceItem) Reset() {
+	*x = ServiceAcceptanceItem{}
+	mi := &file_onestop_service_v1_service_type_proto_msgTypes[0]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ServiceAcceptanceItem) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ServiceAcceptanceItem) ProtoMessage() {}
+
+func (x *ServiceAcceptanceItem) ProtoReflect() protoreflect.Message {
+	mi := &file_onestop_service_v1_service_type_proto_msgTypes[0]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ServiceAcceptanceItem.ProtoReflect.Descriptor instead.
+func (*ServiceAcceptanceItem) Descriptor() ([]byte, []int) {
+	return file_onestop_service_v1_service_type_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *ServiceAcceptanceItem) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *ServiceAcceptanceItem) GetRequired() bool {
+	if x != nil {
+		return x.Required
+	}
+	return false
+}
+
 // 一站式服务类型
 type ServiceType struct {
-	state               protoimpl.MessageState `protogen:"open.v1"`
-	Id                  *uint32                `protobuf:"varint,1,opt,name=id,proto3,oneof" json:"id,omitempty"`                                                                 // 服务类型ID
-	Code                *string                `protobuf:"bytes,2,opt,name=code,proto3,oneof" json:"code,omitempty"`                                                              // 服务编码
-	Name                *string                `protobuf:"bytes,3,opt,name=name,proto3,oneof" json:"name,omitempty"`                                                              // 服务名称
-	Level               *Level                 `protobuf:"varint,4,opt,name=level,proto3,enum=onestop.service.v1.Level,oneof" json:"level,omitempty"`                             // 服务层级
-	ParentId            *uint32                `protobuf:"varint,5,opt,name=parent_id,json=parentId,proto3,oneof" json:"parent_id,omitempty"`                                     // 上级服务类型ID
-	Description         *string                `protobuf:"bytes,6,opt,name=description,proto3,oneof" json:"description,omitempty"`                                                // 描述
-	IsEnabled           *bool                  `protobuf:"varint,7,opt,name=is_enabled,json=isEnabled,proto3,oneof" json:"is_enabled,omitempty"`                                  // 是否启用
-	RepairPost          *string                `protobuf:"bytes,9,opt,name=repair_post,json=repairPost,proto3,oneof" json:"repair_post,omitempty"`                                // 维修岗位
-	StandardWorkHours   *float64               `protobuf:"fixed64,10,opt,name=standard_work_hours,json=standardWorkHours,proto3,oneof" json:"standard_work_hours,omitempty"`      // 标准工时（小时）
-	ResponseTimeLimit   *uint32                `protobuf:"varint,11,opt,name=response_time_limit,json=responseTimeLimit,proto3,oneof" json:"response_time_limit,omitempty"`       // 响应时限（分钟）
-	CompletionTimeLimit *uint32                `protobuf:"varint,12,opt,name=completion_time_limit,json=completionTimeLimit,proto3,oneof" json:"completion_time_limit,omitempty"` // 完成时限（分钟）
-	Guidance            *string                `protobuf:"bytes,13,opt,name=guidance,proto3,oneof" json:"guidance,omitempty"`                                                     // 标准指导说明
-	CommonPhrases       []string               `protobuf:"bytes,14,rep,name=common_phrases,json=commonPhrases,proto3" json:"common_phrases,omitempty"`                            // 常见报修语句清单
-	StandardTools       []string               `protobuf:"bytes,15,rep,name=standard_tools,json=standardTools,proto3" json:"standard_tools,omitempty"`                            // 服务标准工具清单
-	SpareParts          []string               `protobuf:"bytes,16,rep,name=spare_parts,json=spareParts,proto3" json:"spare_parts,omitempty"`                                     // 常用备件/耗材清单
-	InspectionItems     []string               `protobuf:"bytes,17,rep,name=inspection_items,json=inspectionItems,proto3" json:"inspection_items,omitempty"`                      // 标准巡检项目库
-	CreatedBy           *uint32                `protobuf:"varint,100,opt,name=created_by,json=createdBy,proto3,oneof" json:"created_by,omitempty"`                                // 创建者ID
-	UpdatedBy           *uint32                `protobuf:"varint,101,opt,name=updated_by,json=updatedBy,proto3,oneof" json:"updated_by,omitempty"`                                // 更新者ID
-	DeletedBy           *uint32                `protobuf:"varint,102,opt,name=deleted_by,json=deletedBy,proto3,oneof" json:"deleted_by,omitempty"`                                // 删除者用户ID
-	CreatedAt           *timestamppb.Timestamp `protobuf:"bytes,200,opt,name=created_at,json=createdAt,proto3,oneof" json:"created_at,omitempty"`                                 // 创建时间
-	UpdatedAt           *timestamppb.Timestamp `protobuf:"bytes,201,opt,name=updated_at,json=updatedAt,proto3,oneof" json:"updated_at,omitempty"`                                 // 更新时间
-	DeletedAt           *timestamppb.Timestamp `protobuf:"bytes,202,opt,name=deleted_at,json=deletedAt,proto3,oneof" json:"deleted_at,omitempty"`                                 // 删除时间
-	unknownFields       protoimpl.UnknownFields
-	sizeCache           protoimpl.SizeCache
+	state                  protoimpl.MessageState   `protogen:"open.v1"`
+	Id                     *uint32                  `protobuf:"varint,1,opt,name=id,proto3,oneof" json:"id,omitempty"`                                                                                                                       // 服务类型ID
+	Code                   *string                  `protobuf:"bytes,2,opt,name=code,proto3,oneof" json:"code,omitempty"`                                                                                                                    // 服务编码
+	Name                   *string                  `protobuf:"bytes,3,opt,name=name,proto3,oneof" json:"name,omitempty"`                                                                                                                    // 服务名称
+	Level                  *Level                   `protobuf:"varint,4,opt,name=level,proto3,enum=onestop.service.v1.Level,oneof" json:"level,omitempty"`                                                                                   // 服务层级
+	ParentId               *uint32                  `protobuf:"varint,5,opt,name=parent_id,json=parentId,proto3,oneof" json:"parent_id,omitempty"`                                                                                           // 上级服务类型ID
+	Description            *string                  `protobuf:"bytes,6,opt,name=description,proto3,oneof" json:"description,omitempty"`                                                                                                      // 描述
+	IsEnabled              *bool                    `protobuf:"varint,7,opt,name=is_enabled,json=isEnabled,proto3,oneof" json:"is_enabled,omitempty"`                                                                                        // 是否启用
+	StandardWorkHours      *float64                 `protobuf:"fixed64,10,opt,name=standard_work_hours,json=standardWorkHours,proto3,oneof" json:"standard_work_hours,omitempty"`                                                            // 标准工时（小时）
+	ResponseTimeLimit      *uint32                  `protobuf:"varint,11,opt,name=response_time_limit,json=responseTimeLimit,proto3,oneof" json:"response_time_limit,omitempty"`                                                             // 响应时限（分钟）
+	CompletionTimeLimit    *uint32                  `protobuf:"varint,12,opt,name=completion_time_limit,json=completionTimeLimit,proto3,oneof" json:"completion_time_limit,omitempty"`                                                       // 完成时限（分钟）
+	Guidance               *string                  `protobuf:"bytes,13,opt,name=guidance,proto3,oneof" json:"guidance,omitempty"`                                                                                                           // 标准指导说明
+	CommonPhrases          []string                 `protobuf:"bytes,14,rep,name=common_phrases,json=commonPhrases,proto3" json:"common_phrases,omitempty"`                                                                                  // 常见语句清单
+	StandardTools          []string                 `protobuf:"bytes,15,rep,name=standard_tools,json=standardTools,proto3" json:"standard_tools,omitempty"`                                                                                  // 服务标准工具清单
+	SpareParts             []string                 `protobuf:"bytes,16,rep,name=spare_parts,json=spareParts,proto3" json:"spare_parts,omitempty"`                                                                                           // 常用备件/耗材清单
+	DefaultPriority        *ServicePriority         `protobuf:"varint,22,opt,name=default_priority,json=defaultPriority,proto3,enum=onestop.service.v1.ServicePriority,oneof" json:"default_priority,omitempty"`                             // 默认优先级
+	AcceptanceModes        []string                 `protobuf:"bytes,23,rep,name=acceptance_modes,json=acceptanceModes,proto3" json:"acceptance_modes,omitempty"`                                                                            // 验收方式（多选）
+	AcceptanceItems        []*ServiceAcceptanceItem `protobuf:"bytes,24,rep,name=acceptance_items,json=acceptanceItems,proto3" json:"acceptance_items,omitempty"`                                                                            // 验收项清单
+	TemperatureRequirement *TemperatureRequirement  `protobuf:"varint,19,opt,name=temperature_requirement,json=temperatureRequirement,proto3,enum=onestop.service.v1.TemperatureRequirement,oneof" json:"temperature_requirement,omitempty"` // 温控要求
+	RequiresApproval       *bool                    `protobuf:"varint,20,opt,name=requires_approval,json=requiresApproval,proto3,oneof" json:"requires_approval,omitempty"`                                                                  // 是否需事前审批
+	CargoTypes             []string                 `protobuf:"bytes,21,rep,name=cargo_types,json=cargoTypes,proto3" json:"cargo_types,omitempty"`                                                                                           // 运送物品细目清单
+	ExecutionPost          *string                  `protobuf:"bytes,25,opt,name=execution_post,json=executionPost,proto3,oneof" json:"execution_post,omitempty"`                                                                            // 执行岗位
+	StandardItems          []string                 `protobuf:"bytes,26,rep,name=standard_items,json=standardItems,proto3" json:"standard_items,omitempty"`                                                                                  // 标准作业项目库
+	TriggerMode            *TriggerMode             `protobuf:"varint,27,opt,name=trigger_mode,json=triggerMode,proto3,enum=onestop.service.v1.TriggerMode,oneof" json:"trigger_mode,omitempty"`                                             // 任务触发方式
+	CreatedBy              *uint32                  `protobuf:"varint,100,opt,name=created_by,json=createdBy,proto3,oneof" json:"created_by,omitempty"`                                                                                      // 创建者ID
+	UpdatedBy              *uint32                  `protobuf:"varint,101,opt,name=updated_by,json=updatedBy,proto3,oneof" json:"updated_by,omitempty"`                                                                                      // 更新者ID
+	DeletedBy              *uint32                  `protobuf:"varint,102,opt,name=deleted_by,json=deletedBy,proto3,oneof" json:"deleted_by,omitempty"`                                                                                      // 删除者用户ID
+	CreatedAt              *timestamppb.Timestamp   `protobuf:"bytes,200,opt,name=created_at,json=createdAt,proto3,oneof" json:"created_at,omitempty"`                                                                                       // 创建时间
+	UpdatedAt              *timestamppb.Timestamp   `protobuf:"bytes,201,opt,name=updated_at,json=updatedAt,proto3,oneof" json:"updated_at,omitempty"`                                                                                       // 更新时间
+	DeletedAt              *timestamppb.Timestamp   `protobuf:"bytes,202,opt,name=deleted_at,json=deletedAt,proto3,oneof" json:"deleted_at,omitempty"`                                                                                       // 删除时间
+	unknownFields          protoimpl.UnknownFields
+	sizeCache              protoimpl.SizeCache
 }
 
 func (x *ServiceType) Reset() {
 	*x = ServiceType{}
-	mi := &file_onestop_service_v1_service_type_proto_msgTypes[0]
+	mi := &file_onestop_service_v1_service_type_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -126,7 +348,7 @@ func (x *ServiceType) String() string {
 func (*ServiceType) ProtoMessage() {}
 
 func (x *ServiceType) ProtoReflect() protoreflect.Message {
-	mi := &file_onestop_service_v1_service_type_proto_msgTypes[0]
+	mi := &file_onestop_service_v1_service_type_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -139,7 +361,7 @@ func (x *ServiceType) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ServiceType.ProtoReflect.Descriptor instead.
 func (*ServiceType) Descriptor() ([]byte, []int) {
-	return file_onestop_service_v1_service_type_proto_rawDescGZIP(), []int{0}
+	return file_onestop_service_v1_service_type_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *ServiceType) GetId() uint32 {
@@ -191,13 +413,6 @@ func (x *ServiceType) GetIsEnabled() bool {
 	return false
 }
 
-func (x *ServiceType) GetRepairPost() string {
-	if x != nil && x.RepairPost != nil {
-		return *x.RepairPost
-	}
-	return ""
-}
-
 func (x *ServiceType) GetStandardWorkHours() float64 {
 	if x != nil && x.StandardWorkHours != nil {
 		return *x.StandardWorkHours
@@ -247,11 +462,67 @@ func (x *ServiceType) GetSpareParts() []string {
 	return nil
 }
 
-func (x *ServiceType) GetInspectionItems() []string {
+func (x *ServiceType) GetDefaultPriority() ServicePriority {
+	if x != nil && x.DefaultPriority != nil {
+		return *x.DefaultPriority
+	}
+	return ServicePriority_PRIORITY_UNSPECIFIED
+}
+
+func (x *ServiceType) GetAcceptanceModes() []string {
 	if x != nil {
-		return x.InspectionItems
+		return x.AcceptanceModes
 	}
 	return nil
+}
+
+func (x *ServiceType) GetAcceptanceItems() []*ServiceAcceptanceItem {
+	if x != nil {
+		return x.AcceptanceItems
+	}
+	return nil
+}
+
+func (x *ServiceType) GetTemperatureRequirement() TemperatureRequirement {
+	if x != nil && x.TemperatureRequirement != nil {
+		return *x.TemperatureRequirement
+	}
+	return TemperatureRequirement_TEMP_UNSPECIFIED
+}
+
+func (x *ServiceType) GetRequiresApproval() bool {
+	if x != nil && x.RequiresApproval != nil {
+		return *x.RequiresApproval
+	}
+	return false
+}
+
+func (x *ServiceType) GetCargoTypes() []string {
+	if x != nil {
+		return x.CargoTypes
+	}
+	return nil
+}
+
+func (x *ServiceType) GetExecutionPost() string {
+	if x != nil && x.ExecutionPost != nil {
+		return *x.ExecutionPost
+	}
+	return ""
+}
+
+func (x *ServiceType) GetStandardItems() []string {
+	if x != nil {
+		return x.StandardItems
+	}
+	return nil
+}
+
+func (x *ServiceType) GetTriggerMode() TriggerMode {
+	if x != nil && x.TriggerMode != nil {
+		return *x.TriggerMode
+	}
+	return TriggerMode_TRIGGER_UNSPECIFIED
 }
 
 func (x *ServiceType) GetCreatedBy() uint32 {
@@ -307,7 +578,7 @@ type ListServiceTypeResponse struct {
 
 func (x *ListServiceTypeResponse) Reset() {
 	*x = ListServiceTypeResponse{}
-	mi := &file_onestop_service_v1_service_type_proto_msgTypes[1]
+	mi := &file_onestop_service_v1_service_type_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -319,7 +590,7 @@ func (x *ListServiceTypeResponse) String() string {
 func (*ListServiceTypeResponse) ProtoMessage() {}
 
 func (x *ListServiceTypeResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_onestop_service_v1_service_type_proto_msgTypes[1]
+	mi := &file_onestop_service_v1_service_type_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -332,7 +603,7 @@ func (x *ListServiceTypeResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListServiceTypeResponse.ProtoReflect.Descriptor instead.
 func (*ListServiceTypeResponse) Descriptor() ([]byte, []int) {
-	return file_onestop_service_v1_service_type_proto_rawDescGZIP(), []int{1}
+	return file_onestop_service_v1_service_type_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *ListServiceTypeResponse) GetItems() []*ServiceType {
@@ -363,7 +634,7 @@ type GetServiceTypeRequest struct {
 
 func (x *GetServiceTypeRequest) Reset() {
 	*x = GetServiceTypeRequest{}
-	mi := &file_onestop_service_v1_service_type_proto_msgTypes[2]
+	mi := &file_onestop_service_v1_service_type_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -375,7 +646,7 @@ func (x *GetServiceTypeRequest) String() string {
 func (*GetServiceTypeRequest) ProtoMessage() {}
 
 func (x *GetServiceTypeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_onestop_service_v1_service_type_proto_msgTypes[2]
+	mi := &file_onestop_service_v1_service_type_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -388,7 +659,7 @@ func (x *GetServiceTypeRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetServiceTypeRequest.ProtoReflect.Descriptor instead.
 func (*GetServiceTypeRequest) Descriptor() ([]byte, []int) {
-	return file_onestop_service_v1_service_type_proto_rawDescGZIP(), []int{2}
+	return file_onestop_service_v1_service_type_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *GetServiceTypeRequest) GetQueryBy() isGetServiceTypeRequest_QueryBy {
@@ -434,7 +705,7 @@ type CreateServiceTypeRequest struct {
 
 func (x *CreateServiceTypeRequest) Reset() {
 	*x = CreateServiceTypeRequest{}
-	mi := &file_onestop_service_v1_service_type_proto_msgTypes[3]
+	mi := &file_onestop_service_v1_service_type_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -446,7 +717,7 @@ func (x *CreateServiceTypeRequest) String() string {
 func (*CreateServiceTypeRequest) ProtoMessage() {}
 
 func (x *CreateServiceTypeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_onestop_service_v1_service_type_proto_msgTypes[3]
+	mi := &file_onestop_service_v1_service_type_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -459,7 +730,7 @@ func (x *CreateServiceTypeRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateServiceTypeRequest.ProtoReflect.Descriptor instead.
 func (*CreateServiceTypeRequest) Descriptor() ([]byte, []int) {
-	return file_onestop_service_v1_service_type_proto_rawDescGZIP(), []int{3}
+	return file_onestop_service_v1_service_type_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *CreateServiceTypeRequest) GetData() *ServiceType {
@@ -482,7 +753,7 @@ type UpdateServiceTypeRequest struct {
 
 func (x *UpdateServiceTypeRequest) Reset() {
 	*x = UpdateServiceTypeRequest{}
-	mi := &file_onestop_service_v1_service_type_proto_msgTypes[4]
+	mi := &file_onestop_service_v1_service_type_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -494,7 +765,7 @@ func (x *UpdateServiceTypeRequest) String() string {
 func (*UpdateServiceTypeRequest) ProtoMessage() {}
 
 func (x *UpdateServiceTypeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_onestop_service_v1_service_type_proto_msgTypes[4]
+	mi := &file_onestop_service_v1_service_type_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -507,7 +778,7 @@ func (x *UpdateServiceTypeRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateServiceTypeRequest.ProtoReflect.Descriptor instead.
 func (*UpdateServiceTypeRequest) Descriptor() ([]byte, []int) {
-	return file_onestop_service_v1_service_type_proto_rawDescGZIP(), []int{4}
+	return file_onestop_service_v1_service_type_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *UpdateServiceTypeRequest) GetId() uint32 {
@@ -551,7 +822,7 @@ type DeleteServiceTypeRequest struct {
 
 func (x *DeleteServiceTypeRequest) Reset() {
 	*x = DeleteServiceTypeRequest{}
-	mi := &file_onestop_service_v1_service_type_proto_msgTypes[5]
+	mi := &file_onestop_service_v1_service_type_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -563,7 +834,7 @@ func (x *DeleteServiceTypeRequest) String() string {
 func (*DeleteServiceTypeRequest) ProtoMessage() {}
 
 func (x *DeleteServiceTypeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_onestop_service_v1_service_type_proto_msgTypes[5]
+	mi := &file_onestop_service_v1_service_type_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -576,7 +847,7 @@ func (x *DeleteServiceTypeRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteServiceTypeRequest.ProtoReflect.Descriptor instead.
 func (*DeleteServiceTypeRequest) Descriptor() ([]byte, []int) {
-	return file_onestop_service_v1_service_type_proto_rawDescGZIP(), []int{5}
+	return file_onestop_service_v1_service_type_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *DeleteServiceTypeRequest) GetQueryBy() isDeleteServiceTypeRequest_QueryBy {
@@ -609,7 +880,10 @@ var File_onestop_service_v1_service_type_proto protoreflect.FileDescriptor
 
 const file_onestop_service_v1_service_type_proto_rawDesc = "" +
 	"\n" +
-	"%onestop/service/v1/service_type.proto\x12\x12onestop.service.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a google/protobuf/field_mask.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1epagination/v1/pagination.proto\"\xb0\x11\n" +
+	"%onestop/service/v1/service_type.proto\x12\x12onestop.service.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a google/protobuf/field_mask.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1epagination/v1/pagination.proto\"\xc2\x01\n" +
+	"\x15ServiceAcceptanceItem\x12S\n" +
+	"\x04name\x18\x01 \x01(\tB?\xbaG<\x92\x029验收项名称（如：数量准确、现场已清理）R\x04name\x12T\n" +
+	"\brequired\x18\x02 \x01(\bB8\xbaG5\x92\x022是否必检项（false = 提示项，可跳过）R\brequired\"\xd3\x1e\n" +
 	"\vServiceType\x12)\n" +
 	"\x02id\x18\x01 \x01(\rB\x14\xbaG\x11\x92\x02\x0e服务类型IDH\x00R\x02id\x88\x01\x01\x12Z\n" +
 	"\x04code\x18\x02 \x01(\tBA\xbaG>\x92\x02;服务编码，2/4/6/8 位数字字符串，位数即层级H\x01R\x04code\x88\x01\x01\x12+\n" +
@@ -618,32 +892,39 @@ const file_onestop_service_v1_service_type_proto_rawDesc = "" +
 	"\tparent_id\x18\x05 \x01(\rB)\xbaG&\x92\x02#上级服务类型ID，大类为空H\x04R\bparentId\x88\x01\x01\x123\n" +
 	"\vdescription\x18\x06 \x01(\tB\f\xbaG\t\x92\x02\x06描述H\x05R\vdescription\x88\x01\x01\x126\n" +
 	"\n" +
-	"is_enabled\x18\a \x01(\bB\x12\xbaG\x0f\x92\x02\f是否启用H\x06R\tisEnabled\x88\x01\x01\x12p\n" +
-	"\vrepair_post\x18\t \x01(\tBJ\xbaGG\x92\x02D维修岗位（派单目标岗位，如：电工/管工/空调工）H\aR\n" +
-	"repairPost\x88\x01\x01\x12\x89\x01\n" +
+	"is_enabled\x18\a \x01(\bB\x12\xbaG\x0f\x92\x02\f是否启用H\x06R\tisEnabled\x88\x01\x01\x12\x89\x01\n" +
 	"\x13standard_work_hours\x18\n" +
-	" \x01(\x01BT\xbaGQ\x92\x02N标准工时（小时）：单次作业标准人时，绩效与负载核算用H\bR\x11standardWorkHours\x88\x01\x01\x12l\n" +
-	"\x13response_time_limit\x18\v \x01(\rB7\xbaG4\x92\x021响应时限（分钟）：受理到到场的 SLAH\tR\x11responseTimeLimit\x88\x01\x01\x12p\n" +
-	"\x15completion_time_limit\x18\f \x01(\rB7\xbaG4\x92\x021完成时限（分钟）：受理到完工的 SLAH\n" +
-	"R\x13completionTimeLimit\x88\x01\x01\x12\\\n" +
-	"\bguidance\x18\r \x01(\tB;\xbaG8\x92\x025标准指导说明：作业 SOP 与安全注意事项H\vR\bguidance\x88\x01\x01\x12x\n" +
-	"\x0ecommon_phrases\x18\x0e \x03(\tBQ\xbaGN\x92\x02K常见报修语句清单：报修端快捷语句，兼作语义归型语料R\rcommonPhrases\x12Z\n" +
-	"\x0estandard_tools\x18\x0f \x03(\tB3\xbaG0\x92\x02-服务标准工具清单：出工标配工具R\rstandardTools\x12d\n" +
+	" \x01(\x01BT\xbaGQ\x92\x02N标准工时（小时）：单次作业标准人时，绩效与负载核算用H\aR\x11standardWorkHours\x88\x01\x01\x12\x8f\x01\n" +
+	"\x13response_time_limit\x18\v \x01(\rBZ\xbaGW\x92\x02T响应时限（分钟）：受理到到场/取件/处置的 SLA（文案按业态）H\bR\x11responseTimeLimit\x88\x01\x01\x12\x93\x01\n" +
+	"\x15completion_time_limit\x18\f \x01(\rBZ\xbaGW\x92\x02T完成时限（分钟）：受理到完工/送达/办结的 SLA（文案按业态）H\tR\x13completionTimeLimit\x88\x01\x01\x12\\\n" +
+	"\bguidance\x18\r \x01(\tB;\xbaG8\x92\x025标准指导说明：作业 SOP 与安全注意事项H\n" +
+	"R\bguidance\x88\x01\x01\x12r\n" +
+	"\x0ecommon_phrases\x18\x0e \x03(\tBK\xbaGH\x92\x02E常见语句清单：发起端快捷语句，兼作语义归型语料R\rcommonPhrases\x12a\n" +
+	"\x0estandard_tools\x18\x0f \x03(\tB:\xbaG7\x92\x024服务标准工具清单：出工标配工具/装备R\rstandardTools\x12d\n" +
 	"\vspare_parts\x18\x10 \x03(\tBC\xbaG@\x92\x02=常用备件/耗材清单：出工常备，配合库存领用R\n" +
-	"spareParts\x12\x82\x01\n" +
-	"\x10inspection_items\x18\x11 \x03(\tBW\xbaGT\x92\x02Q标准巡检项目库：巡检计划点表模板（仅 0103 巡检巡查子树）R\x0finspectionItems\x125\n" +
+	"spareParts\x12\xda\x01\n" +
+	"\x10default_priority\x18\x16 \x01(\x0e2#.onestop.service.v1.ServicePriorityB\x84\x01\xbaG\x80\x01\x92\x02}默认优先级：派单排序与超时预警加权（细类可覆盖小类，如急送标本=加急、电梯困人=特急）H\vR\x0fdefaultPriority\x88\x01\x01\x12\xd4\x01\n" +
+	"\x10acceptance_modes\x18\x17 \x03(\tB\xa8\x01\xbaG\xa4\x01\x92\x02\xa0\x01验收方式（多选）：ACCEPT_SIGN 签名确认 / ACCEPT_SCAN 扫码核对 / ACCEPT_PHOTO 拍照留证 / ACCEPT_DUAL 双人验收，值域由服务层校验R\x0facceptanceModes\x12\xb5\x01\n" +
+	"\x10acceptance_items\x18\x18 \x03(\v2).onestop.service.v1.ServiceAcceptanceItemB_\xbaG\\\x92\x02Y验收项清单：完工（报修）/送达（运送）确认页逐项核对的 checklistR\x0facceptanceItems\x12\xed\x01\n" +
+	"\x17temperature_requirement\x18\x13 \x01(\x0e2*.onestop.service.v1.TemperatureRequirementB\x82\x01\xbaG\x7f\x92\x02|温控要求：常温/冷藏 2-8℃/冷冻/保温（标本、药品、营养餐等冷链管理，推荐 0106 运送子树）H\fR\x16temperatureRequirement\x88\x01\x01\x12\x95\x01\n" +
+	"\x11requires_approval\x18\x14 \x01(\bBc\xbaG`\x92\x02]是否需事前审批（搬入搬出押运、动火作业、资源申请等管控类服务）H\rR\x10requiresApproval\x88\x01\x01\x12\xb3\x01\n" +
+	"\vcargo_types\x18\x15 \x03(\tB\x91\x01\xbaG\x8d\x01\x92\x02\x89\x01运送物品细目清单：该类型承接的物品范围（如：血标本/病理标本/静配药品），推荐 0106 运送配送子树R\n" +
+	"cargoTypes\x12y\n" +
+	"\x0eexecution_post\x18\x19 \x01(\tBM\xbaGJ\x92\x02G执行岗位（派单目标岗位，如：电工/运送员/保洁员）H\x0eR\rexecutionPost\x88\x01\x01\x12\x8f\x01\n" +
+	"\x0estandard_items\x18\x1a \x03(\tBh\xbaGe\x92\x02b标准作业项目库：周期计划点表模板（巡检点/维保项目单/保洁作业标准）R\rstandardItems\x12\xfb\x01\n" +
+	"\ftrigger_mode\x18\x1b \x01(\x0e2\x1f.onestop.service.v1.TriggerModeB\xb1\x01\xbaG\xad\x01\x92\x02\xa9\x01任务触发方式：按需发起（工单由用户/呼叫触发）或计划生成（可挂周期计划，任务按频率生成）；未设置回退上级，默认按需H\x0fR\vtriggerMode\x88\x01\x01\x125\n" +
 	"\n" +
-	"created_by\x18d \x01(\rB\x11\xbaG\x0e\x92\x02\v创建者IDH\fR\tcreatedBy\x88\x01\x01\x125\n" +
+	"created_by\x18d \x01(\rB\x11\xbaG\x0e\x92\x02\v创建者IDH\x10R\tcreatedBy\x88\x01\x01\x125\n" +
 	"\n" +
-	"updated_by\x18e \x01(\rB\x11\xbaG\x0e\x92\x02\v更新者IDH\rR\tupdatedBy\x88\x01\x01\x12;\n" +
+	"updated_by\x18e \x01(\rB\x11\xbaG\x0e\x92\x02\v更新者IDH\x11R\tupdatedBy\x88\x01\x01\x12;\n" +
 	"\n" +
-	"deleted_by\x18f \x01(\rB\x17\xbaG\x14\x92\x02\x11删除者用户IDH\x0eR\tdeletedBy\x88\x01\x01\x12S\n" +
+	"deleted_by\x18f \x01(\rB\x17\xbaG\x14\x92\x02\x11删除者用户IDH\x12R\tdeletedBy\x88\x01\x01\x12S\n" +
 	"\n" +
-	"created_at\x18\xc8\x01 \x01(\v2\x1a.google.protobuf.TimestampB\x12\xbaG\x0f\x92\x02\f创建时间H\x0fR\tcreatedAt\x88\x01\x01\x12S\n" +
+	"created_at\x18\xc8\x01 \x01(\v2\x1a.google.protobuf.TimestampB\x12\xbaG\x0f\x92\x02\f创建时间H\x13R\tcreatedAt\x88\x01\x01\x12S\n" +
 	"\n" +
-	"updated_at\x18\xc9\x01 \x01(\v2\x1a.google.protobuf.TimestampB\x12\xbaG\x0f\x92\x02\f更新时间H\x10R\tupdatedAt\x88\x01\x01\x12S\n" +
+	"updated_at\x18\xc9\x01 \x01(\v2\x1a.google.protobuf.TimestampB\x12\xbaG\x0f\x92\x02\f更新时间H\x14R\tupdatedAt\x88\x01\x01\x12S\n" +
 	"\n" +
-	"deleted_at\x18\xca\x01 \x01(\v2\x1a.google.protobuf.TimestampB\x12\xbaG\x0f\x92\x02\f删除时间H\x11R\tdeletedAt\x88\x01\x01B\x05\n" +
+	"deleted_at\x18\xca\x01 \x01(\v2\x1a.google.protobuf.TimestampB\x12\xbaG\x0f\x92\x02\f删除时间H\x15R\tdeletedAt\x88\x01\x01B\x05\n" +
 	"\x03_idB\a\n" +
 	"\x05_codeB\a\n" +
 	"\x05_nameB\b\n" +
@@ -651,19 +932,24 @@ const file_onestop_service_v1_service_type_proto_rawDesc = "" +
 	"\n" +
 	"_parent_idB\x0e\n" +
 	"\f_descriptionB\r\n" +
-	"\v_is_enabledB\x0e\n" +
-	"\f_repair_postB\x16\n" +
+	"\v_is_enabledB\x16\n" +
 	"\x14_standard_work_hoursB\x16\n" +
 	"\x14_response_time_limitB\x18\n" +
 	"\x16_completion_time_limitB\v\n" +
-	"\t_guidanceB\r\n" +
+	"\t_guidanceB\x13\n" +
+	"\x11_default_priorityB\x1a\n" +
+	"\x18_temperature_requirementB\x14\n" +
+	"\x12_requires_approvalB\x11\n" +
+	"\x0f_execution_postB\x0f\n" +
+	"\r_trigger_modeB\r\n" +
 	"\v_created_byB\r\n" +
 	"\v_updated_byB\r\n" +
 	"\v_deleted_byB\r\n" +
 	"\v_created_atB\r\n" +
 	"\v_updated_atB\r\n" +
-	"\v_deleted_atJ\x04\b\b\x10\tR\n" +
-	"sort_order\"f\n" +
+	"\v_deleted_atJ\x04\b\b\x10\tJ\x04\b\t\x10\n" +
+	"J\x04\b\x11\x10\x12J\x04\b\x12\x10\x13R\n" +
+	"sort_orderR\vrepair_postR\x10inspection_itemsR\x0etransport_post\"f\n" +
 	"\x17ListServiceTypeResponse\x125\n" +
 	"\x05items\x18\x01 \x03(\v2\x1f.onestop.service.v1.ServiceTypeR\x05items\x12\x14\n" +
 	"\x05total\x18\x02 \x01(\x04R\x05total\"\xc8\x01\n" +
@@ -694,7 +980,22 @@ const file_onestop_service_v1_service_type_proto_rawDesc = "" +
 	"\vLEVEL_MAJOR\x10\x01\x12\x10\n" +
 	"\fLEVEL_MIDDLE\x10\x02\x12\x0f\n" +
 	"\vLEVEL_MINOR\x10\x03\x12\x10\n" +
-	"\fLEVEL_DETAIL\x10\x042\x90\x05\n" +
+	"\fLEVEL_DETAIL\x10\x04*m\n" +
+	"\x0fServicePriority\x12\x18\n" +
+	"\x14PRIORITY_UNSPECIFIED\x10\x00\x12\x13\n" +
+	"\x0fPRIORITY_NORMAL\x10\x01\x12\x13\n" +
+	"\x0fPRIORITY_URGENT\x10\x02\x12\x16\n" +
+	"\x12PRIORITY_EMERGENCY\x10\x03*n\n" +
+	"\x16TemperatureRequirement\x12\x14\n" +
+	"\x10TEMP_UNSPECIFIED\x10\x00\x12\x0f\n" +
+	"\vTEMP_NORMAL\x10\x01\x12\r\n" +
+	"\tTEMP_COLD\x10\x02\x12\x0f\n" +
+	"\vTEMP_FROZEN\x10\x03\x12\r\n" +
+	"\tTEMP_WARM\x10\x04*T\n" +
+	"\vTriggerMode\x12\x17\n" +
+	"\x13TRIGGER_UNSPECIFIED\x10\x00\x12\x15\n" +
+	"\x11TRIGGER_ON_DEMAND\x10\x01\x12\x15\n" +
+	"\x11TRIGGER_SCHEDULED\x10\x022\x90\x05\n" +
 	"\x19OneStopServiceTypeService\x12w\n" +
 	"\x04List\x12\x19.pagination.PagingRequest\x1a+.onestop.service.v1.ListServiceTypeResponse\"'\x82\xd3\xe4\x93\x02!\x12\x1f/admin/v1/onestop/service-types\x12\x7f\n" +
 	"\x03Get\x12).onestop.service.v1.GetServiceTypeRequest\x1a\x1f.onestop.service.v1.ServiceType\",\x82\xd3\xe4\x93\x02&\x12$/admin/v1/onestop/service-types/{id}\x12z\n" +
@@ -715,46 +1016,54 @@ func file_onestop_service_v1_service_type_proto_rawDescGZIP() []byte {
 	return file_onestop_service_v1_service_type_proto_rawDescData
 }
 
-var file_onestop_service_v1_service_type_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_onestop_service_v1_service_type_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_onestop_service_v1_service_type_proto_enumTypes = make([]protoimpl.EnumInfo, 4)
+var file_onestop_service_v1_service_type_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
 var file_onestop_service_v1_service_type_proto_goTypes = []any{
 	(Level)(0),                       // 0: onestop.service.v1.Level
-	(*ServiceType)(nil),              // 1: onestop.service.v1.ServiceType
-	(*ListServiceTypeResponse)(nil),  // 2: onestop.service.v1.ListServiceTypeResponse
-	(*GetServiceTypeRequest)(nil),    // 3: onestop.service.v1.GetServiceTypeRequest
-	(*CreateServiceTypeRequest)(nil), // 4: onestop.service.v1.CreateServiceTypeRequest
-	(*UpdateServiceTypeRequest)(nil), // 5: onestop.service.v1.UpdateServiceTypeRequest
-	(*DeleteServiceTypeRequest)(nil), // 6: onestop.service.v1.DeleteServiceTypeRequest
-	(*timestamppb.Timestamp)(nil),    // 7: google.protobuf.Timestamp
-	(*fieldmaskpb.FieldMask)(nil),    // 8: google.protobuf.FieldMask
-	(*v1.PagingRequest)(nil),         // 9: pagination.PagingRequest
-	(*emptypb.Empty)(nil),            // 10: google.protobuf.Empty
+	(ServicePriority)(0),             // 1: onestop.service.v1.ServicePriority
+	(TemperatureRequirement)(0),      // 2: onestop.service.v1.TemperatureRequirement
+	(TriggerMode)(0),                 // 3: onestop.service.v1.TriggerMode
+	(*ServiceAcceptanceItem)(nil),    // 4: onestop.service.v1.ServiceAcceptanceItem
+	(*ServiceType)(nil),              // 5: onestop.service.v1.ServiceType
+	(*ListServiceTypeResponse)(nil),  // 6: onestop.service.v1.ListServiceTypeResponse
+	(*GetServiceTypeRequest)(nil),    // 7: onestop.service.v1.GetServiceTypeRequest
+	(*CreateServiceTypeRequest)(nil), // 8: onestop.service.v1.CreateServiceTypeRequest
+	(*UpdateServiceTypeRequest)(nil), // 9: onestop.service.v1.UpdateServiceTypeRequest
+	(*DeleteServiceTypeRequest)(nil), // 10: onestop.service.v1.DeleteServiceTypeRequest
+	(*timestamppb.Timestamp)(nil),    // 11: google.protobuf.Timestamp
+	(*fieldmaskpb.FieldMask)(nil),    // 12: google.protobuf.FieldMask
+	(*v1.PagingRequest)(nil),         // 13: pagination.PagingRequest
+	(*emptypb.Empty)(nil),            // 14: google.protobuf.Empty
 }
 var file_onestop_service_v1_service_type_proto_depIdxs = []int32{
 	0,  // 0: onestop.service.v1.ServiceType.level:type_name -> onestop.service.v1.Level
-	7,  // 1: onestop.service.v1.ServiceType.created_at:type_name -> google.protobuf.Timestamp
-	7,  // 2: onestop.service.v1.ServiceType.updated_at:type_name -> google.protobuf.Timestamp
-	7,  // 3: onestop.service.v1.ServiceType.deleted_at:type_name -> google.protobuf.Timestamp
-	1,  // 4: onestop.service.v1.ListServiceTypeResponse.items:type_name -> onestop.service.v1.ServiceType
-	8,  // 5: onestop.service.v1.GetServiceTypeRequest.view_mask:type_name -> google.protobuf.FieldMask
-	1,  // 6: onestop.service.v1.CreateServiceTypeRequest.data:type_name -> onestop.service.v1.ServiceType
-	1,  // 7: onestop.service.v1.UpdateServiceTypeRequest.data:type_name -> onestop.service.v1.ServiceType
-	8,  // 8: onestop.service.v1.UpdateServiceTypeRequest.update_mask:type_name -> google.protobuf.FieldMask
-	9,  // 9: onestop.service.v1.OneStopServiceTypeService.List:input_type -> pagination.PagingRequest
-	3,  // 10: onestop.service.v1.OneStopServiceTypeService.Get:input_type -> onestop.service.v1.GetServiceTypeRequest
-	4,  // 11: onestop.service.v1.OneStopServiceTypeService.Create:input_type -> onestop.service.v1.CreateServiceTypeRequest
-	5,  // 12: onestop.service.v1.OneStopServiceTypeService.Update:input_type -> onestop.service.v1.UpdateServiceTypeRequest
-	6,  // 13: onestop.service.v1.OneStopServiceTypeService.Delete:input_type -> onestop.service.v1.DeleteServiceTypeRequest
-	2,  // 14: onestop.service.v1.OneStopServiceTypeService.List:output_type -> onestop.service.v1.ListServiceTypeResponse
-	1,  // 15: onestop.service.v1.OneStopServiceTypeService.Get:output_type -> onestop.service.v1.ServiceType
-	10, // 16: onestop.service.v1.OneStopServiceTypeService.Create:output_type -> google.protobuf.Empty
-	10, // 17: onestop.service.v1.OneStopServiceTypeService.Update:output_type -> google.protobuf.Empty
-	10, // 18: onestop.service.v1.OneStopServiceTypeService.Delete:output_type -> google.protobuf.Empty
-	14, // [14:19] is the sub-list for method output_type
-	9,  // [9:14] is the sub-list for method input_type
-	9,  // [9:9] is the sub-list for extension type_name
-	9,  // [9:9] is the sub-list for extension extendee
-	0,  // [0:9] is the sub-list for field type_name
+	1,  // 1: onestop.service.v1.ServiceType.default_priority:type_name -> onestop.service.v1.ServicePriority
+	4,  // 2: onestop.service.v1.ServiceType.acceptance_items:type_name -> onestop.service.v1.ServiceAcceptanceItem
+	2,  // 3: onestop.service.v1.ServiceType.temperature_requirement:type_name -> onestop.service.v1.TemperatureRequirement
+	3,  // 4: onestop.service.v1.ServiceType.trigger_mode:type_name -> onestop.service.v1.TriggerMode
+	11, // 5: onestop.service.v1.ServiceType.created_at:type_name -> google.protobuf.Timestamp
+	11, // 6: onestop.service.v1.ServiceType.updated_at:type_name -> google.protobuf.Timestamp
+	11, // 7: onestop.service.v1.ServiceType.deleted_at:type_name -> google.protobuf.Timestamp
+	5,  // 8: onestop.service.v1.ListServiceTypeResponse.items:type_name -> onestop.service.v1.ServiceType
+	12, // 9: onestop.service.v1.GetServiceTypeRequest.view_mask:type_name -> google.protobuf.FieldMask
+	5,  // 10: onestop.service.v1.CreateServiceTypeRequest.data:type_name -> onestop.service.v1.ServiceType
+	5,  // 11: onestop.service.v1.UpdateServiceTypeRequest.data:type_name -> onestop.service.v1.ServiceType
+	12, // 12: onestop.service.v1.UpdateServiceTypeRequest.update_mask:type_name -> google.protobuf.FieldMask
+	13, // 13: onestop.service.v1.OneStopServiceTypeService.List:input_type -> pagination.PagingRequest
+	7,  // 14: onestop.service.v1.OneStopServiceTypeService.Get:input_type -> onestop.service.v1.GetServiceTypeRequest
+	8,  // 15: onestop.service.v1.OneStopServiceTypeService.Create:input_type -> onestop.service.v1.CreateServiceTypeRequest
+	9,  // 16: onestop.service.v1.OneStopServiceTypeService.Update:input_type -> onestop.service.v1.UpdateServiceTypeRequest
+	10, // 17: onestop.service.v1.OneStopServiceTypeService.Delete:input_type -> onestop.service.v1.DeleteServiceTypeRequest
+	6,  // 18: onestop.service.v1.OneStopServiceTypeService.List:output_type -> onestop.service.v1.ListServiceTypeResponse
+	5,  // 19: onestop.service.v1.OneStopServiceTypeService.Get:output_type -> onestop.service.v1.ServiceType
+	14, // 20: onestop.service.v1.OneStopServiceTypeService.Create:output_type -> google.protobuf.Empty
+	14, // 21: onestop.service.v1.OneStopServiceTypeService.Update:output_type -> google.protobuf.Empty
+	14, // 22: onestop.service.v1.OneStopServiceTypeService.Delete:output_type -> google.protobuf.Empty
+	18, // [18:23] is the sub-list for method output_type
+	13, // [13:18] is the sub-list for method input_type
+	13, // [13:13] is the sub-list for extension type_name
+	13, // [13:13] is the sub-list for extension extendee
+	0,  // [0:13] is the sub-list for field type_name
 }
 
 func init() { file_onestop_service_v1_service_type_proto_init() }
@@ -762,12 +1071,12 @@ func file_onestop_service_v1_service_type_proto_init() {
 	if File_onestop_service_v1_service_type_proto != nil {
 		return
 	}
-	file_onestop_service_v1_service_type_proto_msgTypes[0].OneofWrappers = []any{}
-	file_onestop_service_v1_service_type_proto_msgTypes[2].OneofWrappers = []any{
+	file_onestop_service_v1_service_type_proto_msgTypes[1].OneofWrappers = []any{}
+	file_onestop_service_v1_service_type_proto_msgTypes[3].OneofWrappers = []any{
 		(*GetServiceTypeRequest_Id)(nil),
 	}
-	file_onestop_service_v1_service_type_proto_msgTypes[4].OneofWrappers = []any{}
-	file_onestop_service_v1_service_type_proto_msgTypes[5].OneofWrappers = []any{
+	file_onestop_service_v1_service_type_proto_msgTypes[5].OneofWrappers = []any{}
+	file_onestop_service_v1_service_type_proto_msgTypes[6].OneofWrappers = []any{
 		(*DeleteServiceTypeRequest_Id)(nil),
 	}
 	type x struct{}
@@ -775,8 +1084,8 @@ func file_onestop_service_v1_service_type_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_onestop_service_v1_service_type_proto_rawDesc), len(file_onestop_service_v1_service_type_proto_rawDesc)),
-			NumEnums:      1,
-			NumMessages:   6,
+			NumEnums:      4,
+			NumMessages:   7,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

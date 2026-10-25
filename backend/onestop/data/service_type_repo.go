@@ -18,6 +18,7 @@ import (
 
 	"go-wind-admin/onestop/data/ent"
 	"go-wind-admin/onestop/data/ent/predicate"
+	"go-wind-admin/onestop/data/ent/schema"
 	"go-wind-admin/onestop/data/ent/servicetype"
 )
 
@@ -25,7 +26,10 @@ type ServiceTypeRepo struct {
 	entClient *entCrud.EntClient[*ent.Client]
 	log       *bLogger.Helper
 
-	levelConverter *mapper.EnumTypeConverter[onestopV1.Level, servicetype.Level]
+	levelConverter       *mapper.EnumTypeConverter[onestopV1.Level, servicetype.Level]
+	priorityConverter    *mapper.EnumTypeConverter[onestopV1.ServicePriority, servicetype.DefaultPriority]
+	temperatureConverter *mapper.EnumTypeConverter[onestopV1.TemperatureRequirement, servicetype.TemperatureRequirement]
+	triggerConverter     *mapper.EnumTypeConverter[onestopV1.TriggerMode, servicetype.TriggerMode]
 
 	mapper *mapper.CopierMapper[onestopV1.ServiceType, ent.ServiceType]
 
@@ -41,10 +45,13 @@ type ServiceTypeRepo struct {
 
 func NewServiceTypeRepo(ctx *bootstrap.Context, entClient *entCrud.EntClient[*ent.Client]) *ServiceTypeRepo {
 	repo := &ServiceTypeRepo{
-		log:            ctx.NewLoggerHelper("service-type/repo/onestop"),
-		entClient:      entClient,
-		mapper:         mapper.NewCopierMapper[onestopV1.ServiceType, ent.ServiceType](),
-		levelConverter: mapper.NewEnumTypeConverter[onestopV1.Level, servicetype.Level](onestopV1.Level_name, onestopV1.Level_value),
+		log:                  ctx.NewLoggerHelper("service-type/repo/onestop"),
+		entClient:            entClient,
+		mapper:               mapper.NewCopierMapper[onestopV1.ServiceType, ent.ServiceType](),
+		levelConverter:       mapper.NewEnumTypeConverter[onestopV1.Level, servicetype.Level](onestopV1.Level_name, onestopV1.Level_value),
+		priorityConverter:    mapper.NewEnumTypeConverter[onestopV1.ServicePriority, servicetype.DefaultPriority](onestopV1.ServicePriority_name, onestopV1.ServicePriority_value),
+		temperatureConverter: mapper.NewEnumTypeConverter[onestopV1.TemperatureRequirement, servicetype.TemperatureRequirement](onestopV1.TemperatureRequirement_name, onestopV1.TemperatureRequirement_value),
+		triggerConverter:     mapper.NewEnumTypeConverter[onestopV1.TriggerMode, servicetype.TriggerMode](onestopV1.TriggerMode_name, onestopV1.TriggerMode_value),
 	}
 
 	repo.init()
@@ -65,6 +72,49 @@ func (r *ServiceTypeRepo) init() {
 	r.mapper.AppendConverters(copierutil.NewTimeStringConverterPair())
 	r.mapper.AppendConverters(copierutil.NewTimeTimestamppbConverterPair())
 	r.mapper.AppendConverters(r.levelConverter.NewConverterPair())
+	r.mapper.AppendConverters(r.priorityConverter.NewConverterPair())
+	r.mapper.AppendConverters(r.temperatureConverter.NewConverterPair())
+	r.mapper.AppendConverters(r.triggerConverter.NewConverterPair())
+	// 验收项：proto repeated message ↔ jsonb 结构数组（periodicplan 点表同款）
+	r.mapper.AppendConverters(copierutil.NewGenericTypeConverterPair(
+		[]*onestopV1.ServiceAcceptanceItem{},
+		[]schema.ServiceAcceptanceItem{},
+		func(items []*onestopV1.ServiceAcceptanceItem) []schema.ServiceAcceptanceItem {
+			return acceptanceItemsToEntity(items)
+		},
+		func(items []schema.ServiceAcceptanceItem) []*onestopV1.ServiceAcceptanceItem {
+			return acceptanceItemsToDTO(items)
+		},
+	))
+}
+
+// acceptanceItemsToEntity / acceptanceItemsToDTO 验收项 proto ↔ jsonb 结构互转。
+func acceptanceItemsToEntity(items []*onestopV1.ServiceAcceptanceItem) []schema.ServiceAcceptanceItem {
+	if len(items) == 0 {
+		return nil
+	}
+	out := make([]schema.ServiceAcceptanceItem, 0, len(items))
+	for _, item := range items {
+		if item == nil || item.GetName() == "" {
+			continue
+		}
+		out = append(out, schema.ServiceAcceptanceItem{Name: item.GetName(), Required: item.GetRequired()})
+	}
+	if len(out) == 0 {
+		return nil
+	}
+	return out
+}
+
+func acceptanceItemsToDTO(items []schema.ServiceAcceptanceItem) []*onestopV1.ServiceAcceptanceItem {
+	if len(items) == 0 {
+		return nil
+	}
+	out := make([]*onestopV1.ServiceAcceptanceItem, 0, len(items))
+	for _, item := range items {
+		out = append(out, &onestopV1.ServiceAcceptanceItem{Name: item.Name, Required: item.Required})
+	}
+	return out
 }
 
 func (r *ServiceTypeRepo) Count(ctx context.Context, whereCond []func(s *sql.Selector)) (int, error) {
@@ -187,6 +237,19 @@ func (r *ServiceTypeRepo) HasChildren(ctx context.Context, id uint32) (bool, err
 	return exist, nil
 }
 
+// ChildrenIDs 直接下级服务类型 ID 列表（触发方式切换守卫用：小类切走计划生成时
+// 需连带检查其下细类是否仍挂周期计划）。
+func (r *ServiceTypeRepo) ChildrenIDs(ctx context.Context, parentID uint32) ([]uint32, error) {
+	ids, err := r.entClient.Client().ServiceType.Query().
+		Where(servicetype.ParentIDEQ(parentID)).
+		IDs(ctx)
+	if err != nil {
+		r.log.Errorf(ctx, "query service type children ids failed: %s", err.Error())
+		return nil, onestopV1.ErrorInternalServerError("query children ids failed")
+	}
+	return ids, nil
+}
+
 func (r *ServiceTypeRepo) Create(ctx context.Context, req *onestopV1.CreateServiceTypeRequest) error {
 	if req == nil || req.Data == nil {
 		return onestopV1.ErrorBadRequest("invalid parameter")
@@ -199,11 +262,15 @@ func (r *ServiceTypeRepo) Create(ctx context.Context, req *onestopV1.CreateServi
 		SetNillableParentID(req.Data.ParentId).
 		SetNillableDescription(req.Data.Description).
 		SetNillableIsEnabled(req.Data.IsEnabled).
-		SetNillableRepairPost(req.Data.RepairPost).
+		SetNillableExecutionPost(req.Data.ExecutionPost).
 		SetNillableStandardWorkHours(req.Data.StandardWorkHours).
 		SetNillableResponseTimeLimit(req.Data.ResponseTimeLimit).
 		SetNillableCompletionTimeLimit(req.Data.CompletionTimeLimit).
 		SetNillableGuidance(req.Data.Guidance).
+		SetNillableTemperatureRequirement(r.temperatureConverter.ToEntity(req.Data.TemperatureRequirement)).
+		SetNillableRequiresApproval(req.Data.RequiresApproval).
+		SetNillableDefaultPriority(r.priorityConverter.ToEntity(req.Data.DefaultPriority)).
+		SetNillableTriggerMode(r.triggerConverter.ToEntity(req.Data.TriggerMode)).
 		SetNillableCreatedBy(req.Data.CreatedBy).
 		SetCreatedAt(time.Now())
 
@@ -217,8 +284,17 @@ func (r *ServiceTypeRepo) Create(ctx context.Context, req *onestopV1.CreateServi
 	if len(req.Data.GetSpareParts()) > 0 {
 		builder.SetSpareParts(req.Data.GetSpareParts())
 	}
-	if len(req.Data.GetInspectionItems()) > 0 {
-		builder.SetInspectionItems(req.Data.GetInspectionItems())
+	if len(req.Data.GetStandardItems()) > 0 {
+		builder.SetStandardItems(req.Data.GetStandardItems())
+	}
+	if len(req.Data.GetCargoTypes()) > 0 {
+		builder.SetCargoTypes(req.Data.GetCargoTypes())
+	}
+	if len(req.Data.GetAcceptanceModes()) > 0 {
+		builder.SetAcceptanceModes(req.Data.GetAcceptanceModes())
+	}
+	if items := acceptanceItemsToEntity(req.Data.GetAcceptanceItems()); len(items) > 0 {
+		builder.SetAcceptanceItems(items)
 	}
 
 	if req.Data.Id != nil {
@@ -265,11 +341,15 @@ func (r *ServiceTypeRepo) Update(ctx context.Context, req *onestopV1.UpdateServi
 				SetNillableParentID(req.Data.ParentId).
 				SetNillableDescription(req.Data.Description).
 				SetNillableIsEnabled(req.Data.IsEnabled).
-				SetNillableRepairPost(req.Data.RepairPost).
+				SetNillableExecutionPost(req.Data.ExecutionPost).
 				SetNillableStandardWorkHours(req.Data.StandardWorkHours).
 				SetNillableResponseTimeLimit(req.Data.ResponseTimeLimit).
 				SetNillableCompletionTimeLimit(req.Data.CompletionTimeLimit).
 				SetNillableGuidance(req.Data.Guidance).
+				SetNillableTemperatureRequirement(r.temperatureConverter.ToEntity(req.Data.TemperatureRequirement)).
+				SetNillableRequiresApproval(req.Data.RequiresApproval).
+				SetNillableDefaultPriority(r.priorityConverter.ToEntity(req.Data.DefaultPriority)).
+				SetNillableTriggerMode(r.triggerConverter.ToEntity(req.Data.TriggerMode)).
 				SetNillableUpdatedBy(req.Data.UpdatedBy).
 				SetUpdatedAt(time.Now())
 
@@ -285,8 +365,17 @@ func (r *ServiceTypeRepo) Update(ctx context.Context, req *onestopV1.UpdateServi
 			if len(req.Data.GetSpareParts()) > 0 {
 				builder.SetSpareParts(req.Data.GetSpareParts())
 			}
-			if len(req.Data.GetInspectionItems()) > 0 {
-				builder.SetInspectionItems(req.Data.GetInspectionItems())
+			if len(req.Data.GetStandardItems()) > 0 {
+				builder.SetStandardItems(req.Data.GetStandardItems())
+			}
+			if len(req.Data.GetCargoTypes()) > 0 {
+				builder.SetCargoTypes(req.Data.GetCargoTypes())
+			}
+			if len(req.Data.GetAcceptanceModes()) > 0 {
+				builder.SetAcceptanceModes(req.Data.GetAcceptanceModes())
+			}
+			if items := acceptanceItemsToEntity(req.Data.GetAcceptanceItems()); len(items) > 0 {
+				builder.SetAcceptanceItems(items)
 			}
 		},
 		func(s *sql.Selector) {

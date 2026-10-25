@@ -3,9 +3,10 @@
 package ent
 
 import (
-	"go-wind-admin/onestop/data/ent/inspectionplan"
+	"go-wind-admin/onestop/data/ent/periodicplan"
 	"go-wind-admin/onestop/data/ent/predicate"
 	"go-wind-admin/onestop/data/ent/servicetype"
+	"go-wind-admin/onestop/data/ent/transportroute"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -15,41 +16,41 @@ import (
 
 // schemaGraph holds a representation of ent/schema at runtime.
 var schemaGraph = func() *sqlgraph.Schema {
-	graph := &sqlgraph.Schema{Nodes: make([]*sqlgraph.Node, 2)}
+	graph := &sqlgraph.Schema{Nodes: make([]*sqlgraph.Node, 3)}
 	graph.Nodes[0] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
-			Table:   inspectionplan.Table,
-			Columns: inspectionplan.Columns,
+			Table:   periodicplan.Table,
+			Columns: periodicplan.Columns,
 			ID: &sqlgraph.FieldSpec{
 				Type:   field.TypeUint32,
-				Column: inspectionplan.FieldID,
+				Column: periodicplan.FieldID,
 			},
 		},
-		Type: "InspectionPlan",
+		Type: "PeriodicPlan",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			inspectionplan.FieldCreatedAt:       {Type: field.TypeTime, Column: inspectionplan.FieldCreatedAt},
-			inspectionplan.FieldUpdatedAt:       {Type: field.TypeTime, Column: inspectionplan.FieldUpdatedAt},
-			inspectionplan.FieldDeletedAt:       {Type: field.TypeTime, Column: inspectionplan.FieldDeletedAt},
-			inspectionplan.FieldCreatedBy:       {Type: field.TypeUint32, Column: inspectionplan.FieldCreatedBy},
-			inspectionplan.FieldUpdatedBy:       {Type: field.TypeUint32, Column: inspectionplan.FieldUpdatedBy},
-			inspectionplan.FieldDeletedBy:       {Type: field.TypeUint32, Column: inspectionplan.FieldDeletedBy},
-			inspectionplan.FieldIsEnabled:       {Type: field.TypeBool, Column: inspectionplan.FieldIsEnabled},
-			inspectionplan.FieldName:            {Type: field.TypeString, Column: inspectionplan.FieldName},
-			inspectionplan.FieldServiceTypeID:   {Type: field.TypeUint32, Column: inspectionplan.FieldServiceTypeID},
-			inspectionplan.FieldFreqType:        {Type: field.TypeEnum, Column: inspectionplan.FieldFreqType},
-			inspectionplan.FieldTimes:           {Type: field.TypeJSON, Column: inspectionplan.FieldTimes},
-			inspectionplan.FieldWeekdays:        {Type: field.TypeJSON, Column: inspectionplan.FieldWeekdays},
-			inspectionplan.FieldMonthDays:       {Type: field.TypeJSON, Column: inspectionplan.FieldMonthDays},
-			inspectionplan.FieldClampToMonthEnd: {Type: field.TypeBool, Column: inspectionplan.FieldClampToMonthEnd},
-			inspectionplan.FieldMonths:          {Type: field.TypeJSON, Column: inspectionplan.FieldMonths},
-			inspectionplan.FieldExcludedDates:   {Type: field.TypeJSON, Column: inspectionplan.FieldExcludedDates},
-			inspectionplan.FieldPost:            {Type: field.TypeString, Column: inspectionplan.FieldPost},
-			inspectionplan.FieldSpaceItems:      {Type: field.TypeJSON, Column: inspectionplan.FieldSpaceItems},
-			inspectionplan.FieldEquipmentItems:  {Type: field.TypeJSON, Column: inspectionplan.FieldEquipmentItems},
-			inspectionplan.FieldSpaceRefs:       {Type: field.TypeJSON, Column: inspectionplan.FieldSpaceRefs},
-			inspectionplan.FieldEquipmentRefs:   {Type: field.TypeJSON, Column: inspectionplan.FieldEquipmentRefs},
-			inspectionplan.FieldEffectiveFrom:   {Type: field.TypeTime, Column: inspectionplan.FieldEffectiveFrom},
-			inspectionplan.FieldEffectiveTo:     {Type: field.TypeTime, Column: inspectionplan.FieldEffectiveTo},
+			periodicplan.FieldCreatedAt:       {Type: field.TypeTime, Column: periodicplan.FieldCreatedAt},
+			periodicplan.FieldUpdatedAt:       {Type: field.TypeTime, Column: periodicplan.FieldUpdatedAt},
+			periodicplan.FieldDeletedAt:       {Type: field.TypeTime, Column: periodicplan.FieldDeletedAt},
+			periodicplan.FieldCreatedBy:       {Type: field.TypeUint32, Column: periodicplan.FieldCreatedBy},
+			periodicplan.FieldUpdatedBy:       {Type: field.TypeUint32, Column: periodicplan.FieldUpdatedBy},
+			periodicplan.FieldDeletedBy:       {Type: field.TypeUint32, Column: periodicplan.FieldDeletedBy},
+			periodicplan.FieldIsEnabled:       {Type: field.TypeBool, Column: periodicplan.FieldIsEnabled},
+			periodicplan.FieldName:            {Type: field.TypeString, Column: periodicplan.FieldName},
+			periodicplan.FieldServiceTypeID:   {Type: field.TypeUint32, Column: periodicplan.FieldServiceTypeID},
+			periodicplan.FieldFreqType:        {Type: field.TypeEnum, Column: periodicplan.FieldFreqType},
+			periodicplan.FieldTimes:           {Type: field.TypeJSON, Column: periodicplan.FieldTimes},
+			periodicplan.FieldWeekdays:        {Type: field.TypeJSON, Column: periodicplan.FieldWeekdays},
+			periodicplan.FieldMonthDays:       {Type: field.TypeJSON, Column: periodicplan.FieldMonthDays},
+			periodicplan.FieldClampToMonthEnd: {Type: field.TypeBool, Column: periodicplan.FieldClampToMonthEnd},
+			periodicplan.FieldMonths:          {Type: field.TypeJSON, Column: periodicplan.FieldMonths},
+			periodicplan.FieldExcludedDates:   {Type: field.TypeJSON, Column: periodicplan.FieldExcludedDates},
+			periodicplan.FieldPost:            {Type: field.TypeString, Column: periodicplan.FieldPost},
+			periodicplan.FieldSpaceItems:      {Type: field.TypeJSON, Column: periodicplan.FieldSpaceItems},
+			periodicplan.FieldEquipmentItems:  {Type: field.TypeJSON, Column: periodicplan.FieldEquipmentItems},
+			periodicplan.FieldSpaceRefs:       {Type: field.TypeJSON, Column: periodicplan.FieldSpaceRefs},
+			periodicplan.FieldEquipmentRefs:   {Type: field.TypeJSON, Column: periodicplan.FieldEquipmentRefs},
+			periodicplan.FieldEffectiveFrom:   {Type: field.TypeTime, Column: periodicplan.FieldEffectiveFrom},
+			periodicplan.FieldEffectiveTo:     {Type: field.TypeTime, Column: periodicplan.FieldEffectiveTo},
 		},
 	}
 	graph.Nodes[1] = &sqlgraph.Node{
@@ -63,27 +64,62 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "ServiceType",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			servicetype.FieldCreatedAt:           {Type: field.TypeTime, Column: servicetype.FieldCreatedAt},
-			servicetype.FieldUpdatedAt:           {Type: field.TypeTime, Column: servicetype.FieldUpdatedAt},
-			servicetype.FieldDeletedAt:           {Type: field.TypeTime, Column: servicetype.FieldDeletedAt},
-			servicetype.FieldCreatedBy:           {Type: field.TypeUint32, Column: servicetype.FieldCreatedBy},
-			servicetype.FieldUpdatedBy:           {Type: field.TypeUint32, Column: servicetype.FieldUpdatedBy},
-			servicetype.FieldDeletedBy:           {Type: field.TypeUint32, Column: servicetype.FieldDeletedBy},
-			servicetype.FieldParentID:            {Type: field.TypeUint32, Column: servicetype.FieldParentID},
-			servicetype.FieldIsEnabled:           {Type: field.TypeBool, Column: servicetype.FieldIsEnabled},
-			servicetype.FieldCode:                {Type: field.TypeString, Column: servicetype.FieldCode},
-			servicetype.FieldName:                {Type: field.TypeString, Column: servicetype.FieldName},
-			servicetype.FieldLevel:               {Type: field.TypeEnum, Column: servicetype.FieldLevel},
-			servicetype.FieldDescription:         {Type: field.TypeString, Column: servicetype.FieldDescription},
-			servicetype.FieldRepairPost:          {Type: field.TypeString, Column: servicetype.FieldRepairPost},
-			servicetype.FieldStandardWorkHours:   {Type: field.TypeFloat64, Column: servicetype.FieldStandardWorkHours},
-			servicetype.FieldResponseTimeLimit:   {Type: field.TypeUint32, Column: servicetype.FieldResponseTimeLimit},
-			servicetype.FieldCompletionTimeLimit: {Type: field.TypeUint32, Column: servicetype.FieldCompletionTimeLimit},
-			servicetype.FieldGuidance:            {Type: field.TypeString, Column: servicetype.FieldGuidance},
-			servicetype.FieldCommonPhrases:       {Type: field.TypeJSON, Column: servicetype.FieldCommonPhrases},
-			servicetype.FieldStandardTools:       {Type: field.TypeJSON, Column: servicetype.FieldStandardTools},
-			servicetype.FieldSpareParts:          {Type: field.TypeJSON, Column: servicetype.FieldSpareParts},
-			servicetype.FieldInspectionItems:     {Type: field.TypeJSON, Column: servicetype.FieldInspectionItems},
+			servicetype.FieldCreatedAt:              {Type: field.TypeTime, Column: servicetype.FieldCreatedAt},
+			servicetype.FieldUpdatedAt:              {Type: field.TypeTime, Column: servicetype.FieldUpdatedAt},
+			servicetype.FieldDeletedAt:              {Type: field.TypeTime, Column: servicetype.FieldDeletedAt},
+			servicetype.FieldCreatedBy:              {Type: field.TypeUint32, Column: servicetype.FieldCreatedBy},
+			servicetype.FieldUpdatedBy:              {Type: field.TypeUint32, Column: servicetype.FieldUpdatedBy},
+			servicetype.FieldDeletedBy:              {Type: field.TypeUint32, Column: servicetype.FieldDeletedBy},
+			servicetype.FieldParentID:               {Type: field.TypeUint32, Column: servicetype.FieldParentID},
+			servicetype.FieldIsEnabled:              {Type: field.TypeBool, Column: servicetype.FieldIsEnabled},
+			servicetype.FieldCode:                   {Type: field.TypeString, Column: servicetype.FieldCode},
+			servicetype.FieldName:                   {Type: field.TypeString, Column: servicetype.FieldName},
+			servicetype.FieldLevel:                  {Type: field.TypeEnum, Column: servicetype.FieldLevel},
+			servicetype.FieldDescription:            {Type: field.TypeString, Column: servicetype.FieldDescription},
+			servicetype.FieldExecutionPost:          {Type: field.TypeString, Column: servicetype.FieldExecutionPost},
+			servicetype.FieldStandardWorkHours:      {Type: field.TypeFloat64, Column: servicetype.FieldStandardWorkHours},
+			servicetype.FieldResponseTimeLimit:      {Type: field.TypeUint32, Column: servicetype.FieldResponseTimeLimit},
+			servicetype.FieldCompletionTimeLimit:    {Type: field.TypeUint32, Column: servicetype.FieldCompletionTimeLimit},
+			servicetype.FieldGuidance:               {Type: field.TypeString, Column: servicetype.FieldGuidance},
+			servicetype.FieldCommonPhrases:          {Type: field.TypeJSON, Column: servicetype.FieldCommonPhrases},
+			servicetype.FieldStandardTools:          {Type: field.TypeJSON, Column: servicetype.FieldStandardTools},
+			servicetype.FieldSpareParts:             {Type: field.TypeJSON, Column: servicetype.FieldSpareParts},
+			servicetype.FieldTriggerMode:            {Type: field.TypeEnum, Column: servicetype.FieldTriggerMode},
+			servicetype.FieldDefaultPriority:        {Type: field.TypeEnum, Column: servicetype.FieldDefaultPriority},
+			servicetype.FieldAcceptanceModes:        {Type: field.TypeJSON, Column: servicetype.FieldAcceptanceModes},
+			servicetype.FieldAcceptanceItems:        {Type: field.TypeJSON, Column: servicetype.FieldAcceptanceItems},
+			servicetype.FieldTemperatureRequirement: {Type: field.TypeEnum, Column: servicetype.FieldTemperatureRequirement},
+			servicetype.FieldRequiresApproval:       {Type: field.TypeBool, Column: servicetype.FieldRequiresApproval},
+			servicetype.FieldCargoTypes:             {Type: field.TypeJSON, Column: servicetype.FieldCargoTypes},
+			servicetype.FieldStandardItems:          {Type: field.TypeJSON, Column: servicetype.FieldStandardItems},
+		},
+	}
+	graph.Nodes[2] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
+			Table:   transportroute.Table,
+			Columns: transportroute.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeUint32,
+				Column: transportroute.FieldID,
+			},
+		},
+		Type: "TransportRoute",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			transportroute.FieldCreatedAt:          {Type: field.TypeTime, Column: transportroute.FieldCreatedAt},
+			transportroute.FieldUpdatedAt:          {Type: field.TypeTime, Column: transportroute.FieldUpdatedAt},
+			transportroute.FieldDeletedAt:          {Type: field.TypeTime, Column: transportroute.FieldDeletedAt},
+			transportroute.FieldCreatedBy:          {Type: field.TypeUint32, Column: transportroute.FieldCreatedBy},
+			transportroute.FieldUpdatedBy:          {Type: field.TypeUint32, Column: transportroute.FieldUpdatedBy},
+			transportroute.FieldDeletedBy:          {Type: field.TypeUint32, Column: transportroute.FieldDeletedBy},
+			transportroute.FieldIsEnabled:          {Type: field.TypeBool, Column: transportroute.FieldIsEnabled},
+			transportroute.FieldName:               {Type: field.TypeString, Column: transportroute.FieldName},
+			transportroute.FieldServiceTypeID:      {Type: field.TypeUint32, Column: transportroute.FieldServiceTypeID},
+			transportroute.FieldOrigin:             {Type: field.TypeString, Column: transportroute.FieldOrigin},
+			transportroute.FieldDestination:        {Type: field.TypeString, Column: transportroute.FieldDestination},
+			transportroute.FieldViaPoints:          {Type: field.TypeJSON, Column: transportroute.FieldViaPoints},
+			transportroute.FieldEstDurationMinutes: {Type: field.TypeUint32, Column: transportroute.FieldEstDurationMinutes},
+			transportroute.FieldRoundTrip:          {Type: field.TypeBool, Column: transportroute.FieldRoundTrip},
+			transportroute.FieldDepartureTimes:     {Type: field.TypeJSON, Column: transportroute.FieldDepartureTimes},
 		},
 	}
 	graph.MustAddE(
@@ -120,33 +156,33 @@ type predicateAdder interface {
 }
 
 // addPredicate implements the predicateAdder interface.
-func (_q *InspectionPlanQuery) addPredicate(pred func(s *sql.Selector)) {
+func (_q *PeriodicPlanQuery) addPredicate(pred func(s *sql.Selector)) {
 	_q.predicates = append(_q.predicates, pred)
 }
 
-// Filter returns a Filter implementation to apply filters on the InspectionPlanQuery builder.
-func (_q *InspectionPlanQuery) Filter() *InspectionPlanFilter {
-	return &InspectionPlanFilter{config: _q.config, predicateAdder: _q}
+// Filter returns a Filter implementation to apply filters on the PeriodicPlanQuery builder.
+func (_q *PeriodicPlanQuery) Filter() *PeriodicPlanFilter {
+	return &PeriodicPlanFilter{config: _q.config, predicateAdder: _q}
 }
 
 // addPredicate implements the predicateAdder interface.
-func (m *InspectionPlanMutation) addPredicate(pred func(s *sql.Selector)) {
+func (m *PeriodicPlanMutation) addPredicate(pred func(s *sql.Selector)) {
 	m.predicates = append(m.predicates, pred)
 }
 
-// Filter returns an entql.Where implementation to apply filters on the InspectionPlanMutation builder.
-func (m *InspectionPlanMutation) Filter() *InspectionPlanFilter {
-	return &InspectionPlanFilter{config: m.config, predicateAdder: m}
+// Filter returns an entql.Where implementation to apply filters on the PeriodicPlanMutation builder.
+func (m *PeriodicPlanMutation) Filter() *PeriodicPlanFilter {
+	return &PeriodicPlanFilter{config: m.config, predicateAdder: m}
 }
 
-// InspectionPlanFilter provides a generic filtering capability at runtime for InspectionPlanQuery.
-type InspectionPlanFilter struct {
+// PeriodicPlanFilter provides a generic filtering capability at runtime for PeriodicPlanQuery.
+type PeriodicPlanFilter struct {
 	predicateAdder
 	config
 }
 
 // Where applies the entql predicate on the query filter.
-func (f *InspectionPlanFilter) Where(p entql.P) {
+func (f *PeriodicPlanFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
 		if err := schemaGraph.EvalP(schemaGraph.Nodes[0].Type, p, s); err != nil {
 			s.AddError(err)
@@ -155,123 +191,123 @@ func (f *InspectionPlanFilter) Where(p entql.P) {
 }
 
 // WhereID applies the entql uint32 predicate on the id field.
-func (f *InspectionPlanFilter) WhereID(p entql.Uint32P) {
-	f.Where(p.Field(inspectionplan.FieldID))
+func (f *PeriodicPlanFilter) WhereID(p entql.Uint32P) {
+	f.Where(p.Field(periodicplan.FieldID))
 }
 
 // WhereCreatedAt applies the entql time.Time predicate on the created_at field.
-func (f *InspectionPlanFilter) WhereCreatedAt(p entql.TimeP) {
-	f.Where(p.Field(inspectionplan.FieldCreatedAt))
+func (f *PeriodicPlanFilter) WhereCreatedAt(p entql.TimeP) {
+	f.Where(p.Field(periodicplan.FieldCreatedAt))
 }
 
 // WhereUpdatedAt applies the entql time.Time predicate on the updated_at field.
-func (f *InspectionPlanFilter) WhereUpdatedAt(p entql.TimeP) {
-	f.Where(p.Field(inspectionplan.FieldUpdatedAt))
+func (f *PeriodicPlanFilter) WhereUpdatedAt(p entql.TimeP) {
+	f.Where(p.Field(periodicplan.FieldUpdatedAt))
 }
 
 // WhereDeletedAt applies the entql time.Time predicate on the deleted_at field.
-func (f *InspectionPlanFilter) WhereDeletedAt(p entql.TimeP) {
-	f.Where(p.Field(inspectionplan.FieldDeletedAt))
+func (f *PeriodicPlanFilter) WhereDeletedAt(p entql.TimeP) {
+	f.Where(p.Field(periodicplan.FieldDeletedAt))
 }
 
 // WhereCreatedBy applies the entql uint32 predicate on the created_by field.
-func (f *InspectionPlanFilter) WhereCreatedBy(p entql.Uint32P) {
-	f.Where(p.Field(inspectionplan.FieldCreatedBy))
+func (f *PeriodicPlanFilter) WhereCreatedBy(p entql.Uint32P) {
+	f.Where(p.Field(periodicplan.FieldCreatedBy))
 }
 
 // WhereUpdatedBy applies the entql uint32 predicate on the updated_by field.
-func (f *InspectionPlanFilter) WhereUpdatedBy(p entql.Uint32P) {
-	f.Where(p.Field(inspectionplan.FieldUpdatedBy))
+func (f *PeriodicPlanFilter) WhereUpdatedBy(p entql.Uint32P) {
+	f.Where(p.Field(periodicplan.FieldUpdatedBy))
 }
 
 // WhereDeletedBy applies the entql uint32 predicate on the deleted_by field.
-func (f *InspectionPlanFilter) WhereDeletedBy(p entql.Uint32P) {
-	f.Where(p.Field(inspectionplan.FieldDeletedBy))
+func (f *PeriodicPlanFilter) WhereDeletedBy(p entql.Uint32P) {
+	f.Where(p.Field(periodicplan.FieldDeletedBy))
 }
 
 // WhereIsEnabled applies the entql bool predicate on the is_enabled field.
-func (f *InspectionPlanFilter) WhereIsEnabled(p entql.BoolP) {
-	f.Where(p.Field(inspectionplan.FieldIsEnabled))
+func (f *PeriodicPlanFilter) WhereIsEnabled(p entql.BoolP) {
+	f.Where(p.Field(periodicplan.FieldIsEnabled))
 }
 
 // WhereName applies the entql string predicate on the name field.
-func (f *InspectionPlanFilter) WhereName(p entql.StringP) {
-	f.Where(p.Field(inspectionplan.FieldName))
+func (f *PeriodicPlanFilter) WhereName(p entql.StringP) {
+	f.Where(p.Field(periodicplan.FieldName))
 }
 
 // WhereServiceTypeID applies the entql uint32 predicate on the service_type_id field.
-func (f *InspectionPlanFilter) WhereServiceTypeID(p entql.Uint32P) {
-	f.Where(p.Field(inspectionplan.FieldServiceTypeID))
+func (f *PeriodicPlanFilter) WhereServiceTypeID(p entql.Uint32P) {
+	f.Where(p.Field(periodicplan.FieldServiceTypeID))
 }
 
 // WhereFreqType applies the entql string predicate on the freq_type field.
-func (f *InspectionPlanFilter) WhereFreqType(p entql.StringP) {
-	f.Where(p.Field(inspectionplan.FieldFreqType))
+func (f *PeriodicPlanFilter) WhereFreqType(p entql.StringP) {
+	f.Where(p.Field(periodicplan.FieldFreqType))
 }
 
 // WhereTimes applies the entql json.RawMessage predicate on the times field.
-func (f *InspectionPlanFilter) WhereTimes(p entql.BytesP) {
-	f.Where(p.Field(inspectionplan.FieldTimes))
+func (f *PeriodicPlanFilter) WhereTimes(p entql.BytesP) {
+	f.Where(p.Field(periodicplan.FieldTimes))
 }
 
 // WhereWeekdays applies the entql json.RawMessage predicate on the weekdays field.
-func (f *InspectionPlanFilter) WhereWeekdays(p entql.BytesP) {
-	f.Where(p.Field(inspectionplan.FieldWeekdays))
+func (f *PeriodicPlanFilter) WhereWeekdays(p entql.BytesP) {
+	f.Where(p.Field(periodicplan.FieldWeekdays))
 }
 
 // WhereMonthDays applies the entql json.RawMessage predicate on the month_days field.
-func (f *InspectionPlanFilter) WhereMonthDays(p entql.BytesP) {
-	f.Where(p.Field(inspectionplan.FieldMonthDays))
+func (f *PeriodicPlanFilter) WhereMonthDays(p entql.BytesP) {
+	f.Where(p.Field(periodicplan.FieldMonthDays))
 }
 
 // WhereClampToMonthEnd applies the entql bool predicate on the clamp_to_month_end field.
-func (f *InspectionPlanFilter) WhereClampToMonthEnd(p entql.BoolP) {
-	f.Where(p.Field(inspectionplan.FieldClampToMonthEnd))
+func (f *PeriodicPlanFilter) WhereClampToMonthEnd(p entql.BoolP) {
+	f.Where(p.Field(periodicplan.FieldClampToMonthEnd))
 }
 
 // WhereMonths applies the entql json.RawMessage predicate on the months field.
-func (f *InspectionPlanFilter) WhereMonths(p entql.BytesP) {
-	f.Where(p.Field(inspectionplan.FieldMonths))
+func (f *PeriodicPlanFilter) WhereMonths(p entql.BytesP) {
+	f.Where(p.Field(periodicplan.FieldMonths))
 }
 
 // WhereExcludedDates applies the entql json.RawMessage predicate on the excluded_dates field.
-func (f *InspectionPlanFilter) WhereExcludedDates(p entql.BytesP) {
-	f.Where(p.Field(inspectionplan.FieldExcludedDates))
+func (f *PeriodicPlanFilter) WhereExcludedDates(p entql.BytesP) {
+	f.Where(p.Field(periodicplan.FieldExcludedDates))
 }
 
 // WherePost applies the entql string predicate on the post field.
-func (f *InspectionPlanFilter) WherePost(p entql.StringP) {
-	f.Where(p.Field(inspectionplan.FieldPost))
+func (f *PeriodicPlanFilter) WherePost(p entql.StringP) {
+	f.Where(p.Field(periodicplan.FieldPost))
 }
 
 // WhereSpaceItems applies the entql json.RawMessage predicate on the space_items field.
-func (f *InspectionPlanFilter) WhereSpaceItems(p entql.BytesP) {
-	f.Where(p.Field(inspectionplan.FieldSpaceItems))
+func (f *PeriodicPlanFilter) WhereSpaceItems(p entql.BytesP) {
+	f.Where(p.Field(periodicplan.FieldSpaceItems))
 }
 
 // WhereEquipmentItems applies the entql json.RawMessage predicate on the equipment_items field.
-func (f *InspectionPlanFilter) WhereEquipmentItems(p entql.BytesP) {
-	f.Where(p.Field(inspectionplan.FieldEquipmentItems))
+func (f *PeriodicPlanFilter) WhereEquipmentItems(p entql.BytesP) {
+	f.Where(p.Field(periodicplan.FieldEquipmentItems))
 }
 
 // WhereSpaceRefs applies the entql json.RawMessage predicate on the space_refs field.
-func (f *InspectionPlanFilter) WhereSpaceRefs(p entql.BytesP) {
-	f.Where(p.Field(inspectionplan.FieldSpaceRefs))
+func (f *PeriodicPlanFilter) WhereSpaceRefs(p entql.BytesP) {
+	f.Where(p.Field(periodicplan.FieldSpaceRefs))
 }
 
 // WhereEquipmentRefs applies the entql json.RawMessage predicate on the equipment_refs field.
-func (f *InspectionPlanFilter) WhereEquipmentRefs(p entql.BytesP) {
-	f.Where(p.Field(inspectionplan.FieldEquipmentRefs))
+func (f *PeriodicPlanFilter) WhereEquipmentRefs(p entql.BytesP) {
+	f.Where(p.Field(periodicplan.FieldEquipmentRefs))
 }
 
 // WhereEffectiveFrom applies the entql time.Time predicate on the effective_from field.
-func (f *InspectionPlanFilter) WhereEffectiveFrom(p entql.TimeP) {
-	f.Where(p.Field(inspectionplan.FieldEffectiveFrom))
+func (f *PeriodicPlanFilter) WhereEffectiveFrom(p entql.TimeP) {
+	f.Where(p.Field(periodicplan.FieldEffectiveFrom))
 }
 
 // WhereEffectiveTo applies the entql time.Time predicate on the effective_to field.
-func (f *InspectionPlanFilter) WhereEffectiveTo(p entql.TimeP) {
-	f.Where(p.Field(inspectionplan.FieldEffectiveTo))
+func (f *PeriodicPlanFilter) WhereEffectiveTo(p entql.TimeP) {
+	f.Where(p.Field(periodicplan.FieldEffectiveTo))
 }
 
 // addPredicate implements the predicateAdder interface.
@@ -374,9 +410,9 @@ func (f *ServiceTypeFilter) WhereDescription(p entql.StringP) {
 	f.Where(p.Field(servicetype.FieldDescription))
 }
 
-// WhereRepairPost applies the entql string predicate on the repair_post field.
-func (f *ServiceTypeFilter) WhereRepairPost(p entql.StringP) {
-	f.Where(p.Field(servicetype.FieldRepairPost))
+// WhereExecutionPost applies the entql string predicate on the execution_post field.
+func (f *ServiceTypeFilter) WhereExecutionPost(p entql.StringP) {
+	f.Where(p.Field(servicetype.FieldExecutionPost))
 }
 
 // WhereStandardWorkHours applies the entql float64 predicate on the standard_work_hours field.
@@ -414,9 +450,44 @@ func (f *ServiceTypeFilter) WhereSpareParts(p entql.BytesP) {
 	f.Where(p.Field(servicetype.FieldSpareParts))
 }
 
-// WhereInspectionItems applies the entql json.RawMessage predicate on the inspection_items field.
-func (f *ServiceTypeFilter) WhereInspectionItems(p entql.BytesP) {
-	f.Where(p.Field(servicetype.FieldInspectionItems))
+// WhereTriggerMode applies the entql string predicate on the trigger_mode field.
+func (f *ServiceTypeFilter) WhereTriggerMode(p entql.StringP) {
+	f.Where(p.Field(servicetype.FieldTriggerMode))
+}
+
+// WhereDefaultPriority applies the entql string predicate on the default_priority field.
+func (f *ServiceTypeFilter) WhereDefaultPriority(p entql.StringP) {
+	f.Where(p.Field(servicetype.FieldDefaultPriority))
+}
+
+// WhereAcceptanceModes applies the entql json.RawMessage predicate on the acceptance_modes field.
+func (f *ServiceTypeFilter) WhereAcceptanceModes(p entql.BytesP) {
+	f.Where(p.Field(servicetype.FieldAcceptanceModes))
+}
+
+// WhereAcceptanceItems applies the entql json.RawMessage predicate on the acceptance_items field.
+func (f *ServiceTypeFilter) WhereAcceptanceItems(p entql.BytesP) {
+	f.Where(p.Field(servicetype.FieldAcceptanceItems))
+}
+
+// WhereTemperatureRequirement applies the entql string predicate on the temperature_requirement field.
+func (f *ServiceTypeFilter) WhereTemperatureRequirement(p entql.StringP) {
+	f.Where(p.Field(servicetype.FieldTemperatureRequirement))
+}
+
+// WhereRequiresApproval applies the entql bool predicate on the requires_approval field.
+func (f *ServiceTypeFilter) WhereRequiresApproval(p entql.BoolP) {
+	f.Where(p.Field(servicetype.FieldRequiresApproval))
+}
+
+// WhereCargoTypes applies the entql json.RawMessage predicate on the cargo_types field.
+func (f *ServiceTypeFilter) WhereCargoTypes(p entql.BytesP) {
+	f.Where(p.Field(servicetype.FieldCargoTypes))
+}
+
+// WhereStandardItems applies the entql json.RawMessage predicate on the standard_items field.
+func (f *ServiceTypeFilter) WhereStandardItems(p entql.BytesP) {
+	f.Where(p.Field(servicetype.FieldStandardItems))
 }
 
 // WhereHasParent applies a predicate to check if query has an edge parent.
@@ -445,4 +516,119 @@ func (f *ServiceTypeFilter) WhereHasChildrenWith(preds ...predicate.ServiceType)
 			p(s)
 		}
 	})))
+}
+
+// addPredicate implements the predicateAdder interface.
+func (_q *TransportRouteQuery) addPredicate(pred func(s *sql.Selector)) {
+	_q.predicates = append(_q.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the TransportRouteQuery builder.
+func (_q *TransportRouteQuery) Filter() *TransportRouteFilter {
+	return &TransportRouteFilter{config: _q.config, predicateAdder: _q}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *TransportRouteMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the TransportRouteMutation builder.
+func (m *TransportRouteMutation) Filter() *TransportRouteFilter {
+	return &TransportRouteFilter{config: m.config, predicateAdder: m}
+}
+
+// TransportRouteFilter provides a generic filtering capability at runtime for TransportRouteQuery.
+type TransportRouteFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *TransportRouteFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[2].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql uint32 predicate on the id field.
+func (f *TransportRouteFilter) WhereID(p entql.Uint32P) {
+	f.Where(p.Field(transportroute.FieldID))
+}
+
+// WhereCreatedAt applies the entql time.Time predicate on the created_at field.
+func (f *TransportRouteFilter) WhereCreatedAt(p entql.TimeP) {
+	f.Where(p.Field(transportroute.FieldCreatedAt))
+}
+
+// WhereUpdatedAt applies the entql time.Time predicate on the updated_at field.
+func (f *TransportRouteFilter) WhereUpdatedAt(p entql.TimeP) {
+	f.Where(p.Field(transportroute.FieldUpdatedAt))
+}
+
+// WhereDeletedAt applies the entql time.Time predicate on the deleted_at field.
+func (f *TransportRouteFilter) WhereDeletedAt(p entql.TimeP) {
+	f.Where(p.Field(transportroute.FieldDeletedAt))
+}
+
+// WhereCreatedBy applies the entql uint32 predicate on the created_by field.
+func (f *TransportRouteFilter) WhereCreatedBy(p entql.Uint32P) {
+	f.Where(p.Field(transportroute.FieldCreatedBy))
+}
+
+// WhereUpdatedBy applies the entql uint32 predicate on the updated_by field.
+func (f *TransportRouteFilter) WhereUpdatedBy(p entql.Uint32P) {
+	f.Where(p.Field(transportroute.FieldUpdatedBy))
+}
+
+// WhereDeletedBy applies the entql uint32 predicate on the deleted_by field.
+func (f *TransportRouteFilter) WhereDeletedBy(p entql.Uint32P) {
+	f.Where(p.Field(transportroute.FieldDeletedBy))
+}
+
+// WhereIsEnabled applies the entql bool predicate on the is_enabled field.
+func (f *TransportRouteFilter) WhereIsEnabled(p entql.BoolP) {
+	f.Where(p.Field(transportroute.FieldIsEnabled))
+}
+
+// WhereName applies the entql string predicate on the name field.
+func (f *TransportRouteFilter) WhereName(p entql.StringP) {
+	f.Where(p.Field(transportroute.FieldName))
+}
+
+// WhereServiceTypeID applies the entql uint32 predicate on the service_type_id field.
+func (f *TransportRouteFilter) WhereServiceTypeID(p entql.Uint32P) {
+	f.Where(p.Field(transportroute.FieldServiceTypeID))
+}
+
+// WhereOrigin applies the entql string predicate on the origin field.
+func (f *TransportRouteFilter) WhereOrigin(p entql.StringP) {
+	f.Where(p.Field(transportroute.FieldOrigin))
+}
+
+// WhereDestination applies the entql string predicate on the destination field.
+func (f *TransportRouteFilter) WhereDestination(p entql.StringP) {
+	f.Where(p.Field(transportroute.FieldDestination))
+}
+
+// WhereViaPoints applies the entql json.RawMessage predicate on the via_points field.
+func (f *TransportRouteFilter) WhereViaPoints(p entql.BytesP) {
+	f.Where(p.Field(transportroute.FieldViaPoints))
+}
+
+// WhereEstDurationMinutes applies the entql uint32 predicate on the est_duration_minutes field.
+func (f *TransportRouteFilter) WhereEstDurationMinutes(p entql.Uint32P) {
+	f.Where(p.Field(transportroute.FieldEstDurationMinutes))
+}
+
+// WhereRoundTrip applies the entql bool predicate on the round_trip field.
+func (f *TransportRouteFilter) WhereRoundTrip(p entql.BoolP) {
+	f.Where(p.Field(transportroute.FieldRoundTrip))
+}
+
+// WhereDepartureTimes applies the entql json.RawMessage predicate on the departure_times field.
+func (f *TransportRouteFilter) WhereDepartureTimes(p entql.BytesP) {
+	f.Where(p.Field(transportroute.FieldDepartureTimes))
 }

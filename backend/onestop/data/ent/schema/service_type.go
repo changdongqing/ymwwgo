@@ -17,6 +17,16 @@ type ServiceType struct {
 	ent.Schema
 }
 
+// ServiceAcceptanceItem 验收项（jsonb 存储，service_type.acceptance_items 的元素）。
+//
+// 报修场景 = 完工验收项（故障已修复/现场已清理/旧件处置确认），
+// 运送场景 = 交接签收项（数量准确/包装完好/温度达标/单据回收）；
+// required=false 的提示项在确认页可跳过。
+type ServiceAcceptanceItem struct {
+	Name     string `json:"name"`
+	Required bool   `json:"required"`
+}
+
 func (ServiceType) Annotations() []schema.Annotation {
 	return []schema.Annotation{
 		entsql.Annotation{
@@ -65,10 +75,13 @@ func (ServiceType) Fields() []ent.Field {
 			Optional().
 			Nillable(),
 
-		// —— 报修维修类型配置（本期仅 0101 报修维修子树的小类/细类填写，其余类型留空）——
-		// 列 COMMENT 是迁移 SQL 的逐字契约（漂移守卫比对注释文本），改文案须同步 00009 迁移。
-		field.String("repair_post").
-			Comment("维修岗位（派单目标岗位，如：电工/管工/空调工）").
+		// —— 统一履约配置模板（所有小类/细类两级可填，全部可空，未配置 = NULL）——
+		// 四组：派单与时效 / 作业标准 / 验收方案 / 专项属性。存储层不限子树，
+		// 可见性与文案由前端展示矩阵（CATEGORY_PROFILE）按中类驱动；消费方为
+		// 后续工单对象（派单/SLA 预警/绩效工时核算）与发起端（快捷语句/语义归型）。
+		// 列 COMMENT 是迁移 SQL 的逐字契约（漂移守卫比对注释文本），改文案须同步迁移。
+		field.String("execution_post").
+			Comment("执行岗位（派单目标岗位，如：电工/运送员/保洁员）").
 			MaxLen(64).
 			Optional().
 			Nillable(),
@@ -97,7 +110,7 @@ func (ServiceType) Fields() []ent.Field {
 		// jsonb 数组列，语义与 sys_org_units.subtype_path 一致；
 		// 不加 Nillable：空/NULL = 未配置
 		field.Strings("common_phrases").
-			Comment("常见报修语句清单：报修端快捷语句，兼作语义归型语料").
+			Comment("常见语句清单：发起端快捷语句，兼作语义归型语料").
 			Optional(),
 
 		field.Strings("standard_tools").
@@ -108,9 +121,64 @@ func (ServiceType) Fields() []ent.Field {
 			Comment("常用备件/耗材清单：出工常备，配合库存领用").
 			Optional(),
 
-		// —— 巡检巡查类型配置（本期仅 0103 巡检巡查子树的小类/细类填写）——
-		field.Strings("inspection_items").
-			Comment("标准巡检项目库：巡检计划点表模板（仅 0103 巡检巡查子树）").
+		// 任务触发方式：控制周期计划入口的统一开关。按需发起 = 工单由用户/呼叫
+		// 触发；计划生成 = 可挂周期计划（onestop_periodic_plans），任务由调度器
+		// 按频率生成。NULL = 未设置：细类回退小类，小类也未设置按 TRIGGER_ON_DEMAND。
+		// 枚举存储值与 proto 枚举值名保持一致（TRIGGER_ON_DEMAND...），
+		// 供 mapper.EnumTypeConverter 按名称直转
+		field.Enum("trigger_mode").
+			Comment("任务触发方式 TRIGGER_ON_DEMAND:按需发起 TRIGGER_SCHEDULED:计划生成（未设置回退上级，默认按需）").
+			NamedValues(
+				"OnDemand", "TRIGGER_ON_DEMAND",
+				"Scheduled", "TRIGGER_SCHEDULED",
+			).
+			Optional().
+			Nillable(),
+
+		// —— 验收方案（通用履约）——
+		// 报修场景 = 完工验收，运送场景 = 交接签收，客服场景 = 办结回访；可组合。
+		field.Enum("default_priority").
+			Comment("默认优先级 PRIORITY_NORMAL:常规 PRIORITY_URGENT:加急 PRIORITY_EMERGENCY:特急（派单排序与超时预警加权）").
+			NamedValues(
+				"Normal", "PRIORITY_NORMAL",
+				"Urgent", "PRIORITY_URGENT",
+				"Emergency", "PRIORITY_EMERGENCY",
+			).
+			Optional().
+			Nillable(),
+
+		field.Strings("acceptance_modes").
+			Comment("验收方式（多选 ACCEPT_SIGN:签名确认 ACCEPT_SCAN:扫码核对 ACCEPT_PHOTO:拍照留证 ACCEPT_DUAL:双人验收）").
+			Optional(),
+
+		field.JSON("acceptance_items", []ServiceAcceptanceItem{}).
+			Comment("验收项清单 [{name,required}]：完工/送达确认页逐项核对").
+			Optional(),
+
+		// —— 专项属性（推荐填写子树见展示矩阵；存储层不限子树）——
+		// 温控/审批/物品细目主要为运送配送语义；审批同时覆盖动火作业、资源申请等。
+		field.Enum("temperature_requirement").
+			Comment("温控要求 TEMP_NORMAL:常温 TEMP_COLD:冷藏2-8℃ TEMP_FROZEN:冷冻 TEMP_WARM:保温").
+			NamedValues(
+				"Normal", "TEMP_NORMAL",
+				"Cold", "TEMP_COLD",
+				"Frozen", "TEMP_FROZEN",
+				"Warm", "TEMP_WARM",
+			).
+			Optional().
+			Nillable(),
+
+		field.Bool("requires_approval").
+			Comment("是否需事前审批（搬入搬出押运、动火作业、资源申请等管控类服务）").
+			Optional().
+			Default(false),
+
+		field.Strings("cargo_types").
+			Comment("运送物品细目清单：该类型承接的物品范围（推荐 0106 运送配送子树填写）").
+			Optional(),
+
+		field.Strings("standard_items").
+			Comment("标准作业项目库：周期计划点表模板").
 			Optional(),
 	}
 }

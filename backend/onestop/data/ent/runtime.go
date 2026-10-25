@@ -3,31 +3,32 @@
 package ent
 
 import (
-	"go-wind-admin/onestop/data/ent/inspectionplan"
+	"go-wind-admin/onestop/data/ent/periodicplan"
 	"go-wind-admin/onestop/data/ent/schema"
 	"go-wind-admin/onestop/data/ent/servicetype"
+	"go-wind-admin/onestop/data/ent/transportroute"
 )
 
 // The init function reads all schema descriptors with runtime code
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
-	inspectionplanMixin := schema.InspectionPlan{}.Mixin()
-	inspectionplanMixinFields0 := inspectionplanMixin[0].Fields()
-	_ = inspectionplanMixinFields0
-	inspectionplanMixinFields3 := inspectionplanMixin[3].Fields()
-	_ = inspectionplanMixinFields3
-	inspectionplanFields := schema.InspectionPlan{}.Fields()
-	_ = inspectionplanFields
-	// inspectionplanDescIsEnabled is the schema descriptor for is_enabled field.
-	inspectionplanDescIsEnabled := inspectionplanMixinFields3[0].Descriptor()
-	// inspectionplan.DefaultIsEnabled holds the default value on creation for the is_enabled field.
-	inspectionplan.DefaultIsEnabled = inspectionplanDescIsEnabled.Default.(bool)
-	// inspectionplanDescName is the schema descriptor for name field.
-	inspectionplanDescName := inspectionplanFields[0].Descriptor()
-	// inspectionplan.NameValidator is a validator for the "name" field. It is called by the builders before save.
-	inspectionplan.NameValidator = func() func(string) error {
-		validators := inspectionplanDescName.Validators
+	periodicplanMixin := schema.PeriodicPlan{}.Mixin()
+	periodicplanMixinFields0 := periodicplanMixin[0].Fields()
+	_ = periodicplanMixinFields0
+	periodicplanMixinFields3 := periodicplanMixin[3].Fields()
+	_ = periodicplanMixinFields3
+	periodicplanFields := schema.PeriodicPlan{}.Fields()
+	_ = periodicplanFields
+	// periodicplanDescIsEnabled is the schema descriptor for is_enabled field.
+	periodicplanDescIsEnabled := periodicplanMixinFields3[0].Descriptor()
+	// periodicplan.DefaultIsEnabled holds the default value on creation for the is_enabled field.
+	periodicplan.DefaultIsEnabled = periodicplanDescIsEnabled.Default.(bool)
+	// periodicplanDescName is the schema descriptor for name field.
+	periodicplanDescName := periodicplanFields[0].Descriptor()
+	// periodicplan.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	periodicplan.NameValidator = func() func(string) error {
+		validators := periodicplanDescName.Validators
 		fns := [...]func(string) error{
 			validators[0].(func(string) error),
 			validators[1].(func(string) error),
@@ -41,18 +42,18 @@ func init() {
 			return nil
 		}
 	}()
-	// inspectionplanDescClampToMonthEnd is the schema descriptor for clamp_to_month_end field.
-	inspectionplanDescClampToMonthEnd := inspectionplanFields[6].Descriptor()
-	// inspectionplan.DefaultClampToMonthEnd holds the default value on creation for the clamp_to_month_end field.
-	inspectionplan.DefaultClampToMonthEnd = inspectionplanDescClampToMonthEnd.Default.(bool)
-	// inspectionplanDescPost is the schema descriptor for post field.
-	inspectionplanDescPost := inspectionplanFields[9].Descriptor()
-	// inspectionplan.PostValidator is a validator for the "post" field. It is called by the builders before save.
-	inspectionplan.PostValidator = inspectionplanDescPost.Validators[0].(func(string) error)
-	// inspectionplanDescID is the schema descriptor for id field.
-	inspectionplanDescID := inspectionplanMixinFields0[0].Descriptor()
-	// inspectionplan.IDValidator is a validator for the "id" field. It is called by the builders before save.
-	inspectionplan.IDValidator = inspectionplanDescID.Validators[0].(func(uint32) error)
+	// periodicplanDescClampToMonthEnd is the schema descriptor for clamp_to_month_end field.
+	periodicplanDescClampToMonthEnd := periodicplanFields[6].Descriptor()
+	// periodicplan.DefaultClampToMonthEnd holds the default value on creation for the clamp_to_month_end field.
+	periodicplan.DefaultClampToMonthEnd = periodicplanDescClampToMonthEnd.Default.(bool)
+	// periodicplanDescPost is the schema descriptor for post field.
+	periodicplanDescPost := periodicplanFields[9].Descriptor()
+	// periodicplan.PostValidator is a validator for the "post" field. It is called by the builders before save.
+	periodicplan.PostValidator = periodicplanDescPost.Validators[0].(func(string) error)
+	// periodicplanDescID is the schema descriptor for id field.
+	periodicplanDescID := periodicplanMixinFields0[0].Descriptor()
+	// periodicplan.IDValidator is a validator for the "id" field. It is called by the builders before save.
+	periodicplan.IDValidator = periodicplanDescID.Validators[0].(func(uint32) error)
 	servicetypeMixin := schema.ServiceType{}.Mixin()
 	servicetypeMixinFields0 := servicetypeMixin[0].Fields()
 	_ = servicetypeMixinFields0
@@ -106,16 +107,93 @@ func init() {
 	servicetype.DefaultDescription = servicetypeDescDescription.Default.(string)
 	// servicetype.DescriptionValidator is a validator for the "description" field. It is called by the builders before save.
 	servicetype.DescriptionValidator = servicetypeDescDescription.Validators[0].(func(string) error)
-	// servicetypeDescRepairPost is the schema descriptor for repair_post field.
-	servicetypeDescRepairPost := servicetypeFields[4].Descriptor()
-	// servicetype.RepairPostValidator is a validator for the "repair_post" field. It is called by the builders before save.
-	servicetype.RepairPostValidator = servicetypeDescRepairPost.Validators[0].(func(string) error)
+	// servicetypeDescExecutionPost is the schema descriptor for execution_post field.
+	servicetypeDescExecutionPost := servicetypeFields[4].Descriptor()
+	// servicetype.ExecutionPostValidator is a validator for the "execution_post" field. It is called by the builders before save.
+	servicetype.ExecutionPostValidator = servicetypeDescExecutionPost.Validators[0].(func(string) error)
 	// servicetypeDescGuidance is the schema descriptor for guidance field.
 	servicetypeDescGuidance := servicetypeFields[8].Descriptor()
 	// servicetype.GuidanceValidator is a validator for the "guidance" field. It is called by the builders before save.
 	servicetype.GuidanceValidator = servicetypeDescGuidance.Validators[0].(func(string) error)
+	// servicetypeDescRequiresApproval is the schema descriptor for requires_approval field.
+	servicetypeDescRequiresApproval := servicetypeFields[17].Descriptor()
+	// servicetype.DefaultRequiresApproval holds the default value on creation for the requires_approval field.
+	servicetype.DefaultRequiresApproval = servicetypeDescRequiresApproval.Default.(bool)
 	// servicetypeDescID is the schema descriptor for id field.
 	servicetypeDescID := servicetypeMixinFields0[0].Descriptor()
 	// servicetype.IDValidator is a validator for the "id" field. It is called by the builders before save.
 	servicetype.IDValidator = servicetypeDescID.Validators[0].(func(uint32) error)
+	transportrouteMixin := schema.TransportRoute{}.Mixin()
+	transportrouteMixinFields0 := transportrouteMixin[0].Fields()
+	_ = transportrouteMixinFields0
+	transportrouteMixinFields3 := transportrouteMixin[3].Fields()
+	_ = transportrouteMixinFields3
+	transportrouteFields := schema.TransportRoute{}.Fields()
+	_ = transportrouteFields
+	// transportrouteDescIsEnabled is the schema descriptor for is_enabled field.
+	transportrouteDescIsEnabled := transportrouteMixinFields3[0].Descriptor()
+	// transportroute.DefaultIsEnabled holds the default value on creation for the is_enabled field.
+	transportroute.DefaultIsEnabled = transportrouteDescIsEnabled.Default.(bool)
+	// transportrouteDescName is the schema descriptor for name field.
+	transportrouteDescName := transportrouteFields[0].Descriptor()
+	// transportroute.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	transportroute.NameValidator = func() func(string) error {
+		validators := transportrouteDescName.Validators
+		fns := [...]func(string) error{
+			validators[0].(func(string) error),
+			validators[1].(func(string) error),
+		}
+		return func(name string) error {
+			for _, fn := range fns {
+				if err := fn(name); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	// transportrouteDescOrigin is the schema descriptor for origin field.
+	transportrouteDescOrigin := transportrouteFields[2].Descriptor()
+	// transportroute.OriginValidator is a validator for the "origin" field. It is called by the builders before save.
+	transportroute.OriginValidator = func() func(string) error {
+		validators := transportrouteDescOrigin.Validators
+		fns := [...]func(string) error{
+			validators[0].(func(string) error),
+			validators[1].(func(string) error),
+		}
+		return func(origin string) error {
+			for _, fn := range fns {
+				if err := fn(origin); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	// transportrouteDescDestination is the schema descriptor for destination field.
+	transportrouteDescDestination := transportrouteFields[3].Descriptor()
+	// transportroute.DestinationValidator is a validator for the "destination" field. It is called by the builders before save.
+	transportroute.DestinationValidator = func() func(string) error {
+		validators := transportrouteDescDestination.Validators
+		fns := [...]func(string) error{
+			validators[0].(func(string) error),
+			validators[1].(func(string) error),
+		}
+		return func(destination string) error {
+			for _, fn := range fns {
+				if err := fn(destination); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	// transportrouteDescRoundTrip is the schema descriptor for round_trip field.
+	transportrouteDescRoundTrip := transportrouteFields[6].Descriptor()
+	// transportroute.DefaultRoundTrip holds the default value on creation for the round_trip field.
+	transportroute.DefaultRoundTrip = transportrouteDescRoundTrip.Default.(bool)
+	// transportrouteDescID is the schema descriptor for id field.
+	transportrouteDescID := transportrouteMixinFields0[0].Descriptor()
+	// transportroute.IDValidator is a validator for the "id" field. It is called by the builders before save.
+	transportroute.IDValidator = transportrouteDescID.Validators[0].(func(uint32) error)
 }

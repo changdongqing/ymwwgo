@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"go-wind-admin/onestop/data/ent/predicate"
+	"go-wind-admin/onestop/data/ent/schema"
 	"go-wind-admin/onestop/data/ent/servicetype"
 	"time"
 
@@ -271,23 +272,23 @@ func (_u *ServiceTypeUpdate) ClearDescription() *ServiceTypeUpdate {
 	return _u
 }
 
-// SetRepairPost sets the "repair_post" field.
-func (_u *ServiceTypeUpdate) SetRepairPost(v string) *ServiceTypeUpdate {
-	_u.mutation.SetRepairPost(v)
+// SetExecutionPost sets the "execution_post" field.
+func (_u *ServiceTypeUpdate) SetExecutionPost(v string) *ServiceTypeUpdate {
+	_u.mutation.SetExecutionPost(v)
 	return _u
 }
 
-// SetNillableRepairPost sets the "repair_post" field if the given value is not nil.
-func (_u *ServiceTypeUpdate) SetNillableRepairPost(v *string) *ServiceTypeUpdate {
+// SetNillableExecutionPost sets the "execution_post" field if the given value is not nil.
+func (_u *ServiceTypeUpdate) SetNillableExecutionPost(v *string) *ServiceTypeUpdate {
 	if v != nil {
-		_u.SetRepairPost(*v)
+		_u.SetExecutionPost(*v)
 	}
 	return _u
 }
 
-// ClearRepairPost clears the value of the "repair_post" field.
-func (_u *ServiceTypeUpdate) ClearRepairPost() *ServiceTypeUpdate {
-	_u.mutation.ClearRepairPost()
+// ClearExecutionPost clears the value of the "execution_post" field.
+func (_u *ServiceTypeUpdate) ClearExecutionPost() *ServiceTypeUpdate {
+	_u.mutation.ClearExecutionPost()
 	return _u
 }
 
@@ -446,21 +447,155 @@ func (_u *ServiceTypeUpdate) ClearSpareParts() *ServiceTypeUpdate {
 	return _u
 }
 
-// SetInspectionItems sets the "inspection_items" field.
-func (_u *ServiceTypeUpdate) SetInspectionItems(v []string) *ServiceTypeUpdate {
-	_u.mutation.SetInspectionItems(v)
+// SetTriggerMode sets the "trigger_mode" field.
+func (_u *ServiceTypeUpdate) SetTriggerMode(v servicetype.TriggerMode) *ServiceTypeUpdate {
+	_u.mutation.SetTriggerMode(v)
 	return _u
 }
 
-// AppendInspectionItems appends value to the "inspection_items" field.
-func (_u *ServiceTypeUpdate) AppendInspectionItems(v []string) *ServiceTypeUpdate {
-	_u.mutation.AppendInspectionItems(v)
+// SetNillableTriggerMode sets the "trigger_mode" field if the given value is not nil.
+func (_u *ServiceTypeUpdate) SetNillableTriggerMode(v *servicetype.TriggerMode) *ServiceTypeUpdate {
+	if v != nil {
+		_u.SetTriggerMode(*v)
+	}
 	return _u
 }
 
-// ClearInspectionItems clears the value of the "inspection_items" field.
-func (_u *ServiceTypeUpdate) ClearInspectionItems() *ServiceTypeUpdate {
-	_u.mutation.ClearInspectionItems()
+// ClearTriggerMode clears the value of the "trigger_mode" field.
+func (_u *ServiceTypeUpdate) ClearTriggerMode() *ServiceTypeUpdate {
+	_u.mutation.ClearTriggerMode()
+	return _u
+}
+
+// SetDefaultPriority sets the "default_priority" field.
+func (_u *ServiceTypeUpdate) SetDefaultPriority(v servicetype.DefaultPriority) *ServiceTypeUpdate {
+	_u.mutation.SetDefaultPriority(v)
+	return _u
+}
+
+// SetNillableDefaultPriority sets the "default_priority" field if the given value is not nil.
+func (_u *ServiceTypeUpdate) SetNillableDefaultPriority(v *servicetype.DefaultPriority) *ServiceTypeUpdate {
+	if v != nil {
+		_u.SetDefaultPriority(*v)
+	}
+	return _u
+}
+
+// ClearDefaultPriority clears the value of the "default_priority" field.
+func (_u *ServiceTypeUpdate) ClearDefaultPriority() *ServiceTypeUpdate {
+	_u.mutation.ClearDefaultPriority()
+	return _u
+}
+
+// SetAcceptanceModes sets the "acceptance_modes" field.
+func (_u *ServiceTypeUpdate) SetAcceptanceModes(v []string) *ServiceTypeUpdate {
+	_u.mutation.SetAcceptanceModes(v)
+	return _u
+}
+
+// AppendAcceptanceModes appends value to the "acceptance_modes" field.
+func (_u *ServiceTypeUpdate) AppendAcceptanceModes(v []string) *ServiceTypeUpdate {
+	_u.mutation.AppendAcceptanceModes(v)
+	return _u
+}
+
+// ClearAcceptanceModes clears the value of the "acceptance_modes" field.
+func (_u *ServiceTypeUpdate) ClearAcceptanceModes() *ServiceTypeUpdate {
+	_u.mutation.ClearAcceptanceModes()
+	return _u
+}
+
+// SetAcceptanceItems sets the "acceptance_items" field.
+func (_u *ServiceTypeUpdate) SetAcceptanceItems(v []schema.ServiceAcceptanceItem) *ServiceTypeUpdate {
+	_u.mutation.SetAcceptanceItems(v)
+	return _u
+}
+
+// AppendAcceptanceItems appends value to the "acceptance_items" field.
+func (_u *ServiceTypeUpdate) AppendAcceptanceItems(v []schema.ServiceAcceptanceItem) *ServiceTypeUpdate {
+	_u.mutation.AppendAcceptanceItems(v)
+	return _u
+}
+
+// ClearAcceptanceItems clears the value of the "acceptance_items" field.
+func (_u *ServiceTypeUpdate) ClearAcceptanceItems() *ServiceTypeUpdate {
+	_u.mutation.ClearAcceptanceItems()
+	return _u
+}
+
+// SetTemperatureRequirement sets the "temperature_requirement" field.
+func (_u *ServiceTypeUpdate) SetTemperatureRequirement(v servicetype.TemperatureRequirement) *ServiceTypeUpdate {
+	_u.mutation.SetTemperatureRequirement(v)
+	return _u
+}
+
+// SetNillableTemperatureRequirement sets the "temperature_requirement" field if the given value is not nil.
+func (_u *ServiceTypeUpdate) SetNillableTemperatureRequirement(v *servicetype.TemperatureRequirement) *ServiceTypeUpdate {
+	if v != nil {
+		_u.SetTemperatureRequirement(*v)
+	}
+	return _u
+}
+
+// ClearTemperatureRequirement clears the value of the "temperature_requirement" field.
+func (_u *ServiceTypeUpdate) ClearTemperatureRequirement() *ServiceTypeUpdate {
+	_u.mutation.ClearTemperatureRequirement()
+	return _u
+}
+
+// SetRequiresApproval sets the "requires_approval" field.
+func (_u *ServiceTypeUpdate) SetRequiresApproval(v bool) *ServiceTypeUpdate {
+	_u.mutation.SetRequiresApproval(v)
+	return _u
+}
+
+// SetNillableRequiresApproval sets the "requires_approval" field if the given value is not nil.
+func (_u *ServiceTypeUpdate) SetNillableRequiresApproval(v *bool) *ServiceTypeUpdate {
+	if v != nil {
+		_u.SetRequiresApproval(*v)
+	}
+	return _u
+}
+
+// ClearRequiresApproval clears the value of the "requires_approval" field.
+func (_u *ServiceTypeUpdate) ClearRequiresApproval() *ServiceTypeUpdate {
+	_u.mutation.ClearRequiresApproval()
+	return _u
+}
+
+// SetCargoTypes sets the "cargo_types" field.
+func (_u *ServiceTypeUpdate) SetCargoTypes(v []string) *ServiceTypeUpdate {
+	_u.mutation.SetCargoTypes(v)
+	return _u
+}
+
+// AppendCargoTypes appends value to the "cargo_types" field.
+func (_u *ServiceTypeUpdate) AppendCargoTypes(v []string) *ServiceTypeUpdate {
+	_u.mutation.AppendCargoTypes(v)
+	return _u
+}
+
+// ClearCargoTypes clears the value of the "cargo_types" field.
+func (_u *ServiceTypeUpdate) ClearCargoTypes() *ServiceTypeUpdate {
+	_u.mutation.ClearCargoTypes()
+	return _u
+}
+
+// SetStandardItems sets the "standard_items" field.
+func (_u *ServiceTypeUpdate) SetStandardItems(v []string) *ServiceTypeUpdate {
+	_u.mutation.SetStandardItems(v)
+	return _u
+}
+
+// AppendStandardItems appends value to the "standard_items" field.
+func (_u *ServiceTypeUpdate) AppendStandardItems(v []string) *ServiceTypeUpdate {
+	_u.mutation.AppendStandardItems(v)
+	return _u
+}
+
+// ClearStandardItems clears the value of the "standard_items" field.
+func (_u *ServiceTypeUpdate) ClearStandardItems() *ServiceTypeUpdate {
+	_u.mutation.ClearStandardItems()
 	return _u
 }
 
@@ -565,14 +700,29 @@ func (_u *ServiceTypeUpdate) check() error {
 			return &ValidationError{Name: "description", err: fmt.Errorf(`ent: validator failed for field "ServiceType.description": %w`, err)}
 		}
 	}
-	if v, ok := _u.mutation.RepairPost(); ok {
-		if err := servicetype.RepairPostValidator(v); err != nil {
-			return &ValidationError{Name: "repair_post", err: fmt.Errorf(`ent: validator failed for field "ServiceType.repair_post": %w`, err)}
+	if v, ok := _u.mutation.ExecutionPost(); ok {
+		if err := servicetype.ExecutionPostValidator(v); err != nil {
+			return &ValidationError{Name: "execution_post", err: fmt.Errorf(`ent: validator failed for field "ServiceType.execution_post": %w`, err)}
 		}
 	}
 	if v, ok := _u.mutation.Guidance(); ok {
 		if err := servicetype.GuidanceValidator(v); err != nil {
 			return &ValidationError{Name: "guidance", err: fmt.Errorf(`ent: validator failed for field "ServiceType.guidance": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.TriggerMode(); ok {
+		if err := servicetype.TriggerModeValidator(v); err != nil {
+			return &ValidationError{Name: "trigger_mode", err: fmt.Errorf(`ent: validator failed for field "ServiceType.trigger_mode": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.DefaultPriority(); ok {
+		if err := servicetype.DefaultPriorityValidator(v); err != nil {
+			return &ValidationError{Name: "default_priority", err: fmt.Errorf(`ent: validator failed for field "ServiceType.default_priority": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.TemperatureRequirement(); ok {
+		if err := servicetype.TemperatureRequirementValidator(v); err != nil {
+			return &ValidationError{Name: "temperature_requirement", err: fmt.Errorf(`ent: validator failed for field "ServiceType.temperature_requirement": %w`, err)}
 		}
 	}
 	return nil
@@ -668,11 +818,11 @@ func (_u *ServiceTypeUpdate) sqlSave(ctx context.Context) (_node int, err error)
 	if _u.mutation.DescriptionCleared() {
 		_spec.ClearField(servicetype.FieldDescription, field.TypeString)
 	}
-	if value, ok := _u.mutation.RepairPost(); ok {
-		_spec.SetField(servicetype.FieldRepairPost, field.TypeString, value)
+	if value, ok := _u.mutation.ExecutionPost(); ok {
+		_spec.SetField(servicetype.FieldExecutionPost, field.TypeString, value)
 	}
-	if _u.mutation.RepairPostCleared() {
-		_spec.ClearField(servicetype.FieldRepairPost, field.TypeString)
+	if _u.mutation.ExecutionPostCleared() {
+		_spec.ClearField(servicetype.FieldExecutionPost, field.TypeString)
 	}
 	if value, ok := _u.mutation.StandardWorkHours(); ok {
 		_spec.SetField(servicetype.FieldStandardWorkHours, field.TypeFloat64, value)
@@ -740,16 +890,73 @@ func (_u *ServiceTypeUpdate) sqlSave(ctx context.Context) (_node int, err error)
 	if _u.mutation.SparePartsCleared() {
 		_spec.ClearField(servicetype.FieldSpareParts, field.TypeJSON)
 	}
-	if value, ok := _u.mutation.InspectionItems(); ok {
-		_spec.SetField(servicetype.FieldInspectionItems, field.TypeJSON, value)
+	if value, ok := _u.mutation.TriggerMode(); ok {
+		_spec.SetField(servicetype.FieldTriggerMode, field.TypeEnum, value)
 	}
-	if value, ok := _u.mutation.AppendedInspectionItems(); ok {
+	if _u.mutation.TriggerModeCleared() {
+		_spec.ClearField(servicetype.FieldTriggerMode, field.TypeEnum)
+	}
+	if value, ok := _u.mutation.DefaultPriority(); ok {
+		_spec.SetField(servicetype.FieldDefaultPriority, field.TypeEnum, value)
+	}
+	if _u.mutation.DefaultPriorityCleared() {
+		_spec.ClearField(servicetype.FieldDefaultPriority, field.TypeEnum)
+	}
+	if value, ok := _u.mutation.AcceptanceModes(); ok {
+		_spec.SetField(servicetype.FieldAcceptanceModes, field.TypeJSON, value)
+	}
+	if value, ok := _u.mutation.AppendedAcceptanceModes(); ok {
 		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, servicetype.FieldInspectionItems, value)
+			sqljson.Append(u, servicetype.FieldAcceptanceModes, value)
 		})
 	}
-	if _u.mutation.InspectionItemsCleared() {
-		_spec.ClearField(servicetype.FieldInspectionItems, field.TypeJSON)
+	if _u.mutation.AcceptanceModesCleared() {
+		_spec.ClearField(servicetype.FieldAcceptanceModes, field.TypeJSON)
+	}
+	if value, ok := _u.mutation.AcceptanceItems(); ok {
+		_spec.SetField(servicetype.FieldAcceptanceItems, field.TypeJSON, value)
+	}
+	if value, ok := _u.mutation.AppendedAcceptanceItems(); ok {
+		_spec.AddModifier(func(u *sql.UpdateBuilder) {
+			sqljson.Append(u, servicetype.FieldAcceptanceItems, value)
+		})
+	}
+	if _u.mutation.AcceptanceItemsCleared() {
+		_spec.ClearField(servicetype.FieldAcceptanceItems, field.TypeJSON)
+	}
+	if value, ok := _u.mutation.TemperatureRequirement(); ok {
+		_spec.SetField(servicetype.FieldTemperatureRequirement, field.TypeEnum, value)
+	}
+	if _u.mutation.TemperatureRequirementCleared() {
+		_spec.ClearField(servicetype.FieldTemperatureRequirement, field.TypeEnum)
+	}
+	if value, ok := _u.mutation.RequiresApproval(); ok {
+		_spec.SetField(servicetype.FieldRequiresApproval, field.TypeBool, value)
+	}
+	if _u.mutation.RequiresApprovalCleared() {
+		_spec.ClearField(servicetype.FieldRequiresApproval, field.TypeBool)
+	}
+	if value, ok := _u.mutation.CargoTypes(); ok {
+		_spec.SetField(servicetype.FieldCargoTypes, field.TypeJSON, value)
+	}
+	if value, ok := _u.mutation.AppendedCargoTypes(); ok {
+		_spec.AddModifier(func(u *sql.UpdateBuilder) {
+			sqljson.Append(u, servicetype.FieldCargoTypes, value)
+		})
+	}
+	if _u.mutation.CargoTypesCleared() {
+		_spec.ClearField(servicetype.FieldCargoTypes, field.TypeJSON)
+	}
+	if value, ok := _u.mutation.StandardItems(); ok {
+		_spec.SetField(servicetype.FieldStandardItems, field.TypeJSON, value)
+	}
+	if value, ok := _u.mutation.AppendedStandardItems(); ok {
+		_spec.AddModifier(func(u *sql.UpdateBuilder) {
+			sqljson.Append(u, servicetype.FieldStandardItems, value)
+		})
+	}
+	if _u.mutation.StandardItemsCleared() {
+		_spec.ClearField(servicetype.FieldStandardItems, field.TypeJSON)
 	}
 	if _u.mutation.ParentCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -1088,23 +1295,23 @@ func (_u *ServiceTypeUpdateOne) ClearDescription() *ServiceTypeUpdateOne {
 	return _u
 }
 
-// SetRepairPost sets the "repair_post" field.
-func (_u *ServiceTypeUpdateOne) SetRepairPost(v string) *ServiceTypeUpdateOne {
-	_u.mutation.SetRepairPost(v)
+// SetExecutionPost sets the "execution_post" field.
+func (_u *ServiceTypeUpdateOne) SetExecutionPost(v string) *ServiceTypeUpdateOne {
+	_u.mutation.SetExecutionPost(v)
 	return _u
 }
 
-// SetNillableRepairPost sets the "repair_post" field if the given value is not nil.
-func (_u *ServiceTypeUpdateOne) SetNillableRepairPost(v *string) *ServiceTypeUpdateOne {
+// SetNillableExecutionPost sets the "execution_post" field if the given value is not nil.
+func (_u *ServiceTypeUpdateOne) SetNillableExecutionPost(v *string) *ServiceTypeUpdateOne {
 	if v != nil {
-		_u.SetRepairPost(*v)
+		_u.SetExecutionPost(*v)
 	}
 	return _u
 }
 
-// ClearRepairPost clears the value of the "repair_post" field.
-func (_u *ServiceTypeUpdateOne) ClearRepairPost() *ServiceTypeUpdateOne {
-	_u.mutation.ClearRepairPost()
+// ClearExecutionPost clears the value of the "execution_post" field.
+func (_u *ServiceTypeUpdateOne) ClearExecutionPost() *ServiceTypeUpdateOne {
+	_u.mutation.ClearExecutionPost()
 	return _u
 }
 
@@ -1263,21 +1470,155 @@ func (_u *ServiceTypeUpdateOne) ClearSpareParts() *ServiceTypeUpdateOne {
 	return _u
 }
 
-// SetInspectionItems sets the "inspection_items" field.
-func (_u *ServiceTypeUpdateOne) SetInspectionItems(v []string) *ServiceTypeUpdateOne {
-	_u.mutation.SetInspectionItems(v)
+// SetTriggerMode sets the "trigger_mode" field.
+func (_u *ServiceTypeUpdateOne) SetTriggerMode(v servicetype.TriggerMode) *ServiceTypeUpdateOne {
+	_u.mutation.SetTriggerMode(v)
 	return _u
 }
 
-// AppendInspectionItems appends value to the "inspection_items" field.
-func (_u *ServiceTypeUpdateOne) AppendInspectionItems(v []string) *ServiceTypeUpdateOne {
-	_u.mutation.AppendInspectionItems(v)
+// SetNillableTriggerMode sets the "trigger_mode" field if the given value is not nil.
+func (_u *ServiceTypeUpdateOne) SetNillableTriggerMode(v *servicetype.TriggerMode) *ServiceTypeUpdateOne {
+	if v != nil {
+		_u.SetTriggerMode(*v)
+	}
 	return _u
 }
 
-// ClearInspectionItems clears the value of the "inspection_items" field.
-func (_u *ServiceTypeUpdateOne) ClearInspectionItems() *ServiceTypeUpdateOne {
-	_u.mutation.ClearInspectionItems()
+// ClearTriggerMode clears the value of the "trigger_mode" field.
+func (_u *ServiceTypeUpdateOne) ClearTriggerMode() *ServiceTypeUpdateOne {
+	_u.mutation.ClearTriggerMode()
+	return _u
+}
+
+// SetDefaultPriority sets the "default_priority" field.
+func (_u *ServiceTypeUpdateOne) SetDefaultPriority(v servicetype.DefaultPriority) *ServiceTypeUpdateOne {
+	_u.mutation.SetDefaultPriority(v)
+	return _u
+}
+
+// SetNillableDefaultPriority sets the "default_priority" field if the given value is not nil.
+func (_u *ServiceTypeUpdateOne) SetNillableDefaultPriority(v *servicetype.DefaultPriority) *ServiceTypeUpdateOne {
+	if v != nil {
+		_u.SetDefaultPriority(*v)
+	}
+	return _u
+}
+
+// ClearDefaultPriority clears the value of the "default_priority" field.
+func (_u *ServiceTypeUpdateOne) ClearDefaultPriority() *ServiceTypeUpdateOne {
+	_u.mutation.ClearDefaultPriority()
+	return _u
+}
+
+// SetAcceptanceModes sets the "acceptance_modes" field.
+func (_u *ServiceTypeUpdateOne) SetAcceptanceModes(v []string) *ServiceTypeUpdateOne {
+	_u.mutation.SetAcceptanceModes(v)
+	return _u
+}
+
+// AppendAcceptanceModes appends value to the "acceptance_modes" field.
+func (_u *ServiceTypeUpdateOne) AppendAcceptanceModes(v []string) *ServiceTypeUpdateOne {
+	_u.mutation.AppendAcceptanceModes(v)
+	return _u
+}
+
+// ClearAcceptanceModes clears the value of the "acceptance_modes" field.
+func (_u *ServiceTypeUpdateOne) ClearAcceptanceModes() *ServiceTypeUpdateOne {
+	_u.mutation.ClearAcceptanceModes()
+	return _u
+}
+
+// SetAcceptanceItems sets the "acceptance_items" field.
+func (_u *ServiceTypeUpdateOne) SetAcceptanceItems(v []schema.ServiceAcceptanceItem) *ServiceTypeUpdateOne {
+	_u.mutation.SetAcceptanceItems(v)
+	return _u
+}
+
+// AppendAcceptanceItems appends value to the "acceptance_items" field.
+func (_u *ServiceTypeUpdateOne) AppendAcceptanceItems(v []schema.ServiceAcceptanceItem) *ServiceTypeUpdateOne {
+	_u.mutation.AppendAcceptanceItems(v)
+	return _u
+}
+
+// ClearAcceptanceItems clears the value of the "acceptance_items" field.
+func (_u *ServiceTypeUpdateOne) ClearAcceptanceItems() *ServiceTypeUpdateOne {
+	_u.mutation.ClearAcceptanceItems()
+	return _u
+}
+
+// SetTemperatureRequirement sets the "temperature_requirement" field.
+func (_u *ServiceTypeUpdateOne) SetTemperatureRequirement(v servicetype.TemperatureRequirement) *ServiceTypeUpdateOne {
+	_u.mutation.SetTemperatureRequirement(v)
+	return _u
+}
+
+// SetNillableTemperatureRequirement sets the "temperature_requirement" field if the given value is not nil.
+func (_u *ServiceTypeUpdateOne) SetNillableTemperatureRequirement(v *servicetype.TemperatureRequirement) *ServiceTypeUpdateOne {
+	if v != nil {
+		_u.SetTemperatureRequirement(*v)
+	}
+	return _u
+}
+
+// ClearTemperatureRequirement clears the value of the "temperature_requirement" field.
+func (_u *ServiceTypeUpdateOne) ClearTemperatureRequirement() *ServiceTypeUpdateOne {
+	_u.mutation.ClearTemperatureRequirement()
+	return _u
+}
+
+// SetRequiresApproval sets the "requires_approval" field.
+func (_u *ServiceTypeUpdateOne) SetRequiresApproval(v bool) *ServiceTypeUpdateOne {
+	_u.mutation.SetRequiresApproval(v)
+	return _u
+}
+
+// SetNillableRequiresApproval sets the "requires_approval" field if the given value is not nil.
+func (_u *ServiceTypeUpdateOne) SetNillableRequiresApproval(v *bool) *ServiceTypeUpdateOne {
+	if v != nil {
+		_u.SetRequiresApproval(*v)
+	}
+	return _u
+}
+
+// ClearRequiresApproval clears the value of the "requires_approval" field.
+func (_u *ServiceTypeUpdateOne) ClearRequiresApproval() *ServiceTypeUpdateOne {
+	_u.mutation.ClearRequiresApproval()
+	return _u
+}
+
+// SetCargoTypes sets the "cargo_types" field.
+func (_u *ServiceTypeUpdateOne) SetCargoTypes(v []string) *ServiceTypeUpdateOne {
+	_u.mutation.SetCargoTypes(v)
+	return _u
+}
+
+// AppendCargoTypes appends value to the "cargo_types" field.
+func (_u *ServiceTypeUpdateOne) AppendCargoTypes(v []string) *ServiceTypeUpdateOne {
+	_u.mutation.AppendCargoTypes(v)
+	return _u
+}
+
+// ClearCargoTypes clears the value of the "cargo_types" field.
+func (_u *ServiceTypeUpdateOne) ClearCargoTypes() *ServiceTypeUpdateOne {
+	_u.mutation.ClearCargoTypes()
+	return _u
+}
+
+// SetStandardItems sets the "standard_items" field.
+func (_u *ServiceTypeUpdateOne) SetStandardItems(v []string) *ServiceTypeUpdateOne {
+	_u.mutation.SetStandardItems(v)
+	return _u
+}
+
+// AppendStandardItems appends value to the "standard_items" field.
+func (_u *ServiceTypeUpdateOne) AppendStandardItems(v []string) *ServiceTypeUpdateOne {
+	_u.mutation.AppendStandardItems(v)
+	return _u
+}
+
+// ClearStandardItems clears the value of the "standard_items" field.
+func (_u *ServiceTypeUpdateOne) ClearStandardItems() *ServiceTypeUpdateOne {
+	_u.mutation.ClearStandardItems()
 	return _u
 }
 
@@ -1395,14 +1736,29 @@ func (_u *ServiceTypeUpdateOne) check() error {
 			return &ValidationError{Name: "description", err: fmt.Errorf(`ent: validator failed for field "ServiceType.description": %w`, err)}
 		}
 	}
-	if v, ok := _u.mutation.RepairPost(); ok {
-		if err := servicetype.RepairPostValidator(v); err != nil {
-			return &ValidationError{Name: "repair_post", err: fmt.Errorf(`ent: validator failed for field "ServiceType.repair_post": %w`, err)}
+	if v, ok := _u.mutation.ExecutionPost(); ok {
+		if err := servicetype.ExecutionPostValidator(v); err != nil {
+			return &ValidationError{Name: "execution_post", err: fmt.Errorf(`ent: validator failed for field "ServiceType.execution_post": %w`, err)}
 		}
 	}
 	if v, ok := _u.mutation.Guidance(); ok {
 		if err := servicetype.GuidanceValidator(v); err != nil {
 			return &ValidationError{Name: "guidance", err: fmt.Errorf(`ent: validator failed for field "ServiceType.guidance": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.TriggerMode(); ok {
+		if err := servicetype.TriggerModeValidator(v); err != nil {
+			return &ValidationError{Name: "trigger_mode", err: fmt.Errorf(`ent: validator failed for field "ServiceType.trigger_mode": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.DefaultPriority(); ok {
+		if err := servicetype.DefaultPriorityValidator(v); err != nil {
+			return &ValidationError{Name: "default_priority", err: fmt.Errorf(`ent: validator failed for field "ServiceType.default_priority": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.TemperatureRequirement(); ok {
+		if err := servicetype.TemperatureRequirementValidator(v); err != nil {
+			return &ValidationError{Name: "temperature_requirement", err: fmt.Errorf(`ent: validator failed for field "ServiceType.temperature_requirement": %w`, err)}
 		}
 	}
 	return nil
@@ -1515,11 +1871,11 @@ func (_u *ServiceTypeUpdateOne) sqlSave(ctx context.Context) (_node *ServiceType
 	if _u.mutation.DescriptionCleared() {
 		_spec.ClearField(servicetype.FieldDescription, field.TypeString)
 	}
-	if value, ok := _u.mutation.RepairPost(); ok {
-		_spec.SetField(servicetype.FieldRepairPost, field.TypeString, value)
+	if value, ok := _u.mutation.ExecutionPost(); ok {
+		_spec.SetField(servicetype.FieldExecutionPost, field.TypeString, value)
 	}
-	if _u.mutation.RepairPostCleared() {
-		_spec.ClearField(servicetype.FieldRepairPost, field.TypeString)
+	if _u.mutation.ExecutionPostCleared() {
+		_spec.ClearField(servicetype.FieldExecutionPost, field.TypeString)
 	}
 	if value, ok := _u.mutation.StandardWorkHours(); ok {
 		_spec.SetField(servicetype.FieldStandardWorkHours, field.TypeFloat64, value)
@@ -1587,16 +1943,73 @@ func (_u *ServiceTypeUpdateOne) sqlSave(ctx context.Context) (_node *ServiceType
 	if _u.mutation.SparePartsCleared() {
 		_spec.ClearField(servicetype.FieldSpareParts, field.TypeJSON)
 	}
-	if value, ok := _u.mutation.InspectionItems(); ok {
-		_spec.SetField(servicetype.FieldInspectionItems, field.TypeJSON, value)
+	if value, ok := _u.mutation.TriggerMode(); ok {
+		_spec.SetField(servicetype.FieldTriggerMode, field.TypeEnum, value)
 	}
-	if value, ok := _u.mutation.AppendedInspectionItems(); ok {
+	if _u.mutation.TriggerModeCleared() {
+		_spec.ClearField(servicetype.FieldTriggerMode, field.TypeEnum)
+	}
+	if value, ok := _u.mutation.DefaultPriority(); ok {
+		_spec.SetField(servicetype.FieldDefaultPriority, field.TypeEnum, value)
+	}
+	if _u.mutation.DefaultPriorityCleared() {
+		_spec.ClearField(servicetype.FieldDefaultPriority, field.TypeEnum)
+	}
+	if value, ok := _u.mutation.AcceptanceModes(); ok {
+		_spec.SetField(servicetype.FieldAcceptanceModes, field.TypeJSON, value)
+	}
+	if value, ok := _u.mutation.AppendedAcceptanceModes(); ok {
 		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, servicetype.FieldInspectionItems, value)
+			sqljson.Append(u, servicetype.FieldAcceptanceModes, value)
 		})
 	}
-	if _u.mutation.InspectionItemsCleared() {
-		_spec.ClearField(servicetype.FieldInspectionItems, field.TypeJSON)
+	if _u.mutation.AcceptanceModesCleared() {
+		_spec.ClearField(servicetype.FieldAcceptanceModes, field.TypeJSON)
+	}
+	if value, ok := _u.mutation.AcceptanceItems(); ok {
+		_spec.SetField(servicetype.FieldAcceptanceItems, field.TypeJSON, value)
+	}
+	if value, ok := _u.mutation.AppendedAcceptanceItems(); ok {
+		_spec.AddModifier(func(u *sql.UpdateBuilder) {
+			sqljson.Append(u, servicetype.FieldAcceptanceItems, value)
+		})
+	}
+	if _u.mutation.AcceptanceItemsCleared() {
+		_spec.ClearField(servicetype.FieldAcceptanceItems, field.TypeJSON)
+	}
+	if value, ok := _u.mutation.TemperatureRequirement(); ok {
+		_spec.SetField(servicetype.FieldTemperatureRequirement, field.TypeEnum, value)
+	}
+	if _u.mutation.TemperatureRequirementCleared() {
+		_spec.ClearField(servicetype.FieldTemperatureRequirement, field.TypeEnum)
+	}
+	if value, ok := _u.mutation.RequiresApproval(); ok {
+		_spec.SetField(servicetype.FieldRequiresApproval, field.TypeBool, value)
+	}
+	if _u.mutation.RequiresApprovalCleared() {
+		_spec.ClearField(servicetype.FieldRequiresApproval, field.TypeBool)
+	}
+	if value, ok := _u.mutation.CargoTypes(); ok {
+		_spec.SetField(servicetype.FieldCargoTypes, field.TypeJSON, value)
+	}
+	if value, ok := _u.mutation.AppendedCargoTypes(); ok {
+		_spec.AddModifier(func(u *sql.UpdateBuilder) {
+			sqljson.Append(u, servicetype.FieldCargoTypes, value)
+		})
+	}
+	if _u.mutation.CargoTypesCleared() {
+		_spec.ClearField(servicetype.FieldCargoTypes, field.TypeJSON)
+	}
+	if value, ok := _u.mutation.StandardItems(); ok {
+		_spec.SetField(servicetype.FieldStandardItems, field.TypeJSON, value)
+	}
+	if value, ok := _u.mutation.AppendedStandardItems(); ok {
+		_spec.AddModifier(func(u *sql.UpdateBuilder) {
+			sqljson.Append(u, servicetype.FieldStandardItems, value)
+		})
+	}
+	if _u.mutation.StandardItemsCleared() {
+		_spec.ClearField(servicetype.FieldStandardItems, field.TypeJSON)
 	}
 	if _u.mutation.ParentCleared() {
 		edge := &sqlgraph.EdgeSpec{

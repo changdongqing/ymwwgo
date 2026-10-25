@@ -13,7 +13,7 @@ import { PaginationQuery } from '@/core';
 import { TABLE } from '@/config/constants';
 import type { onestopservicev1_ServiceType } from '@/api/generated/admin/service/v1';
 import { fetchListServiceTypes, useDeleteServiceType } from '@/api/hooks/onestop';
-import { getLevelColor, getLevelMap } from './constants';
+import { getLevelColor, getLevelMap, priorityColor, priorityName, triggerColor, triggerName } from './constants';
 import ServiceTypeForm from './components/ServiceTypeForm';
 import './index.style.css';
 
@@ -117,8 +117,41 @@ const ServiceTypeManagement = () => {
       },
       render: (_, record) => <Tag color={getLevelColor(record.level)}>{levelMap[record.level ?? 'LEVEL_UNSPECIFIED']}</Tag>,
     },
-    // 报修维修配置概览列（非报修类型留空）；明细配置在编辑页签的「报修维修配置」小节
-    { title: t('repairPost'), dataIndex: 'repairPost', width: 110, ellipsis: true, hideInSearch: true },
+    // 履约配置概览列（大类/中类留空）；明细配置在编辑页签的「履约配置」分节。
+    // 执行岗位为统一列：维修/运送/保洁/值守等岗位合并（原维修岗位+运送岗位收敛）
+    {
+      title: t('executionPost'),
+      key: 'executionPost',
+      width: 120,
+      ellipsis: true,
+      hideInSearch: true,
+      render: (_, record) => record.executionPost || '-',
+    },
+    {
+      title: t('triggerMode'),
+      key: 'triggerMode',
+      width: 90,
+      hideInSearch: true,
+      // 自身未设置的小类/细类按继承解析（细类 → 小类 → 默认按需）
+      render: (_, record) =>
+        record.triggerMode && record.triggerMode !== 'TRIGGER_UNSPECIFIED' ? (
+          <Tag color={triggerColor(record.triggerMode)}>{triggerName(record.triggerMode)}</Tag>
+        ) : (
+          '-'
+        ),
+    },
+    {
+      title: t('defaultPriority'),
+      dataIndex: 'defaultPriority',
+      width: 90,
+      hideInSearch: true,
+      render: (_, record) =>
+        record.defaultPriority && record.defaultPriority !== 'PRIORITY_UNSPECIFIED' ? (
+          <Tag color={priorityColor(record.defaultPriority)}>{priorityName(record.defaultPriority)}</Tag>
+        ) : (
+          '-'
+        ),
+    },
     {
       title: t('standardWorkHours'),
       dataIndex: 'standardWorkHours',
@@ -190,7 +223,7 @@ const ServiceTypeManagement = () => {
               showSizeChanger: true,
               showQuickJumper: true,
             }}
-            scroll={{ y: tableScrollY, x: 1370 }}
+            scroll={{ y: tableScrollY, x: 1540 }}
             actions={
               <Space>
                 <TableExportButton

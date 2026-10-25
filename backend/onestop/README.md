@@ -15,17 +15,20 @@ onestop/
 ├── data/
 │   ├── ent/schema/           # ent schema（结构单一事实源）
 │   ├── ent/                  # ent 生成产物
-│   ├── seeds/                # 内置服务类型字典（README 全量 299 节点）
+│   ├── seeds/                # 内置服务类型字典（README 全量 299 节点）+ 周期计划/运送路线模板
 │   ├── entclient.go          # Ent 客户端（不做 DDL，goose 迁移由 admin 服务承载）
-│   ├── service_type_repo.go
-│   └── service_type_seed.go  # 空表播种（count == 0 守卫）
+│   ├── service_type_repo.go / periodic_plan_repo.go / transport_route_repo.go
+│   ├── service_type_seed.go  # 空表播种（count == 0 守卫）
+│   └── periodic_plan_seed_test.go / service_type_seed_test.go / transport_route_seed_test.go
 └── service/
-    └── service_type_service.go   # 业务规则 + HTTP 接口实现（onestopv1）
+    ├── service_type_service.go       # 业务规则 + HTTP 接口实现（onestopv1）
+    ├── periodic_plan_service.go
+    └── transport_route_service.go
 ```
 
 proto 源文件在主仓：`backend/api/protos/onestop/service/v1/`（源领域，HTTP 注解直挂
 service，module 自持接口）与 `backend/api/protos/admin/service/v1/i_onestop_service_type.proto`
-（admin BFF 门面，只挂路由）。本 module 的生成走主仓模板 `backend/api/buf.onestop.gen.yaml`。
+等 BFF 门面（只挂路由）。本 module 的生成走主仓模板 `backend/api/buf.onestop.gen.yaml`。
 
 ## 与主仓的接线方式（为什么这样设计）
 
@@ -63,66 +66,84 @@ PUT    /admin/v1/onestop/service-types/{id}
 DELETE /admin/v1/onestop/service-types/{id}
 ```
 
-## 报修维修类型配置详情（本期）
+## 统一履约配置模板（本期）
 
-**定位**：服务类型的「配置详情」= 挂在类型节点上的服务履约配置。本期仅对
-`0101 报修维修` 子树开放，消费方是后续的工单对象（派单、SLA 预警、绩效工时核算）
-与报修端（快捷语句、语义归型语料）。医院后勤 / 商场 / 园区三业态同构适用。
+**定位**：服务类型的「配置详情」= 挂在类型节点上的服务履约配置。统一模板期
+（报修 0101 → 巡检 0103 → 运送 0106 三期演化后收敛）不再按子树设独立配置分节：
+**所有小类/细类共用一个「履约配置」分节**，四组字段全部可空（未配置 = NULL），
+专项属性按中类维度的展示矩阵条件出现（存储层不限子树）。消费方是后续的工单对象
+（派单、SLA 预警、绩效工时核算）与发起端（快捷语句、语义归型语料）。
+医院后勤 / 商场 / 园区三业态同构适用。
 
-### 配置字段（8 个，全部可空，未配置 = NULL）
+设计文档：[docs/yizhanshi/onestop-unified-service-type-config.md](../../docs/yizhanshi/onestop-unified-service-type-config.md)。
 
-| 字段 | 列 | 类型 | 语义 |
+### 字段分组（15 列）
+
+| 组 | 字段 | 列 | 语义 |
 |---|---|---|---|
-| 维修岗位 | `repair_post` | varchar(64) | 派单目标岗位（电工/管工/空调工…），工单派发的路由依据 |
-| 标准工时 | `standard_work_hours` | double（小时） | 单次作业标准人时，派单负载评估与绩效核算 |
-| 响应时限 | `response_time_limit` | uint32（分钟） | 受理 → 到场的 SLA，超时预警 |
-| 完成时限 | `completion_time_limit` | uint32（分钟） | 受理 → 完工的 SLA |
-| 标准指导说明 | `guidance` | varchar(2048) | 作业 SOP 与安全注意事项（停电挂牌、双人作业、动火审批…） |
-| 常见报修语句 | `common_phrases` | jsonb 数组 | 报修端快捷语句 + 语义归型语料 |
-| 标准工具清单 | `standard_tools` | jsonb 数组 | 出工标配工具 |
-| 常用备件清单 | `spare_parts` | jsonb 数组 | 出工常备备件/耗材，配合库存领用 |
+| A 派单与时效 | 执行岗位 | `execution_post` | 派单目标岗位（电工/运送员/保洁员…），合并原 repair_post/transport_post |
+| | 默认优先级 | `default_priority` | 派单排序与超时预警加权；细类覆盖小类 |
+| | 响应/完成时限 | `response_time_limit` / `completion_time_limit` | 受理 → 到场/取件/处置、受理 → 完工/送达/办结（文案按业态） |
+| | 标准工时 | `standard_work_hours` | 单次作业标准人时 |
+| B 作业标准 | 指导说明 | `guidance` | 作业 SOP 与安全注意事项 |
+| | 常见语句 | `common_phrases` | 发起端快捷语句 + 语义归型语料 |
+| | 工具/装备 | `standard_tools` | 出工标配（工具/轮椅/标本箱/清洁机具…） |
+| | 耗材/备件 | `spare_parts` | 出工常备，配合库存领用 |
+| C 验收方案 | 验收方式/验收项 | `acceptance_modes` / `acceptance_items` | 报修=完工验收、运送=交接签收、客服=办结回访；可组合 |
+| D 专项属性 | 温控要求 | `temperature_requirement` | 冷链 2-8℃ / 冷冻 / 保温（推荐 0106） |
+| | 需事前审批 | `requires_approval` | 搬入搬出押运、动火作业、资源申请等管控类 |
+| | 物品细目 | `cargo_types` | 承接物品范围（推荐 0106） |
+| | 标准作业项目库 | `standard_items` | 周期计划点表模板（原巡检项目库泛化） |
+| 触发方式 | 任务触发方式 | `trigger_mode` | 周期计划统一开关，见下 |
 
-数值域由服务层校验：工时须为正；时限 1–43200 分钟（30 天封顶，防分钟/小时误填）。
+数值域由服务层校验：工时须为正；时限 1–43200 分钟；**大类/中类是纯结构节点，
+提交任一配置字段（含 trigger_mode）→ 422**（后端补挡，与前端门控同口径）。
 
-### 配置层级约定
+### 任务触发方式（trigger_mode，周期计划的统一开关）
 
-字段对**小类与细类**两级开放（前端：编码以 `0101` 开头且 6/8 位时出现「报修维修配置」
-分节），种子预置按行业惯例分层：
+- `TRIGGER_ON_DEMAND` 按需发起：工单由用户/呼叫触发（报修、突发、投诉、应急）；
+- `TRIGGER_SCHEDULED` 计划生成：可挂周期计划，任务由调度器按频率生成；
+- NULL = 未设置：**细类回退小类，仍未设置按 ON_DEMAND**（后端 `ResolveTriggerMode`
+  与前端 `resolveTriggerMode` 同口径实现）。
 
-- **小类（工种层）**：维修岗位 + 响应/完成时限 + 指导说明（岗位与 SLA 是工种属性）；
-- **细类（故障层）**：标准工时 + 语句/工具/备件（随具体故障而异）；
-  电梯困人 `01010501` 在细类层覆盖 SLA（10 分钟到场、30 分钟完成救援）。
+约束：由 SCHEDULED 切回 ON_DEMAND（或清空后经回退链解析不再计划化）时，
+节点自身或其直接子级仍挂周期计划 → 409 拒绝（先删计划）。
 
-两级均可覆盖填写；「细类为空回退小类」的运行期继承留给工单对象落地时实现，本期不做。
+### 展示矩阵与配置继承
 
-### 接口语义（jsonb 数组的 mask 行为）
-
-三个数组列与 `sys_org_units.subtype_path` 同款：
-
-- Create/Update 中**非空才 Set**；
-- Update 时 `updateMask` 含该字段且值为空数组 → go-crud 的 nil 字段掩码统一置 NULL
-  （repo 闭包不得再 Clear，同列双赋值触发 PG 42601）；
-- mask 不含该字段 → 不触碰（前端 `useUpdateServiceType` 按表单键自动生成 mask）。
+- 前端 `CATEGORY_PROFILE`（按中类编码）驱动专项属性可见性与时限文案；
+  未登记的新建中类回落全组可见 + 通用文案（统一模板兜底）；
+- `standard_items` 不进矩阵：解析后为 SCHEDULED 即出现（计划点表模板与
+  是否计划型强相关）；
+- 配置继承（细类为空回退小类）由读取端解析：本期前端详情页展示继承值，
+  运行期消费留给工单对象（P2）。
 
 ### 种子行业模板
 
-`data/seeds/service_types.json` 为 0101 子树预置了行业模板：**11 个小类**（岗位/时限/指导）
-+ **40 个细类**（工时/语句/工具/备件），口径按医院后勤一站式服务通用值（商场/园区同构），
-管理页可改。守卫测试 `data/service_type_seed_test.go` 钉死结构：299 节点、父子链有序、
-配置只出现在 0101 子树、数值域受控、11+40 全覆盖。
+`data/seeds/service_types.json`：299 节点 + 配置模板按「小类=工种层（岗位/SLA/
+指导/项目库）、细类=作业层（工时/语句/工具/耗材）」分层预置——报修 11 小类 +
+运送 5 小类（既有）+ 统一期新增 17 个计划型小类（维保 10 / 保洁 2 / 消防 3 /
+检测 1 / 绿养 1），执行岗位共 33、细类工时 52；**105 个节点标记 SCHEDULED**
+（80 细类 + 25 小类，矩阵见设计文档 §7）。守卫测试 `data/service_type_seed_test.go`
+钉死以上口径（与迁移 00012 的回填前缀清单三处同步维护）。
 
 ### 本期明确不做
 
-- 默认优先级、是否有偿/计费方式：等工单对象与计费模型落地；
-- 配置继承回退（细类空 → 取小类）：工单消费侧实现；
-- 其他中类（计划维保/巡检等）的配置分节：字段机制通用，后续按业态各启各的清单。
+- 工单对象与调度器（计划 → 任务生成、运行期继承、ETA、逐级上报）：P2；
+- 计费/有偿、默认费用字段：等计费模型落地；
+- trigger_mode 多选化（同一类型既按需又跑计划）：工单期按需扩展。
 
-## 巡检计划（0103 巡检巡查）
+## 周期计划（onestop_periodic_plans）
 
-**定位**：与报修配置（类型上的单值参数）不同，巡检计划是**类别节点下的列表型
-子资源**——一个类别可挂多套周期不同的计划。计划描述「谁（岗位）按什么频率在
-什么范围内查哪些点（点表）」，生效区间约束执行窗口；运行期任务生成由后续工单
-对象实现，本期只做配置管理。新实体落 `onestop_inspection_plans`（迁移 00010）。
+**定位**：与履约配置（类型上的单值参数）不同，周期计划是**类别节点下的列表型
+子资源**——一个类别可挂多套周期不同的计划。由巡检计划（0103）泛化而来，
+覆盖巡检、维保、日常保洁、消杀、抄表、绿化养护、库存盘点等周期型服务。
+计划描述「谁（岗位）按什么频率在什么范围内做哪些项（点表）」，生效区间约束
+执行窗口；运行期任务生成由后续工单对象实现，本期只做配置管理。
+
+**挂载门控**：类别为小类/细类，且解析后的任务触发方式 = TRIGGER_SCHEDULED
+（替代原 0103 编码前缀校验；细类未设置回退小类，挂在 SCHEDULED 小类下的
+新细类无须再显式开启）。
 
 ### 频率模型
 
@@ -136,44 +157,66 @@ DELETE /admin/v1/onestop/service-types/{id}
 | FREQ_MONTHLY | `month_days`（1-31，`-1`=当月最后一天） | `clamp_to_month_end` |
 | FREQ_YEARLY | `months`（1-12）+ `month_days` | 同上 |
 
-月底兼容（`clamp_to_month_end`，默认开）：31 号在小月顺延至当月最后一天执行
-（2 月的 31 号 → 28/29 号）；关闭则当月跳过。运维口径建议直接用 `-1`（月末）。
+既定口径（防实现期再议）：**季度** = FREQ_YEARLY 的 months 多值（如 [1,4,7,10]）；
+**半月** = FREQ_MONTHLY 的 month_days=[1,15]（weekdays 表达不了双周）。
 
 ### 点表与范围
 
-- 类别节点（`0103` 前缀的小类/细类）挂**标准巡检项目库**
-  （`service_type.inspection_items` jsonb），是计划点表的模板来源；
+- 类别节点挂**标准作业项目库**（`service_type.standard_items` jsonb），
+  是计划点表的模板来源（巡检点/维保项目单/保洁作业标准同构）；
 - 计划带**空间点表**（`space_items`）与**设备点表**（`equipment_items`）两组
   jsonb（`[{name,enabled}]`），计划内可增（含自定义）/删/逐项停用启用，
   停用项保留在点表中但不执行；
-- `space_refs` / `equipment_refs` 为**预留字段**：空间/设备对象模块落地后启用
-  （当前无业务表，仅保留接口契约）。
+- `space_refs` / `equipment_refs` 为**预留字段**：空间/设备对象模块落地后启用。
 
 ### 其他约定
 
-- 计划只允许挂在 `0103` 巡检巡查子树的小类/细类上（服务层校验）；
-- `effective_from` / `effective_to` 生效区间（含端点，留空 = 长期有效）；
 - Update 走「合并视图校验」：未携带字段以库内值补齐后校验，repo 收原始提交值，
   jsonb 数组保留「mask 内空数组 = 显式清空」语义；当前周期必填执行日字段不允许
   被 mask 显式清空；
-- 种子：空表守卫播种 9 套行业模板计划（每日多次防火巡查、月末防火检查（月底顺延
-  样例）、每周一三五抄表、年度季节性专项等，四种周期全覆盖），类别编码解析类别 id，
-  查不到类别跳过留痕；守卫测试 `data/inspection_plan_seed_test.go`；
-- 管理入口在服务类型页 0103 类别的编辑页签（标准项目库分节 + 「巡检计划」面板 +
-  抽屉表单），独立「巡检计划管理」菜单页留给工单模块一起做。
+- 种子：空表守卫播种 **28 套**行业模板计划（巡检期 9 套沿用 + 统一期 19 套：
+  电梯半月维保、消防月保、红外测温季度、发电机月度试机、水箱清洗半年、滤网季度、
+  病区保洁每日、四害消杀每月、被服收发、消控交接班、静配巡回配送、快递分发、
+  季度满意度、能源抄表、水质检测、绿化修剪、绿植更换、库存月盘、外包考核——
+  四种周期全覆盖），类别编码解析类别 id，查不到类别跳过留痕；
+  守卫测试 `data/periodic_plan_seed_test.go`（计划只能挂 SCHEDULED 类别）；
+- 管理入口在服务类型页「计划生成」类别的编辑页签（履约配置分节 + 「周期计划」
+  面板 + 抽屉表单），独立「周期计划管理」菜单页留给工单模块一起做。
 
-接口路由（挂 admin 服务，`OneStopInspectionPlanService`，SYSTEM 模块）：
+接口路由（挂 admin 服务，`OneStopPeriodicPlanService`，SYSTEM 模块）：
 
 ```
-GET    /admin/v1/onestop/inspection-plans
-GET    /admin/v1/onestop/inspection-plans/{id}
-POST   /admin/v1/onestop/inspection-plans
-PUT    /admin/v1/onestop/inspection-plans/{id}
-DELETE /admin/v1/onestop/inspection-plans/{id}
+GET    /admin/v1/onestop/periodic-plans
+GET    /admin/v1/onestop/periodic-plans/{id}
+POST   /admin/v1/onestop/periodic-plans
+PUT    /admin/v1/onestop/periodic-plans/{id}
+DELETE /admin/v1/onestop/periodic-plans/{id}
 ```
+
+## 常用运送路线（0106 运送配送，维持运送专属）
+
+**定位**：`onestop_transport_routes`，与周期计划同款「列表型子资源」模式：一个
+0106 类别（小类/细类，服务层校验）可挂多条起终点/班次不同的路线。路线描述
+「从哪到哪（起点/终点/途经点）、单程预计多久、是否往返、定时班次何时发班」；
+调度坐席按路线模板派单（ETA 基准），departure_times 非空的定时班次由后续工单
+对象按时间点生成定时运送任务。**挂载门控维持 0106 子树不变**（与触发方式无关：
+按需押运同样需要路线模板，仅定时班次路线参与后续任务生成）。
+
+| 字段 | 语义 |
+|---|---|
+| `name` / `service_type_id` | 路线名称 / 所属类别（0106 小类/细类，服务层校验，无 ent 外键） |
+| `origin` / `destination` / `via_points` | 起点（取件地）→ 途经点（有序可空）→ 终点（送达地） |
+| `est_duration_minutes` | 单程预计时长（1-1440 分钟）：调度 ETA 与超时判定基准 |
+| `round_trip` | 往返路线（送达后原路返回，如餐车回收/巡回收件） |
+| `departure_times` | 定时班次发班时间点（HH:mm 列表）；空 = 按需即时派单 |
+
+Update 语义与周期计划同款「合并视图校验」；种子：空表守卫播种 **11 条**模板
+路线，守卫测试 `data/transport_route_seed_test.go`。
 
 > 已部署实例需 `make openapi` 后重启进程，并在管理页触发「接口同步」登记新端点
-> （租户闸门 fail-closed，未同步前新端点 403）。
+>（租户闸门 fail-closed，未同步前新端点 403）。服务类型字段级变更新增列
+> 不需要「接口同步」（无新端点）。
+
 
 ## 新增实体的步骤（本 module 内扩展时）
 

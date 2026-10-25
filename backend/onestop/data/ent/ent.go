@@ -6,8 +6,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"go-wind-admin/onestop/data/ent/inspectionplan"
+	"go-wind-admin/onestop/data/ent/periodicplan"
 	"go-wind-admin/onestop/data/ent/servicetype"
+	"go-wind-admin/onestop/data/ent/transportroute"
 	"reflect"
 	"sync"
 
@@ -74,8 +75,9 @@ var (
 func checkColumn(t, c string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
-			inspectionplan.Table: inspectionplan.ValidColumn,
+			periodicplan.Table:   periodicplan.ValidColumn,
 			servicetype.Table:    servicetype.ValidColumn,
+			transportroute.Table: transportroute.ValidColumn,
 		})
 	})
 	return columnCheck(t, c)

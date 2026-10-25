@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"regexp"
+	"strings"
 
 	paginationV1 "github.com/tx7do/go-crud/api/gen/go/pagination/v1"
 	"github.com/tx7do/go-utils/trans"
@@ -23,6 +24,14 @@ type OperatorReader func(ctx context.Context) (uint32, error)
 // levelCodePattern 服务编码：2/4/6/8 位数字，位数即层级。
 var levelCodePattern = regexp.MustCompile(`^([0-9]{2}|[0-9]{4}|[0-9]{6}|[0-9]{8})$`)
 
+// acceptanceModeSet 验收方式合法值域（存储值与前端/种子约定一致）。
+var acceptanceModeSet = map[string]bool{
+	"ACCEPT_SIGN":  true, // 签名确认
+	"ACCEPT_SCAN":  true, // 扫码核对
+	"ACCEPT_PHOTO": true, // 拍照留证
+	"ACCEPT_DUAL":  true, // 双人验收
+}
+
 // maxTimeLimitMinutes 时限上限：30 天，防分钟/小时单位误填。
 const maxTimeLimitMinutes = 30 * 24 * 60
 
@@ -42,19 +51,63 @@ func levelOfCode(code string) onestopV1.Level {
 	}
 }
 
+// ResolveTriggerMode 解析类别节点生效的任务触发方式：
+// 自身已设置（ON_DEMAND/SCHEDULED）以自身为准；细类未设置回退小类；
+// 仍未设置按 TRIGGER_ON_DEMAND（统一模板默认：按需发起）。
+// 中类/大类是结构节点不参与回退（触发方式本就不允许配在结构层）。
+func ResolveTriggerMode(ctx context.Context, typeRepo *data.ServiceTypeRepo, entity *onestopV1.ServiceType) (onestopV1.TriggerMode, error) {
+	if entity.TriggerMode != nil && entity.GetTriggerMode() != onestopV1.TriggerMode_TRIGGER_UNSPECIFIED {
+		return entity.GetTriggerMode(), nil
+	}
+	if entity.GetLevel() == onestopV1.Level_LEVEL_DETAIL && entity.GetParentId() != 0 {
+		parent, err := typeRepo.GetByID(ctx, entity.GetParentId())
+		if err != nil {
+			return onestopV1.TriggerMode_TRIGGER_UNSPECIFIED, err
+		}
+		if parent.TriggerMode != nil && parent.GetTriggerMode() != onestopV1.TriggerMode_TRIGGER_UNSPECIFIED {
+			return parent.GetTriggerMode(), nil
+		}
+	}
+	return onestopV1.TriggerMode_TRIGGER_ON_DEMAND, nil
+}
+
+// hasConfigPayload 判断提交数据是否携带任一履约配置（未配置 = NULL/空）。
+// repeated 空切片不算（那是显式清空）；requiresApproval 仅 true 算（false 是默认值）。
+// 用于结构层（大类/中类）拒绝配置字段：结构节点只承载分类，不承载履约参数。
+func hasConfigPayload(d *onestopV1.ServiceType) bool {
+	return d.GetExecutionPost() != "" ||
+		d.StandardWorkHours != nil ||
+		d.ResponseTimeLimit != nil ||
+		d.CompletionTimeLimit != nil ||
+		d.GetGuidance() != "" ||
+		len(d.GetCommonPhrases()) > 0 ||
+		len(d.GetStandardTools()) > 0 ||
+		len(d.GetSpareParts()) > 0 ||
+		len(d.GetStandardItems()) > 0 ||
+		len(d.GetCargoTypes()) > 0 ||
+		len(d.GetAcceptanceModes()) > 0 ||
+		len(d.GetAcceptanceItems()) > 0 ||
+		d.DefaultPriority != nil ||
+		d.TemperatureRequirement != nil ||
+		d.GetRequiresApproval() ||
+		d.TriggerMode != nil
+}
+
 type ServiceTypeService struct {
 	onestopV1.OneStopServiceTypeServiceHTTPServer
 
 	log *bLogger.Helper
 
 	repo     *data.ServiceTypeRepo
+	planRepo *data.PeriodicPlanRepo
 	operator OperatorReader
 }
 
-func NewServiceTypeService(ctx *bootstrap.Context, repo *data.ServiceTypeRepo, operator OperatorReader) *ServiceTypeService {
+func NewServiceTypeService(ctx *bootstrap.Context, repo *data.ServiceTypeRepo, planRepo *data.PeriodicPlanRepo, operator OperatorReader) *ServiceTypeService {
 	s := &ServiceTypeService{
 		log:      ctx.NewLoggerHelper("service-type/service/onestop"),
 		repo:     repo,
+		planRepo: planRepo,
 		operator: operator,
 	}
 
@@ -80,7 +133,7 @@ func (s *ServiceTypeService) validate(ctx context.Context, data *onestopV1.Servi
 		return onestopV1.ErrorUnprocessableEntity("service code must be 2/4/6/8 digits")
 	}
 
-	// 报修维修配置数值校验：字段可空，但给了就必须落在合理区间
+	// 履约配置数值校验：字段可空，但给了就必须落在合理区间
 	if data.StandardWorkHours != nil && data.GetStandardWorkHours() <= 0 {
 		return onestopV1.ErrorUnprocessableEntity("standard work hours must be positive")
 	}
@@ -93,9 +146,55 @@ func (s *ServiceTypeService) validate(ctx context.Context, data *onestopV1.Servi
 		return onestopV1.ErrorUnprocessableEntity("completion time limit must be 1-43200 minutes")
 	}
 
+	// 任务触发方式：值域校验（proto3 枚举可传任意整数值，这里收口）
+	if data.TriggerMode != nil {
+		switch data.GetTriggerMode() {
+		case onestopV1.TriggerMode_TRIGGER_ON_DEMAND, onestopV1.TriggerMode_TRIGGER_SCHEDULED:
+		default:
+			return onestopV1.ErrorUnprocessableEntity("trigger mode must be TRIGGER_ON_DEMAND or TRIGGER_SCHEDULED")
+		}
+	}
+
+	// 通用履约配置：验收方式值域 + 验收项（名称非空不重复）
+	for _, mode := range data.GetAcceptanceModes() {
+		if !acceptanceModeSet[mode] {
+			return onestopV1.ErrorUnprocessableEntity(
+				"acceptance mode must be one of ACCEPT_SIGN/ACCEPT_SCAN/ACCEPT_PHOTO/ACCEPT_DUAL")
+		}
+	}
+	itemSeen := make(map[string]bool, len(data.GetAcceptanceItems()))
+	for _, item := range data.GetAcceptanceItems() {
+		if item == nil {
+			continue
+		}
+		if strings.TrimSpace(item.GetName()) == "" {
+			return onestopV1.ErrorUnprocessableEntity("acceptance item name is required")
+		}
+		if itemSeen[item.GetName()] {
+			return onestopV1.ErrorUnprocessableEntity("duplicate acceptance item: %s", item.GetName())
+		}
+		itemSeen[item.GetName()] = true
+	}
+
+	// 运送配送配置：物品细目非空串
+	for _, cargo := range data.GetCargoTypes() {
+		if strings.TrimSpace(cargo) == "" {
+			return onestopV1.ErrorUnprocessableEntity("cargo type must not be empty")
+		}
+	}
+
 	level := levelOfCode(data.GetCode())
 	if data.Level != nil && data.GetLevel() != level {
 		return onestopV1.ErrorUnprocessableEntity("service level does not match code length")
+	}
+
+	// 统一模板门控：履约配置（含触发方式）只允许挂在小类/细类上，
+	// 大类/中类是纯结构节点（此前仅前端门控，统一后后端补挡）
+	if level == onestopV1.Level_LEVEL_MAJOR || level == onestopV1.Level_LEVEL_MIDDLE {
+		if hasConfigPayload(data) {
+			return onestopV1.ErrorUnprocessableEntity(
+				"fulfillment config is only allowed on minor/detail level service types")
+		}
 	}
 
 	if level == onestopV1.Level_LEVEL_MAJOR {
@@ -214,6 +313,36 @@ func (s *ServiceTypeService) Update(ctx context.Context, req *onestopV1.UpdateSe
 
 	if err := s.validate(ctx, req.Data, req.GetId()); err != nil {
 		return nil, err
+	}
+
+	// 触发方式切换守卫：由「计划生成」切走（显式改按需，或清空后经回退链
+	// 解析不再是计划生成），且节点自身或直接子级仍挂周期计划 → 拒绝，先删计划。
+	if req.Data.TriggerMode != nil || maskIncludes("triggerMode") || maskIncludes("trigger_mode") {
+		var resolved onestopV1.TriggerMode
+		if req.Data.TriggerMode != nil && req.Data.GetTriggerMode() != onestopV1.TriggerMode_TRIGGER_UNSPECIFIED {
+			resolved = req.Data.GetTriggerMode()
+		} else {
+			var rerr error
+			if resolved, rerr = ResolveTriggerMode(ctx, s.repo, existing); rerr != nil {
+				return nil, rerr
+			}
+		}
+		if resolved != onestopV1.TriggerMode_TRIGGER_SCHEDULED {
+			ids := []uint32{req.GetId()}
+			children, cerr := s.repo.ChildrenIDs(ctx, req.GetId())
+			if cerr != nil {
+				return nil, cerr
+			}
+			ids = append(ids, children...)
+			planCount, perr := s.planRepo.CountByServiceTypeIDs(ctx, ids...)
+			if perr != nil {
+				return nil, perr
+			}
+			if planCount > 0 {
+				return nil, onestopV1.ErrorConflict(
+					"service type has %d periodic plan(s), delete them before switching trigger mode", planCount)
+			}
+		}
 	}
 
 	// 编码全局唯一（排除自身）

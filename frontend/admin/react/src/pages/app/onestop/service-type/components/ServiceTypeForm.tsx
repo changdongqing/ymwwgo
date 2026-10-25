@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { App, AutoComplete, Divider, Form, Input } from 'antd';
+import { Alert, App, AutoComplete, Divider, Form, Input } from 'antd';
 import {
   ProForm,
   ProFormDigit,
@@ -19,14 +19,22 @@ import {
 import { PaginationQuery } from '@/core';
 import { fetchListServiceTypes, useCreateServiceType, useUpdateServiceType } from '@/api/hooks/onestop';
 import {
+  CARGO_TYPE_SUGGESTIONS,
   CODE_PATTERN,
+  EXECUTION_POST_SUGGESTIONS,
+  PRIORITY_OPTIONS,
+  TEMPERATURE_OPTIONS,
+  TRANSPORT_CATEGORY_CODE,
+  categoryProfile,
   getLevelMap,
-  isInspectionConfigurable,
-  isRepairConfigurable,
+  isConfigurable,
   levelOfCode,
-  REPAIR_POST_SUGGESTIONS,
+  resolveTriggerMode,
+  triggerName,
 } from '../constants';
-import InspectionPlanPanel from './InspectionPlanPanel';
+import { AcceptanceItemsEditor, AcceptanceModesSelect } from './AcceptanceFields';
+import PeriodicPlanPanel from './PeriodicPlanPanel';
+import TransportRoutePanel from './TransportRoutePanel';
 
 interface ServiceTypeFormProps {
   mode: 'create' | 'edit';
@@ -45,8 +53,11 @@ const PARENT_LEVEL: Partial<Record<onestopservicev1_Level, onestopservicev1_Leve
 };
 
 /**
- * 服务类型编辑表单：不再承载在抽屉里，直接嵌入页签内容区
- * （列表页「新增/编辑」各自打开一个页签，本组件即页签内容）。
+ * 服务类型编辑表单：统一履约配置模板（不再按子树设三个门控分节）。
+ * 小类/细类（6/8 位编码）出现一个「履约配置」分节，四组字段：
+ * 派单与时效 / 作业标准 / 验收方案 / 专项属性；可见性与文案由展示矩阵
+ * （CATEGORY_PROFILE）按中类驱动，未登记中类回落全组可见 + 通用文案。
+ * 触发方式为「计划生成」时开放周期计划面板（编辑态）；运送子树另有常用路线面板。
  */
 export default function ServiceTypeForm({ mode, data, onSaved, onCancel }: ServiceTypeFormProps) {
   const { t } = useTranslation('onestop');
@@ -57,8 +68,10 @@ export default function ServiceTypeForm({ mode, data, onSaved, onCancel }: Servi
 
   // 监听编码输入：驱动层级展示与上级候选
   const watchedCode = Form.useWatch('code', form) as string | undefined;
+  // 监听触发方式：新建态驱动「保存后可配置周期计划」提示
+  const watchedTriggerMode = Form.useWatch('triggerMode', form) as string | undefined;
 
-  // 全量平铺列表：用于构建“上级服务类型”候选
+  // 全量平铺列表：用于构建"上级服务类型"候选与触发方式继承解析
   const [allItems, setAllItems] = useState<onestopservicev1_ServiceType[]>([]);
 
   useEffect(() => {
@@ -78,7 +91,7 @@ export default function ServiceTypeForm({ mode, data, onSaved, onCancel }: Servi
         parentId: data.parentId,
         description: data.description,
         isEnabled: data.isEnabled,
-        repairPost: data.repairPost,
+        executionPost: data.executionPost,
         standardWorkHours: data.standardWorkHours,
         responseTimeLimit: data.responseTimeLimit,
         completionTimeLimit: data.completionTimeLimit,
@@ -86,7 +99,15 @@ export default function ServiceTypeForm({ mode, data, onSaved, onCancel }: Servi
         commonPhrases: data.commonPhrases ?? [],
         standardTools: data.standardTools ?? [],
         spareParts: data.spareParts ?? [],
-        inspectionItems: data.inspectionItems ?? [],
+        standardItems: data.standardItems ?? [],
+        triggerMode: data.triggerMode === 'TRIGGER_UNSPECIFIED' ? undefined : data.triggerMode,
+        defaultPriority: data.defaultPriority === 'PRIORITY_UNSPECIFIED' ? undefined : data.defaultPriority,
+        acceptanceModes: data.acceptanceModes ?? [],
+        acceptanceItems: data.acceptanceItems ?? [],
+        temperatureRequirement:
+          data.temperatureRequirement === 'TEMP_UNSPECIFIED' ? undefined : data.temperatureRequirement,
+        requiresApproval: data.requiresApproval ?? false,
+        cargoTypes: data.cargoTypes ?? [],
       });
     } else {
       form.resetFields();
@@ -102,11 +123,24 @@ export default function ServiceTypeForm({ mode, data, onSaved, onCancel }: Servi
     [mode, data?.code, watchedCode],
   );
 
-  // 报修维修配置仅对 0101 报修维修子树的小类/细类开放（新建时随编码输入出现）
+  // 统一模板门控：小类/细类可配置；展示矩阵决定专项属性与文案
   const effectiveCode = mode === 'edit' ? data?.code : watchedCode;
-  const showRepairConfig = isRepairConfigurable(effectiveCode);
-  // 巡检巡查配置：标准巡检项目库（0103 子树）；计划管理仅在编辑态出现
-  const showInspectionConfig = isInspectionConfigurable(effectiveCode);
+  const showConfig = isConfigurable(effectiveCode);
+  const profile = useMemo(() => categoryProfile(effectiveCode), [effectiveCode]);
+
+  // 生效触发方式：编辑态走继承解析（细类未设置回退小类），新建态跟随选择
+  const resolvedTrigger = useMemo(() => {
+    if (mode === 'edit' && data) {
+      return resolveTriggerMode(allItems, data);
+    }
+    return watchedTriggerMode === 'TRIGGER_SCHEDULED' ? 'TRIGGER_SCHEDULED' : 'TRIGGER_ON_DEMAND';
+  }, [mode, data, allItems, watchedTriggerMode]);
+  const isScheduled = resolvedTrigger === 'TRIGGER_SCHEDULED';
+
+  // 运送子树（任意层级的小类/细类）：编辑态管理常用路线（与触发方式无关，
+  // 按需押运同样需要路线模板；仅定时班次路线参与后续任务生成）
+  const isTransportSubtree =
+    !!effectiveCode && effectiveCode.startsWith(TRANSPORT_CATEGORY_CODE) && showConfig;
 
   // 上级候选：只允许挂在恰好上一级之下；编辑时排除自身。
   // 同一层级的候选天然是平铺列表，无需树形结构。
@@ -154,9 +188,10 @@ export default function ServiceTypeForm({ mode, data, onSaved, onCancel }: Servi
       description: values.description,
       isEnabled: values.isEnabled,
     };
-    if (showRepairConfig) {
+    if (showConfig) {
+      // —— A 派单与时效 / B 作业标准 / C 验收方案（通用组，全部中类可见）——
       // 空串归一为 undefined：清空的字段走 mask 内 nil → 置 NULL，而不是落空串
-      payload.repairPost = values.repairPost || undefined;
+      payload.executionPost = values.executionPost || undefined;
       payload.guidance = values.guidance || undefined;
       payload.standardWorkHours = values.standardWorkHours;
       payload.responseTimeLimit = values.responseTimeLimit;
@@ -164,9 +199,28 @@ export default function ServiceTypeForm({ mode, data, onSaved, onCancel }: Servi
       payload.commonPhrases = values.commonPhrases ?? [];
       payload.standardTools = values.standardTools ?? [];
       payload.spareParts = values.spareParts ?? [];
-    }
-    if (showInspectionConfig) {
-      payload.inspectionItems = values.inspectionItems ?? [];
+      payload.defaultPriority = values.defaultPriority || undefined;
+      payload.acceptanceModes = values.acceptanceModes ?? [];
+      payload.acceptanceItems = values.acceptanceItems ?? [];
+      // 触发方式：清空 = 继承上级（mask 内 nil → NULL）；已挂计划时后端拒绝切回按需
+      payload.triggerMode = values.triggerMode || undefined;
+      // 标准作业项目库：仅计划生成时随表单提交（显式选择优先，未选择按渲染态
+      // 解析结果——细类继承小类的计划生成同样要带项目库字段）
+      const submittedScheduled =
+        values.triggerMode != null ? values.triggerMode === 'TRIGGER_SCHEDULED' : isScheduled;
+      if (submittedScheduled) {
+        payload.standardItems = values.standardItems ?? [];
+      }
+      // —— D 专项属性：按展示矩阵出现（后端存储不限子树，前端按矩阵收口）——
+      if (profile.specialFields?.includes('temperatureRequirement')) {
+        payload.temperatureRequirement = values.temperatureRequirement || undefined;
+      }
+      if (profile.specialFields?.includes('requiresApproval')) {
+        payload.requiresApproval = values.requiresApproval ?? false;
+      }
+      if (profile.specialFields?.includes('cargoTypes')) {
+        payload.cargoTypes = values.cargoTypes ?? [];
+      }
     }
     if (mode === 'create') {
       await createMutation.mutateAsync({ values: payload });
@@ -175,6 +229,13 @@ export default function ServiceTypeForm({ mode, data, onSaved, onCancel }: Servi
     }
     return true;
   };
+
+  const responseTimeLimitLabel = profile.responseTimeLimitLabelKey
+    ? t(profile.responseTimeLimitLabelKey)
+    : t('responseTimeLimit');
+  const completionTimeLimitLabel = profile.completionTimeLimitLabelKey
+    ? t(profile.completionTimeLimitLabelKey)
+    : t('completionTimeLimit');
 
   return (
     <div className="service-type-form-pane">
@@ -251,26 +312,73 @@ export default function ServiceTypeForm({ mode, data, onSaved, onCancel }: Servi
           ]}
         />
 
-        {/* 报修维修配置（配置详情）：仅 0101 报修维修子树的小类/细类出现。
-            小类配岗位/时限/指导，细类配工时/语句/工具/备件，均可留空 = 未配置 */}
-        {showRepairConfig && (
+        {/* 统一履约配置模板：小类/细类出现一个分节，四组字段按矩阵驱动。
+            小类配工种层默认（岗位/SLA/指导/项目库），细类配作业层并覆盖（工时/语句/工具/耗材），
+            均可留空 = 未配置；细类为空由消费侧回退小类 */}
+        {showConfig && (
           <>
-            <Divider titlePlacement="left">
-              {t('repairConfigSection')}
-            </Divider>
+            <Divider titlePlacement="left">{t('fulfillmentConfigSection')}</Divider>
 
+            <ProFormSelect
+              name="triggerMode"
+              label={t('triggerMode')}
+              allowClear
+              options={[
+                { label: t('triggerMode.onDemand'), value: 'TRIGGER_ON_DEMAND' },
+                { label: t('triggerMode.scheduled'), value: 'TRIGGER_SCHEDULED' },
+              ]}
+              colProps={{ span: 12 }}
+              placeholder={t('triggerModePlaceholder')}
+              extra={
+                mode === 'edit' && !data?.triggerMode
+                  ? t('triggerModeInheritExtra', { mode: triggerName(resolvedTrigger) })
+                  : t('triggerModeExtra')
+              }
+            />
+
+            {/* —— A 派单与时效 —— */}
             <ProFormItem
-              name="repairPost"
-              label={t('repairPost')}
-              extra={t('repairPostExtra')}
+              name="executionPost"
+              label={t('executionPost')}
+              extra={t('executionPostExtra')}
             >
               <AutoComplete
-                options={REPAIR_POST_SUGGESTIONS}
+                options={EXECUTION_POST_SUGGESTIONS}
                 filterOption
                 allowClear
-                placeholder={t('repairPostPlaceholder')}
+                placeholder={t('executionPostPlaceholder')}
               />
             </ProFormItem>
+
+            <ProFormSelect
+              name="defaultPriority"
+              label={t('defaultPriority')}
+              options={PRIORITY_OPTIONS}
+              allowClear
+              colProps={{ span: 12 }}
+              placeholder={t('defaultPriorityPlaceholder')}
+              extra={t('defaultPriorityExtra')}
+            />
+
+            <ProFormDigit
+              name="responseTimeLimit"
+              label={responseTimeLimitLabel}
+              min={1}
+              max={43200}
+              fieldProps={{ precision: 0 }}
+              colProps={{ span: 12 }}
+              placeholder={t('minutesPlaceholder')}
+            />
+
+            <ProFormDigit
+              name="completionTimeLimit"
+              label={completionTimeLimitLabel}
+              min={1}
+              max={43200}
+              fieldProps={{ precision: 0 }}
+              colProps={{ span: 12 }}
+              placeholder={t('minutesPlaceholder')}
+            />
 
             <ProFormDigit
               name="standardWorkHours"
@@ -283,26 +391,7 @@ export default function ServiceTypeForm({ mode, data, onSaved, onCancel }: Servi
               extra={t('standardWorkHoursExtra')}
             />
 
-            <ProFormDigit
-              name="responseTimeLimit"
-              label={t('responseTimeLimit')}
-              min={1}
-              max={43200}
-              fieldProps={{ precision: 0 }}
-              colProps={{ span: 12 }}
-              placeholder={t('minutesPlaceholder')}
-            />
-
-            <ProFormDigit
-              name="completionTimeLimit"
-              label={t('completionTimeLimit')}
-              min={1}
-              max={43200}
-              fieldProps={{ precision: 0 }}
-              colProps={{ span: 12 }}
-              placeholder={t('minutesPlaceholder')}
-            />
-
+            {/* —— B 作业标准 —— */}
             <ProFormTextArea
               name="guidance"
               label={t('guidance')}
@@ -350,40 +439,113 @@ export default function ServiceTypeForm({ mode, data, onSaved, onCancel }: Servi
               colProps={{ span: 24 }}
               placeholder={t('sparePartsPlaceholder')}
             />
-          </>
-        )}
 
-        {/* 巡检巡查配置（0103 子树）：类别级「标准巡检项目库」，
-            计划（频率/岗位/点表/生效期）在编辑态于表单下方管理 */}
-        {showInspectionConfig && (
-          <>
-            <Divider titlePlacement="left">
-              {t('inspectionConfigSection')}
-            </Divider>
+            {/* —— C 验收方案（报修=完工验收，运送=交接签收，客服=办结回访）—— */}
+            <ProFormItem
+              name="acceptanceModes"
+              label={t('acceptance.modes')}
+              extra={t('acceptance.modesExtra')}
+            >
+              <AcceptanceModesSelect />
+            </ProFormItem>
 
-            <ProFormSelect
-              name="inspectionItems"
-              label={t('inspectionItems')}
-              fieldProps={{
-                mode: 'tags',
-                tokenSeparators: [',', '，'],
-                open: false,
-                suffixIcon: null,
-              }}
-              colProps={{ span: 24 }}
-              placeholder={t('inspectionItemsPlaceholder')}
-              extra={t('inspectionItemsExtra')}
-            />
+            <ProFormItem
+              name="acceptanceItems"
+              label={t('acceptance.items')}
+              extra={t('acceptance.itemsExtra')}
+            >
+              <AcceptanceItemsEditor />
+            </ProFormItem>
+
+            {/* —— D 专项属性 + 标准作业项目库 —— */}
+
+            {/* 标准作业项目库：计划点表模板，仅「计划生成」类别需要 */}
+            {isScheduled && (
+              <ProFormSelect
+                name="standardItems"
+                label={t('standardItems')}
+                fieldProps={{
+                  mode: 'tags',
+                  tokenSeparators: [',', '，'],
+                  open: false,
+                  suffixIcon: null,
+                }}
+                colProps={{ span: 24 }}
+                placeholder={t('standardItemsPlaceholder')}
+                extra={t('standardItemsExtra')}
+              />
+            )}
+
+            {profile.specialFields?.includes('temperatureRequirement') && (
+              <ProFormSelect
+                name="temperatureRequirement"
+                label={t('temperatureRequirement')}
+                options={TEMPERATURE_OPTIONS}
+                allowClear
+                colProps={{ span: 12 }}
+                placeholder={t('temperatureRequirementPlaceholder')}
+                extra={t('temperatureRequirementExtra')}
+              />
+            )}
+
+            {profile.specialFields?.includes('requiresApproval') && (
+              <ProFormRadio.Group
+                name="requiresApproval"
+                label={t('requiresApproval')}
+                initialValue={false}
+                options={[
+                  { label: t('requiresApprovalNo'), value: false },
+                  { label: t('requiresApprovalYes'), value: true },
+                ]}
+                extra={t('requiresApprovalExtra')}
+              />
+            )}
+
+            {profile.specialFields?.includes('cargoTypes') && (
+              <ProFormSelect
+                name="cargoTypes"
+                label={t('cargoTypes')}
+                options={CARGO_TYPE_SUGGESTIONS}
+                fieldProps={{
+                  mode: 'tags',
+                  tokenSeparators: [',', '，'],
+                  filterOption: true,
+                  suffixIcon: null,
+                }}
+                colProps={{ span: 24 }}
+                placeholder={t('cargoTypesPlaceholder')}
+                extra={t('cargoTypesExtra')}
+              />
+            )}
           </>
         )}
       </ProForm>
 
-      {/* 巡检计划管理（仅编辑态）：类别已保存才有 id，计划挂类别之下 */}
-      {mode === 'edit' && data?.id != null && showInspectionConfig && (
-        <InspectionPlanPanel
+      {/* 周期计划管理（仅编辑态且解析后为「计划生成」）：类别已保存才有 id，
+          计划挂类别之下；由「计划生成」切回按需时后端拒绝（须先删计划） */}
+      {mode === 'edit' && data?.id != null && isScheduled && (
+        <PeriodicPlanPanel
           serviceTypeId={data.id}
           serviceTypeLabel={`${data.code ?? ''} ${data.name ?? ''}`.trim()}
-          standardItems={data.inspectionItems ?? []}
+          standardItems={data.standardItems ?? []}
+        />
+      )}
+
+      {/* 新建态选了「计划生成」：保存后才能配置计划（计划需要类别 id） */}
+      {mode === 'create' && showConfig && isScheduled && (
+        <Alert
+          type="info"
+          showIcon
+          style={{ marginTop: 8 }}
+          message={t('plan.createAfterSaveHint')}
+        />
+      )}
+
+      {/* 常用运送路线管理（仅编辑态、0106 子树）：与触发方式无关（按需押运也需要路线模板） */}
+      {mode === 'edit' && data?.id != null && isTransportSubtree && (
+        <TransportRoutePanel
+          serviceTypeId={data.id}
+          serviceTypeLabel={`${data.code ?? ''} ${data.name ?? ''}`.trim()}
         />
       )}
     </div>
