@@ -93,7 +93,6 @@ type ServiceType struct {
 	ParentId      *uint32                `protobuf:"varint,5,opt,name=parent_id,json=parentId,proto3,oneof" json:"parent_id,omitempty"`         // 上级服务类型ID
 	Description   *string                `protobuf:"bytes,6,opt,name=description,proto3,oneof" json:"description,omitempty"`                    // 描述
 	IsEnabled     *bool                  `protobuf:"varint,7,opt,name=is_enabled,json=isEnabled,proto3,oneof" json:"is_enabled,omitempty"`      // 是否启用
-	SortOrder     *uint32                `protobuf:"varint,8,opt,name=sort_order,json=sortOrder,proto3,oneof" json:"sort_order,omitempty"`      // 排序顺序，值越小越靠前
 	CreatedBy     *uint32                `protobuf:"varint,100,opt,name=created_by,json=createdBy,proto3,oneof" json:"created_by,omitempty"`    // 创建者ID
 	UpdatedBy     *uint32                `protobuf:"varint,101,opt,name=updated_by,json=updatedBy,proto3,oneof" json:"updated_by,omitempty"`    // 更新者ID
 	DeletedBy     *uint32                `protobuf:"varint,102,opt,name=deleted_by,json=deletedBy,proto3,oneof" json:"deleted_by,omitempty"`    // 删除者用户ID
@@ -181,13 +180,6 @@ func (x *ServiceType) GetIsEnabled() bool {
 		return *x.IsEnabled
 	}
 	return false
-}
-
-func (x *ServiceType) GetSortOrder() uint32 {
-	if x != nil && x.SortOrder != nil {
-		return *x.SortOrder
-	}
-	return 0
 }
 
 func (x *ServiceType) GetCreatedBy() uint32 {
@@ -545,7 +537,7 @@ var File_onestop_service_v1_service_type_proto protoreflect.FileDescriptor
 
 const file_onestop_service_v1_service_type_proto_rawDesc = "" +
 	"\n" +
-	"%onestop/service/v1/service_type.proto\x12\x12onestop.service.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a google/protobuf/field_mask.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1epagination/v1/pagination.proto\"\x96\t\n" +
+	"%onestop/service/v1/service_type.proto\x12\x12onestop.service.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a google/protobuf/field_mask.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1epagination/v1/pagination.proto\"\xcc\b\n" +
 	"\vServiceType\x12)\n" +
 	"\x02id\x18\x01 \x01(\rB\x14\xbaG\x11\x92\x02\x0e服务类型IDH\x00R\x02id\x88\x01\x01\x12Z\n" +
 	"\x04code\x18\x02 \x01(\tBA\xbaG>\x92\x02;服务编码，2/4/6/8 位数字字符串，位数即层级H\x01R\x04code\x88\x01\x01\x12+\n" +
@@ -554,22 +546,20 @@ const file_onestop_service_v1_service_type_proto_rawDesc = "" +
 	"\tparent_id\x18\x05 \x01(\rB)\xbaG&\x92\x02#上级服务类型ID，大类为空H\x04R\bparentId\x88\x01\x01\x123\n" +
 	"\vdescription\x18\x06 \x01(\tB\f\xbaG\t\x92\x02\x06描述H\x05R\vdescription\x88\x01\x01\x126\n" +
 	"\n" +
-	"is_enabled\x18\a \x01(\bB\x12\xbaG\x0f\x92\x02\f是否启用H\x06R\tisEnabled\x88\x01\x01\x12K\n" +
+	"is_enabled\x18\a \x01(\bB\x12\xbaG\x0f\x92\x02\f是否启用H\x06R\tisEnabled\x88\x01\x01\x125\n" +
 	"\n" +
-	"sort_order\x18\b \x01(\rB'\xbaG$\x92\x02!排序顺序，值越小越靠前H\aR\tsortOrder\x88\x01\x01\x125\n" +
+	"created_by\x18d \x01(\rB\x11\xbaG\x0e\x92\x02\v创建者IDH\aR\tcreatedBy\x88\x01\x01\x125\n" +
 	"\n" +
-	"created_by\x18d \x01(\rB\x11\xbaG\x0e\x92\x02\v创建者IDH\bR\tcreatedBy\x88\x01\x01\x125\n" +
+	"updated_by\x18e \x01(\rB\x11\xbaG\x0e\x92\x02\v更新者IDH\bR\tupdatedBy\x88\x01\x01\x12;\n" +
 	"\n" +
-	"updated_by\x18e \x01(\rB\x11\xbaG\x0e\x92\x02\v更新者IDH\tR\tupdatedBy\x88\x01\x01\x12;\n" +
+	"deleted_by\x18f \x01(\rB\x17\xbaG\x14\x92\x02\x11删除者用户IDH\tR\tdeletedBy\x88\x01\x01\x12S\n" +
 	"\n" +
-	"deleted_by\x18f \x01(\rB\x17\xbaG\x14\x92\x02\x11删除者用户IDH\n" +
-	"R\tdeletedBy\x88\x01\x01\x12S\n" +
+	"created_at\x18\xc8\x01 \x01(\v2\x1a.google.protobuf.TimestampB\x12\xbaG\x0f\x92\x02\f创建时间H\n" +
+	"R\tcreatedAt\x88\x01\x01\x12S\n" +
 	"\n" +
-	"created_at\x18\xc8\x01 \x01(\v2\x1a.google.protobuf.TimestampB\x12\xbaG\x0f\x92\x02\f创建时间H\vR\tcreatedAt\x88\x01\x01\x12S\n" +
+	"updated_at\x18\xc9\x01 \x01(\v2\x1a.google.protobuf.TimestampB\x12\xbaG\x0f\x92\x02\f更新时间H\vR\tupdatedAt\x88\x01\x01\x12S\n" +
 	"\n" +
-	"updated_at\x18\xc9\x01 \x01(\v2\x1a.google.protobuf.TimestampB\x12\xbaG\x0f\x92\x02\f更新时间H\fR\tupdatedAt\x88\x01\x01\x12S\n" +
-	"\n" +
-	"deleted_at\x18\xca\x01 \x01(\v2\x1a.google.protobuf.TimestampB\x12\xbaG\x0f\x92\x02\f删除时间H\rR\tdeletedAt\x88\x01\x01B\x05\n" +
+	"deleted_at\x18\xca\x01 \x01(\v2\x1a.google.protobuf.TimestampB\x12\xbaG\x0f\x92\x02\f删除时间H\fR\tdeletedAt\x88\x01\x01B\x05\n" +
 	"\x03_idB\a\n" +
 	"\x05_codeB\a\n" +
 	"\x05_nameB\b\n" +
@@ -578,13 +568,13 @@ const file_onestop_service_v1_service_type_proto_rawDesc = "" +
 	"_parent_idB\x0e\n" +
 	"\f_descriptionB\r\n" +
 	"\v_is_enabledB\r\n" +
-	"\v_sort_orderB\r\n" +
 	"\v_created_byB\r\n" +
 	"\v_updated_byB\r\n" +
 	"\v_deleted_byB\r\n" +
 	"\v_created_atB\r\n" +
 	"\v_updated_atB\r\n" +
-	"\v_deleted_at\"f\n" +
+	"\v_deleted_atJ\x04\b\b\x10\tR\n" +
+	"sort_order\"f\n" +
 	"\x17ListServiceTypeResponse\x125\n" +
 	"\x05items\x18\x01 \x03(\v2\x1f.onestop.service.v1.ServiceTypeR\x05items\x12\x14\n" +
 	"\x05total\x18\x02 \x01(\x04R\x05total\"\xc8\x01\n" +

@@ -76,7 +76,8 @@ func (ServiceType) Mixin() []ent.Mixin {
 		mixin.OperatorID{},
 		mixin.Tree[ServiceType]{},
 		mixin.IsEnabled{},
-		mixin.SortOrder{},
+		// 不挂 mixin.SortOrder：类型列表固定按 code 升序（编码本身即业务序），
+		// 独立排序字段会制造第二套顺序来源。
 	}
 }
 

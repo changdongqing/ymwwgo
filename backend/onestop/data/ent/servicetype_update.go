@@ -190,33 +190,6 @@ func (_u *ServiceTypeUpdate) ClearIsEnabled() *ServiceTypeUpdate {
 	return _u
 }
 
-// SetSortOrder sets the "sort_order" field.
-func (_u *ServiceTypeUpdate) SetSortOrder(v uint32) *ServiceTypeUpdate {
-	_u.mutation.ResetSortOrder()
-	_u.mutation.SetSortOrder(v)
-	return _u
-}
-
-// SetNillableSortOrder sets the "sort_order" field if the given value is not nil.
-func (_u *ServiceTypeUpdate) SetNillableSortOrder(v *uint32) *ServiceTypeUpdate {
-	if v != nil {
-		_u.SetSortOrder(*v)
-	}
-	return _u
-}
-
-// AddSortOrder adds value to the "sort_order" field.
-func (_u *ServiceTypeUpdate) AddSortOrder(v int32) *ServiceTypeUpdate {
-	_u.mutation.AddSortOrder(v)
-	return _u
-}
-
-// ClearSortOrder clears the value of the "sort_order" field.
-func (_u *ServiceTypeUpdate) ClearSortOrder() *ServiceTypeUpdate {
-	_u.mutation.ClearSortOrder()
-	return _u
-}
-
 // SetCode sets the "code" field.
 func (_u *ServiceTypeUpdate) SetCode(v string) *ServiceTypeUpdate {
 	_u.mutation.SetCode(v)
@@ -466,15 +439,6 @@ func (_u *ServiceTypeUpdate) sqlSave(ctx context.Context) (_node int, err error)
 	}
 	if _u.mutation.IsEnabledCleared() {
 		_spec.ClearField(servicetype.FieldIsEnabled, field.TypeBool)
-	}
-	if value, ok := _u.mutation.SortOrder(); ok {
-		_spec.SetField(servicetype.FieldSortOrder, field.TypeUint32, value)
-	}
-	if value, ok := _u.mutation.AddedSortOrder(); ok {
-		_spec.AddField(servicetype.FieldSortOrder, field.TypeUint32, value)
-	}
-	if _u.mutation.SortOrderCleared() {
-		_spec.ClearField(servicetype.FieldSortOrder, field.TypeUint32)
 	}
 	if value, ok := _u.mutation.Code(); ok {
 		_spec.SetField(servicetype.FieldCode, field.TypeString, value)
@@ -757,33 +721,6 @@ func (_u *ServiceTypeUpdateOne) ClearIsEnabled() *ServiceTypeUpdateOne {
 	return _u
 }
 
-// SetSortOrder sets the "sort_order" field.
-func (_u *ServiceTypeUpdateOne) SetSortOrder(v uint32) *ServiceTypeUpdateOne {
-	_u.mutation.ResetSortOrder()
-	_u.mutation.SetSortOrder(v)
-	return _u
-}
-
-// SetNillableSortOrder sets the "sort_order" field if the given value is not nil.
-func (_u *ServiceTypeUpdateOne) SetNillableSortOrder(v *uint32) *ServiceTypeUpdateOne {
-	if v != nil {
-		_u.SetSortOrder(*v)
-	}
-	return _u
-}
-
-// AddSortOrder adds value to the "sort_order" field.
-func (_u *ServiceTypeUpdateOne) AddSortOrder(v int32) *ServiceTypeUpdateOne {
-	_u.mutation.AddSortOrder(v)
-	return _u
-}
-
-// ClearSortOrder clears the value of the "sort_order" field.
-func (_u *ServiceTypeUpdateOne) ClearSortOrder() *ServiceTypeUpdateOne {
-	_u.mutation.ClearSortOrder()
-	return _u
-}
-
 // SetCode sets the "code" field.
 func (_u *ServiceTypeUpdateOne) SetCode(v string) *ServiceTypeUpdateOne {
 	_u.mutation.SetCode(v)
@@ -1063,15 +1000,6 @@ func (_u *ServiceTypeUpdateOne) sqlSave(ctx context.Context) (_node *ServiceType
 	}
 	if _u.mutation.IsEnabledCleared() {
 		_spec.ClearField(servicetype.FieldIsEnabled, field.TypeBool)
-	}
-	if value, ok := _u.mutation.SortOrder(); ok {
-		_spec.SetField(servicetype.FieldSortOrder, field.TypeUint32, value)
-	}
-	if value, ok := _u.mutation.AddedSortOrder(); ok {
-		_spec.AddField(servicetype.FieldSortOrder, field.TypeUint32, value)
-	}
-	if _u.mutation.SortOrderCleared() {
-		_spec.ClearField(servicetype.FieldSortOrder, field.TypeUint32)
 	}
 	if value, ok := _u.mutation.Code(); ok {
 		_spec.SetField(servicetype.FieldCode, field.TypeString, value)

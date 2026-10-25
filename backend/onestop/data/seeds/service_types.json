@@ -1,0 +1,1796 @@
+[
+  {
+    "code": "01",
+    "name": "表单",
+    "level": "LEVEL_MAJOR",
+    "parentCode": ""
+  },
+  {
+    "code": "0101",
+    "name": "报修维修",
+    "level": "LEVEL_MIDDLE",
+    "parentCode": "01"
+  },
+  {
+    "code": "0102",
+    "name": "计划维保",
+    "level": "LEVEL_MIDDLE",
+    "parentCode": "01"
+  },
+  {
+    "code": "0103",
+    "name": "巡检巡查",
+    "level": "LEVEL_MIDDLE",
+    "parentCode": "01"
+  },
+  {
+    "code": "0104",
+    "name": "保洁环卫",
+    "level": "LEVEL_MIDDLE",
+    "parentCode": "01"
+  },
+  {
+    "code": "0105",
+    "name": "消防安全",
+    "level": "LEVEL_MIDDLE",
+    "parentCode": "01"
+  },
+  {
+    "code": "0106",
+    "name": "运送配送",
+    "level": "LEVEL_MIDDLE",
+    "parentCode": "01"
+  },
+  {
+    "code": "0107",
+    "name": "秩序安保",
+    "level": "LEVEL_MIDDLE",
+    "parentCode": "01"
+  },
+  {
+    "code": "0108",
+    "name": "客服服务",
+    "level": "LEVEL_MIDDLE",
+    "parentCode": "01"
+  },
+  {
+    "code": "0109",
+    "name": "能源环境",
+    "level": "LEVEL_MIDDLE",
+    "parentCode": "01"
+  },
+  {
+    "code": "0110",
+    "name": "绿化美化",
+    "level": "LEVEL_MIDDLE",
+    "parentCode": "01"
+  },
+  {
+    "code": "0111",
+    "name": "应急保障",
+    "level": "LEVEL_MIDDLE",
+    "parentCode": "01"
+  },
+  {
+    "code": "0112",
+    "name": "资产与工程",
+    "level": "LEVEL_MIDDLE",
+    "parentCode": "01"
+  },
+  {
+    "code": "010101",
+    "name": "强电维修",
+    "level": "LEVEL_MINOR",
+    "parentCode": "0101"
+  },
+  {
+    "code": "010102",
+    "name": "弱电智能化维修",
+    "level": "LEVEL_MINOR",
+    "parentCode": "0101"
+  },
+  {
+    "code": "010103",
+    "name": "给排水维修",
+    "level": "LEVEL_MINOR",
+    "parentCode": "0101"
+  },
+  {
+    "code": "010104",
+    "name": "暖通空调维修",
+    "level": "LEVEL_MINOR",
+    "parentCode": "0101"
+  },
+  {
+    "code": "010105",
+    "name": "电梯维修",
+    "level": "LEVEL_MINOR",
+    "parentCode": "0101"
+  },
+  {
+    "code": "010106",
+    "name": "锅炉/压力容器维修",
+    "level": "LEVEL_MINOR",
+    "parentCode": "0101"
+  },
+  {
+    "code": "010107",
+    "name": "建筑本体维修",
+    "level": "LEVEL_MINOR",
+    "parentCode": "0101"
+  },
+  {
+    "code": "010108",
+    "name": "家具设施维修",
+    "level": "LEVEL_MINOR",
+    "parentCode": "0101"
+  },
+  {
+    "code": "010109",
+    "name": "医用专项设施维修（医）",
+    "level": "LEVEL_MINOR",
+    "parentCode": "0101"
+  },
+  {
+    "code": "010110",
+    "name": "餐厨/洗衣设备维修",
+    "level": "LEVEL_MINOR",
+    "parentCode": "0101"
+  },
+  {
+    "code": "010111",
+    "name": "车场设备维修（商）",
+    "level": "LEVEL_MINOR",
+    "parentCode": "0101"
+  },
+  {
+    "code": "010201",
+    "name": "电梯维保",
+    "level": "LEVEL_MINOR",
+    "parentCode": "0102"
+  },
+  {
+    "code": "010202",
+    "name": "消防设施维保",
+    "level": "LEVEL_MINOR",
+    "parentCode": "0102"
+  },
+  {
+    "code": "010203",
+    "name": "电气预防性维护",
+    "level": "LEVEL_MINOR",
+    "parentCode": "0102"
+  },
+  {
+    "code": "010204",
+    "name": "应急电源维护",
+    "level": "LEVEL_MINOR",
+    "parentCode": "0102"
+  },
+  {
+    "code": "010205",
+    "name": "给排水设施维保",
+    "level": "LEVEL_MINOR",
+    "parentCode": "0102"
+  },
+  {
+    "code": "010206",
+    "name": "暖通空调保养",
+    "level": "LEVEL_MINOR",
+    "parentCode": "0102"
+  },
+  {
+    "code": "010207",
+    "name": "特种设备年检",
+    "level": "LEVEL_MINOR",
+    "parentCode": "0102"
+  },
+  {
+    "code": "010208",
+    "name": "防雷与外立面",
+    "level": "LEVEL_MINOR",
+    "parentCode": "0102"
+  },
+  {
+    "code": "010209",
+    "name": "医用专项维保（医）",
+    "level": "LEVEL_MINOR",
+    "parentCode": "0102"
+  },
+  {
+    "code": "010210",
+    "name": "其他设施维保",
+    "level": "LEVEL_MINOR",
+    "parentCode": "0102"
+  },
+  {
+    "code": "010301",
+    "name": "消防巡查",
+    "level": "LEVEL_MINOR",
+    "parentCode": "0103"
+  },
+  {
+    "code": "010302",
+    "name": "电气巡检",
+    "level": "LEVEL_MINOR",
+    "parentCode": "0103"
+  },
+  {
+    "code": "010303",
+    "name": "给排水巡检",
+    "level": "LEVEL_MINOR",
+    "parentCode": "0103"
+  },
+  {
+    "code": "010304",
+    "name": "机房巡检",
+    "level": "LEVEL_MINOR",
+    "parentCode": "0103"
+  },
+  {
+    "code": "010305",
+    "name": "公区设施巡查",
+    "level": "LEVEL_MINOR",
+    "parentCode": "0103"
+  },
+  {
+    "code": "010306",
+    "name": "秩序巡逻",
+    "level": "LEVEL_MINOR",
+    "parentCode": "0103"
+  },
+  {
+    "code": "010307",
+    "name": "装修巡检（商）",
+    "level": "LEVEL_MINOR",
+    "parentCode": "0103"
+  },
+  {
+    "code": "010308",
+    "name": "医院专项巡查（医）",
+    "level": "LEVEL_MINOR",
+    "parentCode": "0103"
+  },
+  {
+    "code": "010401",
+    "name": "日常保洁",
+    "level": "LEVEL_MINOR",
+    "parentCode": "0104"
+  },
+  {
+    "code": "010402",
+    "name": "专项清洁",
+    "level": "LEVEL_MINOR",
+    "parentCode": "0104"
+  },
+  {
+    "code": "010403",
+    "name": "消杀消毒",
+    "level": "LEVEL_MINOR",
+    "parentCode": "0104"
+  },
+  {
+    "code": "010404",
+    "name": "垃圾管理",
+    "level": "LEVEL_MINOR",
+    "parentCode": "0104"
+  },
+  {
+    "code": "010405",
+    "name": "被服洗涤（医）",
+    "level": "LEVEL_MINOR",
+    "parentCode": "0104"
+  },
+  {
+    "code": "010406",
+    "name": "应急保洁",
+    "level": "LEVEL_MINOR",
+    "parentCode": "0104"
+  },
+  {
+    "code": "010407",
+    "name": "外围与其他",
+    "level": "LEVEL_MINOR",
+    "parentCode": "0104"
+  },
+  {
+    "code": "010501",
+    "name": "火警处置",
+    "level": "LEVEL_MINOR",
+    "parentCode": "0105"
+  },
+  {
+    "code": "010502",
+    "name": "消防设施维修",
+    "level": "LEVEL_MINOR",
+    "parentCode": "0105"
+  },
+  {
+    "code": "010503",
+    "name": "消防检测",
+    "level": "LEVEL_MINOR",
+    "parentCode": "0105"
+  },
+  {
+    "code": "010504",
+    "name": "动火管理",
+    "level": "LEVEL_MINOR",
+    "parentCode": "0105"
+  },
+  {
+    "code": "010505",
+    "name": "消防值守",
+    "level": "LEVEL_MINOR",
+    "parentCode": "0105"
+  },
+  {
+    "code": "010506",
+    "name": "培训演练",
+    "level": "LEVEL_MINOR",
+    "parentCode": "0105"
+  },
+  {
+    "code": "010507",
+    "name": "隐患整改",
+    "level": "LEVEL_MINOR",
+    "parentCode": "0105"
+  },
+  {
+    "code": "010508",
+    "name": "消防专项",
+    "level": "LEVEL_MINOR",
+    "parentCode": "0105"
+  },
+  {
+    "code": "010601",
+    "name": "患者运送（医）",
+    "level": "LEVEL_MINOR",
+    "parentCode": "0106"
+  },
+  {
+    "code": "010602",
+    "name": "标本配送（医）",
+    "level": "LEVEL_MINOR",
+    "parentCode": "0106"
+  },
+  {
+    "code": "010603",
+    "name": "药品配送（医）",
+    "level": "LEVEL_MINOR",
+    "parentCode": "0106"
+  },
+  {
+    "code": "010604",
+    "name": "后勤物资配送",
+    "level": "LEVEL_MINOR",
+    "parentCode": "0106"
+  },
+  {
+    "code": "010605",
+    "name": "商写运送（商）",
+    "level": "LEVEL_MINOR",
+    "parentCode": "0106"
+  },
+  {
+    "code": "010701",
+    "name": "门岗值守",
+    "level": "LEVEL_MINOR",
+    "parentCode": "0107"
+  },
+  {
+    "code": "010702",
+    "name": "车辆管理",
+    "level": "LEVEL_MINOR",
+    "parentCode": "0107"
+  },
+  {
+    "code": "010703",
+    "name": "突发事件",
+    "level": "LEVEL_MINOR",
+    "parentCode": "0107"
+  },
+  {
+    "code": "010704",
+    "name": "医院专项（医）",
+    "level": "LEVEL_MINOR",
+    "parentCode": "0107"
+  },
+  {
+    "code": "010705",
+    "name": "大型活动保障（商）",
+    "level": "LEVEL_MINOR",
+    "parentCode": "0107"
+  },
+  {
+    "code": "010801",
+    "name": "投诉处理",
+    "level": "LEVEL_MINOR",
+    "parentCode": "0108"
+  },
+  {
+    "code": "010802",
+    "name": "问询求助",
+    "level": "LEVEL_MINOR",
+    "parentCode": "0108"
+  },
+  {
+    "code": "010803",
+    "name": "资源申请",
+    "level": "LEVEL_MINOR",
+    "parentCode": "0108"
+  },
+  {
+    "code": "010804",
+    "name": "满意度管理",
+    "level": "LEVEL_MINOR",
+    "parentCode": "0108"
+  },
+  {
+    "code": "010805",
+    "name": "租务交接（商）",
+    "level": "LEVEL_MINOR",
+    "parentCode": "0108"
+  },
+  {
+    "code": "010806",
+    "name": "病区服务（医）",
+    "level": "LEVEL_MINOR",
+    "parentCode": "0108"
+  },
+  {
+    "code": "010901",
+    "name": "能源管理",
+    "level": "LEVEL_MINOR",
+    "parentCode": "0109"
+  },
+  {
+    "code": "010902",
+    "name": "温控服务（商）",
+    "level": "LEVEL_MINOR",
+    "parentCode": "0109"
+  },
+  {
+    "code": "010903",
+    "name": "环境检测",
+    "level": "LEVEL_MINOR",
+    "parentCode": "0109"
+  },
+  {
+    "code": "010904",
+    "name": "节能改造",
+    "level": "LEVEL_MINOR",
+    "parentCode": "0109"
+  },
+  {
+    "code": "011001",
+    "name": "绿化养护",
+    "level": "LEVEL_MINOR",
+    "parentCode": "0110"
+  },
+  {
+    "code": "011002",
+    "name": "绿植租摆",
+    "level": "LEVEL_MINOR",
+    "parentCode": "0110"
+  },
+  {
+    "code": "011003",
+    "name": "节日美陈（商）",
+    "level": "LEVEL_MINOR",
+    "parentCode": "0110"
+  },
+  {
+    "code": "011101",
+    "name": "安全救援",
+    "level": "LEVEL_MINOR",
+    "parentCode": "0111"
+  },
+  {
+    "code": "011102",
+    "name": "水电应急",
+    "level": "LEVEL_MINOR",
+    "parentCode": "0111"
+  },
+  {
+    "code": "011103",
+    "name": "医院应急（医）",
+    "level": "LEVEL_MINOR",
+    "parentCode": "0111"
+  },
+  {
+    "code": "011104",
+    "name": "气象应急",
+    "level": "LEVEL_MINOR",
+    "parentCode": "0111"
+  },
+  {
+    "code": "011201",
+    "name": "资产管理",
+    "level": "LEVEL_MINOR",
+    "parentCode": "0112"
+  },
+  {
+    "code": "011202",
+    "name": "验收移交",
+    "level": "LEVEL_MINOR",
+    "parentCode": "0112"
+  },
+  {
+    "code": "011203",
+    "name": "工程项目",
+    "level": "LEVEL_MINOR",
+    "parentCode": "0112"
+  },
+  {
+    "code": "011204",
+    "name": "物料与合同",
+    "level": "LEVEL_MINOR",
+    "parentCode": "0112"
+  },
+  {
+    "code": "01010101",
+    "name": "照明/应急照明故障",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010101"
+  },
+  {
+    "code": "01010102",
+    "name": "开关插座故障",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010101"
+  },
+  {
+    "code": "01010103",
+    "name": "配电箱(柜)/跳闸故障",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010101"
+  },
+  {
+    "code": "01010104",
+    "name": "线路故障(短路/老化)",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010101"
+  },
+  {
+    "code": "01010201",
+    "name": "门禁系统故障",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010102"
+  },
+  {
+    "code": "01010202",
+    "name": "监控/摄像故障",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010102"
+  },
+  {
+    "code": "01010203",
+    "name": "网络/WiFi 故障",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010102"
+  },
+  {
+    "code": "01010204",
+    "name": "广播/信息发布屏故障",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010102"
+  },
+  {
+    "code": "01010205",
+    "name": "对讲系统故障",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010102"
+  },
+  {
+    "code": "01010301",
+    "name": "管道/阀门漏水",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010103"
+  },
+  {
+    "code": "01010302",
+    "name": "下水堵塞(地漏/洁具)",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010103"
+  },
+  {
+    "code": "01010303",
+    "name": "水压/水质异常",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010103"
+  },
+  {
+    "code": "01010304",
+    "name": "龙头/五金更换",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010103"
+  },
+  {
+    "code": "01010401",
+    "name": "空调末端(风机盘管/内机)",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010104"
+  },
+  {
+    "code": "01010402",
+    "name": "新风/排风系统故障",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010104"
+  },
+  {
+    "code": "01010403",
+    "name": "冷热源/冷却塔故障",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010104"
+  },
+  {
+    "code": "01010404",
+    "name": "水系统(水泵/阀门/保温)",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010104"
+  },
+  {
+    "code": "01010501",
+    "name": "电梯困人",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010105"
+  },
+  {
+    "code": "01010502",
+    "name": "垂直电梯故障",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010105"
+  },
+  {
+    "code": "01010503",
+    "name": "自动扶梯故障",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010105"
+  },
+  {
+    "code": "01010601",
+    "name": "锅炉本体故障",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010106"
+  },
+  {
+    "code": "01010602",
+    "name": "安全附件(安全阀/压力表)故障",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010106"
+  },
+  {
+    "code": "01010603",
+    "name": "水处理系统故障",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010106"
+  },
+  {
+    "code": "01010701",
+    "name": "门窗/五金维修",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010107"
+  },
+  {
+    "code": "01010702",
+    "name": "玻璃破损更换",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010107"
+  },
+  {
+    "code": "01010703",
+    "name": "渗漏维修(屋面/外墙/卫浴)",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010107"
+  },
+  {
+    "code": "01010704",
+    "name": "墙面/地面/吊顶维修",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010107"
+  },
+  {
+    "code": "01010705",
+    "name": "道路/井盖/伸缩缝维修",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010107"
+  },
+  {
+    "code": "01010801",
+    "name": "病床/护栏维修（医）",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010108"
+  },
+  {
+    "code": "01010802",
+    "name": "桌椅/柜类维修",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010108"
+  },
+  {
+    "code": "01010803",
+    "name": "隔断/门锁五金维修",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010108"
+  },
+  {
+    "code": "01010901",
+    "name": "医用气体终端故障(氧/负压/压缩空气)",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010109"
+  },
+  {
+    "code": "01010902",
+    "name": "医用纯水系统故障",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010109"
+  },
+  {
+    "code": "01010903",
+    "name": "净化层流系统故障",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010109"
+  },
+  {
+    "code": "01010904",
+    "name": "物流小车/气动物流故障",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010109"
+  },
+  {
+    "code": "01011001",
+    "name": "厨房设备故障(蒸箱/灶具/冷库)",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010110"
+  },
+  {
+    "code": "01011002",
+    "name": "洗衣设备故障(洗衣线/烘干)",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010110"
+  },
+  {
+    "code": "01011101",
+    "name": "道闸/车牌识别故障",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010111"
+  },
+  {
+    "code": "01011102",
+    "name": "充电桩故障",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010111"
+  },
+  {
+    "code": "01011103",
+    "name": "机械车位故障",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010111"
+  },
+  {
+    "code": "01020101",
+    "name": "半月维保",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010201"
+  },
+  {
+    "code": "01020102",
+    "name": "季度维保",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010201"
+  },
+  {
+    "code": "01020103",
+    "name": "半年/年度维保",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010201"
+  },
+  {
+    "code": "01020201",
+    "name": "月度维保",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010202"
+  },
+  {
+    "code": "01020202",
+    "name": "季度/年度维保",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010202"
+  },
+  {
+    "code": "01020301",
+    "name": "高压预防性试验",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010203"
+  },
+  {
+    "code": "01020302",
+    "name": "配电清扫紧固",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010203"
+  },
+  {
+    "code": "01020303",
+    "name": "红外测温",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010203"
+  },
+  {
+    "code": "01020401",
+    "name": "发电机试机保养",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010204"
+  },
+  {
+    "code": "01020402",
+    "name": "UPS/蓄电池维护",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010204"
+  },
+  {
+    "code": "01020403",
+    "name": "双电源切换试验",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010204"
+  },
+  {
+    "code": "01020501",
+    "name": "二次供水水箱清洗消毒",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010205"
+  },
+  {
+    "code": "01020502",
+    "name": "水泵保养",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010205"
+  },
+  {
+    "code": "01020503",
+    "name": "水质送检",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010205"
+  },
+  {
+    "code": "01020601",
+    "name": "滤网/末端清洗",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010206"
+  },
+  {
+    "code": "01020602",
+    "name": "冷却塔清洗",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010206"
+  },
+  {
+    "code": "01020603",
+    "name": "换季保养",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010206"
+  },
+  {
+    "code": "01020604",
+    "name": "空调水处理",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010206"
+  },
+  {
+    "code": "01020701",
+    "name": "锅炉/压力容器定期检验",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010207"
+  },
+  {
+    "code": "01020702",
+    "name": "安全附件校验",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010207"
+  },
+  {
+    "code": "01020703",
+    "name": "电梯年度检验",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010207"
+  },
+  {
+    "code": "01020801",
+    "name": "防雷接地检测",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010208"
+  },
+  {
+    "code": "01020802",
+    "name": "外立面/幕墙检查",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010208"
+  },
+  {
+    "code": "01020901",
+    "name": "医用气体系统维保",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010209"
+  },
+  {
+    "code": "01020902",
+    "name": "净化机组/高效过滤器维保",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010209"
+  },
+  {
+    "code": "01020903",
+    "name": "纯水系统耗材更换",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010209"
+  },
+  {
+    "code": "01021001",
+    "name": "机械车库/游乐设施维保（商）",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010210"
+  },
+  {
+    "code": "01021002",
+    "name": "安防设备维保",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010210"
+  },
+  {
+    "code": "01021003",
+    "name": "水景/喷泉维护",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010210"
+  },
+  {
+    "code": "01030101",
+    "name": "每日防火巡查",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010301"
+  },
+  {
+    "code": "01030102",
+    "name": "每月防火检查",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010301"
+  },
+  {
+    "code": "01030201",
+    "name": "高配房巡检抄表",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010302"
+  },
+  {
+    "code": "01030202",
+    "name": "层间/竖井配电巡检",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010302"
+  },
+  {
+    "code": "01030301",
+    "name": "泵房水箱巡检",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010303"
+  },
+  {
+    "code": "01030302",
+    "name": "集水井/潜污泵巡检",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010303"
+  },
+  {
+    "code": "01030401",
+    "name": "电梯机房巡检",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010304"
+  },
+  {
+    "code": "01030402",
+    "name": "空调机房巡检",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010304"
+  },
+  {
+    "code": "01030403",
+    "name": "锅炉房巡检",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010304"
+  },
+  {
+    "code": "01030501",
+    "name": "土建/门窗/标识巡查",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010305"
+  },
+  {
+    "code": "01030502",
+    "name": "路面/井盖巡查",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010305"
+  },
+  {
+    "code": "01030503",
+    "name": "屋面/雨水系统巡查",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010305"
+  },
+  {
+    "code": "01030601",
+    "name": "白班巡逻打点",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010306"
+  },
+  {
+    "code": "01030602",
+    "name": "夜班巡逻打点",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010306"
+  },
+  {
+    "code": "01030603",
+    "name": "节能夜巡（商）",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010306"
+  },
+  {
+    "code": "01030701",
+    "name": "装修日常巡查",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010307"
+  },
+  {
+    "code": "01030702",
+    "name": "违规行为检查",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010307"
+  },
+  {
+    "code": "01030801",
+    "name": "感控环境巡查",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010308"
+  },
+  {
+    "code": "01030802",
+    "name": "危化品/医用氧巡查",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010308"
+  },
+  {
+    "code": "01030803",
+    "name": "禁烟巡查",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010308"
+  },
+  {
+    "code": "01040101",
+    "name": "大厅/前区保洁",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010401"
+  },
+  {
+    "code": "01040102",
+    "name": "电梯/扶梯保洁",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010401"
+  },
+  {
+    "code": "01040103",
+    "name": "卫生间保洁",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010401"
+  },
+  {
+    "code": "01040104",
+    "name": "走廊/病区保洁（医）",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010401"
+  },
+  {
+    "code": "01040105",
+    "name": "办公室/诊室保洁",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010401"
+  },
+  {
+    "code": "01040201",
+    "name": "石材晶面养护",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010402"
+  },
+  {
+    "code": "01040202",
+    "name": "地毯清洗",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010402"
+  },
+  {
+    "code": "01040203",
+    "name": "玻璃/幕墙清洗",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010402"
+  },
+  {
+    "code": "01040204",
+    "name": "高位除尘",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010402"
+  },
+  {
+    "code": "01040301",
+    "name": "四害消杀",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010403"
+  },
+  {
+    "code": "01040302",
+    "name": "终末/疫点消毒（医）",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010403"
+  },
+  {
+    "code": "01040303",
+    "name": "公共区预防性消毒",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010403"
+  },
+  {
+    "code": "01040401",
+    "name": "日常垃圾清运",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010404"
+  },
+  {
+    "code": "01040402",
+    "name": "垃圾分类督导",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010404"
+  },
+  {
+    "code": "01040403",
+    "name": "装修/大件垃圾清运",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010404"
+  },
+  {
+    "code": "01040404",
+    "name": "医疗废物转运（医）",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010404"
+  },
+  {
+    "code": "01040501",
+    "name": "脏被服收集",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010405"
+  },
+  {
+    "code": "01040502",
+    "name": "净被服发放",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010405"
+  },
+  {
+    "code": "01040601",
+    "name": "跑水清渍",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010406"
+  },
+  {
+    "code": "01040602",
+    "name": "呕吐物/污染物处理",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010406"
+  },
+  {
+    "code": "01040603",
+    "name": "除雪防滑",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010406"
+  },
+  {
+    "code": "01040701",
+    "name": "外围/停车场保洁",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010407"
+  },
+  {
+    "code": "01040702",
+    "name": "水景清洗",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010407"
+  },
+  {
+    "code": "01040703",
+    "name": "开荒/深度保洁",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010407"
+  },
+  {
+    "code": "01050101",
+    "name": "火警现场确认",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010501"
+  },
+  {
+    "code": "01050102",
+    "name": "误报复位处理",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010501"
+  },
+  {
+    "code": "01050201",
+    "name": "报警系统故障",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010502"
+  },
+  {
+    "code": "01050202",
+    "name": "喷淋/消火栓故障",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010502"
+  },
+  {
+    "code": "01050203",
+    "name": "防排烟/防火卷帘故障",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010502"
+  },
+  {
+    "code": "01050204",
+    "name": "消防广播/应急照明故障",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010502"
+  },
+  {
+    "code": "01050301",
+    "name": "消防设施年度检测",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010503"
+  },
+  {
+    "code": "01050302",
+    "name": "电气防火检测",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010503"
+  },
+  {
+    "code": "01050401",
+    "name": "动火作业审批",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010504"
+  },
+  {
+    "code": "01050402",
+    "name": "动火监火与验收",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010504"
+  },
+  {
+    "code": "01050501",
+    "name": "消控室值班",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010505"
+  },
+  {
+    "code": "01050502",
+    "name": "交接班检查",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010505"
+  },
+  {
+    "code": "01050601",
+    "name": "疏散演练",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010506"
+  },
+  {
+    "code": "01050602",
+    "name": "消防培训",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010506"
+  },
+  {
+    "code": "01050701",
+    "name": "内部自查隐患整改",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010507"
+  },
+  {
+    "code": "01050702",
+    "name": "消防部门检查整改",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010507"
+  },
+  {
+    "code": "01050801",
+    "name": "消防车道/登高面清理",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010508"
+  },
+  {
+    "code": "01050802",
+    "name": "微型消防站管理",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010508"
+  },
+  {
+    "code": "01050803",
+    "name": "装修消防报审配合（商）",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010508"
+  },
+  {
+    "code": "01060101",
+    "name": "陪检运送(检查/转科)",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010601"
+  },
+  {
+    "code": "01060102",
+    "name": "出入院护送",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010601"
+  },
+  {
+    "code": "01060201",
+    "name": "定时巡回配送",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010602"
+  },
+  {
+    "code": "01060202",
+    "name": "急送标本",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010602"
+  },
+  {
+    "code": "01060301",
+    "name": "静配中心→病区配送",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010603"
+  },
+  {
+    "code": "01060302",
+    "name": "退药回收",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010603"
+  },
+  {
+    "code": "01060401",
+    "name": "病历/文件配送",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010604"
+  },
+  {
+    "code": "01060402",
+    "name": "耗材/物资配送",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010604"
+  },
+  {
+    "code": "01060403",
+    "name": "营养餐配送",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010604"
+  },
+  {
+    "code": "01060501",
+    "name": "搬入搬出审批押运",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010605"
+  },
+  {
+    "code": "01060502",
+    "name": "快递集中收发",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010605"
+  },
+  {
+    "code": "01060503",
+    "name": "大件垃圾清运",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010605"
+  },
+  {
+    "code": "01070101",
+    "name": "出入口管控",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010701"
+  },
+  {
+    "code": "01070102",
+    "name": "访客登记",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010701"
+  },
+  {
+    "code": "01070103",
+    "name": "装修工人出入证",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010701"
+  },
+  {
+    "code": "01070201",
+    "name": "僵尸车/占位处理",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010702"
+  },
+  {
+    "code": "01070202",
+    "name": "停车缴费纠纷",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010702"
+  },
+  {
+    "code": "01070203",
+    "name": "场内交通事故处理",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010702"
+  },
+  {
+    "code": "01070301",
+    "name": "纠纷处置",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010703"
+  },
+  {
+    "code": "01070302",
+    "name": "失窃/报警事件",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010703"
+  },
+  {
+    "code": "01070303",
+    "name": "可疑人员/物品处理",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010703"
+  },
+  {
+    "code": "01070304",
+    "name": "监控调阅",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010703"
+  },
+  {
+    "code": "01070401",
+    "name": "走失患者寻找",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010704"
+  },
+  {
+    "code": "01070402",
+    "name": "婴儿防盗联动",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010704"
+  },
+  {
+    "code": "01070403",
+    "name": "医闹先期处置",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010704"
+  },
+  {
+    "code": "01070501",
+    "name": "客流管控",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010705"
+  },
+  {
+    "code": "01070502",
+    "name": "临时岗位支援",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010705"
+  },
+  {
+    "code": "01080101",
+    "name": "服务投诉",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010801"
+  },
+  {
+    "code": "01080102",
+    "name": "噪音/油烟/气味投诉",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010801"
+  },
+  {
+    "code": "01080201",
+    "name": "问询指引",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010802"
+  },
+  {
+    "code": "01080202",
+    "name": "物品借用(轮椅/雨伞)",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010802"
+  },
+  {
+    "code": "01080203",
+    "name": "失物招领",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010802"
+  },
+  {
+    "code": "01080301",
+    "name": "场地租借",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010803"
+  },
+  {
+    "code": "01080302",
+    "name": "横幅/摆花/广告位",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010803"
+  },
+  {
+    "code": "01080401",
+    "name": "工单完结回访",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010804"
+  },
+  {
+    "code": "01080402",
+    "name": "满意度调查",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010804"
+  },
+  {
+    "code": "01080501",
+    "name": "租户入驻交接",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010805"
+  },
+  {
+    "code": "01080502",
+    "name": "退租交接",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010805"
+  },
+  {
+    "code": "01080601",
+    "name": "病区物资补充",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010806"
+  },
+  {
+    "code": "01080602",
+    "name": "临时人力支援",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010806"
+  },
+  {
+    "code": "01090101",
+    "name": "能耗异常排查",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010901"
+  },
+  {
+    "code": "01090102",
+    "name": "能源抄表核对",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010901"
+  },
+  {
+    "code": "01090201",
+    "name": "温度投诉处理",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010902"
+  },
+  {
+    "code": "01090202",
+    "name": "加班空调申请",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010902"
+  },
+  {
+    "code": "01090301",
+    "name": "水质检测",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010903"
+  },
+  {
+    "code": "01090302",
+    "name": "空气质量检测",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010903"
+  },
+  {
+    "code": "01090303",
+    "name": "噪音检测",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010903"
+  },
+  {
+    "code": "01090401",
+    "name": "照明节能改造",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010904"
+  },
+  {
+    "code": "01090402",
+    "name": "设备变频/策略优化",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "010904"
+  },
+  {
+    "code": "01100101",
+    "name": "修剪除草",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "011001"
+  },
+  {
+    "code": "01100102",
+    "name": "浇灌施肥",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "011001"
+  },
+  {
+    "code": "01100103",
+    "name": "病虫害防治",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "011001"
+  },
+  {
+    "code": "01100104",
+    "name": "补种补植",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "011001"
+  },
+  {
+    "code": "01100201",
+    "name": "室内绿植更换",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "011002"
+  },
+  {
+    "code": "01100202",
+    "name": "绿植养护巡查",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "011002"
+  },
+  {
+    "code": "01100301",
+    "name": "节日/活动美陈布置",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "011003"
+  },
+  {
+    "code": "01100302",
+    "name": "美陈撤场恢复",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "011003"
+  },
+  {
+    "code": "01110101",
+    "name": "电梯困人救援",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "011101"
+  },
+  {
+    "code": "01110102",
+    "name": "燃气泄漏处置",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "011101"
+  },
+  {
+    "code": "01110103",
+    "name": "火警初期处置",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "011101"
+  },
+  {
+    "code": "01110201",
+    "name": "跑水爆管处置",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "011102"
+  },
+  {
+    "code": "01110202",
+    "name": "停电应急/发电机启动",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "011102"
+  },
+  {
+    "code": "01110203",
+    "name": "双电源切换保障",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "011102"
+  },
+  {
+    "code": "01110301",
+    "name": "手术室/ICU 供电保障",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "011103"
+  },
+  {
+    "code": "01110302",
+    "name": "医气中断应急",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "011103"
+  },
+  {
+    "code": "01110303",
+    "name": "群体/公卫事件保障",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "011103"
+  },
+  {
+    "code": "01110401",
+    "name": "台风/暴雨应对",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "011104"
+  },
+  {
+    "code": "01110402",
+    "name": "寒潮/冰冻应对",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "011104"
+  },
+  {
+    "code": "01110403",
+    "name": "高温应对",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "011104"
+  },
+  {
+    "code": "01120101",
+    "name": "设备建档挂牌",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "011201"
+  },
+  {
+    "code": "01120102",
+    "name": "设备调拨",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "011201"
+  },
+  {
+    "code": "01120103",
+    "name": "设备报废处置",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "011201"
+  },
+  {
+    "code": "01120201",
+    "name": "新装设备验收",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "011202"
+  },
+  {
+    "code": "01120202",
+    "name": "承接查验",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "011202"
+  },
+  {
+    "code": "01120301",
+    "name": "大修/更新改造",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "011203"
+  },
+  {
+    "code": "01120302",
+    "name": "零星工程",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "011203"
+  },
+  {
+    "code": "01120401",
+    "name": "备件申领",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "011204"
+  },
+  {
+    "code": "01120402",
+    "name": "库存盘点",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "011204"
+  },
+  {
+    "code": "01120403",
+    "name": "外包履约考核",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "011204"
+  }
+]

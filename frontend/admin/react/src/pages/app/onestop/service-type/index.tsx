@@ -20,6 +20,14 @@ import './index.style.css';
 const LIST_TAB_KEY = 'list';
 const CREATE_TAB_KEY = 'create';
 
+/**
+ * 类型列表默认业务序：服务编码升序。
+ * 编码 2/4/6/8 位天然构成「大类 → 中类 → 小类 → 细类」前缀序，
+ * 后端在未收到显式排序时也按 code ASC 兜底；这里显式带上，
+ * 避免 PaginationQuery 默认的 -created_at 覆盖业务序。
+ */
+const DEFAULT_ORDER_BY = ['code'];
+
 /** 编辑/新增内容页签：编辑页签 key = edit-<编码>，同一服务编码天然只开一个 */
 type ServiceTypeContentTab =
   | { key: string; kind: 'create' }
@@ -86,12 +94,27 @@ const ServiceTypeManagement = () => {
 
   const columns: ProColumns<onestopservicev1_ServiceType>[] = [
     { title: t('code'), dataIndex: 'code', width: 140, copyable: true },
-    { title: t('name'), dataIndex: 'name', width: 200 },
+    {
+      title: t('parentCode'),
+      key: 'parentCode',
+      width: 120,
+      hideInSearch: true,
+      // 平铺表不展开树：上级编码由编码前缀直接推导（细类 → 前 6 位，小类 → 前 4 位，中类 → 前 2 位）
+      render: (_, record) =>
+        record.code && record.code.length > 2 ? record.code.slice(0, -2) : '-',
+    },
+    { title: t('name'), dataIndex: 'name', width: 220, ellipsis: true },
     {
       title: t('level'),
       dataIndex: 'level',
-      width: 90,
-      hideInSearch: true,
+      width: 110,
+      valueType: 'select',
+      valueEnum: {
+        LEVEL_MAJOR: { text: levelMap.LEVEL_MAJOR },
+        LEVEL_MIDDLE: { text: levelMap.LEVEL_MIDDLE },
+        LEVEL_MINOR: { text: levelMap.LEVEL_MINOR },
+        LEVEL_DETAIL: { text: levelMap.LEVEL_DETAIL },
+      },
       render: (_, record) => <Tag color={getLevelColor(record.level)}>{levelMap[record.level ?? 'LEVEL_UNSPECIFIED']}</Tag>,
     },
     { title: t('description'), dataIndex: 'description', ellipsis: true, hideInSearch: true },
@@ -145,8 +168,8 @@ const ServiceTypeManagement = () => {
               const query = new PaginationQuery({
                 paging: { page: current || 1, pageSize: pageSize || TABLE.DEFAULT_PAGE_SIZE },
                 formValues: rest,
-                // 树表改平表后业务序 = 服务编码升序（服务端排序，编码也是唯一键）
-                orderBy: ['code'],
+                // 平铺表默认按服务编码升序（编码唯一，服务端同样兜底）
+                orderBy: DEFAULT_ORDER_BY,
               });
               const response = await fetchListServiceTypes(query);
               return { data: response.items ?? [], total: response.total ?? 0, success: true };
@@ -157,13 +180,13 @@ const ServiceTypeManagement = () => {
               showSizeChanger: true,
               showQuickJumper: true,
             }}
-            scroll={{ y: tableScrollY, x: 1000 }}
+            scroll={{ y: tableScrollY, x: 1150 }}
             actions={
               <Space>
                 <TableExportButton
                   fetcher={(query) => {
                     // 导出走本组件自己的分页聚合，这里注入与列表一致的服务编码升序
-                    query.orderBy = ['code'];
+                    query.orderBy = DEFAULT_ORDER_BY;
                     return fetchListServiceTypes(query);
                   }}
                   columns={columns}

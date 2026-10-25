@@ -15,8 +15,10 @@ onestop/
 ├── data/
 │   ├── ent/schema/           # ent schema（结构单一事实源）
 │   ├── ent/                  # ent 生成产物
+│   ├── seeds/                # 内置服务类型字典（README 全量 299 节点）
 │   ├── entclient.go          # Ent 客户端（不做 DDL，goose 迁移由 admin 服务承载）
-│   └── service_type_repo.go
+│   ├── service_type_repo.go
+│   └── service_type_seed.go  # 空表播种（count == 0 守卫）
 └── service/
     └── service_type_service.go   # 业务规则 + HTTP 接口实现（onestopv1）
 ```
@@ -44,7 +46,12 @@ service，module 自持接口）与 `backend/api/protos/admin/service/v1/i_onest
 
 - `code`：2/4/6/8 位数字字符串，**位数即层级**（`level` 由服务层按位数推导，不可自定）；
 - `parent_id`：上级服务类型（Tree mixin 自关联）；大类为根，其余层级必须挂在恰好上一级之下；
-- 全局唯一索引兜底 `code` 唯一；有下级时禁止删除；上级不得指向自身子树。
+- 全局唯一索引兜底 `code` 唯一；有下级时禁止删除；上级不得指向自身子树；
+- **不设 `sort_order`**：列表固定按 `code` 升序（编码本身即层级业务序），
+  后端在调用方未显式排序时也以 `code ASC` 兜底；
+- **前端平铺普通表**：不展开树表，上级编码由编码前缀直接推导展示；
+- 空表启动时按 README 全量清单播种 299 个节点（1 大类 + 12 中类 + 75 小类 + 211 细类），
+  种子见 `data/seeds/service_types.json`，采用 `count == 0` 守卫，非空表不覆盖。
 
 接口路由（挂 admin 服务）：
 
@@ -62,7 +69,8 @@ DELETE /admin/v1/onestop/service-types/{id}
    错误沿用 `onestop_error.proto`）；
 2. `backend/api/protos/admin/service/v1/i_<entity>.proto` BFF 门面（照抄
    `i_onestop_service_type.proto`：消息类型引用 onestop 源领域，go_package 覆盖已全局生效）；
-3. 主仓 `make api`（门面进 admin gen）+ 本目录 `make api`（源领域进本 module gen）；
+3. 主仓 `backend/api` 下 `buf generate`（门面进 admin gen）+ `buf generate --template buf.onestop.gen.yaml`
+   （源领域进本 module gen）；
 4. `data/ent/schema/<entity>.go` → `make ent`；
 5. admin 服务的 `internal/data/migrations/` 新增 `000NN_onestop_<what>.sql`（与 schema 同 commit）；
 6. `data/<entity>_repo.go` + `service/<entity>_service.go`（操作人走 `OperatorReader`）；
@@ -73,7 +81,8 @@ DELETE /admin/v1/onestop/service-types/{id}
 ## 开发命令（在本目录执行）
 
 ```bash
-make api   # buf 生成（源领域 → api/gen/go，包 onestopv1）
-make ent   # ent 生成
+# 源领域 proto 生成（在 backend/api 执行；本 module 无独立 buf 工作区）
+cd ../api && buf generate --template buf.onestop.gen.yaml
+make ent   # ent 生成（在本目录执行）
 go build ./... && go vet ./...
 ```

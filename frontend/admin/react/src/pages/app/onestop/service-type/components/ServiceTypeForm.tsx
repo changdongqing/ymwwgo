@@ -4,9 +4,9 @@ import { Form, Input } from 'antd';
 import {
   ProForm,
   ProFormRadio,
+  ProFormSelect,
   ProFormText,
   ProFormTextArea,
-  ProFormTreeSelect,
 } from '@ant-design/pro-components';
 import type { ProFormInstance } from '@ant-design/pro-components';
 import { App } from 'antd';
@@ -28,20 +28,12 @@ interface ServiceTypeFormProps {
   onCancel: () => void;
 }
 
-interface TreeNode {
-  title: string;
-  value: number;
-  key: number;
-  children?: TreeNode[];
-}
-
-const LEVEL_ORDER: onestopservicev1_Level[] = [
-  'LEVEL_UNSPECIFIED',
-  'LEVEL_MAJOR',
-  'LEVEL_MIDDLE',
-  'LEVEL_MINOR',
-  'LEVEL_DETAIL',
-];
+/** 层级 → 恰好上一级（上级候选只取这一层，平铺下拉，不做树选择） */
+const PARENT_LEVEL: Partial<Record<onestopservicev1_Level, onestopservicev1_Level>> = {
+  LEVEL_MIDDLE: 'LEVEL_MAJOR',
+  LEVEL_MINOR: 'LEVEL_MIDDLE',
+  LEVEL_DETAIL: 'LEVEL_MINOR',
+};
 
 /**
  * 服务类型编辑表单：不再承载在抽屉里，直接嵌入页签内容区
@@ -54,14 +46,14 @@ export default function ServiceTypeForm({ mode, data, onSaved, onCancel }: Servi
   const [form] = Form.useForm();
   const formRef = useRef<ProFormInstance>(null);
 
-  // 监听编码输入：驱动层级展示与上级候选树
+  // 监听编码输入：驱动层级展示与上级候选
   const watchedCode = Form.useWatch('code', form) as string | undefined;
 
-  // 全量平铺列表：用于构建“上级服务类型”候选树
+  // 全量平铺列表：用于构建“上级服务类型”候选
   const [allItems, setAllItems] = useState<onestopservicev1_ServiceType[]>([]);
 
   useEffect(() => {
-    // 不传 paging 走 noPaging=true（常规分页钳制 100 条会让上级候选树缺枝）
+    // 不传 paging 走 noPaging=true（常规分页钳制 100 条会让上级候选缺项）
     fetchListServiceTypes(new PaginationQuery())
       .then((response) => setAllItems(response.items ?? []))
       .catch((error: Error) => message.error(error.message || t('fetchFailed')));
@@ -92,26 +84,24 @@ export default function ServiceTypeForm({ mode, data, onSaved, onCancel }: Servi
     [mode, data?.code, watchedCode],
   );
 
-  // 上级候选树：只允许挂在恰好上一级之下；编辑时排除自身。
-  // useMemo 保证 treeData 引用稳定（每次渲染重建数组会导致 rc-tree 选中事件丢失）。
-  const parentTree = useMemo<TreeNode[]>(() => {
-    if (!currentLevel || currentLevel === 'LEVEL_MAJOR') {
+  // 上级候选：只允许挂在恰好上一级之下；编辑时排除自身。
+  // 同一层级的候选天然是平铺列表，无需树形结构。
+  const parentOptions = useMemo(() => {
+    if (!currentLevel) {
       return [];
     }
-    const parentLevel = LEVEL_ORDER[LEVEL_ORDER.indexOf(currentLevel) - 1] as onestopservicev1_Level;
+    const parentLevel = PARENT_LEVEL[currentLevel];
+    if (!parentLevel) {
+      return [];
+    }
     const selfId = mode === 'edit' ? data?.id : undefined;
-    const build = (parentId: number | undefined): TreeNode[] =>
-      allItems
-        .filter(
-          (item) => item.parentId === parentId && item.level === parentLevel && item.id !== selfId,
-        )
-        .map((item) => ({
-          title: `${item.code} ${item.name ?? ''}`,
-          value: item.id as number,
-          key: item.id as number,
-          children: build(item.id),
-        }));
-    return build(undefined);
+    return allItems
+      .filter((item) => item.level === parentLevel && item.id !== selfId)
+      .sort((a, b) => (a.code ?? '').localeCompare(b.code ?? ''))
+      .map((item) => ({
+        label: `${item.code ?? ''} ${item.name ?? ''}`.trim(),
+        value: item.id as number,
+      }));
   }, [currentLevel, allItems, mode, data?.id]);
 
   const createMutation = useCreateServiceType({
@@ -190,18 +180,17 @@ export default function ServiceTypeForm({ mode, data, onSaved, onCancel }: Servi
           placeholder={t('namePlaceholder')}
         />
 
-        {/* 大类为根节点无上级；其余层级必须挂恰好上一级（候选树按编码位数过滤） */}
+        {/* 大类为根节点无上级；其余层级必须挂恰好上一级（候选只列该层，平铺下拉） */}
         {currentLevel && currentLevel !== 'LEVEL_MAJOR' && (
-          <ProFormTreeSelect
+          <ProFormSelect
             name="parentId"
             label={t('parentId')}
             rules={[{ required: true, message: t('requiredParentId') }]}
-            allowClear
+            options={parentOptions}
             fieldProps={{
+              allowClear: true,
               showSearch: true,
-              treeDefaultExpandAll: true,
-              treeNodeFilterProp: 'title',
-              treeData: parentTree,
+              optionFilterProp: 'label',
             }}
             placeholder={t('parentIdPlaceholder')}
           />

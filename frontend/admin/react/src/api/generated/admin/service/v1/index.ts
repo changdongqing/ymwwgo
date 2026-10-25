@@ -7666,7 +7666,6 @@ export type onestopservicev1_ServiceType = {
   level?: onestopservicev1_Level;
   name?: string;
   parentId?: number;
-  sortOrder?: number;
   updatedAt?: wellKnownTimestamp;
   updatedBy?: number;
 };

@@ -49,11 +49,20 @@ type ServiceTypeService struct {
 }
 
 func NewServiceTypeService(ctx *bootstrap.Context, repo *data.ServiceTypeRepo, operator OperatorReader) *ServiceTypeService {
-	return &ServiceTypeService{
+	s := &ServiceTypeService{
 		log:      ctx.NewLoggerHelper("service-type/service/onestop"),
 		repo:     repo,
 		operator: operator,
 	}
+
+	// 空表时播种 README 全量类型字典（count == 0 守卫，非空表不覆盖）。
+	// 播种失败不阻断启动：类型表为空时管理页仍可手工录入，
+	// 但错误必须带原始对象落日志，便于排查迁移/权限问题。
+	if err := repo.SeedDefaults(ctx.Context()); err != nil {
+		s.log.Errorf(ctx.Context(), "seed built-in service types failed: %v", err)
+	}
+
+	return s
 }
 
 // validate 校验服务类型的编码/层级/上级链一致性（selfID 为 0 表示新建）。
@@ -208,7 +217,14 @@ func (s *ServiceTypeService) Update(ctx context.Context, req *onestopV1.UpdateSe
 	req.Data.Id = trans.Ptr(req.GetId())
 	req.Data.UpdatedBy = trans.Ptr(operator)
 	if req.UpdateMask != nil {
-		req.UpdateMask.Paths = append(req.UpdateMask.Paths, "updated_by")
+		// level 由 code 位数推导，即使前端未提交也必须写入，
+		// 否则改编码长度后库内层级会停留在旧值。
+		if !maskIncludes("updated_by") {
+			req.UpdateMask.Paths = append(req.UpdateMask.Paths, "updated_by")
+		}
+		if !maskIncludes("level") {
+			req.UpdateMask.Paths = append(req.UpdateMask.Paths, "level")
+		}
 	}
 
 	// 层级按编码位数推导，杜绝前后端不一致

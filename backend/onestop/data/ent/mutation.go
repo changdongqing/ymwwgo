@@ -43,8 +43,6 @@ type ServiceTypeMutation struct {
 	deleted_by      *uint32
 	adddeleted_by   *int32
 	is_enabled      *bool
-	sort_order      *uint32
-	addsort_order   *int32
 	code            *string
 	name            *string
 	level           *servicetype.Level
@@ -619,76 +617,6 @@ func (m *ServiceTypeMutation) ResetIsEnabled() {
 	delete(m.clearedFields, servicetype.FieldIsEnabled)
 }
 
-// SetSortOrder sets the "sort_order" field.
-func (m *ServiceTypeMutation) SetSortOrder(u uint32) {
-	m.sort_order = &u
-	m.addsort_order = nil
-}
-
-// SortOrder returns the value of the "sort_order" field in the mutation.
-func (m *ServiceTypeMutation) SortOrder() (r uint32, exists bool) {
-	v := m.sort_order
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldSortOrder returns the old "sort_order" field's value of the ServiceType entity.
-// If the ServiceType object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ServiceTypeMutation) OldSortOrder(ctx context.Context) (v *uint32, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldSortOrder is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldSortOrder requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldSortOrder: %w", err)
-	}
-	return oldValue.SortOrder, nil
-}
-
-// AddSortOrder adds u to the "sort_order" field.
-func (m *ServiceTypeMutation) AddSortOrder(u int32) {
-	if m.addsort_order != nil {
-		*m.addsort_order += u
-	} else {
-		m.addsort_order = &u
-	}
-}
-
-// AddedSortOrder returns the value that was added to the "sort_order" field in this mutation.
-func (m *ServiceTypeMutation) AddedSortOrder() (r int32, exists bool) {
-	v := m.addsort_order
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// ClearSortOrder clears the value of the "sort_order" field.
-func (m *ServiceTypeMutation) ClearSortOrder() {
-	m.sort_order = nil
-	m.addsort_order = nil
-	m.clearedFields[servicetype.FieldSortOrder] = struct{}{}
-}
-
-// SortOrderCleared returns if the "sort_order" field was cleared in this mutation.
-func (m *ServiceTypeMutation) SortOrderCleared() bool {
-	_, ok := m.clearedFields[servicetype.FieldSortOrder]
-	return ok
-}
-
-// ResetSortOrder resets all changes to the "sort_order" field.
-func (m *ServiceTypeMutation) ResetSortOrder() {
-	m.sort_order = nil
-	m.addsort_order = nil
-	delete(m.clearedFields, servicetype.FieldSortOrder)
-}
-
 // SetCode sets the "code" field.
 func (m *ServiceTypeMutation) SetCode(s string) {
 	m.code = &s
@@ -1000,7 +928,7 @@ func (m *ServiceTypeMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ServiceTypeMutation) Fields() []string {
-	fields := make([]string, 0, 13)
+	fields := make([]string, 0, 12)
 	if m.created_at != nil {
 		fields = append(fields, servicetype.FieldCreatedAt)
 	}
@@ -1024,9 +952,6 @@ func (m *ServiceTypeMutation) Fields() []string {
 	}
 	if m.is_enabled != nil {
 		fields = append(fields, servicetype.FieldIsEnabled)
-	}
-	if m.sort_order != nil {
-		fields = append(fields, servicetype.FieldSortOrder)
 	}
 	if m.code != nil {
 		fields = append(fields, servicetype.FieldCode)
@@ -1064,8 +989,6 @@ func (m *ServiceTypeMutation) Field(name string) (ent.Value, bool) {
 		return m.ParentID()
 	case servicetype.FieldIsEnabled:
 		return m.IsEnabled()
-	case servicetype.FieldSortOrder:
-		return m.SortOrder()
 	case servicetype.FieldCode:
 		return m.Code()
 	case servicetype.FieldName:
@@ -1099,8 +1022,6 @@ func (m *ServiceTypeMutation) OldField(ctx context.Context, name string) (ent.Va
 		return m.OldParentID(ctx)
 	case servicetype.FieldIsEnabled:
 		return m.OldIsEnabled(ctx)
-	case servicetype.FieldSortOrder:
-		return m.OldSortOrder(ctx)
 	case servicetype.FieldCode:
 		return m.OldCode(ctx)
 	case servicetype.FieldName:
@@ -1174,13 +1095,6 @@ func (m *ServiceTypeMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetIsEnabled(v)
 		return nil
-	case servicetype.FieldSortOrder:
-		v, ok := value.(uint32)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetSortOrder(v)
-		return nil
 	case servicetype.FieldCode:
 		v, ok := value.(string)
 		if !ok {
@@ -1226,9 +1140,6 @@ func (m *ServiceTypeMutation) AddedFields() []string {
 	if m.adddeleted_by != nil {
 		fields = append(fields, servicetype.FieldDeletedBy)
 	}
-	if m.addsort_order != nil {
-		fields = append(fields, servicetype.FieldSortOrder)
-	}
 	return fields
 }
 
@@ -1243,8 +1154,6 @@ func (m *ServiceTypeMutation) AddedField(name string) (ent.Value, bool) {
 		return m.AddedUpdatedBy()
 	case servicetype.FieldDeletedBy:
 		return m.AddedDeletedBy()
-	case servicetype.FieldSortOrder:
-		return m.AddedSortOrder()
 	}
 	return nil, false
 }
@@ -1274,13 +1183,6 @@ func (m *ServiceTypeMutation) AddField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.AddDeletedBy(v)
-		return nil
-	case servicetype.FieldSortOrder:
-		v, ok := value.(int32)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.AddSortOrder(v)
 		return nil
 	}
 	return fmt.Errorf("unknown ServiceType numeric field %s", name)
@@ -1313,9 +1215,6 @@ func (m *ServiceTypeMutation) ClearedFields() []string {
 	}
 	if m.FieldCleared(servicetype.FieldIsEnabled) {
 		fields = append(fields, servicetype.FieldIsEnabled)
-	}
-	if m.FieldCleared(servicetype.FieldSortOrder) {
-		fields = append(fields, servicetype.FieldSortOrder)
 	}
 	if m.FieldCleared(servicetype.FieldCode) {
 		fields = append(fields, servicetype.FieldCode)
@@ -1367,9 +1266,6 @@ func (m *ServiceTypeMutation) ClearField(name string) error {
 	case servicetype.FieldIsEnabled:
 		m.ClearIsEnabled()
 		return nil
-	case servicetype.FieldSortOrder:
-		m.ClearSortOrder()
-		return nil
 	case servicetype.FieldCode:
 		m.ClearCode()
 		return nil
@@ -1413,9 +1309,6 @@ func (m *ServiceTypeMutation) ResetField(name string) error {
 		return nil
 	case servicetype.FieldIsEnabled:
 		m.ResetIsEnabled()
-		return nil
-	case servicetype.FieldSortOrder:
-		m.ResetSortOrder()
 		return nil
 	case servicetype.FieldCode:
 		m.ResetCode()

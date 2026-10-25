@@ -5,6 +5,7 @@
   "tabList": "List",
   "editTabLabel": "{{name}} ({{code}})",
   "code": "Service Code",
+  "parentCode": "Parent Code",
   "codePlaceholder": "e.g. 0101 / 010101 / 01010101",
   "codeExtra": "2/4/6/8 digits; digit count is the level (major/middle/minor/detail)",
   "requiredCode": "Please enter the service code",

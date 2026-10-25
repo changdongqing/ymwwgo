@@ -5,6 +5,7 @@
   "tabList": "列表",
   "editTabLabel": "{{name}}（{{code}}）",
   "code": "服务编码",
+  "parentCode": "上级编码",
   "codePlaceholder": "如 0101 / 010101 / 01010101",
   "codeExtra": "2/4/6/8 位数字，位数即层级（大类/中类/小类/细类）",
   "requiredCode": "请输入服务编码",

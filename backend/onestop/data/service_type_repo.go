@@ -89,6 +89,13 @@ func (r *ServiceTypeRepo) List(ctx context.Context, req *paginationV1.PagingRequ
 
 	builder := r.entClient.Client().ServiceType.Query()
 
+	// 默认业务序 = 服务编码升序。编码是唯一键且天然按「大类 → 中类 → 小类 → 细类」
+	// 前缀递增，单独维护 sort_order 只会制造第二套顺序来源（本期已移除该字段）。
+	// 调用方显式传 sorting/order_by 时尊重显式排序。
+	if len(req.GetSorting()) == 0 && (req.GetOrderBy() == "" || req.GetOrderBy() == "[]") {
+		builder.Order(ent.Asc(servicetype.FieldCode))
+	}
+
 	ret, err := r.repository.ListWithPaging(ctx, builder, builder.Clone(), req)
 	if err != nil {
 		return nil, err
@@ -192,7 +199,6 @@ func (r *ServiceTypeRepo) Create(ctx context.Context, req *onestopV1.CreateServi
 		SetNillableParentID(req.Data.ParentId).
 		SetNillableDescription(req.Data.Description).
 		SetNillableIsEnabled(req.Data.IsEnabled).
-		SetNillableSortOrder(req.Data.SortOrder).
 		SetNillableCreatedBy(req.Data.CreatedBy).
 		SetCreatedAt(time.Now())
 
@@ -240,7 +246,6 @@ func (r *ServiceTypeRepo) Update(ctx context.Context, req *onestopV1.UpdateServi
 				SetNillableParentID(req.Data.ParentId).
 				SetNillableDescription(req.Data.Description).
 				SetNillableIsEnabled(req.Data.IsEnabled).
-				SetNillableSortOrder(req.Data.SortOrder).
 				SetNillableUpdatedBy(req.Data.UpdatedBy).
 				SetUpdatedAt(time.Now())
 		},

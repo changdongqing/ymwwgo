@@ -34,7 +34,6 @@ var schemaGraph = func() *sqlgraph.Schema {
 			servicetype.FieldDeletedBy:   {Type: field.TypeUint32, Column: servicetype.FieldDeletedBy},
 			servicetype.FieldParentID:    {Type: field.TypeUint32, Column: servicetype.FieldParentID},
 			servicetype.FieldIsEnabled:   {Type: field.TypeBool, Column: servicetype.FieldIsEnabled},
-			servicetype.FieldSortOrder:   {Type: field.TypeUint32, Column: servicetype.FieldSortOrder},
 			servicetype.FieldCode:        {Type: field.TypeString, Column: servicetype.FieldCode},
 			servicetype.FieldName:        {Type: field.TypeString, Column: servicetype.FieldName},
 			servicetype.FieldLevel:       {Type: field.TypeEnum, Column: servicetype.FieldLevel},
@@ -152,11 +151,6 @@ func (f *ServiceTypeFilter) WhereParentID(p entql.Uint32P) {
 // WhereIsEnabled applies the entql bool predicate on the is_enabled field.
 func (f *ServiceTypeFilter) WhereIsEnabled(p entql.BoolP) {
 	f.Where(p.Field(servicetype.FieldIsEnabled))
-}
-
-// WhereSortOrder applies the entql uint32 predicate on the sort_order field.
-func (f *ServiceTypeFilter) WhereSortOrder(p entql.Uint32P) {
-	f.Where(p.Field(servicetype.FieldSortOrder))
 }
 
 // WhereCode applies the entql string predicate on the code field.

@@ -134,20 +134,6 @@ func (_c *ServiceTypeCreate) SetNillableIsEnabled(v *bool) *ServiceTypeCreate {
 	return _c
 }
 
-// SetSortOrder sets the "sort_order" field.
-func (_c *ServiceTypeCreate) SetSortOrder(v uint32) *ServiceTypeCreate {
-	_c.mutation.SetSortOrder(v)
-	return _c
-}
-
-// SetNillableSortOrder sets the "sort_order" field if the given value is not nil.
-func (_c *ServiceTypeCreate) SetNillableSortOrder(v *uint32) *ServiceTypeCreate {
-	if v != nil {
-		_c.SetSortOrder(*v)
-	}
-	return _c
-}
-
 // SetCode sets the "code" field.
 func (_c *ServiceTypeCreate) SetCode(v string) *ServiceTypeCreate {
 	_c.mutation.SetCode(v)
@@ -269,10 +255,6 @@ func (_c *ServiceTypeCreate) defaults() {
 		v := servicetype.DefaultIsEnabled
 		_c.mutation.SetIsEnabled(v)
 	}
-	if _, ok := _c.mutation.SortOrder(); !ok {
-		v := servicetype.DefaultSortOrder
-		_c.mutation.SetSortOrder(v)
-	}
 	if _, ok := _c.mutation.Description(); !ok {
 		v := servicetype.DefaultDescription
 		_c.mutation.SetDescription(v)
@@ -366,10 +348,6 @@ func (_c *ServiceTypeCreate) createSpec() (*ServiceType, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.IsEnabled(); ok {
 		_spec.SetField(servicetype.FieldIsEnabled, field.TypeBool, value)
 		_node.IsEnabled = &value
-	}
-	if value, ok := _c.mutation.SortOrder(); ok {
-		_spec.SetField(servicetype.FieldSortOrder, field.TypeUint32, value)
-		_node.SortOrder = &value
 	}
 	if value, ok := _c.mutation.Code(); ok {
 		_spec.SetField(servicetype.FieldCode, field.TypeString, value)
@@ -613,30 +591,6 @@ func (u *ServiceTypeUpsert) UpdateIsEnabled() *ServiceTypeUpsert {
 // ClearIsEnabled clears the value of the "is_enabled" field.
 func (u *ServiceTypeUpsert) ClearIsEnabled() *ServiceTypeUpsert {
 	u.SetNull(servicetype.FieldIsEnabled)
-	return u
-}
-
-// SetSortOrder sets the "sort_order" field.
-func (u *ServiceTypeUpsert) SetSortOrder(v uint32) *ServiceTypeUpsert {
-	u.Set(servicetype.FieldSortOrder, v)
-	return u
-}
-
-// UpdateSortOrder sets the "sort_order" field to the value that was provided on create.
-func (u *ServiceTypeUpsert) UpdateSortOrder() *ServiceTypeUpsert {
-	u.SetExcluded(servicetype.FieldSortOrder)
-	return u
-}
-
-// AddSortOrder adds v to the "sort_order" field.
-func (u *ServiceTypeUpsert) AddSortOrder(v uint32) *ServiceTypeUpsert {
-	u.Add(servicetype.FieldSortOrder, v)
-	return u
-}
-
-// ClearSortOrder clears the value of the "sort_order" field.
-func (u *ServiceTypeUpsert) ClearSortOrder() *ServiceTypeUpsert {
-	u.SetNull(servicetype.FieldSortOrder)
 	return u
 }
 
@@ -928,34 +882,6 @@ func (u *ServiceTypeUpsertOne) UpdateIsEnabled() *ServiceTypeUpsertOne {
 func (u *ServiceTypeUpsertOne) ClearIsEnabled() *ServiceTypeUpsertOne {
 	return u.Update(func(s *ServiceTypeUpsert) {
 		s.ClearIsEnabled()
-	})
-}
-
-// SetSortOrder sets the "sort_order" field.
-func (u *ServiceTypeUpsertOne) SetSortOrder(v uint32) *ServiceTypeUpsertOne {
-	return u.Update(func(s *ServiceTypeUpsert) {
-		s.SetSortOrder(v)
-	})
-}
-
-// AddSortOrder adds v to the "sort_order" field.
-func (u *ServiceTypeUpsertOne) AddSortOrder(v uint32) *ServiceTypeUpsertOne {
-	return u.Update(func(s *ServiceTypeUpsert) {
-		s.AddSortOrder(v)
-	})
-}
-
-// UpdateSortOrder sets the "sort_order" field to the value that was provided on create.
-func (u *ServiceTypeUpsertOne) UpdateSortOrder() *ServiceTypeUpsertOne {
-	return u.Update(func(s *ServiceTypeUpsert) {
-		s.UpdateSortOrder()
-	})
-}
-
-// ClearSortOrder clears the value of the "sort_order" field.
-func (u *ServiceTypeUpsertOne) ClearSortOrder() *ServiceTypeUpsertOne {
-	return u.Update(func(s *ServiceTypeUpsert) {
-		s.ClearSortOrder()
 	})
 }
 
@@ -1425,34 +1351,6 @@ func (u *ServiceTypeUpsertBulk) UpdateIsEnabled() *ServiceTypeUpsertBulk {
 func (u *ServiceTypeUpsertBulk) ClearIsEnabled() *ServiceTypeUpsertBulk {
 	return u.Update(func(s *ServiceTypeUpsert) {
 		s.ClearIsEnabled()
-	})
-}
-
-// SetSortOrder sets the "sort_order" field.
-func (u *ServiceTypeUpsertBulk) SetSortOrder(v uint32) *ServiceTypeUpsertBulk {
-	return u.Update(func(s *ServiceTypeUpsert) {
-		s.SetSortOrder(v)
-	})
-}
-
-// AddSortOrder adds v to the "sort_order" field.
-func (u *ServiceTypeUpsertBulk) AddSortOrder(v uint32) *ServiceTypeUpsertBulk {
-	return u.Update(func(s *ServiceTypeUpsert) {
-		s.AddSortOrder(v)
-	})
-}
-
-// UpdateSortOrder sets the "sort_order" field to the value that was provided on create.
-func (u *ServiceTypeUpsertBulk) UpdateSortOrder() *ServiceTypeUpsertBulk {
-	return u.Update(func(s *ServiceTypeUpsert) {
-		s.UpdateSortOrder()
-	})
-}
-
-// ClearSortOrder clears the value of the "sort_order" field.
-func (u *ServiceTypeUpsertBulk) ClearSortOrder() *ServiceTypeUpsertBulk {
-	return u.Update(func(s *ServiceTypeUpsert) {
-		s.ClearSortOrder()
 	})
 }
 

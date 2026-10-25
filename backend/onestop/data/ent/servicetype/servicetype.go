@@ -30,8 +30,6 @@ const (
 	FieldParentID = "parent_id"
 	// FieldIsEnabled holds the string denoting the is_enabled field in the database.
 	FieldIsEnabled = "is_enabled"
-	// FieldSortOrder holds the string denoting the sort_order field in the database.
-	FieldSortOrder = "sort_order"
 	// FieldCode holds the string denoting the code field in the database.
 	FieldCode = "code"
 	// FieldName holds the string denoting the name field in the database.
@@ -67,7 +65,6 @@ var Columns = []string{
 	FieldDeletedBy,
 	FieldParentID,
 	FieldIsEnabled,
-	FieldSortOrder,
 	FieldCode,
 	FieldName,
 	FieldLevel,
@@ -87,8 +84,6 @@ func ValidColumn(column string) bool {
 var (
 	// DefaultIsEnabled holds the default value on creation for the "is_enabled" field.
 	DefaultIsEnabled bool
-	// DefaultSortOrder holds the default value on creation for the "sort_order" field.
-	DefaultSortOrder uint32
 	// CodeValidator is a validator for the "code" field. It is called by the builders before save.
 	CodeValidator func(string) error
 	// NameValidator is a validator for the "name" field. It is called by the builders before save.
@@ -172,11 +167,6 @@ func ByParentID(opts ...sql.OrderTermOption) OrderOption {
 // ByIsEnabled orders the results by the is_enabled field.
 func ByIsEnabled(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldIsEnabled, opts...).ToFunc()
-}
-
-// BySortOrder orders the results by the sort_order field.
-func BySortOrder(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldSortOrder, opts...).ToFunc()
 }
 
 // ByCode orders the results by the code field.

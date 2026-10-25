@@ -19,7 +19,6 @@ var (
 		{Name: "updated_by", Type: field.TypeUint32, Nullable: true, Comment: "更新者ID"},
 		{Name: "deleted_by", Type: field.TypeUint32, Nullable: true, Comment: "删除者ID"},
 		{Name: "is_enabled", Type: field.TypeBool, Nullable: true, Comment: "是否启用", Default: true},
-		{Name: "sort_order", Type: field.TypeUint32, Nullable: true, Comment: "排序值（越小越靠前）", Default: 0},
 		{Name: "code", Type: field.TypeString, Unique: true, Nullable: true, Size: 8, Comment: "服务编码：2/4/6/8 位数字字符串，位数即层级"},
 		{Name: "name", Type: field.TypeString, Nullable: true, Size: 128, Comment: "服务名称"},
 		{Name: "level", Type: field.TypeEnum, Nullable: true, Comment: "服务层级 LEVEL_MAJOR:大类 LEVEL_MIDDLE:中类 LEVEL_MINOR:小类 LEVEL_DETAIL:细类", Enums: []string{"LEVEL_MAJOR", "LEVEL_MIDDLE", "LEVEL_MINOR", "LEVEL_DETAIL"}},
@@ -35,7 +34,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "onestop_service_types_onestop_service_types_children",
-				Columns:    []*schema.Column{OnestopServiceTypesColumns[13]},
+				Columns:    []*schema.Column{OnestopServiceTypesColumns[12]},
 				RefColumns: []*schema.Column{OnestopServiceTypesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -44,12 +43,12 @@ var (
 			{
 				Name:    "servicetype_parent_id",
 				Unique:  false,
-				Columns: []*schema.Column{OnestopServiceTypesColumns[13]},
+				Columns: []*schema.Column{OnestopServiceTypesColumns[12]},
 			},
 			{
 				Name:    "servicetype_level",
 				Unique:  false,
-				Columns: []*schema.Column{OnestopServiceTypesColumns[11]},
+				Columns: []*schema.Column{OnestopServiceTypesColumns[10]},
 			},
 		},
 	}

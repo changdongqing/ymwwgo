@@ -16554,10 +16554,6 @@ components:
                 isEnabled:
                     type: boolean
                     description: 是否启用
-                sortOrder:
-                    type: integer
-                    description: 排序顺序，值越小越靠前
-                    format: uint32
                 createdBy:
                     type: integer
                     description: 创建者ID

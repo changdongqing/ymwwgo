@@ -15,9 +15,11 @@ ent:
 		--feature sql/lock \
 		./data/ent/schema
 
-# 生成 proto Go 代码（vendored 依赖快照见 api/buf.yaml 头注释）
+# 生成 proto Go 代码。
+# 源 proto 与 buf 工作区都在主仓 backend/api（模板 buf.onestop.gen.yaml），
+# 本 module 没有独立的 buf.yaml；旧写法 `cd api && buf generate` 会因缺少工作区而失败。
 api:
-	cd api && buf generate
+	cd ../api && buf generate --template buf.onestop.gen.yaml
 
 gen: ent api
 

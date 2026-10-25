@@ -34,8 +34,6 @@ type ServiceType struct {
 	ParentID *uint32 `json:"parent_id,omitempty"`
 	// 是否启用
 	IsEnabled *bool `json:"is_enabled,omitempty"`
-	// 排序值（越小越靠前）
-	SortOrder *uint32 `json:"sort_order,omitempty"`
 	// 服务编码：2/4/6/8 位数字字符串，位数即层级
 	Code *string `json:"code,omitempty"`
 	// 服务名称
@@ -88,7 +86,7 @@ func (*ServiceType) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case servicetype.FieldIsEnabled:
 			values[i] = new(sql.NullBool)
-		case servicetype.FieldID, servicetype.FieldCreatedBy, servicetype.FieldUpdatedBy, servicetype.FieldDeletedBy, servicetype.FieldParentID, servicetype.FieldSortOrder:
+		case servicetype.FieldID, servicetype.FieldCreatedBy, servicetype.FieldUpdatedBy, servicetype.FieldDeletedBy, servicetype.FieldParentID:
 			values[i] = new(sql.NullInt64)
 		case servicetype.FieldCode, servicetype.FieldName, servicetype.FieldLevel, servicetype.FieldDescription:
 			values[i] = new(sql.NullString)
@@ -170,13 +168,6 @@ func (_m *ServiceType) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.IsEnabled = new(bool)
 				*_m.IsEnabled = value.Bool
-			}
-		case servicetype.FieldSortOrder:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for field sort_order", values[i])
-			} else if value.Valid {
-				_m.SortOrder = new(uint32)
-				*_m.SortOrder = uint32(value.Int64)
 			}
 		case servicetype.FieldCode:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -289,11 +280,6 @@ func (_m *ServiceType) String() string {
 	builder.WriteString(", ")
 	if v := _m.IsEnabled; v != nil {
 		builder.WriteString("is_enabled=")
-		builder.WriteString(fmt.Sprintf("%v", *v))
-	}
-	builder.WriteString(", ")
-	if v := _m.SortOrder; v != nil {
-		builder.WriteString("sort_order=")
 		builder.WriteString(fmt.Sprintf("%v", *v))
 	}
 	builder.WriteString(", ")

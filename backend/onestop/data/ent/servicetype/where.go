@@ -95,11 +95,6 @@ func IsEnabled(v bool) predicate.ServiceType {
 	return predicate.ServiceType(sql.FieldEQ(FieldIsEnabled, v))
 }
 
-// SortOrder applies equality check predicate on the "sort_order" field. It's identical to SortOrderEQ.
-func SortOrder(v uint32) predicate.ServiceType {
-	return predicate.ServiceType(sql.FieldEQ(FieldSortOrder, v))
-}
-
 // Code applies equality check predicate on the "code" field. It's identical to CodeEQ.
 func Code(v string) predicate.ServiceType {
 	return predicate.ServiceType(sql.FieldEQ(FieldCode, v))
@@ -463,56 +458,6 @@ func IsEnabledIsNil() predicate.ServiceType {
 // IsEnabledNotNil applies the NotNil predicate on the "is_enabled" field.
 func IsEnabledNotNil() predicate.ServiceType {
 	return predicate.ServiceType(sql.FieldNotNull(FieldIsEnabled))
-}
-
-// SortOrderEQ applies the EQ predicate on the "sort_order" field.
-func SortOrderEQ(v uint32) predicate.ServiceType {
-	return predicate.ServiceType(sql.FieldEQ(FieldSortOrder, v))
-}
-
-// SortOrderNEQ applies the NEQ predicate on the "sort_order" field.
-func SortOrderNEQ(v uint32) predicate.ServiceType {
-	return predicate.ServiceType(sql.FieldNEQ(FieldSortOrder, v))
-}
-
-// SortOrderIn applies the In predicate on the "sort_order" field.
-func SortOrderIn(vs ...uint32) predicate.ServiceType {
-	return predicate.ServiceType(sql.FieldIn(FieldSortOrder, vs...))
-}
-
-// SortOrderNotIn applies the NotIn predicate on the "sort_order" field.
-func SortOrderNotIn(vs ...uint32) predicate.ServiceType {
-	return predicate.ServiceType(sql.FieldNotIn(FieldSortOrder, vs...))
-}
-
-// SortOrderGT applies the GT predicate on the "sort_order" field.
-func SortOrderGT(v uint32) predicate.ServiceType {
-	return predicate.ServiceType(sql.FieldGT(FieldSortOrder, v))
-}
-
-// SortOrderGTE applies the GTE predicate on the "sort_order" field.
-func SortOrderGTE(v uint32) predicate.ServiceType {
-	return predicate.ServiceType(sql.FieldGTE(FieldSortOrder, v))
-}
-
-// SortOrderLT applies the LT predicate on the "sort_order" field.
-func SortOrderLT(v uint32) predicate.ServiceType {
-	return predicate.ServiceType(sql.FieldLT(FieldSortOrder, v))
-}
-
-// SortOrderLTE applies the LTE predicate on the "sort_order" field.
-func SortOrderLTE(v uint32) predicate.ServiceType {
-	return predicate.ServiceType(sql.FieldLTE(FieldSortOrder, v))
-}
-
-// SortOrderIsNil applies the IsNil predicate on the "sort_order" field.
-func SortOrderIsNil() predicate.ServiceType {
-	return predicate.ServiceType(sql.FieldIsNull(FieldSortOrder))
-}
-
-// SortOrderNotNil applies the NotNil predicate on the "sort_order" field.
-func SortOrderNotNil() predicate.ServiceType {
-	return predicate.ServiceType(sql.FieldNotNull(FieldSortOrder))
 }
 
 // CodeEQ applies the EQ predicate on the "code" field.

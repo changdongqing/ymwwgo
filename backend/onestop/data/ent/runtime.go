@@ -16,18 +16,12 @@ func init() {
 	_ = servicetypeMixinFields0
 	servicetypeMixinFields4 := servicetypeMixin[4].Fields()
 	_ = servicetypeMixinFields4
-	servicetypeMixinFields5 := servicetypeMixin[5].Fields()
-	_ = servicetypeMixinFields5
 	servicetypeFields := schema.ServiceType{}.Fields()
 	_ = servicetypeFields
 	// servicetypeDescIsEnabled is the schema descriptor for is_enabled field.
 	servicetypeDescIsEnabled := servicetypeMixinFields4[0].Descriptor()
 	// servicetype.DefaultIsEnabled holds the default value on creation for the is_enabled field.
 	servicetype.DefaultIsEnabled = servicetypeDescIsEnabled.Default.(bool)
-	// servicetypeDescSortOrder is the schema descriptor for sort_order field.
-	servicetypeDescSortOrder := servicetypeMixinFields5[0].Descriptor()
-	// servicetype.DefaultSortOrder holds the default value on creation for the sort_order field.
-	servicetype.DefaultSortOrder = servicetypeDescSortOrder.Default.(uint32)
 	// servicetypeDescCode is the schema descriptor for code field.
 	servicetypeDescCode := servicetypeFields[0].Descriptor()
 	// servicetype.CodeValidator is a validator for the "code" field. It is called by the builders before save.
