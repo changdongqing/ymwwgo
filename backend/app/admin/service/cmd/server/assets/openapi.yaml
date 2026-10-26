@@ -1828,6 +1828,588 @@ paths:
                 "200":
                     description: OK
                     content: {}
+    /admin/v1/contract/contracts:
+        get:
+            tags:
+                - ContractService
+            description: 查询合同列表
+            operationId: ContractService_List
+            parameters:
+                - name: page
+                  in: query
+                  description: 当前页码（从1开始，默认1）
+                  schema:
+                    type: integer
+                    format: uint32
+                - name: pageSize
+                  in: query
+                  description: 每页条数（默认10，建议设置上限如100）
+                  schema:
+                    type: integer
+                    format: uint32
+                - name: offset
+                  in: query
+                  description: 跳过的记录数（从0开始，默认0）
+                  schema:
+                    type: string
+                - name: limit
+                  in: query
+                  description: 最多返回的记录数（默认10，建议设置上限如100）
+                  schema:
+                    type: integer
+                    format: uint32
+                - name: token
+                  in: query
+                  description: 上一页最后一条记录的游标（如ID/时间戳+ID，首次请求为空）
+                  schema:
+                    type: string
+                - name: noPaging
+                  in: query
+                  description: 是否不分页，如果为true，则page和pageSize参数无效。
+                  schema:
+                    type: boolean
+                - name: query
+                  in: query
+                  description: JSON字符串过滤条件，基础语法：{"field1":"val1", "field2___icontains":"val2"}，具体请参见：https://github.com/tx7do/go-crud/tree/main/pagination/filter/README.md
+                  schema:
+                    type: string
+                - name: filter
+                  in: query
+                  description: Google AIP规范字符串过滤条件
+                  schema:
+                    type: string
+                - name: filterExpr.type
+                  in: query
+                  description: 过滤表达式类型
+                  schema:
+                    enum:
+                        - EXPR_TYPE_UNSPECIFIED
+                        - AND
+                        - OR
+                    type: string
+                    format: enum
+                - name: orderBy
+                  in: query
+                  description: 排序条件
+                  schema:
+                    type: string
+                - name: fieldMask
+                  in: query
+                  description: 字段掩码，其作用为SELECT中的字段，其语法为使用逗号分隔字段名，例如：id,realName,userName。如果为空则选中所有字段，即SELECT *。
+                  schema:
+                    type: string
+                    format: field-mask
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListContractsResponse'
+        post:
+            tags:
+                - ContractService
+            description: 创建合同
+            operationId: ContractService_Create
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/CreateContractRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+    /admin/v1/contract/contracts/{id}:
+        get:
+            tags:
+                - ContractService
+            description: 查询合同详情
+            operationId: ContractService_Get
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint32
+                - name: viewMask
+                  in: query
+                  schema:
+                    type: string
+                    format: field-mask
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Contract'
+        put:
+            tags:
+                - ContractService
+            description: 更新合同
+            operationId: ContractService_Update
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint32
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/UpdateContractRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+        delete:
+            tags:
+                - ContractService
+            description: 删除合同
+            operationId: ContractService_Delete
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint32
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+    /admin/v1/contract/contracts/{id}/approve:
+        post:
+            tags:
+                - ContractService
+            description: 审核
+            operationId: ContractService_Approve
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint32
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ApproveContractRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+    /admin/v1/contract/contracts/{id}/change:
+        post:
+            tags:
+                - ContractService
+            description: 变更
+            operationId: ContractService_Change
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint32
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ChangeContractRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Contract'
+    /admin/v1/contract/contracts/{id}/decompose-fees:
+        post:
+            tags:
+                - ContractService
+            description: 重新拆解费用
+            operationId: ContractService_DecomposeFees
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint32
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/DecomposeFeesRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+    /admin/v1/contract/contracts/{id}/events:
+        get:
+            tags:
+                - ContractService
+            description: 查询合同事件时间线
+            operationId: ContractService_ListEvents
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint32
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListContractEventsResponse'
+    /admin/v1/contract/contracts/{id}/fees:
+        get:
+            tags:
+                - ContractService
+            description: 查询合同费用明细
+            operationId: ContractService_ListFees
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint32
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListContractFeesResponse'
+    /admin/v1/contract/contracts/{id}/invalidate:
+        post:
+            tags:
+                - ContractService
+            description: 作废
+            operationId: ContractService_Invalidate
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint32
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/InvalidateContractRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+    /admin/v1/contract/contracts/{id}/submit:
+        post:
+            tags:
+                - ContractService
+            description: 提交
+            operationId: ContractService_Submit
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint32
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/SubmitContractRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+    /admin/v1/contract/contracts/{id}/terminate:
+        post:
+            tags:
+                - ContractService
+            description: 终止
+            operationId: ContractService_Terminate
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint32
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/TerminateContractRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+    /admin/v1/contract/fees/{id}/pay:
+        post:
+            tags:
+                - ContractService
+            description: 费用付款
+            operationId: ContractService_PayFee
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint32
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/PayFeeRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+    /admin/v1/contract/fees/{id}/receive:
+        post:
+            tags:
+                - ContractService
+            description: 费用收款
+            operationId: ContractService_ReceiveFee
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint32
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ReceiveFeeRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+    /admin/v1/contract/fees/{id}/refund:
+        post:
+            tags:
+                - ContractService
+            description: 押金退款
+            operationId: ContractService_RefundFee
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint32
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/RefundFeeRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+    /admin/v1/contract/types:
+        get:
+            tags:
+                - ContractTypeService
+            description: 查询合同类型列表
+            operationId: ContractTypeService_List
+            parameters:
+                - name: page
+                  in: query
+                  description: 当前页码（从1开始，默认1）
+                  schema:
+                    type: integer
+                    format: uint32
+                - name: pageSize
+                  in: query
+                  description: 每页条数（默认10，建议设置上限如100）
+                  schema:
+                    type: integer
+                    format: uint32
+                - name: offset
+                  in: query
+                  description: 跳过的记录数（从0开始，默认0）
+                  schema:
+                    type: string
+                - name: limit
+                  in: query
+                  description: 最多返回的记录数（默认10，建议设置上限如100）
+                  schema:
+                    type: integer
+                    format: uint32
+                - name: token
+                  in: query
+                  description: 上一页最后一条记录的游标（如ID/时间戳+ID，首次请求为空）
+                  schema:
+                    type: string
+                - name: noPaging
+                  in: query
+                  description: 是否不分页，如果为true，则page和pageSize参数无效。
+                  schema:
+                    type: boolean
+                - name: query
+                  in: query
+                  description: JSON字符串过滤条件，基础语法：{"field1":"val1", "field2___icontains":"val2"}，具体请参见：https://github.com/tx7do/go-crud/tree/main/pagination/filter/README.md
+                  schema:
+                    type: string
+                - name: filter
+                  in: query
+                  description: Google AIP规范字符串过滤条件
+                  schema:
+                    type: string
+                - name: filterExpr.type
+                  in: query
+                  description: 过滤表达式类型
+                  schema:
+                    enum:
+                        - EXPR_TYPE_UNSPECIFIED
+                        - AND
+                        - OR
+                    type: string
+                    format: enum
+                - name: orderBy
+                  in: query
+                  description: 排序条件
+                  schema:
+                    type: string
+                - name: fieldMask
+                  in: query
+                  description: 字段掩码，其作用为SELECT中的字段，其语法为使用逗号分隔字段名，例如：id,realName,userName。如果为空则选中所有字段，即SELECT *。
+                  schema:
+                    type: string
+                    format: field-mask
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListContractTypesResponse'
+        post:
+            tags:
+                - ContractTypeService
+            description: 创建合同类型
+            operationId: ContractTypeService_Create
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/CreateContractTypeRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+    /admin/v1/contract/types/{id}:
+        get:
+            tags:
+                - ContractTypeService
+            description: 查询合同类型详情
+            operationId: ContractTypeService_Get
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint32
+                - name: viewMask
+                  in: query
+                  schema:
+                    type: string
+                    format: field-mask
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ContractType'
+        put:
+            tags:
+                - ContractTypeService
+            description: 更新合同类型
+            operationId: ContractTypeService_Update
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint32
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/UpdateContractTypeRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+        delete:
+            tags:
+                - ContractTypeService
+            description: 删除合同类型
+            operationId: ContractTypeService_Delete
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint32
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+    /admin/v1/contract/types/{id}/effective-config:
+        get:
+            tags:
+                - ContractTypeService
+            description: 查询生效合同配置（细类→大类回退解析）
+            operationId: ContractTypeService_GetEffectiveConfig
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint32
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/EffectiveContractConfig'
     /admin/v1/dashboard/ai-insights:
         post:
             tags:
@@ -11281,6 +11863,21 @@ components:
                     description: 日志创建时间
                     format: date-time
             description: 接口审计日志
+        ApproveContractRequest:
+            type: object
+            properties:
+                id:
+                    readOnly: true
+                    type: integer
+                    description: 合同ID
+                    format: uint32
+                passed:
+                    type: boolean
+                    description: 是否通过（false = 驳回回草稿）
+                note:
+                    type: string
+                    description: 审核意见（驳回时必填）
+            description: 审核 - 请求（passed=false 驳回回草稿，原因必填）
         ApproveWorkOrderRequest:
             type: object
             properties:
@@ -11405,6 +12002,18 @@ components:
                     type: string
                     description: 撤销原因（必填）
             description: 撤销 - 请求
+        ChangeContractRequest:
+            type: object
+            properties:
+                id:
+                    readOnly: true
+                    type: integer
+                    description: 合同ID
+                    format: uint32
+                note:
+                    type: string
+                    description: 变更说明（落旧版关闭事件）
+            description: 变更 - 请求（执行中 → 变更终止 + 复制开新版草稿 v+1；返回新版）
         ChangePasswordRequest:
             type: object
             properties:
@@ -11615,6 +12224,450 @@ components:
                     type: boolean
                 credentialId:
                     type: string
+        Contract:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    description: 合同ID
+                    format: uint32
+                contractNo:
+                    type: string
+                    description: 合同号：CT- + 8 位零填自增ID（同事务派生）；版本链全链不变
+                version:
+                    type: integer
+                    description: 版本号（首版 1，变更开新版 +1）
+                    format: uint32
+                sourceContractId:
+                    type: integer
+                    description: 上一版合同ID（变更链回链）
+                    format: uint32
+                contractTypeId:
+                    type: integer
+                    description: 合同类型ID（创建时必须为启用叶子节点）
+                    format: uint32
+                contractTypeCode:
+                    type: string
+                    description: 合同类型编码快照
+                contractTypeName:
+                    type: string
+                    description: 合同类型名称快照
+                requiresApproval:
+                    type: boolean
+                    description: 是否需审批快照（submit 走向以开立时刻为准）
+                status:
+                    enum:
+                        - CONTRACT_STATUS_UNSPECIFIED
+                        - STATUS_DRAFT
+                        - STATUS_REVIEWING
+                        - STATUS_EFFECTIVE
+                        - STATUS_CHANGED
+                        - STATUS_EXPIRED
+                        - STATUS_TERMINATED
+                        - STATUS_INVALIDATED
+                    type: string
+                    description: 状态（统一生命周期状态机）
+                    format: enum
+                region:
+                    type: string
+                    description: 单位/机构（甲方主体）
+                dept:
+                    type: string
+                    description: 经办部门
+                partyAContact:
+                    type: string
+                    description: 甲方联系人
+                partyAPhone:
+                    type: string
+                    description: 甲方联系电话
+                partyBName:
+                    type: string
+                    description: 乙方名称（必填）
+                partyBCredit:
+                    type: string
+                    description: 乙方统一社会信用代码
+                partyBKind:
+                    enum:
+                        - PARTY_B_UNSPECIFIED
+                        - PARTY_B_ENTERPRISE
+                        - PARTY_B_ORG
+                        - PARTY_B_NATURAL
+                    type: string
+                    description: 乙方类型（企业法人/非法人组织/自然人）
+                    format: enum
+                partyBLegal:
+                    type: string
+                    description: 乙方法定代表人
+                partyBContact:
+                    type: string
+                    description: 乙方联系人
+                partyBPhone:
+                    type: string
+                    description: 乙方联系电话
+                partyBBank:
+                    type: string
+                    description: 乙方开户行
+                partyBAccount:
+                    type: string
+                    description: 乙方银行账号
+                partyBRating:
+                    type: string
+                    description: 乙方信用评级（A/B/C/D 级）
+                importance:
+                    enum:
+                        - IMPORTANCE_UNSPECIFIED
+                        - IMPORTANCE_NORMAL
+                        - IMPORTANCE_IMPORTANT
+                    type: string
+                    description: 合同重要性（一般/重要）
+                    format: enum
+                startDate:
+                    type: string
+                    description: 合同开始日期（日期语义，零点存储）
+                    format: date-time
+                endDate:
+                    type: string
+                    description: 合同结束日期（到期扫描依据：早于当日零点自动过期）
+                    format: date-time
+                amount:
+                    type: number
+                    description: 合同金额（元，2位小数）
+                    format: double
+                taxRate:
+                    type: integer
+                    description: 税率（%，0/1/3/5/6/9/13）
+                    format: uint32
+                payMethod:
+                    enum:
+                        - PAY_METHOD_UNSPECIFIED
+                        - PAY_ONCE
+                        - PAY_MONTHLY
+                        - PAY_QUARTERLY
+                        - PAY_NODE
+                        - PAY_PROGRESS
+                    type: string
+                    description: 付款方式快照（类型默认可覆盖）：决定费用拆解规则
+                    format: enum
+                feeDirection:
+                    enum:
+                        - DIRECTION_UNSPECIFIED
+                        - DIRECTION_PAYABLE
+                        - DIRECTION_RECEIVABLE
+                    type: string
+                    description: 费用方向：应付（我方付款）/应收（我方收款）
+                    format: enum
+                deposit:
+                    type: number
+                    description: 履约保证金金额（元）
+                    format: double
+                diffSchema:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/ContractDiffField'
+                    description: 差异字段定义快照（创建时从类型解析落库，表单按此定型）
+                diffValues:
+                    type: object
+                    additionalProperties:
+                        type: string
+                    description: 差异字段填值 {key:value}
+                payNodes:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/ContractPayNode'
+                    description: 付款节点模板快照：按节点/进度付款的拆解比例（创建时从类型解析落库）
+                attachments:
+                    type: array
+                    items:
+                        type: string
+                    description: 附件URL列表（必备清单由类型 required_attachments 提示）
+                reviewerId:
+                    type: integer
+                    description: 审核人用户ID（通过/驳回动作人）
+                    format: uint32
+                reviewedAt:
+                    type: string
+                    description: 审核时间（通过或驳回）
+                    format: date-time
+                reviewNote:
+                    type: string
+                    description: 审核意见（驳回原因）
+                terminateReason:
+                    type: string
+                    description: 终止/作废原因（变更关闭自动生成「变更至 vN」）
+                remark:
+                    type: string
+                    description: 备注
+                createdBy:
+                    type: integer
+                    description: 创建者ID（录入人）
+                    format: uint32
+                updatedBy:
+                    type: integer
+                    description: 更新者ID（修改人）
+                    format: uint32
+                deletedBy:
+                    type: integer
+                    description: 删除者用户ID
+                    format: uint32
+                createdAt:
+                    type: string
+                    description: 创建时间
+                    format: date-time
+                updatedAt:
+                    type: string
+                    description: 更新时间
+                    format: date-time
+                deletedAt:
+                    type: string
+                    description: 删除时间
+                    format: date-time
+            description: 合同（统一合同底座主实体）
+        ContractDiffField:
+            type: object
+            properties:
+                key:
+                    type: string
+                    description: 字段键（diff_values 的键，如 staffingCount）
+                label:
+                    type: string
+                    description: 字段标签（如：岗位人数(人)）
+                widget:
+                    type: string
+                    description: 控件类型：WIDGET_TEXT 单行 / WIDGET_TEXTAREA 多行 / WIDGET_SELECT 下拉 / WIDGET_DATE 日期
+                options:
+                    type: array
+                    items:
+                        type: string
+                    description: 下拉选项（WIDGET_SELECT 时使用）
+            description: 差异化字段定义（类型驱动的动态表单 schema）
+        ContractEvent:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    description: 事件ID
+                    format: uint32
+                contractId:
+                    type: integer
+                    description: 所属合同ID
+                    format: uint32
+                action:
+                    enum:
+                        - CONTRACT_ACTION_UNSPECIFIED
+                        - ACTION_CREATE
+                        - ACTION_UPDATE
+                        - ACTION_SUBMIT
+                        - ACTION_APPROVE
+                        - ACTION_REJECT
+                        - ACTION_CHANGE
+                        - ACTION_TERMINATE
+                        - ACTION_INVALIDATE
+                        - ACTION_EXPIRE
+                        - ACTION_DECOMPOSE
+                        - ACTION_FEE_PAY
+                        - ACTION_FEE_RECEIVE
+                        - ACTION_FEE_REFUND
+                    type: string
+                    description: 动作类型
+                    format: enum
+                statusFrom:
+                    type: string
+                    description: 动作前状态（创建为空）
+                statusTo:
+                    type: string
+                    description: 动作后状态（非状态动作为空）
+                note:
+                    type: string
+                    description: 动作备注（驳回原因/变更说明/终止原因等）
+                createdBy:
+                    type: integer
+                    description: 操作人ID（系统动作为系统上下文）
+                    format: uint32
+                createdAt:
+                    type: string
+                    description: 动作时间
+                    format: date-time
+            description: 合同事件（时间线：动作 + 状态迁移 + 备注，按时间倒序即跟进记录）
+        ContractFee:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    description: 费用行ID
+                    format: uint32
+                contractId:
+                    type: integer
+                    description: 所属合同ID
+                    format: uint32
+                name:
+                    type: string
+                    description: 费用名称（合同款/首期/基础节点/履约保证金…）
+                category:
+                    enum:
+                        - FEE_CATEGORY_UNSPECIFIED
+                        - CATEGORY_INCOME
+                        - CATEGORY_EXPENSE
+                        - CATEGORY_DEPOSIT
+                    type: string
+                    description: 费用类别（收入/费用/押金）
+                    format: enum
+                direction:
+                    enum:
+                        - DIRECTION_UNSPECIFIED
+                        - DIRECTION_PAYABLE
+                        - DIRECTION_RECEIVABLE
+                    type: string
+                    description: 费用方向（应收/应付，生成时按合同费用方向定）
+                    format: enum
+                status:
+                    enum:
+                        - FEE_STATUS_UNSPECIFIED
+                        - FEE_STATUS_PENDING
+                        - FEE_STATUS_DONE
+                        - FEE_STATUS_REFUNDED
+                    type: string
+                    description: 状态（待收付→已收付；押金行可再退款）
+                    format: enum
+                amount:
+                    type: number
+                    description: 金额（元，2位小数）
+                    format: double
+                planDate:
+                    type: string
+                    description: 计划收付日期（节点付款行空，履约时补）
+                    format: date-time
+                actualDate:
+                    type: string
+                    description: 实际收付日期（付款/收款动作时间）
+                    format: date-time
+                autoGenerated:
+                    type: boolean
+                    description: 是否拆解自动生成（重新拆解只删自动行，手工行保留）
+                remark:
+                    type: string
+                    description: 备注
+                createdBy:
+                    type: integer
+                    description: 创建者ID
+                    format: uint32
+                createdAt:
+                    type: string
+                    description: 创建时间
+                    format: date-time
+            description: 合同费用明细（拆解生成的应收/应付/押金行）
+        ContractPayNode:
+            type: object
+            properties:
+                name:
+                    type: string
+                    description: 节点名称（如：基础、主体、竣工、质保 / 预付、到货、验收）
+                ratioPercent:
+                    type: integer
+                    description: 节点比例（%），全节点之和以 100 为准（≠100 拆解器按余数进末节点容错）
+                    format: int32
+            description: 付款节点模板（PAY_NODE/PAY_PROGRESS 的拆解比例来源）
+        ContractType:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    description: 合同类型ID
+                    format: uint32
+                code:
+                    type: string
+                    description: 类型编码，2/4 位数字字符串，位数即层级，细类前2位=父大类
+                name:
+                    type: string
+                    description: 类型名称
+                level:
+                    enum:
+                        - LEVEL_UNSPECIFIED
+                        - LEVEL_MAJOR
+                        - LEVEL_DETAIL
+                    type: string
+                    description: 类型层级（大类/细类）
+                    format: enum
+                parentId:
+                    type: integer
+                    description: 上级类型ID，大类为空
+                    format: uint32
+                description:
+                    type: string
+                    description: 描述
+                isEnabled:
+                    type: boolean
+                    description: 是否启用
+                partyBLabel:
+                    type: string
+                    description: 乙方称谓模板：供应商/施工单位/服务单位/维保单位/三方公司等，按类型展示
+                payMethod:
+                    enum:
+                        - PAY_METHOD_UNSPECIFIED
+                        - PAY_ONCE
+                        - PAY_MONTHLY
+                        - PAY_QUARTERLY
+                        - PAY_NODE
+                        - PAY_PROGRESS
+                    type: string
+                    description: 默认付款方式：决定费用拆解规则（未设置回退上级，默认一次性）
+                    format: enum
+                payNodes:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/ContractPayNode'
+                    description: 付款节点模板 [{name,ratioPercent}]：按节点/进度付款的拆解比例（整组继承或整组覆盖）
+                feeDirection:
+                    enum:
+                        - DIRECTION_UNSPECIFIED
+                        - DIRECTION_PAYABLE
+                        - DIRECTION_RECEIVABLE
+                    type: string
+                    description: 默认费用方向：应收（我方收款，如出租）/应付（我方付款）；未设置回退上级，默认应付
+                    format: enum
+                requiresApproval:
+                    type: boolean
+                    description: 是否需审批：true=提交后进待审核，false=提交即生效（未设置回退上级，默认 true）
+                requiresDeposit:
+                    type: boolean
+                    description: 是否需履约保证金：true=拆解时追加押金费用行（未设置回退上级，默认 false）
+                diffFields:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/ContractDiffField'
+                    description: 差异字段定义 [{key,label,widget,options}]：类型驱动的动态表单 schema，合同创建时快照定型
+                requiredAttachments:
+                    type: array
+                    items:
+                        type: string
+                    description: 必备附件名清单（提示性校验，如：中标通知书/施工图/合同正本）
+                guidance:
+                    type: string
+                    description: 合同录入提示（纯参考文案，实时读类型，不快照）
+                createdBy:
+                    type: integer
+                    description: 创建者ID
+                    format: uint32
+                updatedBy:
+                    type: integer
+                    description: 更新者ID
+                    format: uint32
+                deletedBy:
+                    type: integer
+                    description: 删除者用户ID
+                    format: uint32
+                createdAt:
+                    type: string
+                    description: 创建时间
+                    format: date-time
+                updatedAt:
+                    type: string
+                    description: 更新时间
+                    format: date-time
+                deletedAt:
+                    type: string
+                    description: 删除时间
+                    format: date-time
+            description: 合同类型
         ControlTaskRequest:
             type: object
             properties:
@@ -11720,6 +12773,20 @@ components:
                 data:
                     $ref: '#/components/schemas/Config'
             description: 创建系统参数 - 请求
+        CreateContractRequest:
+            type: object
+            properties:
+                data:
+                    $ref: '#/components/schemas/Contract'
+            description: |-
+                创建合同 - 请求（CRUD 包 data；快照字段由服务端解析落库；pay_method/
+                 fee_direction/diff_values 接受用户覆写，其余快照字段忽略请求指定）
+        CreateContractTypeRequest:
+            type: object
+            properties:
+                data:
+                    $ref: '#/components/schemas/ContractType'
+            description: 创建合同类型 - 请求
         CreateDataPropertyRequest:
             type: object
             properties:
@@ -12634,6 +13701,18 @@ components:
             description: |-
                 数据类型 frame 详情（Protégé OWLDatatypeDescriptionFrame 对应物；仅"类型定义"一节——
                  OWL 2 不给 datatype 层级/特征/成对关系。base_version 供乐观锁回传）
+        DecomposeFeesRequest:
+            type: object
+            properties:
+                id:
+                    readOnly: true
+                    type: integer
+                    description: 合同ID
+                    format: uint32
+                note:
+                    type: string
+                    description: 拆解附言（落事件）
+            description: 重新拆解费用 - 请求（执行中可调；删自动行重拆，手工行保留）
         DeleteNotificationFromInboxRequest:
             type: object
             properties:
@@ -13014,6 +14093,19 @@ components:
                     type: string
                     description: 新密码
             description: 强制修改用户密码（不验证） - 请求
+        EffectiveContractConfig:
+            type: object
+            properties:
+                effective:
+                    $ref: '#/components/schemas/ContractType'
+            description: |-
+                生效合同配置 - 回应
+
+                 effective 是解析后的合并视图：单值列（细类为空回退大类）与数组列（整组
+                 覆盖或整组继承，不做数组内 merge）都已按「细类 → 大类」回退填齐；
+                 requires_approval/requires_deposit/pay_method/fee_direction 为解析后的生效
+                 兜底值（默认 true/false/PAY_ONCE/DIRECTION_PAYABLE）。创建表单预填与合同
+                 创建快照共用本接口口径，前端无须自行实现继承链。
         EffectiveServiceConfig:
             type: object
             properties:
@@ -13842,6 +14934,18 @@ components:
                     description: 删除时间
                     format: date-time
             description: 站内信消息用户接收信息
+        InvalidateContractRequest:
+            type: object
+            properties:
+                id:
+                    readOnly: true
+                    type: integer
+                    description: 合同ID
+                    format: uint32
+                reason:
+                    type: string
+                    description: 作废原因（必填）
+            description: 作废 - 请求
         IssueTokenRequest:
             type: object
             properties:
@@ -14086,6 +15190,44 @@ components:
                 total:
                     type: string
             description: 查询系统参数列表 - 回应
+        ListContractEventsResponse:
+            type: object
+            properties:
+                items:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/ContractEvent'
+                total:
+                    type: string
+        ListContractFeesResponse:
+            type: object
+            properties:
+                items:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/ContractFee'
+                total:
+                    type: string
+        ListContractTypesResponse:
+            type: object
+            properties:
+                items:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/ContractType'
+                total:
+                    type: string
+            description: 查询合同类型列表 - 回应
+        ListContractsResponse:
+            type: object
+            properties:
+                items:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Contract'
+                total:
+                    type: string
+            description: 查询合同列表 - 回应
         ListDataAccessAuditLogResponse:
             type: object
             properties:
@@ -16464,6 +17606,22 @@ components:
                 original:
                     type: string
             description: 局部名替补明细
+        PayFeeRequest:
+            type: object
+            properties:
+                id:
+                    readOnly: true
+                    type: integer
+                    description: 费用行ID
+                    format: uint32
+                actualDate:
+                    type: string
+                    description: 实际付款日期（缺省=当天）
+                    format: date-time
+                note:
+                    type: string
+                    description: 付款附言
+            description: 费用付款 - 请求（应付行：待付款 → 已付款）
         PeriodicPlan:
             type: object
             properties:
@@ -17240,6 +18398,22 @@ components:
                     type: integer
                     format: uint32
             description: 重建搜索索引 - 回应
+        ReceiveFeeRequest:
+            type: object
+            properties:
+                id:
+                    readOnly: true
+                    type: integer
+                    description: 费用行ID
+                    format: uint32
+                actualDate:
+                    type: string
+                    description: 实际收款日期（缺省=当天）
+                    format: date-time
+                note:
+                    type: string
+                    description: 收款附言
+            description: 费用收款 - 请求（应收行：待收取 → 已收取）
         RedisCacheMonitorInfo:
             type: object
             properties:
@@ -17324,6 +18498,22 @@ components:
                     type: boolean
                     description: 是否为未解析节点（谓词 IRI 无对应实体时以 IRI 尾段构造）
             description: 引用节点：边的一端（已软删实体不回显；deprecated 仅标记）
+        RefundFeeRequest:
+            type: object
+            properties:
+                id:
+                    readOnly: true
+                    type: integer
+                    description: 费用行ID
+                    format: uint32
+                actualDate:
+                    type: string
+                    description: 实际退款日期（缺省=当天）
+                    format: date-time
+                note:
+                    type: string
+                    description: 退款附言
+            description: 押金退款 - 请求（押金行：已收付（待退款） → 已退款）
         RenderNotificationTemplateRequest:
             type: object
             properties:
@@ -18071,6 +19261,18 @@ components:
                     type: string
                     description: OSS 对象键（完整路径，如 'user/1001/avatar.jpg'）。若未提供，服务端将自动生成。
             description: 对象存储对象
+        SubmitContractRequest:
+            type: object
+            properties:
+                id:
+                    readOnly: true
+                    type: integer
+                    description: 合同ID
+                    format: uint32
+                note:
+                    type: string
+                    description: 提交附言
+            description: 提交 - 请求（扁平 body）
         SyncMenusRequest:
             type: object
             properties:
@@ -18406,6 +19608,18 @@ components:
                         $ref: '#/components/schemas/QuotaUsage'
                     description: 配额上限列表
             description: 租户用量与配额
+        TerminateContractRequest:
+            type: object
+            properties:
+                id:
+                    readOnly: true
+                    type: integer
+                    description: 合同ID
+                    format: uint32
+                reason:
+                    type: string
+                    description: 终止原因（必填）
+            description: 终止 - 请求
         TestDispatchNotificationRequest:
             type: object
             properties:
@@ -18699,6 +19913,40 @@ components:
                     type: boolean
                     description: 如果设置为true的时候，资源不存在则会新增(插入)，并且在这种情况下`updateMask`字段将会被忽略。
             description: 更新系统参数 - 请求
+        UpdateContractRequest:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: uint32
+                data:
+                    $ref: '#/components/schemas/Contract'
+                updateMask:
+                    example: id,partyBName,amount,startDate
+                    type: string
+                    description: 要更新的字段列表
+                    format: field-mask
+                allowMissing:
+                    type: boolean
+                    description: 如果设置为true的时候，资源不存在则会新增(插入)，并且在这种情况下`updateMask`字段将会被忽略。
+            description: 更新合同 - 请求（仅草稿可改）
+        UpdateContractTypeRequest:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: uint32
+                data:
+                    $ref: '#/components/schemas/ContractType'
+                updateMask:
+                    example: id,code,name,level
+                    type: string
+                    description: 要更新的字段列表
+                    format: field-mask
+                allowMissing:
+                    type: boolean
+                    description: 如果设置为true的时候，资源不存在则会新增(插入)，并且在这种情况下`updateMask`字段将会被忽略。
+            description: 更新合同类型 - 请求
         UpdateDataPropertyRequest:
             type: object
             properties:
@@ -20312,6 +21560,22 @@ tags:
       description: 用户后台登录认证服务
     - name: ConfigService
       description: 系统参数管理服务
+    - name: ContractService
+      description: |-
+        合同管理服务（admin 门面）
+
+         源领域 proto 在 contract/service/v1（独立 Go module go-wind-admin/contract 拥有
+         自己的同名生成包 contractv1）；本门面只挂 HTTP 路由，消息类型直接引用源领域，
+         生成时 contract/service/v1 的 go_package 被指到 module 的 gen 包，因此本服务
+         生成的 HTTP 接口与 module 内 service 的方法签名完全一致，可直接注册。
+    - name: ContractTypeService
+      description: |-
+        合同类型管理服务（admin 门面）
+
+         源领域 proto 在 contract/service/v1（独立 Go module go-wind-admin/contract 拥有
+         自己的同名生成包 contractv1）；本门面只挂 HTTP 路由，消息类型直接引用源领域，
+         生成时 contract/service/v1 的 go_package 被指到 module 的 gen 包，因此本服务
+         生成的 HTTP 接口与 module 内 service 的方法签名完全一致，可直接注册。
     - name: DashboardService
       description: 后台首页分析概览服务（只读聚合）
     - name: DataAccessAuditLogService

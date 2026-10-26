@@ -170,7 +170,8 @@ const WorkOrderManagement = () => {
   ];
 
   return (
-    <ContentContainer containerRef={containerRef}>
+    <ContentContainer>
+      <div ref={containerRef} className="page-container-content" style={{ height: '100%' }}>
       <Tabs
         activeKey={activeTab}
         onChange={(key) => {
@@ -178,10 +179,10 @@ const WorkOrderManagement = () => {
           actionRef.current?.reload();
         }}
         items={[
-          { key: 'all', tab: t('workOrder.tabAll') },
+          { key: 'all', label: t('workOrder.tabAll') },
           ...STATUS_TABS.filter((tab) => tab.key !== 'all').map((tab) => ({
             key: tab.key,
-            tab: statusName(tab.statuses[0]),
+            label: statusName(tab.statuses[0]),
           })),
         ]}
       />
@@ -241,6 +242,7 @@ const WorkOrderManagement = () => {
         }}
         onOpenOrder={(oid) => setDetailId(oid)}
       />
+      </div>
     </ContentContainer>
   );
 };

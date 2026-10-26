@@ -1,0 +1,55 @@
+version: v2
+
+# contract 独立 Go module 专属生成模板：源 proto 在主工作区 protos/contract/，
+# 生成的 Go 代码落到 contract module 的 api/gen/go 下（包 contractv1）。
+# 由 backend/contract/Makefile 的 `make api` 调用：
+#   cd api && buf generate --template buf.contract.gen.yaml
+#
+# 注意：本模板只把 protos/contract 作为生成目标，BSR 依赖（pagination/gnostic 等）
+# 不会被生成——生成代码里的 import 直接指向这些依赖的官方远程 Go module，
+# 与主仓（乃至宿主二进制）共享同一份类型与描述符注册。
+clean: true
+
+managed:
+  enabled: true
+
+  disable:
+    - module: buf.build/googleapis/googleapis
+    - module: 'buf.build/envoyproxy/protoc-gen-validate'
+    - module: buf.build/kratos/apis
+    - module: buf.build/gnostic/gnostic
+    - module: buf.build/gogo/protobuf
+    - module: buf.build/tx7do/pagination
+    - module: buf.build/go-wind/redact
+
+  override:
+    - file_option: go_package_prefix
+      value: go-wind-admin/contract/api/gen/go
+
+    - file_option: go_package
+      path: contract/service/v1
+      value: go-wind-admin/contract/api/gen/go/contract/service/v1;contractv1
+
+inputs:
+  - directory: protos
+    paths:
+      - protos/contract
+
+plugins:
+  # generate go code
+  - local: protoc-gen-go
+    out: ../contract/api/gen/go
+    opt: paths=source_relative
+
+  # generate rest service code（HTTP 注解直挂 contract 源领域 proto，
+  # 独立 module 无 admin BFF 层；路由仍注册进宿主 :7788 的 REST server）
+  - local: protoc-gen-go-http
+    out: ../contract/api/gen/go
+    opt:
+      - paths=source_relative
+
+  # generate kratos errors code
+  - local: protoc-gen-go-errors
+    out: ../contract/api/gen/go
+    opt:
+      - paths=source_relative

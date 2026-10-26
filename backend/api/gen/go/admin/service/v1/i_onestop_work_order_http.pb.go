@@ -91,15 +91,15 @@ type OneStopWorkOrderServiceHTTPServer interface {
 
 func RegisterOneStopWorkOrderServiceHTTPServer(s *http.Server, srv OneStopWorkOrderServiceHTTPServer) {
 	r := s.Route("/")
-	r.GET("/admin/v1/onestop/work-orders", _OneStopWorkOrderService_List22_HTTP_Handler(srv))
-	r.GET("/admin/v1/onestop/work-orders/{id}", _OneStopWorkOrderService_Get20_HTTP_Handler(srv))
-	r.POST("/admin/v1/onestop/work-orders", _OneStopWorkOrderService_Create16_HTTP_Handler(srv))
-	r.PUT("/admin/v1/onestop/work-orders/{id}", _OneStopWorkOrderService_Update17_HTTP_Handler(srv))
-	r.DELETE("/admin/v1/onestop/work-orders/{id}", _OneStopWorkOrderService_Delete18_HTTP_Handler(srv))
-	r.GET("/admin/v1/onestop/work-orders/{id}/events", _OneStopWorkOrderService_ListEvents0_HTTP_Handler(srv))
+	r.GET("/admin/v1/onestop/work-orders", _OneStopWorkOrderService_List24_HTTP_Handler(srv))
+	r.GET("/admin/v1/onestop/work-orders/{id}", _OneStopWorkOrderService_Get22_HTTP_Handler(srv))
+	r.POST("/admin/v1/onestop/work-orders", _OneStopWorkOrderService_Create18_HTTP_Handler(srv))
+	r.PUT("/admin/v1/onestop/work-orders/{id}", _OneStopWorkOrderService_Update19_HTTP_Handler(srv))
+	r.DELETE("/admin/v1/onestop/work-orders/{id}", _OneStopWorkOrderService_Delete20_HTTP_Handler(srv))
+	r.GET("/admin/v1/onestop/work-orders/{id}/events", _OneStopWorkOrderService_ListEvents1_HTTP_Handler(srv))
 	r.GET("/admin/v1/onestop/work-orders/{id}/items", _OneStopWorkOrderService_ListItems0_HTTP_Handler(srv))
 	r.POST("/admin/v1/onestop/work-orders/{id}/dispatch", _OneStopWorkOrderService_Dispatch0_HTTP_Handler(srv))
-	r.POST("/admin/v1/onestop/work-orders/{id}/approve", _OneStopWorkOrderService_Approve0_HTTP_Handler(srv))
+	r.POST("/admin/v1/onestop/work-orders/{id}/approve", _OneStopWorkOrderService_Approve1_HTTP_Handler(srv))
 	r.POST("/admin/v1/onestop/work-orders/{id}/arrive", _OneStopWorkOrderService_Arrive0_HTTP_Handler(srv))
 	r.POST("/admin/v1/onestop/work-orders/{id}/pickup", _OneStopWorkOrderService_Pickup0_HTTP_Handler(srv))
 	r.POST("/admin/v1/onestop/work-orders/{id}/deliver", _OneStopWorkOrderService_Deliver0_HTTP_Handler(srv))
@@ -114,7 +114,7 @@ func RegisterOneStopWorkOrderServiceHTTPServer(s *http.Server, srv OneStopWorkOr
 	r.POST("/admin/v1/onestop/work-orders/{id}/satisfaction", _OneStopWorkOrderService_Satisfaction0_HTTP_Handler(srv))
 }
 
-func _OneStopWorkOrderService_List22_HTTP_Handler(srv OneStopWorkOrderServiceHTTPServer) func(ctx http.Context) error {
+func _OneStopWorkOrderService_List24_HTTP_Handler(srv OneStopWorkOrderServiceHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in v1.PagingRequest
 		if err := ctx.BindQuery(&in); err != nil {
@@ -133,7 +133,7 @@ func _OneStopWorkOrderService_List22_HTTP_Handler(srv OneStopWorkOrderServiceHTT
 	}
 }
 
-func _OneStopWorkOrderService_Get20_HTTP_Handler(srv OneStopWorkOrderServiceHTTPServer) func(ctx http.Context) error {
+func _OneStopWorkOrderService_Get22_HTTP_Handler(srv OneStopWorkOrderServiceHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in v11.GetWorkOrderRequest
 		if err := ctx.BindQuery(&in); err != nil {
@@ -155,7 +155,7 @@ func _OneStopWorkOrderService_Get20_HTTP_Handler(srv OneStopWorkOrderServiceHTTP
 	}
 }
 
-func _OneStopWorkOrderService_Create16_HTTP_Handler(srv OneStopWorkOrderServiceHTTPServer) func(ctx http.Context) error {
+func _OneStopWorkOrderService_Create18_HTTP_Handler(srv OneStopWorkOrderServiceHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in v11.CreateWorkOrderRequest
 		if err := ctx.Bind(&in); err != nil {
@@ -177,7 +177,7 @@ func _OneStopWorkOrderService_Create16_HTTP_Handler(srv OneStopWorkOrderServiceH
 	}
 }
 
-func _OneStopWorkOrderService_Update17_HTTP_Handler(srv OneStopWorkOrderServiceHTTPServer) func(ctx http.Context) error {
+func _OneStopWorkOrderService_Update19_HTTP_Handler(srv OneStopWorkOrderServiceHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in v11.UpdateWorkOrderRequest
 		if err := ctx.Bind(&in); err != nil {
@@ -202,7 +202,7 @@ func _OneStopWorkOrderService_Update17_HTTP_Handler(srv OneStopWorkOrderServiceH
 	}
 }
 
-func _OneStopWorkOrderService_Delete18_HTTP_Handler(srv OneStopWorkOrderServiceHTTPServer) func(ctx http.Context) error {
+func _OneStopWorkOrderService_Delete20_HTTP_Handler(srv OneStopWorkOrderServiceHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in v11.DeleteWorkOrderRequest
 		if err := ctx.BindQuery(&in); err != nil {
@@ -224,7 +224,7 @@ func _OneStopWorkOrderService_Delete18_HTTP_Handler(srv OneStopWorkOrderServiceH
 	}
 }
 
-func _OneStopWorkOrderService_ListEvents0_HTTP_Handler(srv OneStopWorkOrderServiceHTTPServer) func(ctx http.Context) error {
+func _OneStopWorkOrderService_ListEvents1_HTTP_Handler(srv OneStopWorkOrderServiceHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in v11.ListWorkOrderEventsRequest
 		if err := ctx.BindQuery(&in); err != nil {
@@ -293,7 +293,7 @@ func _OneStopWorkOrderService_Dispatch0_HTTP_Handler(srv OneStopWorkOrderService
 	}
 }
 
-func _OneStopWorkOrderService_Approve0_HTTP_Handler(srv OneStopWorkOrderServiceHTTPServer) func(ctx http.Context) error {
+func _OneStopWorkOrderService_Approve1_HTTP_Handler(srv OneStopWorkOrderServiceHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in v11.ApproveWorkOrderRequest
 		if err := ctx.Bind(&in); err != nil {

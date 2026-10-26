@@ -157,7 +157,7 @@ const CreateWorkOrderModal = ({ open, onClose }: CreateModalProps) => {
         </Form.Item>
         {guidance && (
           <Form.Item noStyle>
-            <Alert text={guidance} />
+            <Alert message={guidance} />
           </Form.Item>
         )}
         <Form.Item

@@ -20,6 +20,8 @@ import (
 
 	onestopService "go-wind-admin/onestop/service"
 
+	contractService "go-wind-admin/contract/service"
+
 	"go-wind-admin/app/admin/service/internal/data"
 
 	adminV1 "go-wind-admin/api/gen/go/admin/service/v1"
@@ -365,6 +367,21 @@ func (s *TaskService) startAllTask(ctx context.Context) (int32, error) {
 			s.log.Errorf(ctx, "注册一站式计划展开定时任务失败: %s", err.Error())
 		} else {
 			s.log.Infof(ctx, "一站式计划展开定时任务已注册（cron=%s）", onestopService.OnestopPlanExpandCronSpec)
+		}
+	}
+
+	// 合同到期扫描（系统级常驻 cron，每日 02:30）：执行中且结束日期早于当日
+	// 零点的合同自动关闭为 EXPIRED。handler 已在 NewAsynqServer 中注册；
+	// 逐条走乐观转移，重跑幂等（go-wind-admin/contract 的 contract_expiry.go）。
+	if s.hasScheduler() {
+		if _, err := s.taskScheduler.NewPeriodicTask(
+			contractService.ContractExpiryCronSpec,
+			contractService.ContractExpiryTaskType,
+			&contractService.ContractExpiryTaskData{},
+		); err != nil {
+			s.log.Errorf(ctx, "注册合同到期扫描定时任务失败: %s", err.Error())
+		} else {
+			s.log.Infof(ctx, "合同到期扫描定时任务已注册（cron=%s）", contractService.ContractExpiryCronSpec)
 		}
 	}
 

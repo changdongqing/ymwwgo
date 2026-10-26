@@ -48,16 +48,16 @@ type OntologyDatatypeServiceHTTPServer interface {
 
 func RegisterOntologyDatatypeServiceHTTPServer(s *http.Server, srv OntologyDatatypeServiceHTTPServer) {
 	r := s.Route("/")
-	r.GET("/admin/v1/ontology/datatypes", _OntologyDatatypeService_List27_HTTP_Handler(srv))
+	r.GET("/admin/v1/ontology/datatypes", _OntologyDatatypeService_List29_HTTP_Handler(srv))
 	r.GET("/admin/v1/ontology/datatypes/simple-list", _OntologyDatatypeService_SimpleList1_HTTP_Handler(srv))
 	r.GET("/admin/v1/ontology/datatypes/{id}/frame", _OntologyDatatypeService_Frame3_HTTP_Handler(srv))
 	r.GET("/admin/v1/ontology/datatypes/{id}/usage", _OntologyDatatypeService_Usage3_HTTP_Handler(srv))
-	r.POST("/admin/v1/ontology/datatypes", _OntologyDatatypeService_Create21_HTTP_Handler(srv))
-	r.PUT("/admin/v1/ontology/datatypes/{id}", _OntologyDatatypeService_Update22_HTTP_Handler(srv))
-	r.DELETE("/admin/v1/ontology/datatypes/{id}", _OntologyDatatypeService_Delete23_HTTP_Handler(srv))
+	r.POST("/admin/v1/ontology/datatypes", _OntologyDatatypeService_Create23_HTTP_Handler(srv))
+	r.PUT("/admin/v1/ontology/datatypes/{id}", _OntologyDatatypeService_Update24_HTTP_Handler(srv))
+	r.DELETE("/admin/v1/ontology/datatypes/{id}", _OntologyDatatypeService_Delete25_HTTP_Handler(srv))
 }
 
-func _OntologyDatatypeService_List27_HTTP_Handler(srv OntologyDatatypeServiceHTTPServer) func(ctx http.Context) error {
+func _OntologyDatatypeService_List29_HTTP_Handler(srv OntologyDatatypeServiceHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in v1.ListDatatypesRequest
 		if err := ctx.BindQuery(&in); err != nil {
@@ -139,7 +139,7 @@ func _OntologyDatatypeService_Usage3_HTTP_Handler(srv OntologyDatatypeServiceHTT
 	}
 }
 
-func _OntologyDatatypeService_Create21_HTTP_Handler(srv OntologyDatatypeServiceHTTPServer) func(ctx http.Context) error {
+func _OntologyDatatypeService_Create23_HTTP_Handler(srv OntologyDatatypeServiceHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in v1.CreateDatatypeRequest
 		if err := ctx.Bind(&in); err != nil {
@@ -161,7 +161,7 @@ func _OntologyDatatypeService_Create21_HTTP_Handler(srv OntologyDatatypeServiceH
 	}
 }
 
-func _OntologyDatatypeService_Update22_HTTP_Handler(srv OntologyDatatypeServiceHTTPServer) func(ctx http.Context) error {
+func _OntologyDatatypeService_Update24_HTTP_Handler(srv OntologyDatatypeServiceHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in v1.UpdateDatatypeRequest
 		if err := ctx.Bind(&in); err != nil {
@@ -186,7 +186,7 @@ func _OntologyDatatypeService_Update22_HTTP_Handler(srv OntologyDatatypeServiceH
 	}
 }
 
-func _OntologyDatatypeService_Delete23_HTTP_Handler(srv OntologyDatatypeServiceHTTPServer) func(ctx http.Context) error {
+func _OntologyDatatypeService_Delete25_HTTP_Handler(srv OntologyDatatypeServiceHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in v1.DeleteDatatypeRequest
 		if err := ctx.BindQuery(&in); err != nil {

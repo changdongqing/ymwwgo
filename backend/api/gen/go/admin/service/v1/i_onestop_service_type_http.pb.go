@@ -46,15 +46,15 @@ type OneStopServiceTypeServiceHTTPServer interface {
 
 func RegisterOneStopServiceTypeServiceHTTPServer(s *http.Server, srv OneStopServiceTypeServiceHTTPServer) {
 	r := s.Route("/")
-	r.GET("/admin/v1/onestop/service-types", _OneStopServiceTypeService_List20_HTTP_Handler(srv))
-	r.GET("/admin/v1/onestop/service-types/{id}", _OneStopServiceTypeService_Get18_HTTP_Handler(srv))
-	r.POST("/admin/v1/onestop/service-types", _OneStopServiceTypeService_Create14_HTTP_Handler(srv))
-	r.PUT("/admin/v1/onestop/service-types/{id}", _OneStopServiceTypeService_Update15_HTTP_Handler(srv))
-	r.DELETE("/admin/v1/onestop/service-types/{id}", _OneStopServiceTypeService_Delete16_HTTP_Handler(srv))
-	r.GET("/admin/v1/onestop/service-types/{id}/effective-config", _OneStopServiceTypeService_GetEffectiveConfig0_HTTP_Handler(srv))
+	r.GET("/admin/v1/onestop/service-types", _OneStopServiceTypeService_List22_HTTP_Handler(srv))
+	r.GET("/admin/v1/onestop/service-types/{id}", _OneStopServiceTypeService_Get20_HTTP_Handler(srv))
+	r.POST("/admin/v1/onestop/service-types", _OneStopServiceTypeService_Create16_HTTP_Handler(srv))
+	r.PUT("/admin/v1/onestop/service-types/{id}", _OneStopServiceTypeService_Update17_HTTP_Handler(srv))
+	r.DELETE("/admin/v1/onestop/service-types/{id}", _OneStopServiceTypeService_Delete18_HTTP_Handler(srv))
+	r.GET("/admin/v1/onestop/service-types/{id}/effective-config", _OneStopServiceTypeService_GetEffectiveConfig1_HTTP_Handler(srv))
 }
 
-func _OneStopServiceTypeService_List20_HTTP_Handler(srv OneStopServiceTypeServiceHTTPServer) func(ctx http.Context) error {
+func _OneStopServiceTypeService_List22_HTTP_Handler(srv OneStopServiceTypeServiceHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in v1.PagingRequest
 		if err := ctx.BindQuery(&in); err != nil {
@@ -73,7 +73,7 @@ func _OneStopServiceTypeService_List20_HTTP_Handler(srv OneStopServiceTypeServic
 	}
 }
 
-func _OneStopServiceTypeService_Get18_HTTP_Handler(srv OneStopServiceTypeServiceHTTPServer) func(ctx http.Context) error {
+func _OneStopServiceTypeService_Get20_HTTP_Handler(srv OneStopServiceTypeServiceHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in v11.GetServiceTypeRequest
 		if err := ctx.BindQuery(&in); err != nil {
@@ -95,7 +95,7 @@ func _OneStopServiceTypeService_Get18_HTTP_Handler(srv OneStopServiceTypeService
 	}
 }
 
-func _OneStopServiceTypeService_Create14_HTTP_Handler(srv OneStopServiceTypeServiceHTTPServer) func(ctx http.Context) error {
+func _OneStopServiceTypeService_Create16_HTTP_Handler(srv OneStopServiceTypeServiceHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in v11.CreateServiceTypeRequest
 		if err := ctx.Bind(&in); err != nil {
@@ -117,7 +117,7 @@ func _OneStopServiceTypeService_Create14_HTTP_Handler(srv OneStopServiceTypeServ
 	}
 }
 
-func _OneStopServiceTypeService_Update15_HTTP_Handler(srv OneStopServiceTypeServiceHTTPServer) func(ctx http.Context) error {
+func _OneStopServiceTypeService_Update17_HTTP_Handler(srv OneStopServiceTypeServiceHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in v11.UpdateServiceTypeRequest
 		if err := ctx.Bind(&in); err != nil {
@@ -142,7 +142,7 @@ func _OneStopServiceTypeService_Update15_HTTP_Handler(srv OneStopServiceTypeServ
 	}
 }
 
-func _OneStopServiceTypeService_Delete16_HTTP_Handler(srv OneStopServiceTypeServiceHTTPServer) func(ctx http.Context) error {
+func _OneStopServiceTypeService_Delete18_HTTP_Handler(srv OneStopServiceTypeServiceHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in v11.DeleteServiceTypeRequest
 		if err := ctx.BindQuery(&in); err != nil {
@@ -164,7 +164,7 @@ func _OneStopServiceTypeService_Delete16_HTTP_Handler(srv OneStopServiceTypeServ
 	}
 }
 
-func _OneStopServiceTypeService_GetEffectiveConfig0_HTTP_Handler(srv OneStopServiceTypeServiceHTTPServer) func(ctx http.Context) error {
+func _OneStopServiceTypeService_GetEffectiveConfig1_HTTP_Handler(srv OneStopServiceTypeServiceHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in v11.GetEffectiveConfigRequest
 		if err := ctx.BindQuery(&in); err != nil {

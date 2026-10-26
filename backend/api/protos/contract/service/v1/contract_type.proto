@@ -1,0 +1,300 @@
+syntax = "proto3";
+
+package contract.service.v1;
+
+import "gnostic/openapi/v3/annotations.proto";
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/field_mask.proto";
+import "google/protobuf/timestamp.proto";
+
+import "pagination/v1/pagination.proto";
+
+// 合同类型管理服务
+//
+// 合同类型是二级分类字典（大类 → 细类），设计口径见
+// docs/connn/contract-type-and-contract-design.md §3：编码为 2/4 位数字字符串，
+// 位数即层级，细类前 2 位 = 父大类编码。统一合同配置模板两级均可填，
+// 细类空字段回退大类（effective-config 解析）。
+service ContractTypeService {
+  // 查询合同类型列表
+  rpc List (pagination.PagingRequest) returns (ListContractTypesResponse) {
+    option (google.api.http) = {
+      get: "/admin/v1/contract/types"
+    };
+  }
+
+  // 查询合同类型详情
+  rpc Get (GetContractTypeRequest) returns (ContractType) {
+    option (google.api.http) = {
+      get: "/admin/v1/contract/types/{id}"
+    };
+  }
+
+  // 创建合同类型
+  rpc Create (CreateContractTypeRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/admin/v1/contract/types"
+      body: "*"
+    };
+  }
+
+  // 更新合同类型
+  rpc Update (UpdateContractTypeRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      put: "/admin/v1/contract/types/{id}"
+      body: "*"
+    };
+  }
+
+  // 删除合同类型
+  rpc Delete (DeleteContractTypeRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete: "/admin/v1/contract/types/{id}"
+    };
+  }
+
+  // 查询类型的生效合同配置（细类→大类回退解析后的完整视图）：
+  // 合同创建表单预填与创建快照共用同一解析口径。
+  rpc GetEffectiveConfig (GetEffectiveContractConfigRequest) returns (EffectiveContractConfig) {
+    option (google.api.http) = {
+      get: "/admin/v1/contract/types/{id}/effective-config"
+    };
+  }
+}
+
+// 类型层级：大类 / 细类（与编码位数 2/4 一一对应）
+enum ContractLevel {
+  LEVEL_UNSPECIFIED = 0; // 未指定
+  LEVEL_MAJOR = 1; // 大类，2 位编码
+  LEVEL_DETAIL = 2; // 细类，4 位编码
+}
+
+// 付款方式：决定合同金额的费用拆解规则（一次性/按月/按季等分，按节点/按进度按模板比例）
+enum PayMethod {
+  PAY_METHOD_UNSPECIFIED = 0; // 未指定（回退上级，最终默认一次性）
+  PAY_ONCE = 1; // 一次性付款（1 行全额，计划日期=开始日期）
+  PAY_MONTHLY = 2; // 按月付款（起止区间按月等分）
+  PAY_QUARTERLY = 3; // 按季付款（每 3 个月一行）
+  PAY_NODE = 4; // 按节点付款（按类型 pay_nodes 比例拆解，如施工 基础/主体/竣工/质保）
+  PAY_PROGRESS = 5; // 按进度付款（同按节点，语义为采购 预付/到货/验收）
+}
+
+// 费用方向：合同款项往哪边走（应收=我方收款，如出租；应付=我方付款）
+enum FeeDirection {
+  DIRECTION_UNSPECIFIED = 0; // 未指定（回退上级，最终默认应付）
+  DIRECTION_PAYABLE = 1; // 应付（我方付款，绝大多数合同）
+  DIRECTION_RECEIVABLE = 2; // 应收（我方收款，如我方为出租方的租赁合同）
+}
+
+// 付款节点模板（PAY_NODE/PAY_PROGRESS 的拆解比例来源）
+message ContractPayNode {
+  string name = 1 [
+    json_name = "name",
+    (gnostic.openapi.v3.property) = { description: "节点名称（如：基础、主体、竣工、质保 / 预付、到货、验收）" }
+  ]; // 节点名称
+
+  int32 ratio_percent = 2 [
+    json_name = "ratioPercent",
+    (gnostic.openapi.v3.property) = { description: "节点比例（%），全节点之和以 100 为准（≠100 拆解器按余数进末节点容错）" }
+  ]; // 节点比例
+}
+
+// 差异化字段定义（类型驱动的动态表单 schema）
+message ContractDiffField {
+  string key = 1 [
+    json_name = "key",
+    (gnostic.openapi.v3.property) = { description: "字段键（diff_values 的键，如 staffingCount）" }
+  ]; // 字段键
+
+  string label = 2 [
+    json_name = "label",
+    (gnostic.openapi.v3.property) = { description: "字段标签（如：岗位人数(人)）" }
+  ]; // 字段标签
+
+  string widget = 3 [
+    json_name = "widget",
+    (gnostic.openapi.v3.property) = { description: "控件类型：WIDGET_TEXT 单行 / WIDGET_TEXTAREA 多行 / WIDGET_SELECT 下拉 / WIDGET_DATE 日期" }
+  ]; // 控件类型
+
+  repeated string options = 4 [
+    json_name = "options",
+    (gnostic.openapi.v3.property) = { description: "下拉选项（WIDGET_SELECT 时使用）" }
+  ]; // 下拉选项
+}
+
+// 合同类型
+message ContractType {
+  optional uint32 id = 1 [
+    json_name = "id",
+    (gnostic.openapi.v3.property) = { description: "合同类型ID" }
+  ]; // 合同类型ID
+
+  optional string code = 2 [
+    json_name = "code",
+    (gnostic.openapi.v3.property) = { description: "类型编码，2/4 位数字字符串，位数即层级，细类前2位=父大类" }
+  ]; // 类型编码
+
+  optional string name = 3 [
+    json_name = "name",
+    (gnostic.openapi.v3.property) = { description: "类型名称" }
+  ]; // 类型名称
+
+  optional ContractLevel level = 4 [
+    json_name = "level",
+    (gnostic.openapi.v3.property) = { description: "类型层级（大类/细类）" }
+  ]; // 类型层级
+
+  optional uint32 parent_id = 5 [
+    json_name = "parentId",
+    (gnostic.openapi.v3.property) = { description: "上级类型ID，大类为空" }
+  ]; // 上级类型ID
+
+  optional string description = 6 [
+    json_name = "description",
+    (gnostic.openapi.v3.property) = { description: "描述" }
+  ]; // 描述
+
+  optional bool is_enabled = 7 [
+    json_name = "isEnabled",
+    (gnostic.openapi.v3.property) = {description: "是否启用"}
+  ]; // 是否启用
+
+  // —— 统一合同配置模板（两级均可填，全部可空，未配置 = NULL；细类空字段回退大类）——
+  // 消费方为合同创建（快照运行期判定字段）与费用拆解器；
+  // 纯参考文案（guidance/乙方称谓/必备附件）实时读类型，不落合同快照。
+
+  optional string party_b_label = 10 [
+    json_name = "partyBLabel",
+    (gnostic.openapi.v3.property) = { description: "乙方称谓模板：供应商/施工单位/服务单位/维保单位/三方公司等，按类型展示" }
+  ]; // 乙方称谓模板
+
+  optional PayMethod pay_method = 11 [
+    json_name = "payMethod",
+    (gnostic.openapi.v3.property) = { description: "默认付款方式：决定费用拆解规则（未设置回退上级，默认一次性）" }
+  ]; // 默认付款方式
+
+  repeated ContractPayNode pay_nodes = 12 [
+    json_name = "payNodes",
+    (gnostic.openapi.v3.property) = { description: "付款节点模板 [{name,ratioPercent}]：按节点/进度付款的拆解比例（整组继承或整组覆盖）" }
+  ]; // 付款节点模板
+
+  optional FeeDirection fee_direction = 13 [
+    json_name = "feeDirection",
+    (gnostic.openapi.v3.property) = { description: "默认费用方向：应收（我方收款，如出租）/应付（我方付款）；未设置回退上级，默认应付" }
+  ]; // 默认费用方向
+
+  optional bool requires_approval = 14 [
+    json_name = "requiresApproval",
+    (gnostic.openapi.v3.property) = { description: "是否需审批：true=提交后进待审核，false=提交即生效（未设置回退上级，默认 true）" }
+  ]; // 是否需审批
+
+  optional bool requires_deposit = 15 [
+    json_name = "requiresDeposit",
+    (gnostic.openapi.v3.property) = { description: "是否需履约保证金：true=拆解时追加押金费用行（未设置回退上级，默认 false）" }
+  ]; // 是否需履约保证金
+
+  repeated ContractDiffField diff_fields = 16 [
+    json_name = "diffFields",
+    (gnostic.openapi.v3.property) = { description: "差异字段定义 [{key,label,widget,options}]：类型驱动的动态表单 schema，合同创建时快照定型" }
+  ]; // 差异字段定义
+
+  repeated string required_attachments = 17 [
+    json_name = "requiredAttachments",
+    (gnostic.openapi.v3.property) = { description: "必备附件名清单（提示性校验，如：中标通知书/施工图/合同正本）" }
+  ]; // 必备附件名清单
+
+  optional string guidance = 18 [
+    json_name = "guidance",
+    (gnostic.openapi.v3.property) = { description: "合同录入提示（纯参考文案，实时读类型，不快照）" }
+  ]; // 合同录入提示
+
+  optional uint32 created_by = 100 [json_name = "createdBy", (gnostic.openapi.v3.property) = {description: "创建者ID"}]; // 创建者ID
+  optional uint32 updated_by = 101 [json_name = "updatedBy", (gnostic.openapi.v3.property) = {description: "更新者ID"}]; // 更新者ID
+  optional uint32 deleted_by = 102 [json_name = "deletedBy", (gnostic.openapi.v3.property) = {description: "删除者用户ID"}]; // 删除者用户ID
+
+  optional google.protobuf.Timestamp created_at = 200 [json_name = "createdAt", (gnostic.openapi.v3.property) = {description: "创建时间"}];// 创建时间
+  optional google.protobuf.Timestamp updated_at = 201 [json_name = "updatedAt", (gnostic.openapi.v3.property) = {description: "更新时间"}];// 更新时间
+  optional google.protobuf.Timestamp deleted_at = 202 [json_name = "deletedAt", (gnostic.openapi.v3.property) = {description: "删除时间"}];// 删除时间
+}
+
+// 查询合同类型列表 - 回应
+message ListContractTypesResponse {
+  repeated ContractType items = 1;
+  uint64 total = 2;
+}
+
+// 查询合同类型详情 - 请求
+message GetContractTypeRequest {
+  oneof query_by {
+    uint32 id = 1 [
+      (gnostic.openapi.v3.property) = {description: "ID", read_only: true},
+      json_name = "id"
+    ]; // ID
+  }
+
+  optional google.protobuf.FieldMask view_mask = 100 [
+    json_name = "viewMask",
+    (gnostic.openapi.v3.property) = {
+      description: "视图字段过滤器，用于控制返回的字段"
+    }
+  ]; // 视图字段过滤器
+}
+
+// 创建合同类型 - 请求
+message CreateContractTypeRequest {
+  ContractType data = 1;
+}
+
+// 更新合同类型 - 请求
+message UpdateContractTypeRequest {
+  uint32 id = 1;
+
+  ContractType data = 2;
+
+  google.protobuf.FieldMask update_mask = 3 [
+    (gnostic.openapi.v3.property) = {
+      description: "要更新的字段列表",
+      example: {yaml : "id,code,name,level"}
+    },
+    json_name = "updateMask"
+  ]; // 要更新的字段列表
+
+  optional bool allow_missing = 4 [
+    (gnostic.openapi.v3.property) = {description: "如果设置为true的时候，资源不存在则会新增(插入)，并且在这种情况下`updateMask`字段将会被忽略。"},
+    json_name = "allowMissing"
+  ]; // 资源不存在时是否新增
+}
+
+// 删除合同类型 - 请求
+message DeleteContractTypeRequest {
+  oneof query_by {
+    uint32 id = 1 [
+      (gnostic.openapi.v3.property) = {description: "ID", read_only: true},
+      json_name = "id"
+    ]; // ID
+  }
+}
+
+// 查询生效合同配置 - 请求
+message GetEffectiveContractConfigRequest {
+  uint32 id = 1 [
+    (gnostic.openapi.v3.property) = {description: "合同类型ID", read_only: true},
+    json_name = "id"
+  ]; // 合同类型ID
+}
+
+// 生效合同配置 - 回应
+//
+// effective 是解析后的合并视图：单值列（细类为空回退大类）与数组列（整组
+// 覆盖或整组继承，不做数组内 merge）都已按「细类 → 大类」回退填齐；
+// requires_approval/requires_deposit/pay_method/fee_direction 为解析后的生效
+// 兜底值（默认 true/false/PAY_ONCE/DIRECTION_PAYABLE）。创建表单预填与合同
+// 创建快照共用本接口口径，前端无须自行实现继承链。
+message EffectiveContractConfig {
+  ContractType effective = 1 [
+    json_name = "effective",
+    (gnostic.openapi.v3.property) = { description: "解析后的生效配置（细类→大类回退已填齐，开关/方式/方向为兜底后的生效值）" }
+  ]; // 解析后的生效配置
+}

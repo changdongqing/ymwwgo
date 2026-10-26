@@ -43,14 +43,14 @@ type OneStopTransportRouteServiceHTTPServer interface {
 
 func RegisterOneStopTransportRouteServiceHTTPServer(s *http.Server, srv OneStopTransportRouteServiceHTTPServer) {
 	r := s.Route("/")
-	r.GET("/admin/v1/onestop/transport-routes", _OneStopTransportRouteService_List21_HTTP_Handler(srv))
-	r.GET("/admin/v1/onestop/transport-routes/{id}", _OneStopTransportRouteService_Get19_HTTP_Handler(srv))
-	r.POST("/admin/v1/onestop/transport-routes", _OneStopTransportRouteService_Create15_HTTP_Handler(srv))
-	r.PUT("/admin/v1/onestop/transport-routes/{id}", _OneStopTransportRouteService_Update16_HTTP_Handler(srv))
-	r.DELETE("/admin/v1/onestop/transport-routes/{id}", _OneStopTransportRouteService_Delete17_HTTP_Handler(srv))
+	r.GET("/admin/v1/onestop/transport-routes", _OneStopTransportRouteService_List23_HTTP_Handler(srv))
+	r.GET("/admin/v1/onestop/transport-routes/{id}", _OneStopTransportRouteService_Get21_HTTP_Handler(srv))
+	r.POST("/admin/v1/onestop/transport-routes", _OneStopTransportRouteService_Create17_HTTP_Handler(srv))
+	r.PUT("/admin/v1/onestop/transport-routes/{id}", _OneStopTransportRouteService_Update18_HTTP_Handler(srv))
+	r.DELETE("/admin/v1/onestop/transport-routes/{id}", _OneStopTransportRouteService_Delete19_HTTP_Handler(srv))
 }
 
-func _OneStopTransportRouteService_List21_HTTP_Handler(srv OneStopTransportRouteServiceHTTPServer) func(ctx http.Context) error {
+func _OneStopTransportRouteService_List23_HTTP_Handler(srv OneStopTransportRouteServiceHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in v1.PagingRequest
 		if err := ctx.BindQuery(&in); err != nil {
@@ -69,7 +69,7 @@ func _OneStopTransportRouteService_List21_HTTP_Handler(srv OneStopTransportRoute
 	}
 }
 
-func _OneStopTransportRouteService_Get19_HTTP_Handler(srv OneStopTransportRouteServiceHTTPServer) func(ctx http.Context) error {
+func _OneStopTransportRouteService_Get21_HTTP_Handler(srv OneStopTransportRouteServiceHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in v11.GetTransportRouteRequest
 		if err := ctx.BindQuery(&in); err != nil {
@@ -91,7 +91,7 @@ func _OneStopTransportRouteService_Get19_HTTP_Handler(srv OneStopTransportRouteS
 	}
 }
 
-func _OneStopTransportRouteService_Create15_HTTP_Handler(srv OneStopTransportRouteServiceHTTPServer) func(ctx http.Context) error {
+func _OneStopTransportRouteService_Create17_HTTP_Handler(srv OneStopTransportRouteServiceHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in v11.CreateTransportRouteRequest
 		if err := ctx.Bind(&in); err != nil {
@@ -113,7 +113,7 @@ func _OneStopTransportRouteService_Create15_HTTP_Handler(srv OneStopTransportRou
 	}
 }
 
-func _OneStopTransportRouteService_Update16_HTTP_Handler(srv OneStopTransportRouteServiceHTTPServer) func(ctx http.Context) error {
+func _OneStopTransportRouteService_Update18_HTTP_Handler(srv OneStopTransportRouteServiceHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in v11.UpdateTransportRouteRequest
 		if err := ctx.Bind(&in); err != nil {
@@ -138,7 +138,7 @@ func _OneStopTransportRouteService_Update16_HTTP_Handler(srv OneStopTransportRou
 	}
 }
 
-func _OneStopTransportRouteService_Delete17_HTTP_Handler(srv OneStopTransportRouteServiceHTTPServer) func(ctx http.Context) error {
+func _OneStopTransportRouteService_Delete19_HTTP_Handler(srv OneStopTransportRouteServiceHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in v11.DeleteTransportRouteRequest
 		if err := ctx.BindQuery(&in); err != nil {

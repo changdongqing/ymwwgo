@@ -1,0 +1,220 @@
+[
+  {
+    "code": "01",
+    "name": "外包合同",
+    "level": "LEVEL_MAJOR",
+    "description": "第三方人员派驻类外包服务（保安/保洁/餐饮/信息运维等）",
+    "partyBLabel": "三方公司",
+    "payMethod": "PAY_MONTHLY",
+    "feeDirection": "DIRECTION_PAYABLE",
+    "requiresApproval": true,
+    "requiresDeposit": true,
+    "diffFields": [
+      { "key": "staffingCount", "label": "岗位人数(人)", "widget": "WIDGET_TEXT" },
+      { "key": "serviceStart", "label": "服务开始日期", "widget": "WIDGET_DATE" },
+      { "key": "serviceEnd", "label": "服务结束日期", "widget": "WIDGET_DATE" },
+      { "key": "serviceContent", "label": "服务内容", "widget": "WIDGET_TEXTAREA" }
+    ],
+    "requiredAttachments": ["合同正本"],
+    "guidance": "外包合同请核对岗位人数与结算单价；服务期与合同期不一致时以差异字段的服务起止日期为准。"
+  },
+  {
+    "code": "0101",
+    "name": "保安服务外包",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "01"
+  },
+  {
+    "code": "0102",
+    "name": "保洁服务外包",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "01"
+  },
+  {
+    "code": "0103",
+    "name": "餐饮服务外包",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "01"
+  },
+  {
+    "code": "0104",
+    "name": "信息运维外包",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "01"
+  },
+  {
+    "code": "02",
+    "name": "施工合同",
+    "level": "LEVEL_MAJOR",
+    "description": "零星维修与改造工程施工",
+    "partyBLabel": "施工单位",
+    "payMethod": "PAY_NODE",
+    "payNodes": [
+      { "name": "基础", "ratioPercent": 30 },
+      { "name": "主体", "ratioPercent": 40 },
+      { "name": "竣工", "ratioPercent": 25 },
+      { "name": "质保", "ratioPercent": 5 }
+    ],
+    "feeDirection": "DIRECTION_PAYABLE",
+    "requiresApproval": true,
+    "requiresDeposit": true,
+    "diffFields": [
+      { "key": "constructForm", "label": "施工形式", "widget": "WIDGET_SELECT", "options": ["包工包料", "包工不包料", "清包工"] },
+      { "key": "includesDetection", "label": "是否包含检测费", "widget": "WIDGET_SELECT", "options": ["包含", "不包含"] },
+      { "key": "constructContent", "label": "施工内容", "widget": "WIDGET_TEXTAREA" }
+    ],
+    "requiredAttachments": ["中标通知书", "施工图", "合同正本"],
+    "guidance": "金额超 100 万的施工合同须附中标通知书；按节点付款（基础/主体/竣工/质保）在费用明细自动拆解。"
+  },
+  {
+    "code": "0201",
+    "name": "零星维修施工",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "02"
+  },
+  {
+    "code": "0202",
+    "name": "改造工程施工",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "02"
+  },
+  {
+    "code": "03",
+    "name": "租赁合同",
+    "level": "LEVEL_MAJOR",
+    "description": "房屋场地与设备租赁（我方为出租方时费用方向为应收）",
+    "partyBLabel": "合同乙方",
+    "payMethod": "PAY_QUARTERLY",
+    "feeDirection": "DIRECTION_RECEIVABLE",
+    "requiresApproval": true,
+    "requiresDeposit": true,
+    "diffFields": [
+      { "key": "leaseForm", "label": "租赁形式", "widget": "WIDGET_SELECT", "options": ["整租", "分租", "临时租用"] },
+      { "key": "leaseArea", "label": "租赁面积(㎡)", "widget": "WIDGET_TEXT" },
+      { "key": "rentFreePeriod", "label": "免租期", "widget": "WIDGET_TEXT" },
+      { "key": "leaseContent", "label": "合同内容", "widget": "WIDGET_TEXTAREA" }
+    ],
+    "requiredAttachments": ["合同正本"],
+    "guidance": "我方出租的租赁合同费用方向为应收（收租金），承租方向合同请把费用方向改为应付。"
+  },
+  {
+    "code": "0301",
+    "name": "房屋场地租赁",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "03"
+  },
+  {
+    "code": "0302",
+    "name": "设备租赁",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "03"
+  },
+  {
+    "code": "04",
+    "name": "服务合同",
+    "level": "LEVEL_MAJOR",
+    "description": "运送/消杀/绿化养护等周期性服务",
+    "partyBLabel": "服务单位",
+    "payMethod": "PAY_MONTHLY",
+    "feeDirection": "DIRECTION_PAYABLE",
+    "requiresApproval": true,
+    "diffFields": [
+      { "key": "serviceFreq", "label": "服务频次", "widget": "WIDGET_TEXT" },
+      { "key": "serviceStandard", "label": "服务标准/SLA", "widget": "WIDGET_TEXTAREA" },
+      { "key": "serviceContent", "label": "服务内容", "widget": "WIDGET_TEXTAREA" }
+    ],
+    "requiredAttachments": ["合同正本"],
+    "guidance": "服务频次与 SLA 是验收依据，请与服务清单一并归档。"
+  },
+  {
+    "code": "0401",
+    "name": "运送服务",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "04"
+  },
+  {
+    "code": "0402",
+    "name": "消杀服务",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "04"
+  },
+  {
+    "code": "0403",
+    "name": "绿化养护服务",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "04"
+  },
+  {
+    "code": "05",
+    "name": "维保合同",
+    "level": "LEVEL_MAJOR",
+    "description": "电梯/消防/空调/医疗设备等系统维保",
+    "partyBLabel": "维保单位",
+    "payMethod": "PAY_MONTHLY",
+    "feeDirection": "DIRECTION_PAYABLE",
+    "requiresApproval": true,
+    "diffFields": [
+      { "key": "maintenanceForm", "label": "维保形式", "widget": "WIDGET_SELECT", "options": ["全包", "半包", "清包"] },
+      { "key": "maintenanceSystem", "label": "维保系统", "widget": "WIDGET_TEXT" },
+      { "key": "onSiteStaff", "label": "驻场人数(人)", "widget": "WIDGET_TEXT" },
+      { "key": "includesDetection", "label": "是否包含检测费", "widget": "WIDGET_SELECT", "options": ["包含", "不包含"] },
+      { "key": "contractContent", "label": "合同内容", "widget": "WIDGET_TEXTAREA" }
+    ],
+    "requiredAttachments": ["合同正本"],
+    "guidance": "维保系统与驻场人数影响履约考核，请据实填写。"
+  },
+  {
+    "code": "0501",
+    "name": "电梯维保",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "05"
+  },
+  {
+    "code": "0502",
+    "name": "消防维保",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "05"
+  },
+  {
+    "code": "0503",
+    "name": "空调维保",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "05"
+  },
+  {
+    "code": "0504",
+    "name": "医疗设备维保",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "05"
+  },
+  {
+    "code": "06",
+    "name": "采购合同",
+    "level": "LEVEL_MAJOR",
+    "description": "设施设备采购（预付/到货/验收按进度付款）",
+    "partyBLabel": "供应商",
+    "payMethod": "PAY_PROGRESS",
+    "payNodes": [
+      { "name": "预付", "ratioPercent": 30 },
+      { "name": "到货", "ratioPercent": 60 },
+      { "name": "验收", "ratioPercent": 10 }
+    ],
+    "feeDirection": "DIRECTION_PAYABLE",
+    "requiresApproval": true,
+    "diffFields": [
+      { "key": "purchaseMethod", "label": "采购方式", "widget": "WIDGET_SELECT", "options": ["公开招标", "邀请招标", "竞争性谈判", "单一来源", "询价"] },
+      { "key": "supplyCycle", "label": "供货周期(天)", "widget": "WIDGET_TEXT" },
+      { "key": "warrantyPeriod", "label": "质保期(月)", "widget": "WIDGET_TEXT" },
+      { "key": "installResponsibility", "label": "安装调试责任", "widget": "WIDGET_SELECT", "options": ["供货方负责", "采购方负责", "双方共担"] },
+      { "key": "contractContent", "label": "合同内容", "widget": "WIDGET_TEXTAREA" }
+    ],
+    "requiredAttachments": ["中标通知书", "采购明细清单", "合同正本"],
+    "guidance": "按进度付款（预付/到货/验收）在费用明细自动拆解，验收款支付前请核对质保期条款。"
+  },
+  {
+    "code": "0601",
+    "name": "设施设备采购",
+    "level": "LEVEL_DETAIL",
+    "parentCode": "06"
+  }
+]

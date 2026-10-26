@@ -147,6 +147,11 @@
     },
     "onestop": {
       "workOrders": "Work Orders"
+    },
+    "contract": {
+      "title": "Contracts",
+      "types": "Contract Types",
+      "list": "Contracts"
     }
   },
   "page": {
@@ -164,5 +169,8 @@
   "annotation-properties": "Annotation Properties",
   "datatypes": "Data Types",
   "individuals": "Individuals",
-  "onestop-work-orders": "Work Orders"
+  "onestop-work-orders": "Work Orders",
+  "contract": "Contracts",
+  "contract-types": "Contract Types",
+  "contract-list": "Contracts"
 }

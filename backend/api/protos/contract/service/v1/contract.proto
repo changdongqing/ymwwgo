@@ -1,0 +1,752 @@
+syntax = "proto3";
+
+package contract.service.v1;
+
+import "gnostic/openapi/v3/annotations.proto";
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/field_mask.proto";
+import "google/protobuf/timestamp.proto";
+
+import "pagination/v1/pagination.proto";
+
+import "contract/service/v1/contract_type.proto";
+
+// 合同管理服务（统一合同底座）
+//
+// 设计口径见 docs/connn/contract-type-and-contract-design.md §4：一张合同表
+// 一套状态机，类型差异由「类型模板 + 差异字段快照」吃掉。创建时从类型
+// effective-config（细类→大类回退）快照运行期判定字段（审批开关/付款方式/
+// 差异字段 schema），生效时按付款方式拆解费用明细，此后类型修改不影响存量
+// 合同。CRUD 请求体包 { data: {...} }；动作 RPC 收扁平请求体（全仓铁律 3），
+// 全部动作落事件表（时间线），主表只存当前态。
+service ContractService {
+  // 查询合同列表（过滤参数走 query JSON：status__in / contractTypeId__eq /
+  // contractNo__contains / partyBName__contains / expiryType__eq 等）
+  rpc List (pagination.PagingRequest) returns (ListContractsResponse) {
+    option (google.api.http) = {
+      get: "/admin/v1/contract/contracts"
+    };
+  }
+
+  // 查询合同详情
+  rpc Get (GetContractRequest) returns (Contract) {
+    option (google.api.http) = {
+      get: "/admin/v1/contract/contracts/{id}"
+    };
+  }
+
+  // 创建合同（草稿起步；快照解析：类型编码/名称/审批开关/差异字段 schema）
+  rpc Create (CreateContractRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/admin/v1/contract/contracts"
+      body: "*"
+    };
+  }
+
+  // 更新合同（仅草稿可改，其余状态走动作接口）
+  rpc Update (UpdateContractRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      put: "/admin/v1/contract/contracts/{id}"
+      body: "*"
+    };
+  }
+
+  // 删除合同（仅草稿可删，软删）
+  rpc Delete (DeleteContractRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete: "/admin/v1/contract/contracts/{id}"
+    };
+  }
+
+  // 查询合同事件时间线（时间倒序 = 详情页跟进记录）
+  rpc ListEvents (ListContractEventsRequest) returns (ListContractEventsResponse) {
+    option (google.api.http) = {
+      get: "/admin/v1/contract/contracts/{id}/events"
+    };
+  }
+
+  // 查询合同费用明细（拆解生成的应收/应付/押金行）
+  rpc ListFees (ListContractFeesRequest) returns (ListContractFeesResponse) {
+    option (google.api.http) = {
+      get: "/admin/v1/contract/contracts/{id}/fees"
+    };
+  }
+
+  // 提交（草稿 → 待审核；审批开关快照为 false 时直接生效并拆解费用）
+  rpc Submit (SubmitContractRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/admin/v1/contract/contracts/{id}/submit"
+      body: "*"
+    };
+  }
+
+  // 审核（通过 → 执行中并拆解费用；驳回 → 草稿，原因必填）
+  rpc Approve (ApproveContractRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/admin/v1/contract/contracts/{id}/approve"
+      body: "*"
+    };
+  }
+
+  // 变更（执行中 → 变更终止 + 复制开新版草稿 v+1，source_contract_id 回链）
+  rpc Change (ChangeContractRequest) returns (Contract) {
+    option (google.api.http) = {
+      post: "/admin/v1/contract/contracts/{id}/change"
+      body: "*"
+    };
+  }
+
+  // 终止（执行中 → 已终止，原因必填）
+  rpc Terminate (TerminateContractRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/admin/v1/contract/contracts/{id}/terminate"
+      body: "*"
+    };
+  }
+
+  // 作废（草稿/待审核/执行中 → 已作废，原因必填）
+  rpc Invalidate (InvalidateContractRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/admin/v1/contract/contracts/{id}/invalidate"
+      body: "*"
+    };
+  }
+
+  // 重新拆解费用（执行中可调：删自动生成行后按当前金额/付款方式重拆，手工行保留）
+  rpc DecomposeFees (DecomposeFeesRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/admin/v1/contract/contracts/{id}/decompose-fees"
+      body: "*"
+    };
+  }
+
+  // 费用付款（应付行：待付款 → 已付款）
+  rpc PayFee (PayFeeRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/admin/v1/contract/fees/{id}/pay"
+      body: "*"
+    };
+  }
+
+  // 费用收款（应收行：待收取 → 已收取）
+  rpc ReceiveFee (ReceiveFeeRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/admin/v1/contract/fees/{id}/receive"
+      body: "*"
+    };
+  }
+
+  // 押金退款（押金行：已收付（待退款） → 已退款）
+  rpc RefundFee (RefundFeeRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/admin/v1/contract/fees/{id}/refund"
+      body: "*"
+    };
+  }
+}
+
+// 付款方式 PayMethod / 费用方向 FeeDirection / 付款节点 ContractPayNode /
+// 差异字段 ContractDiffField 均定义于 contract_type.proto（同 package 共享）。
+
+// 合同状态：统一生命周期状态机。
+// 草稿 → 待审核 → 执行中 为正向主干；执行中四条关闭出路
+//（变更/到期/终止），任意非终态可作废。到期关闭仅调度器触发。
+enum ContractStatus {
+  CONTRACT_STATUS_UNSPECIFIED = 0; // 未指定
+  STATUS_DRAFT = 1; // 草稿（待提交：可编辑/删除）
+  STATUS_REVIEWING = 2; // 待审核（已提交锁定）
+  STATUS_EFFECTIVE = 3; // 执行中（已生效：费用已拆解）
+  STATUS_CHANGED = 4; // 变更终止（终态：被新版替代）
+  STATUS_EXPIRED = 5; // 过期终止（终态：到期扫描自动关闭）
+  STATUS_TERMINATED = 6; // 已终止（终态：提前终止）
+  STATUS_INVALIDATED = 7; // 已作废（终态）
+}
+
+// 合同重要性
+enum ContractImportance {
+  IMPORTANCE_UNSPECIFIED = 0; // 未指定（按一般处理）
+  IMPORTANCE_NORMAL = 1; // 一般
+  IMPORTANCE_IMPORTANT = 2; // 重要（列表加标、预警优先）
+}
+
+// 乙方类型（工商主体形态）
+enum PartyBKind {
+  PARTY_B_UNSPECIFIED = 0; // 未指定
+  PARTY_B_ENTERPRISE = 1; // 企业法人
+  PARTY_B_ORG = 2; // 非法人组织
+  PARTY_B_NATURAL = 3; // 自然人
+}
+
+// 费用类别
+enum FeeCategory {
+  FEE_CATEGORY_UNSPECIFIED = 0; // 未指定
+  CATEGORY_INCOME = 1; // 收入（应收合同款）
+  CATEGORY_EXPENSE = 2; // 费用（应付合同款）
+  CATEGORY_DEPOSIT = 3; // 押金（履约保证金，收/退两条腿）
+}
+
+// 费用状态：PENDING 按方向显示待付款/待收取；DONE 显示已付款/已收取
+//（押金行语义为待退款）；REFUNDED 为押金终态。
+enum FeeStatus {
+  FEE_STATUS_UNSPECIFIED = 0; // 未指定
+  FEE_STATUS_PENDING = 1; // 待收付（待付款/待收取）
+  FEE_STATUS_DONE = 2; // 已收付（已付款/已收取；押金=已收付待退款）
+  FEE_STATUS_REFUNDED = 3; // 已退款（押金终态）
+}
+
+// 合同事件动作（时间线）
+enum ContractEventAction {
+  CONTRACT_ACTION_UNSPECIFIED = 0; // 未指定
+  ACTION_CREATE = 1; // 创建
+  ACTION_UPDATE = 2; // 修改（草稿编辑）
+  ACTION_SUBMIT = 3; // 提交
+  ACTION_APPROVE = 4; // 审核通过
+  ACTION_REJECT = 5; // 审核驳回
+  ACTION_CHANGE = 6; // 变更（关旧开新）
+  ACTION_TERMINATE = 7; // 终止
+  ACTION_INVALIDATE = 8; // 作废
+  ACTION_EXPIRE = 9; // 到期关闭（调度器）
+  ACTION_DECOMPOSE = 10; // 重新拆解费用
+  ACTION_FEE_PAY = 11; // 费用付款
+  ACTION_FEE_RECEIVE = 12; // 费用收款
+  ACTION_FEE_REFUND = 13; // 押金退款
+}
+
+// 合同（统一合同底座主实体）
+message Contract {
+  optional uint32 id = 1 [
+    json_name = "id",
+    (gnostic.openapi.v3.property) = { description: "合同ID" }
+  ]; // 合同ID
+
+  optional string contract_no = 2 [
+    json_name = "contractNo",
+    (gnostic.openapi.v3.property) = { description: "合同号：CT- + 8 位零填自增ID（同事务派生）；版本链全链不变" }
+  ]; // 合同号
+
+  // —— 版本链 ——
+  optional uint32 version = 3 [
+    json_name = "version",
+    (gnostic.openapi.v3.property) = { description: "版本号（首版 1，变更开新版 +1）" }
+  ]; // 版本号
+
+  optional uint32 source_contract_id = 4 [
+    json_name = "sourceContractId",
+    (gnostic.openapi.v3.property) = { description: "上一版合同ID（变更链回链）" }
+  ]; // 上一版合同ID
+
+  // —— 类型与快照 ——
+  optional uint32 contract_type_id = 5 [
+    json_name = "contractTypeId",
+    (gnostic.openapi.v3.property) = { description: "合同类型ID（创建时必须为启用叶子节点）" }
+  ]; // 合同类型ID
+
+  optional string contract_type_code = 6 [
+    json_name = "contractTypeCode",
+    (gnostic.openapi.v3.property) = { description: "合同类型编码快照" }
+  ]; // 合同类型编码快照
+
+  optional string contract_type_name = 7 [
+    json_name = "contractTypeName",
+    (gnostic.openapi.v3.property) = { description: "合同类型名称快照" }
+  ]; // 合同类型名称快照
+
+  optional bool requires_approval = 8 [
+    json_name = "requiresApproval",
+    (gnostic.openapi.v3.property) = { description: "是否需审批快照（submit 走向以开立时刻为准）" }
+  ]; // 是否需审批快照
+
+  // —— 状态 ——
+  optional ContractStatus status = 9 [
+    json_name = "status",
+    (gnostic.openapi.v3.property) = { description: "状态（统一生命周期状态机）" }
+  ]; // 状态
+
+  // —— 甲方（我方）信息 ——
+  optional string region = 10 [
+    json_name = "region",
+    (gnostic.openapi.v3.property) = { description: "单位/机构（甲方主体）" }
+  ]; // 单位/机构
+
+  optional string dept = 11 [
+    json_name = "dept",
+    (gnostic.openapi.v3.property) = { description: "经办部门" }
+  ]; // 经办部门
+
+  optional string party_a_contact = 12 [
+    json_name = "partyAContact",
+    (gnostic.openapi.v3.property) = { description: "甲方联系人" }
+  ]; // 甲方联系人
+
+  optional string party_a_phone = 13 [
+    json_name = "partyAPhone",
+    (gnostic.openapi.v3.property) = { description: "甲方联系电话" }
+  ]; // 甲方联系电话
+
+  // —— 乙方信息 ——
+  optional string party_b_name = 14 [
+    json_name = "partyBName",
+    (gnostic.openapi.v3.property) = { description: "乙方名称（必填）" }
+  ]; // 乙方名称
+
+  optional string party_b_credit = 15 [
+    json_name = "partyBCredit",
+    (gnostic.openapi.v3.property) = { description: "乙方统一社会信用代码" }
+  ]; // 乙方统一社会信用代码
+
+  optional PartyBKind party_b_kind = 16 [
+    json_name = "partyBKind",
+    (gnostic.openapi.v3.property) = { description: "乙方类型（企业法人/非法人组织/自然人）" }
+  ]; // 乙方类型
+
+  optional string party_b_legal = 17 [
+    json_name = "partyBLegal",
+    (gnostic.openapi.v3.property) = { description: "乙方法定代表人" }
+  ]; // 乙方法定代表人
+
+  optional string party_b_contact = 18 [
+    json_name = "partyBContact",
+    (gnostic.openapi.v3.property) = { description: "乙方联系人" }
+  ]; // 乙方联系人
+
+  optional string party_b_phone = 19 [
+    json_name = "partyBPhone",
+    (gnostic.openapi.v3.property) = { description: "乙方联系电话" }
+  ]; // 乙方联系电话
+
+  optional string party_b_bank = 20 [
+    json_name = "partyBBank",
+    (gnostic.openapi.v3.property) = { description: "乙方开户行" }
+  ]; // 乙方开户行
+
+  optional string party_b_account = 21 [
+    json_name = "partyBAccount",
+    (gnostic.openapi.v3.property) = { description: "乙方银行账号" }
+  ]; // 乙方银行账号
+
+  optional string party_b_rating = 22 [
+    json_name = "partyBRating",
+    (gnostic.openapi.v3.property) = { description: "乙方信用评级（A/B/C/D 级）" }
+  ]; // 乙方信用评级
+
+  // —— 基本信息 ——
+  optional ContractImportance importance = 23 [
+    json_name = "importance",
+    (gnostic.openapi.v3.property) = { description: "合同重要性（一般/重要）" }
+  ]; // 合同重要性
+
+  optional google.protobuf.Timestamp start_date = 24 [
+    json_name = "startDate",
+    (gnostic.openapi.v3.property) = { description: "合同开始日期（日期语义，零点存储）" }
+  ]; // 合同开始日期
+
+  optional google.protobuf.Timestamp end_date = 25 [
+    json_name = "endDate",
+    (gnostic.openapi.v3.property) = { description: "合同结束日期（到期扫描依据：早于当日零点自动过期）" }
+  ]; // 合同结束日期
+
+  optional double amount = 26 [
+    json_name = "amount",
+    (gnostic.openapi.v3.property) = { description: "合同金额（元，2位小数）" }
+  ]; // 合同金额
+
+  optional uint32 tax_rate = 27 [
+    json_name = "taxRate",
+    (gnostic.openapi.v3.property) = { description: "税率（%，0/1/3/5/6/9/13）" }
+  ]; // 税率
+
+  optional PayMethod pay_method = 28 [
+    json_name = "payMethod",
+    (gnostic.openapi.v3.property) = { description: "付款方式快照（类型默认可覆盖）：决定费用拆解规则" }
+  ]; // 付款方式快照
+
+  optional FeeDirection fee_direction = 29 [
+    json_name = "feeDirection",
+    (gnostic.openapi.v3.property) = { description: "费用方向：应付（我方付款）/应收（我方收款）" }
+  ]; // 费用方向
+
+  optional double deposit = 30 [
+    json_name = "deposit",
+    (gnostic.openapi.v3.property) = { description: "履约保证金金额（元）" }
+  ]; // 履约保证金金额
+
+  // —— 差异字段（schema 快照定型 + 用户填值）——
+  repeated ContractDiffField diff_schema = 31 [
+    json_name = "diffSchema",
+    (gnostic.openapi.v3.property) = { description: "差异字段定义快照（创建时从类型解析落库，表单按此定型）" }
+  ]; // 差异字段定义快照
+
+  map<string, string> diff_values = 32 [
+    json_name = "diffValues",
+    (gnostic.openapi.v3.property) = { description: "差异字段填值 {key:value}" }
+  ]; // 差异字段填值
+
+  // —— 付款节点快照（PAY_NODE/PAY_PROGRESS 拆解比例，拆解以快照为准）——
+  repeated ContractPayNode pay_nodes = 39 [
+    json_name = "payNodes",
+    (gnostic.openapi.v3.property) = { description: "付款节点模板快照：按节点/进度付款的拆解比例（创建时从类型解析落库）" }
+  ]; // 付款节点模板快照
+
+  // —— 附件 ——
+  repeated string attachments = 33 [
+    json_name = "attachments",
+    (gnostic.openapi.v3.property) = { description: "附件URL列表（必备清单由类型 required_attachments 提示）" }
+  ]; // 附件URL列表
+
+  // —— 审核与关闭 ——
+  optional uint32 reviewer_id = 34 [
+    json_name = "reviewerId",
+    (gnostic.openapi.v3.property) = { description: "审核人用户ID（通过/驳回动作人）" }
+  ]; // 审核人用户ID
+
+  optional google.protobuf.Timestamp reviewed_at = 35 [
+    json_name = "reviewedAt",
+    (gnostic.openapi.v3.property) = { description: "审核时间（通过或驳回）" }
+  ]; // 审核时间
+
+  optional string review_note = 36 [
+    json_name = "reviewNote",
+    (gnostic.openapi.v3.property) = { description: "审核意见（驳回原因）" }
+  ]; // 审核意见
+
+  optional string terminate_reason = 37 [
+    json_name = "terminateReason",
+    (gnostic.openapi.v3.property) = { description: "终止/作废原因（变更关闭自动生成「变更至 vN」）" }
+  ]; // 终止/作废原因
+
+  optional string remark = 38 [
+    json_name = "remark",
+    (gnostic.openapi.v3.property) = { description: "备注" }
+  ]; // 备注
+
+  optional uint32 created_by = 100 [json_name = "createdBy", (gnostic.openapi.v3.property) = {description: "创建者ID（录入人）"}]; // 创建者ID
+  optional uint32 updated_by = 101 [json_name = "updatedBy", (gnostic.openapi.v3.property) = {description: "更新者ID（修改人）"}]; // 更新者ID
+  optional uint32 deleted_by = 102 [json_name = "deletedBy", (gnostic.openapi.v3.property) = {description: "删除者用户ID"}]; // 删除者用户ID
+
+  optional google.protobuf.Timestamp created_at = 200 [json_name = "createdAt", (gnostic.openapi.v3.property) = {description: "创建时间"}];// 创建时间
+  optional google.protobuf.Timestamp updated_at = 201 [json_name = "updatedAt", (gnostic.openapi.v3.property) = {description: "更新时间"}];// 更新时间
+  optional google.protobuf.Timestamp deleted_at = 202 [json_name = "deletedAt", (gnostic.openapi.v3.property) = {description: "删除时间"}];// 删除时间
+}
+
+// 合同费用明细（拆解生成的应收/应付/押金行）
+message ContractFee {
+  optional uint32 id = 1 [
+    json_name = "id",
+    (gnostic.openapi.v3.property) = { description: "费用行ID" }
+  ]; // 费用行ID
+
+  optional uint32 contract_id = 2 [
+    json_name = "contractId",
+    (gnostic.openapi.v3.property) = { description: "所属合同ID" }
+  ]; // 所属合同ID
+
+  optional string name = 3 [
+    json_name = "name",
+    (gnostic.openapi.v3.property) = { description: "费用名称（合同款/首期/基础节点/履约保证金…）" }
+  ]; // 费用名称
+
+  optional FeeCategory category = 4 [
+    json_name = "category",
+    (gnostic.openapi.v3.property) = { description: "费用类别（收入/费用/押金）" }
+  ]; // 费用类别
+
+  optional FeeDirection direction = 5 [
+    json_name = "direction",
+    (gnostic.openapi.v3.property) = { description: "费用方向（应收/应付，生成时按合同费用方向定）" }
+  ]; // 费用方向
+
+  optional FeeStatus status = 6 [
+    json_name = "status",
+    (gnostic.openapi.v3.property) = { description: "状态（待收付→已收付；押金行可再退款）" }
+  ]; // 状态
+
+  optional double amount = 7 [
+    json_name = "amount",
+    (gnostic.openapi.v3.property) = { description: "金额（元，2位小数）" }
+  ]; // 金额
+
+  optional google.protobuf.Timestamp plan_date = 8 [
+    json_name = "planDate",
+    (gnostic.openapi.v3.property) = { description: "计划收付日期（节点付款行空，履约时补）" }
+  ]; // 计划收付日期
+
+  optional google.protobuf.Timestamp actual_date = 9 [
+    json_name = "actualDate",
+    (gnostic.openapi.v3.property) = { description: "实际收付日期（付款/收款动作时间）" }
+  ]; // 实际收付日期
+
+  optional bool auto_generated = 10 [
+    json_name = "autoGenerated",
+    (gnostic.openapi.v3.property) = { description: "是否拆解自动生成（重新拆解只删自动行，手工行保留）" }
+  ]; // 是否拆解自动生成
+
+  optional string remark = 11 [
+    json_name = "remark",
+    (gnostic.openapi.v3.property) = { description: "备注" }
+  ]; // 备注
+
+  optional uint32 created_by = 100 [json_name = "createdBy", (gnostic.openapi.v3.property) = {description: "创建者ID"}]; // 创建者ID
+
+  optional google.protobuf.Timestamp created_at = 200 [json_name = "createdAt", (gnostic.openapi.v3.property) = {description: "创建时间"}];// 创建时间
+}
+
+// 合同事件（时间线：动作 + 状态迁移 + 备注，按时间倒序即跟进记录）
+message ContractEvent {
+  optional uint32 id = 1 [
+    json_name = "id",
+    (gnostic.openapi.v3.property) = { description: "事件ID" }
+  ]; // 事件ID
+
+  optional uint32 contract_id = 2 [
+    json_name = "contractId",
+    (gnostic.openapi.v3.property) = { description: "所属合同ID" }
+  ]; // 所属合同ID
+
+  optional ContractEventAction action = 3 [
+    json_name = "action",
+    (gnostic.openapi.v3.property) = { description: "动作类型" }
+  ]; // 动作类型
+
+  optional string status_from = 4 [
+    json_name = "statusFrom",
+    (gnostic.openapi.v3.property) = { description: "动作前状态（创建为空）" }
+  ]; // 动作前状态
+
+  optional string status_to = 5 [
+    json_name = "statusTo",
+    (gnostic.openapi.v3.property) = { description: "动作后状态（非状态动作为空）" }
+  ]; // 动作后状态
+
+  optional string note = 6 [
+    json_name = "note",
+    (gnostic.openapi.v3.property) = { description: "动作备注（驳回原因/变更说明/终止原因等）" }
+  ]; // 动作备注
+
+  optional uint32 created_by = 100 [json_name = "createdBy", (gnostic.openapi.v3.property) = {description: "操作人ID（系统动作为系统上下文）"}]; // 操作人ID
+
+  optional google.protobuf.Timestamp created_at = 200 [json_name = "createdAt", (gnostic.openapi.v3.property) = {description: "动作时间"}];// 动作时间
+}
+
+// 查询合同列表 - 回应
+message ListContractsResponse {
+  repeated Contract items = 1;
+  uint64 total = 2;
+}
+
+// 查询合同详情 - 请求
+message GetContractRequest {
+  oneof query_by {
+    uint32 id = 1 [
+      (gnostic.openapi.v3.property) = {description: "ID", read_only: true},
+      json_name = "id"
+    ]; // ID
+  }
+
+  optional google.protobuf.FieldMask view_mask = 100 [
+    json_name = "viewMask",
+    (gnostic.openapi.v3.property) = {
+      description: "视图字段过滤器，用于控制返回的字段"
+    }
+  ]; // 视图字段过滤器
+}
+
+// 创建合同 - 请求（CRUD 包 data；快照字段由服务端解析落库；pay_method/
+// fee_direction/diff_values 接受用户覆写，其余快照字段忽略请求指定）
+message CreateContractRequest {
+  Contract data = 1;
+}
+
+// 更新合同 - 请求（仅草稿可改）
+message UpdateContractRequest {
+  uint32 id = 1;
+
+  Contract data = 2;
+
+  google.protobuf.FieldMask update_mask = 3 [
+    (gnostic.openapi.v3.property) = {
+      description: "要更新的字段列表",
+      example: {yaml : "id,partyBName,amount,startDate"}
+    },
+    json_name = "updateMask"
+  ]; // 要更新的字段列表
+
+  optional bool allow_missing = 4 [
+    (gnostic.openapi.v3.property) = {description: "如果设置为true的时候，资源不存在则会新增(插入)，并且在这种情况下`updateMask`字段将会被忽略。"},
+    json_name = "allowMissing"
+  ]; // 资源不存在时是否新增
+}
+
+// 删除合同 - 请求
+message DeleteContractRequest {
+  oneof query_by {
+    uint32 id = 1 [
+      (gnostic.openapi.v3.property) = {description: "ID", read_only: true},
+      json_name = "id"
+    ]; // ID
+  }
+}
+
+// 查询合同事件 - 请求/回应
+message ListContractEventsRequest {
+  uint32 id = 1 [
+    (gnostic.openapi.v3.property) = {description: "合同ID", read_only: true},
+    json_name = "id"
+  ]; // 合同ID
+}
+
+message ListContractEventsResponse {
+  repeated ContractEvent items = 1;
+  uint64 total = 2;
+}
+
+// 查询合同费用明细 - 请求/回应
+message ListContractFeesRequest {
+  uint32 id = 1 [
+    (gnostic.openapi.v3.property) = {description: "合同ID", read_only: true},
+    json_name = "id"
+  ]; // 合同ID
+}
+
+message ListContractFeesResponse {
+  repeated ContractFee items = 1;
+  uint64 total = 2;
+}
+
+// 提交 - 请求（扁平 body）
+message SubmitContractRequest {
+  uint32 id = 1 [
+    (gnostic.openapi.v3.property) = {description: "合同ID", read_only: true},
+    json_name = "id"
+  ]; // 合同ID
+
+  optional string note = 2 [
+    json_name = "note",
+    (gnostic.openapi.v3.property) = { description: "提交附言" }
+  ]; // 提交附言
+}
+
+// 审核 - 请求（passed=false 驳回回草稿，原因必填）
+message ApproveContractRequest {
+  uint32 id = 1 [
+    (gnostic.openapi.v3.property) = {description: "合同ID", read_only: true},
+    json_name = "id"
+  ]; // 合同ID
+
+  bool passed = 2 [
+    json_name = "passed",
+    (gnostic.openapi.v3.property) = { description: "是否通过（false = 驳回回草稿）" }
+  ]; // 是否通过
+
+  optional string note = 3 [
+    json_name = "note",
+    (gnostic.openapi.v3.property) = { description: "审核意见（驳回时必填）" }
+  ]; // 审核意见
+}
+
+// 变更 - 请求（执行中 → 变更终止 + 复制开新版草稿 v+1；返回新版）
+message ChangeContractRequest {
+  uint32 id = 1 [
+    (gnostic.openapi.v3.property) = {description: "合同ID", read_only: true},
+    json_name = "id"
+  ]; // 合同ID
+
+  optional string note = 2 [
+    json_name = "note",
+    (gnostic.openapi.v3.property) = { description: "变更说明（落旧版关闭事件）" }
+  ]; // 变更说明
+}
+
+// 终止 - 请求
+message TerminateContractRequest {
+  uint32 id = 1 [
+    (gnostic.openapi.v3.property) = {description: "合同ID", read_only: true},
+    json_name = "id"
+  ]; // 合同ID
+
+  string reason = 2 [
+    json_name = "reason",
+    (gnostic.openapi.v3.property) = { description: "终止原因（必填）" }
+  ]; // 终止原因
+}
+
+// 作废 - 请求
+message InvalidateContractRequest {
+  uint32 id = 1 [
+    (gnostic.openapi.v3.property) = {description: "合同ID", read_only: true},
+    json_name = "id"
+  ]; // 合同ID
+
+  string reason = 2 [
+    json_name = "reason",
+    (gnostic.openapi.v3.property) = { description: "作废原因（必填）" }
+  ]; // 作废原因
+}
+
+// 重新拆解费用 - 请求（执行中可调；删自动行重拆，手工行保留）
+message DecomposeFeesRequest {
+  uint32 id = 1 [
+    (gnostic.openapi.v3.property) = {description: "合同ID", read_only: true},
+    json_name = "id"
+  ]; // 合同ID
+
+  optional string note = 2 [
+    json_name = "note",
+    (gnostic.openapi.v3.property) = { description: "拆解附言（落事件）" }
+  ]; // 拆解附言
+}
+
+// 费用付款 - 请求（应付行：待付款 → 已付款）
+message PayFeeRequest {
+  uint32 id = 1 [
+    (gnostic.openapi.v3.property) = {description: "费用行ID", read_only: true},
+    json_name = "id"
+  ]; // 费用行ID
+
+  optional google.protobuf.Timestamp actual_date = 2 [
+    json_name = "actualDate",
+    (gnostic.openapi.v3.property) = { description: "实际付款日期（缺省=当天）" }
+  ]; // 实际付款日期
+
+  optional string note = 3 [
+    json_name = "note",
+    (gnostic.openapi.v3.property) = { description: "付款附言" }
+  ]; // 付款附言
+}
+
+// 费用收款 - 请求（应收行：待收取 → 已收取）
+message ReceiveFeeRequest {
+  uint32 id = 1 [
+    (gnostic.openapi.v3.property) = {description: "费用行ID", read_only: true},
+    json_name = "id"
+  ]; // 费用行ID
+
+  optional google.protobuf.Timestamp actual_date = 2 [
+    json_name = "actualDate",
+    (gnostic.openapi.v3.property) = { description: "实际收款日期（缺省=当天）" }
+  ]; // 实际收款日期
+
+  optional string note = 3 [
+    json_name = "note",
+    (gnostic.openapi.v3.property) = { description: "收款附言" }
+  ]; // 收款附言
+}
+
+// 押金退款 - 请求（押金行：已收付（待退款） → 已退款）
+message RefundFeeRequest {
+  uint32 id = 1 [
+    (gnostic.openapi.v3.property) = {description: "费用行ID", read_only: true},
+    json_name = "id"
+  ]; // 费用行ID
+
+  optional google.protobuf.Timestamp actual_date = 2 [
+    json_name = "actualDate",
+    (gnostic.openapi.v3.property) = { description: "实际退款日期（缺省=当天）" }
+  ]; // 实际退款日期
+
+  optional string note = 3 [
+    json_name = "note",
+    (gnostic.openapi.v3.property) = { description: "退款附言" }
+  ]; // 退款附言
+}

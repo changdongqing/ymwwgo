@@ -1,0 +1,62 @@
+syntax = "proto3";
+
+package admin.service.v1;
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+
+import "pagination/v1/pagination.proto";
+
+import "contract/service/v1/contract_type.proto";
+
+// 合同类型管理服务（admin 门面）
+//
+// 源领域 proto 在 contract/service/v1（独立 Go module go-wind-admin/contract 拥有
+// 自己的同名生成包 contractv1）；本门面只挂 HTTP 路由，消息类型直接引用源领域，
+// 生成时 contract/service/v1 的 go_package 被指到 module 的 gen 包，因此本服务
+// 生成的 HTTP 接口与 module 内 service 的方法签名完全一致，可直接注册。
+service ContractTypeService {
+  // 查询合同类型列表
+  rpc List (pagination.PagingRequest) returns (contract.service.v1.ListContractTypesResponse) {
+    option (google.api.http) = {
+      get: "/admin/v1/contract/types"
+    };
+  }
+
+  // 查询合同类型详情
+  rpc Get (contract.service.v1.GetContractTypeRequest) returns (contract.service.v1.ContractType) {
+    option (google.api.http) = {
+      get: "/admin/v1/contract/types/{id}"
+    };
+  }
+
+  // 创建合同类型
+  rpc Create (contract.service.v1.CreateContractTypeRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/admin/v1/contract/types"
+      body: "*"
+    };
+  }
+
+  // 更新合同类型
+  rpc Update (contract.service.v1.UpdateContractTypeRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      put: "/admin/v1/contract/types/{id}"
+      body: "*"
+    };
+  }
+
+  // 删除合同类型
+  rpc Delete (contract.service.v1.DeleteContractTypeRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete: "/admin/v1/contract/types/{id}"
+    };
+  }
+
+  // 查询生效合同配置（细类→大类回退解析）
+  rpc GetEffectiveConfig (contract.service.v1.GetEffectiveContractConfigRequest) returns (contract.service.v1.EffectiveContractConfig) {
+    option (google.api.http) = {
+      get: "/admin/v1/contract/types/{id}/effective-config"
+    };
+  }
+}

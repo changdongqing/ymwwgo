@@ -336,6 +336,10 @@ func ComponentToModule(component string) identityV1.Module {
 		// 一站式服务（独立 Go module）：当前均为平台级全局数据，暂挂 SYSTEM
 		// （前缀实长 12 字符，曾误写 11 致前缀永不命中——component_module_test 暴露）
 		return identityV1.Module_SYSTEM
+	case len(component) >= 13 && component[:13] == "app/contract/":
+		// 合同管理（独立 Go module go-wind-admin/contract）：类型字典平台级、
+		// 合同租户业务数据，与 module_mapping 的 Contract*Service 挂 SYSTEM 同口径
+		return identityV1.Module_SYSTEM
 	case len(component) >= 13 && component[:13] == "app/ontology/":
 		// 本体建模（ont_* 四表）：平台级共享知识资产，与 module_mapping 的
 		// Ontology*Service 挂 SYSTEM 同口径
@@ -1370,6 +1374,59 @@ var DefaultMenus = []*permissionV1.Menu{
 			Icon:      trans.Ptr("lucide:filter"),
 			Order:     trans.Ptr(int32(6)),
 			Authority: []string{"sys:platform_admin"},
+		},
+	},
+	{
+		// 合同管理（独立 Go module go-wind-admin/contract）：目录。
+		// 类型字典是平台级配置，合同是租户业务数据（菜单按子项角色收权，
+		// 与 onestop 同 rationale；docs/connn/contract-type-and-contract-design.md）。
+		Id:        trans.Ptr(uint32(120)),
+		ParentId:  nil,
+		Type:      permissionV1.Menu_CATALOG.Enum(),
+		Name:      trans.Ptr("Contract"),
+		Path:      trans.Ptr("/contract"),
+		Redirect:  trans.Ptr("/contract/list"),
+		Component: trans.Ptr("BasicLayout"),
+		Status:    permissionV1.Menu_ON.Enum(),
+		CreatedAt: timeutil.TimeToTimestamppb(trans.Ptr(time.Now())),
+		Meta: &permissionV1.MenuMeta{
+			Order:     trans.Ptr(int32(23)),
+			Title:     trans.Ptr("menu.contract.title"),
+			Icon:      trans.Ptr("lucide:file-signature"),
+			Authority: []string{"sys:platform_admin", "sys:tenant_manager"},
+		},
+	},
+	{
+		// 合同类型：二级分类字典（大类/细类）+ 统一合同配置模板，平台管理员专属
+		Id:        trans.Ptr(uint32(121)),
+		ParentId:  trans.Ptr(uint32(120)),
+		Type:      permissionV1.Menu_MENU.Enum(),
+		Name:      trans.Ptr("ContractTypes"),
+		Path:      trans.Ptr("types"),
+		Component: trans.Ptr("app/contract/type/index"),
+		CreatedAt: timeutil.TimeToTimestamppb(trans.Ptr(time.Now())),
+		Meta: &permissionV1.MenuMeta{
+			Title:     trans.Ptr("menu.contract.types"),
+			Icon:      trans.Ptr("lucide:layout-list"),
+			Order:     trans.Ptr(int32(1)),
+			Authority: []string{"sys:platform_admin"},
+		},
+	},
+	{
+		// 合同列表：统一合同底座（生命周期状态机 + 费用明细 + 事件时间线），
+		// 租户业务数据，租户管理员可用（已部署库走「菜单同步」补挂）
+		Id:        trans.Ptr(uint32(122)),
+		ParentId:  trans.Ptr(uint32(120)),
+		Type:      permissionV1.Menu_MENU.Enum(),
+		Name:      trans.Ptr("ContractList"),
+		Path:      trans.Ptr("list"),
+		Component: trans.Ptr("app/contract/list/index"),
+		CreatedAt: timeutil.TimeToTimestamppb(trans.Ptr(time.Now())),
+		Meta: &permissionV1.MenuMeta{
+			Title:     trans.Ptr("menu.contract.list"),
+			Icon:      trans.Ptr("lucide:clipboard-list"),
+			Order:     trans.Ptr(int32(2)),
+			Authority: []string{"sys:platform_admin", "sys:tenant_manager"},
 		},
 	},
 	{

@@ -15,6 +15,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import {
   type onestopservicev1_Level,
   type onestopservicev1_ServiceType,
+  type onestopservicev1_TriggerMode,
 } from '@/api/generated/admin/service/v1';
 import { PaginationQuery } from '@/core';
 import { fetchListServiceTypes, useCreateServiceType, useUpdateServiceType } from '@/api/hooks/onestop';
@@ -71,7 +72,7 @@ export default function ServiceTypeForm({ mode, data, onSaved, onCancel }: Servi
   // 监听编码输入：驱动层级展示与上级候选
   const watchedCode = Form.useWatch('code', form) as string | undefined;
   // 监听触发方式：新建态驱动「保存后可配置周期计划」提示
-  const watchedTriggerMode = Form.useWatch('triggerMode', form) as string | undefined;
+  const watchedTriggerMode = Form.useWatch('triggerMode', form) as onestopservicev1_TriggerMode | undefined;
   const watchedOrderKind = Form.useWatch('orderKind', form) as string | undefined;
 
   // 全量平铺列表：用于构建"上级服务类型"候选与触发方式继承解析
@@ -370,7 +371,7 @@ export default function ServiceTypeForm({ mode, data, onSaved, onCancel }: Servi
               placeholder={t('orderKindPlaceholder')}
               extra={
                 mode === 'edit' && !data?.orderKind
-                  ? t('orderKindInheritExtra', { kind: orderKindName(resolvedOrderKind) })
+                  ? t('orderKindInheritExtra', { kind: orderKindName(resolvedOrderKind as import('../constants').OrderKindValue) })
                   : t('orderKindExtra')
               }
             />

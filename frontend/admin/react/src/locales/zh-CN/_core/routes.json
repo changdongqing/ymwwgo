@@ -147,6 +147,11 @@
     },
     "onestop": {
       "workOrders": "工单管理"
+    },
+    "contract": {
+      "title": "合同管理",
+      "types": "合同类型",
+      "list": "合同列表"
     }
   },
   "page": {
@@ -164,5 +169,8 @@
   "annotation-properties": "注解属性",
   "datatypes": "数据类型",
   "individuals": "个体",
-  "onestop-work-orders": "工单管理"
+  "onestop-work-orders": "工单管理",
+  "contract": "合同管理",
+  "contract-types": "合同类型",
+  "contract-list": "合同列表"
 }

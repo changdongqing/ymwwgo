@@ -80,6 +80,12 @@ var ServiceTagToBusinessModule = map[string]identityV1.Module{
 	"OneStopTransportRouteService": identityV1.Module_SYSTEM,
 	"OneStopWorkOrderService":      identityV1.Module_SYSTEM,
 
+	// 合同管理（独立 Go module go-wind-admin/contract）。类型字典是平台级全局
+	// 字典、合同是租户业务数据，均暂挂 SYSTEM 模块（菜单侧按角色收权，与
+	// onestop 同 rationale）。
+	"ContractTypeService": identityV1.Module_SYSTEM,
+	"ContractService":     identityV1.Module_SYSTEM,
+
 	// 本体建模（ont_* 四表）：平台级共享知识资产，暂挂 SYSTEM 模块
 	// （菜单侧以 sys:platform_admin 收权，与 onestop 同 rationale）。
 	"OntologyService":                   identityV1.Module_SYSTEM,

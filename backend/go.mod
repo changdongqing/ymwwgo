@@ -71,6 +71,7 @@ require (
 	github.com/tx7do/kratos-transport/transport/sse v1.3.8
 	github.com/xuri/excelize/v2 v2.9.1
 	github.com/yuin/gopher-lua v1.1.2
+	go-wind-admin/contract v0.0.0
 	go-wind-admin/onestop v0.0.0
 	go.opentelemetry.io/otel/trace v1.47.0
 	google.golang.org/genproto v0.0.0-20260908043556-f8649ddbbfe6
@@ -84,6 +85,10 @@ require (
 
 // 一站式服务业务域：独立 Go module（backend/onestop/），由 admin 服务本地引入装配
 replace go-wind-admin/onestop => ./onestop
+
+// 合同管理业务域：独立 Go module（backend/contract/），由 admin 服务本地引入装配
+// （与 onestop 同款：类型字典 + 合同底座，docs/connn/contract-type-and-contract-design.md）
+replace go-wind-admin/contract => ./contract
 
 require (
 	github.com/mfridman/interpolate v0.0.2 // indirect

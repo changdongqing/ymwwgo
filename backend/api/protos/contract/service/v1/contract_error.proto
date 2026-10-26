@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package contract.service.v1;
+
+import "errors/errors.proto";
+
+// 合同管理错误定义
+enum ContractErrorReason {
+  option (errors.default_code) = 500;
+
+  // 400
+  BAD_REQUEST = 0 [(errors.code) = 400]; // 错误请求
+
+  // 401
+  UNAUTHORIZED = 100 [(errors.code) = 401]; // 未授权
+
+  // 403
+  FORBIDDEN = 300 [(errors.code) = 403]; // 禁止访问
+
+  // 404
+  NOT_FOUND = 400 [(errors.code) = 404]; // 找不到资源
+
+  // 409
+  CONFLICT = 900 [(errors.code) = 409]; // 冲突（编码重复、存在子级、状态不允许的操作、并发转移失败）
+
+  // 422
+  UNPROCESSABLE_ENTITY = 1100 [(errors.code) = 422]; // 不可处理的实体（编码与层级不匹配、必填缺失、比例非法）
+
+  // 500
+  INTERNAL_SERVER_ERROR = 2000 [(errors.code) = 500]; // 内部服务器错误
+}

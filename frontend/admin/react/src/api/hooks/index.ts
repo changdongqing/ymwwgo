@@ -93,3 +93,6 @@ export * from './ai-content';
 
 // 一站式服务
 export * from './onestop';
+
+// 合同管理
+export * from './contract';

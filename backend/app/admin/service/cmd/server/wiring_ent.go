@@ -20,6 +20,9 @@ import (
 	onestopData "go-wind-admin/onestop/data"
 	onestopService "go-wind-admin/onestop/service"
 
+	contractData "go-wind-admin/contract/data"
+	contractService "go-wind-admin/contract/service"
+
 	"go-wind-admin/pkg/middleware/auth"
 )
 
@@ -238,6 +241,34 @@ func initApp(ctx *bootstrap.Context) (*kratos.App, func(), error) {
 		return operator.UserId, nil
 	})
 
+	// 合同管理（独立 Go module go-wind-admin/contract）：类型字典 + 统一合同底座
+	//（docs/connn/contract-type-and-contract-design.md，与 onestop 同款接线）。
+	// 独立 ent 客户端 + 仓储 + 服务；operator 提取由宿主注入；结构迁移走 goose 链。
+	contractEntClient, cleanupContractEnt, err := contractData.NewEntClient(ctx)
+	if err != nil {
+		rollback()
+		return nil, nil, err
+	}
+	cleanups = append(cleanups, cleanupContractEnt)
+	contractRepo := contractData.NewContractRepo(ctx, contractEntClient)
+	contractTypeRepo := contractData.NewContractTypeRepo(ctx, contractEntClient)
+	// 类型服务先构造：其构造函数按空表守卫播种内置类型字典（合同创建按编码解析类型）
+	contractTypeService := contractService.NewContractTypeService(ctx, contractTypeRepo, contractRepo, func(ctx context.Context) (uint32, error) {
+		operator, err := auth.FromContext(ctx)
+		if err != nil {
+			return 0, err
+		}
+		return operator.UserId, nil
+	})
+	// 合同（统一合同底座）：依赖类型仓储（创建快照解析 + 叶子/启停守卫）
+	contractSvc := contractService.NewContractService(ctx, contractRepo, contractTypeRepo, func(ctx context.Context) (uint32, error) {
+		operator, err := auth.FromContext(ctx)
+		if err != nil {
+			return 0, err
+		}
+		return operator.UserId, nil
+	})
+
 	// 通知投递：渠道注册表（EMAIL / WEBHOOK / SMS / INTERNAL）→ NotificationService → 各业务 service 只拿 Notifier。
 	// 注册顺序即装配位置：新增一种渠道 = 在这里多 Register 一个 Sender，业务调用方不动。
 	// 路由（事件 → 渠道 + 同步/异步）读 sys_notification_rules，不在这里登记，见 resolveRoute。
@@ -438,13 +469,15 @@ func initApp(ctx *bootstrap.Context) (*kratos.App, func(), error) {
 		oneStopPeriodicPlanService,
 		oneStopTransportRouteService,
 		oneStopWorkOrderService,
+		contractTypeService,
+		contractSvc,
 	)
 	if err != nil {
 		rollback()
 		return nil, nil, err
 	}
 
-	asynqServer, err := server.NewAsynqServer(ctx, taskService, internalMessageService, notificationService, monitorAlertService, scriptRuntime, aiKnowledgeService, auditDigestService, planQuotaWatermarkService, oneStopWorkOrderService)
+	asynqServer, err := server.NewAsynqServer(ctx, taskService, internalMessageService, notificationService, monitorAlertService, scriptRuntime, aiKnowledgeService, auditDigestService, planQuotaWatermarkService, oneStopWorkOrderService, contractSvc)
 	if err != nil {
 		rollback()
 		return nil, nil, err

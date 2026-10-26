@@ -43,14 +43,14 @@ type OneStopPeriodicPlanServiceHTTPServer interface {
 
 func RegisterOneStopPeriodicPlanServiceHTTPServer(s *http.Server, srv OneStopPeriodicPlanServiceHTTPServer) {
 	r := s.Route("/")
-	r.GET("/admin/v1/onestop/periodic-plans", _OneStopPeriodicPlanService_List19_HTTP_Handler(srv))
-	r.GET("/admin/v1/onestop/periodic-plans/{id}", _OneStopPeriodicPlanService_Get17_HTTP_Handler(srv))
-	r.POST("/admin/v1/onestop/periodic-plans", _OneStopPeriodicPlanService_Create13_HTTP_Handler(srv))
-	r.PUT("/admin/v1/onestop/periodic-plans/{id}", _OneStopPeriodicPlanService_Update14_HTTP_Handler(srv))
-	r.DELETE("/admin/v1/onestop/periodic-plans/{id}", _OneStopPeriodicPlanService_Delete15_HTTP_Handler(srv))
+	r.GET("/admin/v1/onestop/periodic-plans", _OneStopPeriodicPlanService_List21_HTTP_Handler(srv))
+	r.GET("/admin/v1/onestop/periodic-plans/{id}", _OneStopPeriodicPlanService_Get19_HTTP_Handler(srv))
+	r.POST("/admin/v1/onestop/periodic-plans", _OneStopPeriodicPlanService_Create15_HTTP_Handler(srv))
+	r.PUT("/admin/v1/onestop/periodic-plans/{id}", _OneStopPeriodicPlanService_Update16_HTTP_Handler(srv))
+	r.DELETE("/admin/v1/onestop/periodic-plans/{id}", _OneStopPeriodicPlanService_Delete17_HTTP_Handler(srv))
 }
 
-func _OneStopPeriodicPlanService_List19_HTTP_Handler(srv OneStopPeriodicPlanServiceHTTPServer) func(ctx http.Context) error {
+func _OneStopPeriodicPlanService_List21_HTTP_Handler(srv OneStopPeriodicPlanServiceHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in v1.PagingRequest
 		if err := ctx.BindQuery(&in); err != nil {
@@ -69,7 +69,7 @@ func _OneStopPeriodicPlanService_List19_HTTP_Handler(srv OneStopPeriodicPlanServ
 	}
 }
 
-func _OneStopPeriodicPlanService_Get17_HTTP_Handler(srv OneStopPeriodicPlanServiceHTTPServer) func(ctx http.Context) error {
+func _OneStopPeriodicPlanService_Get19_HTTP_Handler(srv OneStopPeriodicPlanServiceHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in v11.GetPeriodicPlanRequest
 		if err := ctx.BindQuery(&in); err != nil {
@@ -91,7 +91,7 @@ func _OneStopPeriodicPlanService_Get17_HTTP_Handler(srv OneStopPeriodicPlanServi
 	}
 }
 
-func _OneStopPeriodicPlanService_Create13_HTTP_Handler(srv OneStopPeriodicPlanServiceHTTPServer) func(ctx http.Context) error {
+func _OneStopPeriodicPlanService_Create15_HTTP_Handler(srv OneStopPeriodicPlanServiceHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in v11.CreatePeriodicPlanRequest
 		if err := ctx.Bind(&in); err != nil {
@@ -113,7 +113,7 @@ func _OneStopPeriodicPlanService_Create13_HTTP_Handler(srv OneStopPeriodicPlanSe
 	}
 }
 
-func _OneStopPeriodicPlanService_Update14_HTTP_Handler(srv OneStopPeriodicPlanServiceHTTPServer) func(ctx http.Context) error {
+func _OneStopPeriodicPlanService_Update16_HTTP_Handler(srv OneStopPeriodicPlanServiceHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in v11.UpdatePeriodicPlanRequest
 		if err := ctx.Bind(&in); err != nil {
@@ -138,7 +138,7 @@ func _OneStopPeriodicPlanService_Update14_HTTP_Handler(srv OneStopPeriodicPlanSe
 	}
 }
 
-func _OneStopPeriodicPlanService_Delete15_HTTP_Handler(srv OneStopPeriodicPlanServiceHTTPServer) func(ctx http.Context) error {
+func _OneStopPeriodicPlanService_Delete17_HTTP_Handler(srv OneStopPeriodicPlanServiceHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in v11.DeletePeriodicPlanRequest
 		if err := ctx.BindQuery(&in); err != nil {

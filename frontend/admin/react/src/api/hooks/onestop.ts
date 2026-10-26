@@ -7,6 +7,8 @@ import {
   type onestopservicev1_ListPeriodicPlansResponse,
   type onestopservicev1_ListServiceTypeResponse,
   type onestopservicev1_ListTransportRoutesResponse,
+  type onestopservicev1_ListWorkOrderEventsResponse,
+  type onestopservicev1_ListWorkOrderItemsResponse,
   type onestopservicev1_PeriodicPlan,
   type onestopservicev1_ServiceType,
   type onestopservicev1_TransportRoute,
@@ -237,8 +239,6 @@ import {
   type onestopservicev1_UrgeWorkOrderRequest,
   type onestopservicev1_VerifyWorkOrderRequest,
   type onestopservicev1_WorkOrder,
-  type onestopservicev1_WorkOrderEvent,
-  type onestopservicev1_WorkOrderItem,
 } from '@/api/generated/admin/service/v1';
 
 export const WORK_ORDERS_QUERY_KEY = 'listWorkOrders';
@@ -280,7 +280,7 @@ export function useGetWorkOrder(
 /** 工单时间线（倒序） */
 export function useListWorkOrderEvents(
   id: number | undefined,
-  options?: Omit<UseQueryOptions<{ items: onestopservicev1_WorkOrderEvent[] }, Error>, 'queryKey' | 'queryFn'>,
+  options?: Omit<UseQueryOptions<onestopservicev1_ListWorkOrderEventsResponse, Error>, 'queryKey' | 'queryFn'>,
 ) {
   return useQuery({
     queryKey: ['listWorkOrderEvents', id],
@@ -293,7 +293,7 @@ export function useListWorkOrderEvents(
 /** 工单执行项 */
 export function useListWorkOrderItems(
   id: number | undefined,
-  options?: Omit<UseQueryOptions<{ items: onestopservicev1_WorkOrderItem[] }, Error>, 'queryKey' | 'queryFn'>,
+  options?: Omit<UseQueryOptions<onestopservicev1_ListWorkOrderItemsResponse, Error>, 'queryKey' | 'queryFn'>,
 ) {
   return useQuery({
     queryKey: ['listWorkOrderItems', id],

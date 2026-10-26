@@ -30,6 +30,9 @@ import (
 
 	onestopent "go-wind-admin/onestop/data/ent"
 	onestopentmigrate "go-wind-admin/onestop/data/ent/migrate"
+
+	contractent "go-wind-admin/contract/data/ent"
+	contractentmigrate "go-wind-admin/contract/data/ent/migrate"
 )
 
 const usage = `migrate <command> [flags]
@@ -150,5 +153,13 @@ func automigrateEnt(ctx context.Context, db *sql.DB) error {
 	// 无跨模块外键，先后顺序无关）；goose 侧的对应表在 000NN_onestop_*.sql。
 	oneStopDrv := entsql.OpenDB("postgres", db)
 	oneStopClient := onestopent.NewClient(onestopent.Driver(oneStopDrv))
-	return oneStopClient.Schema.Create(ctx, onestopentmigrate.WithForeignKeys(true))
+	if err := oneStopClient.Schema.Create(ctx, onestopentmigrate.WithForeignKeys(true)); err != nil {
+		return err
+	}
+
+	// contract 独立 module 的 ent schema（同 onestop 口径）；
+	// goose 侧的对应表在 000NN_contract_*.sql。
+	contractDrv := entsql.OpenDB("postgres", db)
+	contractClient := contractent.NewClient(contractent.Driver(contractDrv))
+	return contractClient.Schema.Create(ctx, contractentmigrate.WithForeignKeys(true))
 }

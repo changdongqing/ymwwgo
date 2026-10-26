@@ -3175,6 +3175,869 @@ export type configservicev1_DeleteConfigRequest = {
   id?: number;
 };
 
+// 合同管理服务（admin 门面）
+//
+// 源领域 proto 在 contract/service/v1（独立 Go module go-wind-admin/contract 拥有
+// 自己的同名生成包 contractv1）；本门面只挂 HTTP 路由，消息类型直接引用源领域，
+// 生成时 contract/service/v1 的 go_package 被指到 module 的 gen 包，因此本服务
+// 生成的 HTTP 接口与 module 内 service 的方法签名完全一致，可直接注册。
+export interface ContractService {
+  // 查询合同列表
+  List(
+    request: pagination_PagingRequest,
+  ): Promise<contractservicev1_ListContractsResponse>;
+  // 查询合同详情
+  Get(
+    request: contractservicev1_GetContractRequest,
+  ): Promise<contractservicev1_Contract>;
+  // 创建合同
+  Create(
+    request: contractservicev1_CreateContractRequest,
+  ): Promise<wellKnownEmpty>;
+  // 更新合同
+  Update(
+    request: contractservicev1_UpdateContractRequest,
+  ): Promise<wellKnownEmpty>;
+  // 删除合同
+  Delete(
+    request: contractservicev1_DeleteContractRequest,
+  ): Promise<wellKnownEmpty>;
+  // 查询合同事件时间线
+  ListEvents(
+    request: contractservicev1_ListContractEventsRequest,
+  ): Promise<contractservicev1_ListContractEventsResponse>;
+  // 查询合同费用明细
+  ListFees(
+    request: contractservicev1_ListContractFeesRequest,
+  ): Promise<contractservicev1_ListContractFeesResponse>;
+  // 提交
+  Submit(
+    request: contractservicev1_SubmitContractRequest,
+  ): Promise<wellKnownEmpty>;
+  // 审核
+  Approve(
+    request: contractservicev1_ApproveContractRequest,
+  ): Promise<wellKnownEmpty>;
+  // 变更
+  Change(
+    request: contractservicev1_ChangeContractRequest,
+  ): Promise<contractservicev1_Contract>;
+  // 终止
+  Terminate(
+    request: contractservicev1_TerminateContractRequest,
+  ): Promise<wellKnownEmpty>;
+  // 作废
+  Invalidate(
+    request: contractservicev1_InvalidateContractRequest,
+  ): Promise<wellKnownEmpty>;
+  // 重新拆解费用
+  DecomposeFees(
+    request: contractservicev1_DecomposeFeesRequest,
+  ): Promise<wellKnownEmpty>;
+  // 费用付款
+  PayFee(
+    request: contractservicev1_PayFeeRequest,
+  ): Promise<wellKnownEmpty>;
+  // 费用收款
+  ReceiveFee(
+    request: contractservicev1_ReceiveFeeRequest,
+  ): Promise<wellKnownEmpty>;
+  // 押金退款
+  RefundFee(
+    request: contractservicev1_RefundFeeRequest,
+  ): Promise<wellKnownEmpty>;
+}
+
+export function createContractServiceClient(
+  transport: ClientTransport,
+): ContractService {
+  return {
+    List(request) {
+      const path = `/admin/v1/contract/contracts`;
+      const body = null;
+      const queryParams: string[] = [];
+      if (request.page) {
+        queryParams.push(
+          `page=${encodeURIComponent(request.page.toString())}`,
+        );
+      }
+      if (request.pageSize) {
+        queryParams.push(
+          `pageSize=${encodeURIComponent(request.pageSize.toString())}`,
+        );
+      }
+      if (request.offset) {
+        queryParams.push(
+          `offset=${encodeURIComponent(request.offset.toString())}`,
+        );
+      }
+      if (request.limit) {
+        queryParams.push(
+          `limit=${encodeURIComponent(request.limit.toString())}`,
+        );
+      }
+      if (request.token) {
+        queryParams.push(
+          `token=${encodeURIComponent(request.token.toString())}`,
+        );
+      }
+      if (request.noPaging) {
+        queryParams.push(
+          `noPaging=${encodeURIComponent(request.noPaging.toString())}`,
+        );
+      }
+      if (request.query) {
+        queryParams.push(
+          `query=${encodeURIComponent(request.query.toString())}`,
+        );
+      }
+      if (request.filter) {
+        queryParams.push(
+          `filter=${encodeURIComponent(request.filter.toString())}`,
+        );
+      }
+      if (request.filterExpr?.type) {
+        queryParams.push(
+          `filterExpr.type=${encodeURIComponent(request.filterExpr.type.toString())}`,
+        );
+      }
+      if (request.orderBy) {
+        queryParams.push(
+          `orderBy=${encodeURIComponent(request.orderBy.toString())}`,
+        );
+      }
+      if (request.fieldMask) {
+        queryParams.push(
+          `fieldMask=${encodeURIComponent(request.fieldMask.toString())}`,
+        );
+      }
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join('&')}`;
+      }
+      return transport.unary(uri, 'GET', body, {
+        service: 'ContractService',
+        method: 'List',
+      }) as Promise<contractservicev1_ListContractsResponse>;
+    },
+    Get(request) {
+      if (request.id === undefined || request.id === null) {
+        throw new Error('missing required field request.id');
+      }
+      const path = `/admin/v1/contract/contracts/${request.id}`;
+      const body = null;
+      const queryParams: string[] = [];
+      if (request.viewMask) {
+        queryParams.push(
+          `viewMask=${encodeURIComponent(request.viewMask.toString())}`,
+        );
+      }
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join('&')}`;
+      }
+      return transport.unary(uri, 'GET', body, {
+        service: 'ContractService',
+        method: 'Get',
+      }) as Promise<contractservicev1_Contract>;
+    },
+    Create(request) {
+      const path = `/admin/v1/contract/contracts`;
+      const body = JSON.stringify(request);
+      return transport.unary(path, 'POST', body, {
+        service: 'ContractService',
+        method: 'Create',
+      }) as Promise<wellKnownEmpty>;
+    },
+    Update(request) {
+      if (request.id === undefined || request.id === null) {
+        throw new Error('missing required field request.id');
+      }
+      const path = `/admin/v1/contract/contracts/${request.id}`;
+      const bodyMap = { ...request } as Record<string, unknown>;
+      delete bodyMap["id"];
+      const body = JSON.stringify(bodyMap);
+      return transport.unary(path, 'PUT', body, {
+        service: 'ContractService',
+        method: 'Update',
+      }) as Promise<wellKnownEmpty>;
+    },
+    Delete(request) {
+      if (request.id === undefined || request.id === null) {
+        throw new Error('missing required field request.id');
+      }
+      const path = `/admin/v1/contract/contracts/${request.id}`;
+      const body = null;
+      return transport.unary(path, 'DELETE', body, {
+        service: 'ContractService',
+        method: 'Delete',
+      }) as Promise<wellKnownEmpty>;
+    },
+    ListEvents(request) {
+      if (request.id === undefined || request.id === null) {
+        throw new Error('missing required field request.id');
+      }
+      const path = `/admin/v1/contract/contracts/${request.id}/events`;
+      const body = null;
+      return transport.unary(path, 'GET', body, {
+        service: 'ContractService',
+        method: 'ListEvents',
+      }) as Promise<contractservicev1_ListContractEventsResponse>;
+    },
+    ListFees(request) {
+      if (request.id === undefined || request.id === null) {
+        throw new Error('missing required field request.id');
+      }
+      const path = `/admin/v1/contract/contracts/${request.id}/fees`;
+      const body = null;
+      return transport.unary(path, 'GET', body, {
+        service: 'ContractService',
+        method: 'ListFees',
+      }) as Promise<contractservicev1_ListContractFeesResponse>;
+    },
+    Submit(request) {
+      if (request.id === undefined || request.id === null) {
+        throw new Error('missing required field request.id');
+      }
+      const path = `/admin/v1/contract/contracts/${request.id}/submit`;
+      const bodyMap = { ...request } as Record<string, unknown>;
+      delete bodyMap["id"];
+      const body = JSON.stringify(bodyMap);
+      return transport.unary(path, 'POST', body, {
+        service: 'ContractService',
+        method: 'Submit',
+      }) as Promise<wellKnownEmpty>;
+    },
+    Approve(request) {
+      if (request.id === undefined || request.id === null) {
+        throw new Error('missing required field request.id');
+      }
+      const path = `/admin/v1/contract/contracts/${request.id}/approve`;
+      const bodyMap = { ...request } as Record<string, unknown>;
+      delete bodyMap["id"];
+      const body = JSON.stringify(bodyMap);
+      return transport.unary(path, 'POST', body, {
+        service: 'ContractService',
+        method: 'Approve',
+      }) as Promise<wellKnownEmpty>;
+    },
+    Change(request) {
+      if (request.id === undefined || request.id === null) {
+        throw new Error('missing required field request.id');
+      }
+      const path = `/admin/v1/contract/contracts/${request.id}/change`;
+      const bodyMap = { ...request } as Record<string, unknown>;
+      delete bodyMap["id"];
+      const body = JSON.stringify(bodyMap);
+      return transport.unary(path, 'POST', body, {
+        service: 'ContractService',
+        method: 'Change',
+      }) as Promise<contractservicev1_Contract>;
+    },
+    Terminate(request) {
+      if (request.id === undefined || request.id === null) {
+        throw new Error('missing required field request.id');
+      }
+      const path = `/admin/v1/contract/contracts/${request.id}/terminate`;
+      const bodyMap = { ...request } as Record<string, unknown>;
+      delete bodyMap["id"];
+      const body = JSON.stringify(bodyMap);
+      return transport.unary(path, 'POST', body, {
+        service: 'ContractService',
+        method: 'Terminate',
+      }) as Promise<wellKnownEmpty>;
+    },
+    Invalidate(request) {
+      if (request.id === undefined || request.id === null) {
+        throw new Error('missing required field request.id');
+      }
+      const path = `/admin/v1/contract/contracts/${request.id}/invalidate`;
+      const bodyMap = { ...request } as Record<string, unknown>;
+      delete bodyMap["id"];
+      const body = JSON.stringify(bodyMap);
+      return transport.unary(path, 'POST', body, {
+        service: 'ContractService',
+        method: 'Invalidate',
+      }) as Promise<wellKnownEmpty>;
+    },
+    DecomposeFees(request) {
+      if (request.id === undefined || request.id === null) {
+        throw new Error('missing required field request.id');
+      }
+      const path = `/admin/v1/contract/contracts/${request.id}/decompose-fees`;
+      const bodyMap = { ...request } as Record<string, unknown>;
+      delete bodyMap["id"];
+      const body = JSON.stringify(bodyMap);
+      return transport.unary(path, 'POST', body, {
+        service: 'ContractService',
+        method: 'DecomposeFees',
+      }) as Promise<wellKnownEmpty>;
+    },
+    PayFee(request) {
+      if (request.id === undefined || request.id === null) {
+        throw new Error('missing required field request.id');
+      }
+      const path = `/admin/v1/contract/fees/${request.id}/pay`;
+      const bodyMap = { ...request } as Record<string, unknown>;
+      delete bodyMap["id"];
+      const body = JSON.stringify(bodyMap);
+      return transport.unary(path, 'POST', body, {
+        service: 'ContractService',
+        method: 'PayFee',
+      }) as Promise<wellKnownEmpty>;
+    },
+    ReceiveFee(request) {
+      if (request.id === undefined || request.id === null) {
+        throw new Error('missing required field request.id');
+      }
+      const path = `/admin/v1/contract/fees/${request.id}/receive`;
+      const bodyMap = { ...request } as Record<string, unknown>;
+      delete bodyMap["id"];
+      const body = JSON.stringify(bodyMap);
+      return transport.unary(path, 'POST', body, {
+        service: 'ContractService',
+        method: 'ReceiveFee',
+      }) as Promise<wellKnownEmpty>;
+    },
+    RefundFee(request) {
+      if (request.id === undefined || request.id === null) {
+        throw new Error('missing required field request.id');
+      }
+      const path = `/admin/v1/contract/fees/${request.id}/refund`;
+      const bodyMap = { ...request } as Record<string, unknown>;
+      delete bodyMap["id"];
+      const body = JSON.stringify(bodyMap);
+      return transport.unary(path, 'POST', body, {
+        service: 'ContractService',
+        method: 'RefundFee',
+      }) as Promise<wellKnownEmpty>;
+    },
+  };
+}
+// 查询合同列表 - 回应
+export type contractservicev1_ListContractsResponse = {
+  items: contractservicev1_Contract[] | undefined;
+  total: number | undefined;
+};
+
+// 合同（统一合同底座主实体）
+export type contractservicev1_Contract = {
+  amount?: number;
+  // —— 附件 ——
+  attachments: string[] | undefined;
+  contractNo?: string;
+  contractTypeCode?: string;
+  // —— 类型与快照 ——
+  contractTypeId?: number;
+  contractTypeName?: string;
+  createdAt?: wellKnownTimestamp;
+  createdBy?: number;
+  deletedAt?: wellKnownTimestamp;
+  deletedBy?: number;
+  deposit?: number;
+  dept?: string;
+  // —— 差异字段（schema 快照定型 + 用户填值）——
+  diffSchema: contractservicev1_ContractDiffField[] | undefined;
+  diffValues: { [key: string]: string } | undefined;
+  endDate?: wellKnownTimestamp;
+  feeDirection?: contractservicev1_FeeDirection;
+  id?: number;
+  // —— 基本信息 ——
+  importance?: contractservicev1_ContractImportance;
+  partyAContact?: string;
+  partyAPhone?: string;
+  partyBAccount?: string;
+  partyBBank?: string;
+  partyBContact?: string;
+  partyBCredit?: string;
+  partyBKind?: contractservicev1_PartyBKind;
+  partyBLegal?: string;
+  // —— 乙方信息 ——
+  partyBName?: string;
+  partyBPhone?: string;
+  partyBRating?: string;
+  payMethod?: contractservicev1_PayMethod;
+  // —— 付款节点快照（PAY_NODE/PAY_PROGRESS 拆解比例，拆解以快照为准）——
+  payNodes: contractservicev1_ContractPayNode[] | undefined;
+  // —— 甲方（我方）信息 ——
+  region?: string;
+  remark?: string;
+  requiresApproval?: boolean;
+  reviewNote?: string;
+  reviewedAt?: wellKnownTimestamp;
+  // —— 审核与关闭 ——
+  reviewerId?: number;
+  sourceContractId?: number;
+  startDate?: wellKnownTimestamp;
+  // —— 状态 ——
+  status?: contractservicev1_ContractStatus;
+  taxRate?: number;
+  terminateReason?: string;
+  updatedAt?: wellKnownTimestamp;
+  updatedBy?: number;
+  // —— 版本链 ——
+  version?: number;
+};
+
+// 合同状态：统一生命周期状态机。
+// 草稿 → 待审核 → 执行中 为正向主干；执行中四条关闭出路
+// （变更/到期/终止），任意非终态可作废。到期关闭仅调度器触发。
+export type contractservicev1_ContractStatus =
+  | 'CONTRACT_STATUS_UNSPECIFIED'
+  | 'STATUS_CHANGED'
+  | 'STATUS_DRAFT'
+  | 'STATUS_EFFECTIVE'
+  | 'STATUS_EXPIRED'
+  | 'STATUS_INVALIDATED'
+  | 'STATUS_REVIEWING'
+  | 'STATUS_TERMINATED';
+// 乙方类型（工商主体形态）
+export type contractservicev1_PartyBKind =
+  | 'PARTY_B_ENTERPRISE'
+  | 'PARTY_B_NATURAL'
+  | 'PARTY_B_ORG'
+  | 'PARTY_B_UNSPECIFIED';
+// 合同重要性
+export type contractservicev1_ContractImportance =
+  | 'IMPORTANCE_IMPORTANT'
+  | 'IMPORTANCE_NORMAL'
+  | 'IMPORTANCE_UNSPECIFIED';
+// 付款方式：决定合同金额的费用拆解规则（一次性/按月/按季等分，按节点/按进度按模板比例）
+export type contractservicev1_PayMethod =
+  | 'PAY_METHOD_UNSPECIFIED'
+  | 'PAY_MONTHLY'
+  | 'PAY_NODE'
+  | 'PAY_ONCE'
+  | 'PAY_PROGRESS'
+  | 'PAY_QUARTERLY';
+// 费用方向：合同款项往哪边走（应收=我方收款，如出租；应付=我方付款）
+export type contractservicev1_FeeDirection =
+  | 'DIRECTION_PAYABLE'
+  | 'DIRECTION_RECEIVABLE'
+  | 'DIRECTION_UNSPECIFIED';
+// 差异化字段定义（类型驱动的动态表单 schema）
+export type contractservicev1_ContractDiffField = {
+  key: string | undefined;
+  label: string | undefined;
+  options: string[] | undefined;
+  widget: string | undefined;
+};
+
+// 付款节点模板（PAY_NODE/PAY_PROGRESS 的拆解比例来源）
+export type contractservicev1_ContractPayNode = {
+  name: string | undefined;
+  ratioPercent: number | undefined;
+};
+
+// 查询合同详情 - 请求
+export type contractservicev1_GetContractRequest = {
+  id?: number;
+  viewMask?: wellKnownFieldMask;
+};
+
+// 创建合同 - 请求（CRUD 包 data；快照字段由服务端解析落库；pay_method/
+// fee_direction/diff_values 接受用户覆写，其余快照字段忽略请求指定）
+export type contractservicev1_CreateContractRequest = {
+  data: contractservicev1_Contract | undefined;
+};
+
+// 更新合同 - 请求（仅草稿可改）
+export type contractservicev1_UpdateContractRequest = {
+  allowMissing?: boolean;
+  data: contractservicev1_Contract | undefined;
+  id: number | undefined;
+  updateMask: undefined | wellKnownFieldMask;
+};
+
+// 删除合同 - 请求
+export type contractservicev1_DeleteContractRequest = {
+  id?: number;
+};
+
+// 查询合同事件 - 请求/回应
+export type contractservicev1_ListContractEventsRequest = {
+  id: number | undefined;
+};
+
+export type contractservicev1_ListContractEventsResponse = {
+  items: contractservicev1_ContractEvent[] | undefined;
+  total: number | undefined;
+};
+
+// 合同事件（时间线：动作 + 状态迁移 + 备注，按时间倒序即跟进记录）
+export type contractservicev1_ContractEvent = {
+  action?: contractservicev1_ContractEventAction;
+  contractId?: number;
+  createdAt?: wellKnownTimestamp;
+  createdBy?: number;
+  id?: number;
+  note?: string;
+  statusFrom?: string;
+  statusTo?: string;
+};
+
+// 合同事件动作（时间线）
+export type contractservicev1_ContractEventAction =
+  | 'ACTION_APPROVE'
+  | 'ACTION_CHANGE'
+  | 'ACTION_CREATE'
+  | 'ACTION_DECOMPOSE'
+  | 'ACTION_EXPIRE'
+  | 'ACTION_FEE_PAY'
+  | 'ACTION_FEE_RECEIVE'
+  | 'ACTION_FEE_REFUND'
+  | 'ACTION_INVALIDATE'
+  | 'ACTION_REJECT'
+  | 'ACTION_SUBMIT'
+  | 'ACTION_TERMINATE'
+  | 'ACTION_UPDATE'
+  | 'CONTRACT_ACTION_UNSPECIFIED';
+// 查询合同费用明细 - 请求/回应
+export type contractservicev1_ListContractFeesRequest = {
+  id: number | undefined;
+};
+
+export type contractservicev1_ListContractFeesResponse = {
+  items: contractservicev1_ContractFee[] | undefined;
+  total: number | undefined;
+};
+
+// 合同费用明细（拆解生成的应收/应付/押金行）
+export type contractservicev1_ContractFee = {
+  actualDate?: wellKnownTimestamp;
+  amount?: number;
+  autoGenerated?: boolean;
+  category?: contractservicev1_FeeCategory;
+  contractId?: number;
+  createdAt?: wellKnownTimestamp;
+  createdBy?: number;
+  direction?: contractservicev1_FeeDirection;
+  id?: number;
+  name?: string;
+  planDate?: wellKnownTimestamp;
+  remark?: string;
+  status?: contractservicev1_FeeStatus;
+};
+
+// 费用类别
+export type contractservicev1_FeeCategory =
+  | 'CATEGORY_DEPOSIT'
+  | 'CATEGORY_EXPENSE'
+  | 'CATEGORY_INCOME'
+  | 'FEE_CATEGORY_UNSPECIFIED';
+// 费用状态：PENDING 按方向显示待付款/待收取；DONE 显示已付款/已收取
+// （押金行语义为待退款）；REFUNDED 为押金终态。
+export type contractservicev1_FeeStatus =
+  | 'FEE_STATUS_DONE'
+  | 'FEE_STATUS_PENDING'
+  | 'FEE_STATUS_REFUNDED'
+  | 'FEE_STATUS_UNSPECIFIED';
+// 提交 - 请求（扁平 body）
+export type contractservicev1_SubmitContractRequest = {
+  id: number | undefined;
+  note?: string;
+};
+
+// 审核 - 请求（passed=false 驳回回草稿，原因必填）
+export type contractservicev1_ApproveContractRequest = {
+  id: number | undefined;
+  note?: string;
+  passed: boolean | undefined;
+};
+
+// 变更 - 请求（执行中 → 变更终止 + 复制开新版草稿 v+1；返回新版）
+export type contractservicev1_ChangeContractRequest = {
+  id: number | undefined;
+  note?: string;
+};
+
+// 终止 - 请求
+export type contractservicev1_TerminateContractRequest = {
+  id: number | undefined;
+  reason: string | undefined;
+};
+
+// 作废 - 请求
+export type contractservicev1_InvalidateContractRequest = {
+  id: number | undefined;
+  reason: string | undefined;
+};
+
+// 重新拆解费用 - 请求（执行中可调；删自动行重拆，手工行保留）
+export type contractservicev1_DecomposeFeesRequest = {
+  id: number | undefined;
+  note?: string;
+};
+
+// 费用付款 - 请求（应付行：待付款 → 已付款）
+export type contractservicev1_PayFeeRequest = {
+  actualDate?: wellKnownTimestamp;
+  id: number | undefined;
+  note?: string;
+};
+
+// 费用收款 - 请求（应收行：待收取 → 已收取）
+export type contractservicev1_ReceiveFeeRequest = {
+  actualDate?: wellKnownTimestamp;
+  id: number | undefined;
+  note?: string;
+};
+
+// 押金退款 - 请求（押金行：已收付（待退款） → 已退款）
+export type contractservicev1_RefundFeeRequest = {
+  actualDate?: wellKnownTimestamp;
+  id: number | undefined;
+  note?: string;
+};
+
+// 合同类型管理服务（admin 门面）
+//
+// 源领域 proto 在 contract/service/v1（独立 Go module go-wind-admin/contract 拥有
+// 自己的同名生成包 contractv1）；本门面只挂 HTTP 路由，消息类型直接引用源领域，
+// 生成时 contract/service/v1 的 go_package 被指到 module 的 gen 包，因此本服务
+// 生成的 HTTP 接口与 module 内 service 的方法签名完全一致，可直接注册。
+export interface ContractTypeService {
+  // 查询合同类型列表
+  List(
+    request: pagination_PagingRequest,
+  ): Promise<contractservicev1_ListContractTypesResponse>;
+  // 查询合同类型详情
+  Get(
+    request: contractservicev1_GetContractTypeRequest,
+  ): Promise<contractservicev1_ContractType>;
+  // 创建合同类型
+  Create(
+    request: contractservicev1_CreateContractTypeRequest,
+  ): Promise<wellKnownEmpty>;
+  // 更新合同类型
+  Update(
+    request: contractservicev1_UpdateContractTypeRequest,
+  ): Promise<wellKnownEmpty>;
+  // 删除合同类型
+  Delete(
+    request: contractservicev1_DeleteContractTypeRequest,
+  ): Promise<wellKnownEmpty>;
+  // 查询生效合同配置（细类→大类回退解析）
+  GetEffectiveConfig(
+    request: contractservicev1_GetEffectiveContractConfigRequest,
+  ): Promise<contractservicev1_EffectiveContractConfig>;
+}
+
+export function createContractTypeServiceClient(
+  transport: ClientTransport,
+): ContractTypeService {
+  return {
+    List(request) {
+      const path = `/admin/v1/contract/types`;
+      const body = null;
+      const queryParams: string[] = [];
+      if (request.page) {
+        queryParams.push(
+          `page=${encodeURIComponent(request.page.toString())}`,
+        );
+      }
+      if (request.pageSize) {
+        queryParams.push(
+          `pageSize=${encodeURIComponent(request.pageSize.toString())}`,
+        );
+      }
+      if (request.offset) {
+        queryParams.push(
+          `offset=${encodeURIComponent(request.offset.toString())}`,
+        );
+      }
+      if (request.limit) {
+        queryParams.push(
+          `limit=${encodeURIComponent(request.limit.toString())}`,
+        );
+      }
+      if (request.token) {
+        queryParams.push(
+          `token=${encodeURIComponent(request.token.toString())}`,
+        );
+      }
+      if (request.noPaging) {
+        queryParams.push(
+          `noPaging=${encodeURIComponent(request.noPaging.toString())}`,
+        );
+      }
+      if (request.query) {
+        queryParams.push(
+          `query=${encodeURIComponent(request.query.toString())}`,
+        );
+      }
+      if (request.filter) {
+        queryParams.push(
+          `filter=${encodeURIComponent(request.filter.toString())}`,
+        );
+      }
+      if (request.filterExpr?.type) {
+        queryParams.push(
+          `filterExpr.type=${encodeURIComponent(request.filterExpr.type.toString())}`,
+        );
+      }
+      if (request.orderBy) {
+        queryParams.push(
+          `orderBy=${encodeURIComponent(request.orderBy.toString())}`,
+        );
+      }
+      if (request.fieldMask) {
+        queryParams.push(
+          `fieldMask=${encodeURIComponent(request.fieldMask.toString())}`,
+        );
+      }
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join('&')}`;
+      }
+      return transport.unary(uri, 'GET', body, {
+        service: 'ContractTypeService',
+        method: 'List',
+      }) as Promise<contractservicev1_ListContractTypesResponse>;
+    },
+    Get(request) {
+      if (request.id === undefined || request.id === null) {
+        throw new Error('missing required field request.id');
+      }
+      const path = `/admin/v1/contract/types/${request.id}`;
+      const body = null;
+      const queryParams: string[] = [];
+      if (request.viewMask) {
+        queryParams.push(
+          `viewMask=${encodeURIComponent(request.viewMask.toString())}`,
+        );
+      }
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join('&')}`;
+      }
+      return transport.unary(uri, 'GET', body, {
+        service: 'ContractTypeService',
+        method: 'Get',
+      }) as Promise<contractservicev1_ContractType>;
+    },
+    Create(request) {
+      const path = `/admin/v1/contract/types`;
+      const body = JSON.stringify(request);
+      return transport.unary(path, 'POST', body, {
+        service: 'ContractTypeService',
+        method: 'Create',
+      }) as Promise<wellKnownEmpty>;
+    },
+    Update(request) {
+      if (request.id === undefined || request.id === null) {
+        throw new Error('missing required field request.id');
+      }
+      const path = `/admin/v1/contract/types/${request.id}`;
+      const bodyMap = { ...request } as Record<string, unknown>;
+      delete bodyMap["id"];
+      const body = JSON.stringify(bodyMap);
+      return transport.unary(path, 'PUT', body, {
+        service: 'ContractTypeService',
+        method: 'Update',
+      }) as Promise<wellKnownEmpty>;
+    },
+    Delete(request) {
+      if (request.id === undefined || request.id === null) {
+        throw new Error('missing required field request.id');
+      }
+      const path = `/admin/v1/contract/types/${request.id}`;
+      const body = null;
+      return transport.unary(path, 'DELETE', body, {
+        service: 'ContractTypeService',
+        method: 'Delete',
+      }) as Promise<wellKnownEmpty>;
+    },
+    GetEffectiveConfig(request) {
+      if (request.id === undefined || request.id === null) {
+        throw new Error('missing required field request.id');
+      }
+      const path = `/admin/v1/contract/types/${request.id}/effective-config`;
+      const body = null;
+      return transport.unary(path, 'GET', body, {
+        service: 'ContractTypeService',
+        method: 'GetEffectiveConfig',
+      }) as Promise<contractservicev1_EffectiveContractConfig>;
+    },
+  };
+}
+// 查询合同类型列表 - 回应
+export type contractservicev1_ListContractTypesResponse = {
+  items: contractservicev1_ContractType[] | undefined;
+  total: number | undefined;
+};
+
+// 合同类型
+export type contractservicev1_ContractType = {
+  code?: string;
+  createdAt?: wellKnownTimestamp;
+  createdBy?: number;
+  deletedAt?: wellKnownTimestamp;
+  deletedBy?: number;
+  description?: string;
+  diffFields: contractservicev1_ContractDiffField[] | undefined;
+  feeDirection?: contractservicev1_FeeDirection;
+  guidance?: string;
+  id?: number;
+  isEnabled?: boolean;
+  level?: contractservicev1_ContractLevel;
+  name?: string;
+  parentId?: number;
+  partyBLabel?: string;
+  payMethod?: contractservicev1_PayMethod;
+  payNodes: contractservicev1_ContractPayNode[] | undefined;
+  requiredAttachments: string[] | undefined;
+  requiresApproval?: boolean;
+  requiresDeposit?: boolean;
+  updatedAt?: wellKnownTimestamp;
+  updatedBy?: number;
+};
+
+// 类型层级：大类 / 细类（与编码位数 2/4 一一对应）
+export type contractservicev1_ContractLevel =
+  | 'LEVEL_DETAIL'
+  | 'LEVEL_MAJOR'
+  | 'LEVEL_UNSPECIFIED';
+// 查询合同类型详情 - 请求
+export type contractservicev1_GetContractTypeRequest = {
+  id?: number;
+  viewMask?: wellKnownFieldMask;
+};
+
+// 创建合同类型 - 请求
+export type contractservicev1_CreateContractTypeRequest = {
+  data: contractservicev1_ContractType | undefined;
+};
+
+// 更新合同类型 - 请求
+export type contractservicev1_UpdateContractTypeRequest = {
+  allowMissing?: boolean;
+  data: contractservicev1_ContractType | undefined;
+  id: number | undefined;
+  updateMask: undefined | wellKnownFieldMask;
+};
+
+// 删除合同类型 - 请求
+export type contractservicev1_DeleteContractTypeRequest = {
+  id?: number;
+};
+
+// 查询生效合同配置 - 请求
+export type contractservicev1_GetEffectiveContractConfigRequest = {
+  id: number | undefined;
+};
+
+// 生效合同配置 - 回应
+//
+// effective 是解析后的合并视图：单值列（细类为空回退大类）与数组列（整组
+// 覆盖或整组继承，不做数组内 merge）都已按「细类 → 大类」回退填齐；
+// requires_approval/requires_deposit/pay_method/fee_direction 为解析后的生效
+// 兜底值（默认 true/false/PAY_ONCE/DIRECTION_PAYABLE）。创建表单预填与合同
+// 创建快照共用本接口口径，前端无须自行实现继承链。
+export type contractservicev1_EffectiveContractConfig = {
+  effective: contractservicev1_ContractType | undefined;
+};
+
 // 概览统计 - 回应
 export type DashboardOverviewResponse = {
   roleCount: number | undefined;
@@ -15906,6 +16769,8 @@ export class ApiClient {
   private _apiService?: ApiService;
   private _authenticationService?: AuthenticationService;
   private _configService?: ConfigService;
+  private _contractService?: ContractService;
+  private _contractTypeService?: ContractTypeService;
   private _dashboardService?: DashboardService;
   private _dataAccessAuditLogService?: DataAccessAuditLogService;
   private _dictEntryService?: DictEntryService;
@@ -16025,6 +16890,14 @@ export class ApiClient {
 
   get configService(): ConfigService {
     return this._configService ??= createConfigServiceClient(this._transport);
+  }
+
+  get contractService(): ContractService {
+    return this._contractService ??= createContractServiceClient(this._transport);
+  }
+
+  get contractTypeService(): ContractTypeService {
+    return this._contractTypeService ??= createContractTypeServiceClient(this._transport);
   }
 
   get dashboardService(): DashboardService {

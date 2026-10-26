@@ -1,0 +1,141 @@
+syntax = "proto3";
+
+package admin.service.v1;
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+
+import "pagination/v1/pagination.proto";
+
+import "contract/service/v1/contract.proto";
+
+// 合同管理服务（admin 门面）
+//
+// 源领域 proto 在 contract/service/v1（独立 Go module go-wind-admin/contract 拥有
+// 自己的同名生成包 contractv1）；本门面只挂 HTTP 路由，消息类型直接引用源领域，
+// 生成时 contract/service/v1 的 go_package 被指到 module 的 gen 包，因此本服务
+// 生成的 HTTP 接口与 module 内 service 的方法签名完全一致，可直接注册。
+service ContractService {
+  // 查询合同列表
+  rpc List (pagination.PagingRequest) returns (contract.service.v1.ListContractsResponse) {
+    option (google.api.http) = {
+      get: "/admin/v1/contract/contracts"
+    };
+  }
+
+  // 查询合同详情
+  rpc Get (contract.service.v1.GetContractRequest) returns (contract.service.v1.Contract) {
+    option (google.api.http) = {
+      get: "/admin/v1/contract/contracts/{id}"
+    };
+  }
+
+  // 创建合同
+  rpc Create (contract.service.v1.CreateContractRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/admin/v1/contract/contracts"
+      body: "*"
+    };
+  }
+
+  // 更新合同
+  rpc Update (contract.service.v1.UpdateContractRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      put: "/admin/v1/contract/contracts/{id}"
+      body: "*"
+    };
+  }
+
+  // 删除合同
+  rpc Delete (contract.service.v1.DeleteContractRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete: "/admin/v1/contract/contracts/{id}"
+    };
+  }
+
+  // 查询合同事件时间线
+  rpc ListEvents (contract.service.v1.ListContractEventsRequest) returns (contract.service.v1.ListContractEventsResponse) {
+    option (google.api.http) = {
+      get: "/admin/v1/contract/contracts/{id}/events"
+    };
+  }
+
+  // 查询合同费用明细
+  rpc ListFees (contract.service.v1.ListContractFeesRequest) returns (contract.service.v1.ListContractFeesResponse) {
+    option (google.api.http) = {
+      get: "/admin/v1/contract/contracts/{id}/fees"
+    };
+  }
+
+  // 提交
+  rpc Submit (contract.service.v1.SubmitContractRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/admin/v1/contract/contracts/{id}/submit"
+      body: "*"
+    };
+  }
+
+  // 审核
+  rpc Approve (contract.service.v1.ApproveContractRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/admin/v1/contract/contracts/{id}/approve"
+      body: "*"
+    };
+  }
+
+  // 变更
+  rpc Change (contract.service.v1.ChangeContractRequest) returns (contract.service.v1.Contract) {
+    option (google.api.http) = {
+      post: "/admin/v1/contract/contracts/{id}/change"
+      body: "*"
+    };
+  }
+
+  // 终止
+  rpc Terminate (contract.service.v1.TerminateContractRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/admin/v1/contract/contracts/{id}/terminate"
+      body: "*"
+    };
+  }
+
+  // 作废
+  rpc Invalidate (contract.service.v1.InvalidateContractRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/admin/v1/contract/contracts/{id}/invalidate"
+      body: "*"
+    };
+  }
+
+  // 重新拆解费用
+  rpc DecomposeFees (contract.service.v1.DecomposeFeesRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/admin/v1/contract/contracts/{id}/decompose-fees"
+      body: "*"
+    };
+  }
+
+  // 费用付款
+  rpc PayFee (contract.service.v1.PayFeeRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/admin/v1/contract/fees/{id}/pay"
+      body: "*"
+    };
+  }
+
+  // 费用收款
+  rpc ReceiveFee (contract.service.v1.ReceiveFeeRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/admin/v1/contract/fees/{id}/receive"
+      body: "*"
+    };
+  }
+
+  // 押金退款
+  rpc RefundFee (contract.service.v1.RefundFeeRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/admin/v1/contract/fees/{id}/refund"
+      body: "*"
+    };
+  }
+}

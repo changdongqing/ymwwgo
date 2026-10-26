@@ -145,7 +145,6 @@ const WorkOrderDetailDrawer = ({
   }
 
   const status = order.status;
-  const profile = profileOf(order.orderKind);
   const isTransport = order.orderKind === 'KIND_TRANSPORT';
 
   // 动作按钮矩阵（服务层状态机的镜像；按钮只是引导，后端仍是唯一闸门）

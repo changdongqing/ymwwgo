@@ -105,6 +105,13 @@ managed:
       path: onestop/service/v1
       value: go-wind-admin/onestop/api/gen/go/onestop/service/v1;onestopv1
 
+    # contract 源领域消息：同 onestop 口径，指向独立 Go module 的 gen 包
+    #（不落主 gen），使 admin 门面（i_contract_*）生成的 HTTP 接口与
+    # module 内 service 的方法签名一致，可零适配直接注册
+    - file_option: go_package
+      path: contract/service/v1
+      value: go-wind-admin/contract/api/gen/go/contract/service/v1;contractv1
+
 plugins:
   # generate go code
   #- plugin: buf.build/protocolbuffers/go

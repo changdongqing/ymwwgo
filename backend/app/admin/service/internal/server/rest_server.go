@@ -25,6 +25,8 @@ import (
 
 	onestopService "go-wind-admin/onestop/service"
 
+	contractService "go-wind-admin/contract/service"
+
 	adminV1 "go-wind-admin/api/gen/go/admin/service/v1"
 	auditV1 "go-wind-admin/api/gen/go/audit/service/v1"
 
@@ -215,6 +217,10 @@ func NewRestServer(
 	oneStopPeriodicPlanService *onestopService.PeriodicPlanService,
 	oneStopTransportRouteService *onestopService.TransportRouteService,
 	oneStopWorkOrderService *onestopService.WorkOrderService,
+
+	// 合同管理（独立 Go module go-wind-admin/contract）
+	contractTypeService *contractService.ContractTypeService,
+	contractSvc *contractService.ContractService,
 ) (*http.Server, error) {
 	cfg := ctx.GetConfig()
 
@@ -347,6 +353,13 @@ func NewRestServer(
 	adminV1.RegisterOneStopPeriodicPlanServiceHTTPServer(srv, oneStopPeriodicPlanService)
 	adminV1.RegisterOneStopTransportRouteServiceHTTPServer(srv, oneStopTransportRouteService)
 	adminV1.RegisterOneStopWorkOrderServiceHTTPServer(srv, oneStopWorkOrderService)
+
+	// 合同管理（独立 Go module go-wind-admin/contract）：BFF 门面（adminV1）的
+	// 消息类型经 buf.gen.yaml go_package 覆盖直指 module 的 contractv1 包，
+	// 接口签名与 module service 完全一致，零适配直接注册；
+	// 认证/鉴权/审计/租户闸门走本 server 的统一中间件链。
+	adminV1.RegisterContractTypeServiceHTTPServer(srv, contractTypeService)
+	adminV1.RegisterContractServiceHTTPServer(srv, contractSvc)
 
 	if cfg.GetServer().GetRest().GetEnableSwagger() {
 		swaggerUI.RegisterSwaggerUIServerWithOption(
